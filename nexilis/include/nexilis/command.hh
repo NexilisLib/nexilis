@@ -1,0 +1,40 @@
+#ifndef NEXILIX_HEADER_HH
+#define NEXILIX_HEADER_HH
+
+#include "command_type.hh"
+
+#include <vector>
+#include <cstddef>
+
+namespace nexilis
+{
+
+class Command
+{
+public:
+    /// Create a new command.
+    /// \param mainCommand The main command given to the server.
+    /// \param subCommand The subCommand aka the value, or parameter given for the mainCommand.
+    /// \return std::vector<unsigned char> The vector of bytes in the created command.
+    static std::vector<unsigned char> create(MainCommand mainCommand, SubCommand subCommand = SubCommand::option1);
+
+    /// Same function as before but we use the underlying type.
+    /// \param mainCommand The main command given to the server.
+    /// \param subCommand The subCommand or "value" the value for the main command.
+    /// \return std::vector<unsigned char> The vector of bytes in the created command.
+    static std::vector<unsigned char> create(unsigned char mainCommand, unsigned char subCommand = 0x10);
+
+    /// Read the command from client.
+    /// \param The vector of bytes that is the command.
+    /// \return True if the reading of the command is succesfull.
+    static bool read(std::vector<unsigned char> command);
+
+private:
+
+    MainCommand m_mainCommand;
+    SubCommand m_subCommand;
+};
+
+}
+
+#endif
