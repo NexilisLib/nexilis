@@ -47,6 +47,11 @@ enum class MainCommand : unsigned char
     setup = 0x80
 };
 
+
+// TODO
+// This could rather be some sotf of generator instead of just
+// hardcoded values.
+
 enum class SubCommand : unsigned char
 {
     option1 = 0x10,

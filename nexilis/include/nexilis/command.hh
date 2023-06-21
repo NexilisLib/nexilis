@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <cstddef>
+#include <string>
 
 namespace nexilis
 {
@@ -28,6 +29,13 @@ public:
     /// \param The vector of bytes that is the command.
     /// \return True if the reading of the command is succesfull.
     static bool read(std::vector<unsigned char> command);
+
+private:
+
+    /// Create IPv4 address from IPV4 data.
+    /// \param address The address data.
+    /// \return string Created IPV4 string.
+    std::string createIPv4Address(const std::vector<unsigned char>& address);
 
 private:
 
