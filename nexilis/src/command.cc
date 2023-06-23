@@ -1,4 +1,5 @@
 #include "../include/nexilis/command.hh"
+#include "nexilis/command_type.hh"
 
 #include <iostream>
 
@@ -27,7 +28,7 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, SubCommand s
 }
 
 
-bool Command::read(std::vector<unsigned char> command)
+bool Command::read(const std::vector<unsigned char>& command)
 {
     switch(static_cast<MainCommand>(command.front()))
     {
@@ -59,6 +60,19 @@ bool Command::read(std::vector<unsigned char> command)
         }
     }
     return false;
+}
+
+bool Command::read(const char* command_data, size_t lenght)
+{
+	// Create a vector and reserve space for the character.
+	std::vector<unsigned char> result;
+	result.reserve(lenght);
+
+	for(size_t i = 0; i < lenght; i++)
+	{
+		result.emplace_back(static_cast<unsigned char>(command_data[i]));
+	}
+	return read(result);
 }
 
 std::string Command::createIPv4Address(const std::vector<unsigned char>& characters)
