@@ -1,14 +1,16 @@
-#include "udp_server.hh"
+#include "server.hh"
 
 int main()
 {
     boost::asio::io_context io_context;
 
-    short udpPort = 1999;
+    unsigned short udpPort = 1999;
 
-    UDPServer udpServer(io_context, static_cast<unsigned short>(udpPort));
+    // Initialize both UDP and TCP server.
 
-    io_context.run();
+	//Server udpServer(io_context, udpPort);
+
+	io_context.run();
 
     return 0;
 }

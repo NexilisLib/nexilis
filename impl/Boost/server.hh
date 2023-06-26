@@ -14,10 +14,11 @@ public:
     /// \param io_context io_context.
     /// \param port The port number.
     Server(boost::asio::io_context& io_context, unsigned short port) :
-        m_UDP_socket(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port))
+        m_UDP_socket(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)),
+		m_TCP_socket(m_io_service)
     {
         startAccept();
-        startReceive();
+        startUDPReceive();
 
         m_core.setPrint([](std::string text)
         {
@@ -27,7 +28,7 @@ public:
 
 private:
 
-    void startReceive()
+    void startUDPReceive()
     {
         m_UDP_socket.async_receive_from(
             boost::asio::buffer(m_UDP_buffer), m_remote_endpoint,
@@ -36,20 +37,26 @@ private:
                 if (!ec && bytes_received > 0)
                 {
                     // Process the received UDP data.
-                    nexilis::Command::read(transfromCharPtr(m_UDP_buffer.data(), bytes_received));
+                    nexilis::Command::read(m_UDP_buffer.data(), bytes_received);
 
                     sendMessage(m_remote_endpoint, "nii");
 
                     // Continue receiving UDP data.
-                    startReceive();
+                    startUDPReceive();
                 }
             });
     }
 
-    void startReceive()
+	void startAccept()
+	{
+
+	}
+	
+	/*
+    void startTCPReceive()
     {
-        m_socket.async_receive_from(
-            boost::asio::buffer(m_buffer), m_remote_endpoint,
+        m_TCP_socket.async_receive_from(
+            boost::asio::buffer(m_TCP_buffer), m_remote_endpoint,
             [this](boost::system::error_code ec, std::size_t bytes_received)
             {
                 if (!ec && bytes_received > 0)
@@ -64,7 +71,7 @@ private:
                     // Send TCP handshakeResponse
                     std::string handshakeResponse = "handshake Response";
                     boost::asio::async_write(m_socket, boost::asio::buffer(handshakeResponse),
-                            [this](boost::system::error_code ec, size_t /*bytes_transferred */)
+                            [this](boost::system::error_code ec, size_t )
                             {
                                 if (!ec)
                                 {
@@ -93,19 +100,7 @@ private:
         );
     }
 
-    std::vector<unsigned char> transfromCharPtr(const char* input, size_t lenght)
-    {
-        // Create a vector and reserve space for the character.
-        std::vector<unsigned char> result;
-        result.reserve(lenght);
-
-        for(size_t i = 0; i < lenght; i++)
-        {
-            result.emplace_back(static_cast<unsigned char>(input[i]));
-        }
-
-        return result;
-    }
+	*/
 
     void sendMessage(boost::asio::ip::udp::endpoint remote_endpoint, const std::string& message)
     {
@@ -120,12 +115,14 @@ private:
                                  });
     }
 
+	//boost::asio::io_service& m_io_service;
+
     // TODO Proof of concept, this is going to be changed.
     std::array<char, 1024> m_UDP_buffer;
-
     boost::asio::ip::udp::socket m_UDP_socket;
 
-    //boost::asio::ip_service& m_io_service;
+   	std::array<char, 1024> m_TCP_buffer;
+	boost::asio::ip::tcp::socket m_TCP_socket;
 
 
     boost::asio::ip::udp::endpoint m_remote_endpoint;
