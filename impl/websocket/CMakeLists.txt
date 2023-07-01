@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 3.20)
-project(server)
+project(impl_websocket)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
+add_subdirectory(../../nexilis/ nexilis_dir)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 
-include_directories(websocketpp)
 include_directories(src)
 file(GLOB sources src/*.cc)
-add_executable(server ${sources}) 
+
+add_executable(impl_websocket ${sources}) 
+
+target_link_libraries(impl_websocket nexilis)

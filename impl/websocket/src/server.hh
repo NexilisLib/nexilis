@@ -1,15 +1,34 @@
-#ifndef SERVER_HH
-#define SERVER_HH
+#ifndef IMPL_WEBSOCKET_SERVER_HH
+#define IMPL_WEBSOCKET_SERVER_HH
 
-//#include "../websocketpp/websocketpp/server.hpp
-//
+#include <nexilis/websocket/websocketpp.hh>
 
 class Server
 {
 public:
-	Server(){}
+    Server() :
+        m_websocket(8000)
+    {
+        m_websocket.setMessageHandler([](nexilis::connection, nexilis::message)
+        {
+            std::cout << "message handler" << std::endl;
+        });
+
+        m_websocket.setOpenHandler([](nexilis::connection)
+        {
+            std::cout << "open handler" << std::endl;
+        });
+
+        m_websocket.setCloseHandler([](nexilis::connection)
+        {
+            std::cout << "close handler" << std::endl;
+        });
+
+        m_websocket.start();
+    }
 
 private:
+    nexilis::Websocketpp m_websocket;
 };
 
 #endif

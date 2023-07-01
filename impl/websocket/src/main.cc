@@ -1,8 +1,7 @@
-
+#include "server.hh"
 
 int main()
 {
-
-
-	return 0;
+    Server s;
+    return 0;
 }
