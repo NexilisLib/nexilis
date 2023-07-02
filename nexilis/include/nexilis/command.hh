@@ -30,10 +30,10 @@ public:
     /// \return True if the reading of the command is succesfull.
     static bool read(const std::vector<unsigned char>& command);
 
-	/// Read the command from client.
-	/// \param command_data The data for the command
-	/// \param lenght The command lenght in bytes.
-	static bool read(const char* command_data, size_t lenght);
+    /// Read the command from client.
+    /// \param command_data The data for the command
+    /// \param lenght The command lenght in bytes.
+    static bool read(const char* command_data, size_t lenght);
 
 private:
 

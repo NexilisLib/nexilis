@@ -9,11 +9,6 @@ public:
     Server() :
         m_websocket(8000)
     {
-        m_websocket.setMessageHandler([](nexilis::connection, nexilis::message)
-        {
-            std::cout << "message handler" << std::endl;
-        });
-
         m_websocket.setOpenHandler([](nexilis::connection)
         {
             std::cout << "open handler" << std::endl;

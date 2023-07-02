@@ -1,5 +1,4 @@
 #include "../include/nexilis/command.hh"
-#include "nexilis/command_type.hh"
 
 #include <iostream>
 
