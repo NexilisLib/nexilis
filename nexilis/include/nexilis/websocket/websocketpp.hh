@@ -2,8 +2,10 @@
 #define NEXILIS_WEBSOCKET_WEBSOCKETPP
 
 #include "websocket_macros.hh"
-
 #include "../command.hh"
+#include "../connection_storage.hh"
+
+#include <boost/asio/ip/tcp.hpp>
 
 #include <functional>
 
@@ -30,8 +32,16 @@ public:
             std::cout << "Couldn't start connection because: " << e.what() << std::endl;
         }
 
-        m_websocket.set_message_handler([this](connection, message msg)
+        m_websocket.set_message_handler([this](connection cnn, message msg)
         {
+            auto con = m_websocket.get_con_from_hdl(cnn);
+            auto& socket = con->get_raw_socket();
+            auto& tcp_socket = dynamic_cast<boost::asio::ip::tcp::socket&>(socket);
+            auto remote_endpoint = tcp_socket.remote_endpoint();
+
+            std::string ip_address = remote_endpoint.address().to_string();
+            unsigned short port_number = remote_endpoint.port();
+
             Command::read(convertToNexilisCommand(msg));
         });
 
