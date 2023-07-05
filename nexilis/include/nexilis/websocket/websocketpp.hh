@@ -32,7 +32,7 @@ public:
             std::cout << "Couldn't start connection because: " << e.what() << std::endl;
         }
 
-        m_websocket.set_message_handler([this](connection cnn, message msg)
+        m_websocket.set_message_handler([this](wpp_connection cnn, wpp_message msg)
         {
             auto con = m_websocket.get_con_from_hdl(cnn);
             auto& socket = con->get_raw_socket();
@@ -42,17 +42,29 @@ public:
             std::string ip_address = remote_endpoint.address().to_string();
             unsigned short port_number = remote_endpoint.port();
 
+            for (auto connection : connections)
+            {
+                // Message from previously known client.
+                if (connection.getIPAddress() == ip_address && connection.getPortNumber() == port_number)
+                {
+                    Command::read(convertToNexilisCommand(msg));
+                    return;
+                }
+            }
+
+            // This is the very first message from the client, we add the client to connections.
+            connections.emplace_back(Connection(ip_address, port_number));
             Command::read(convertToNexilisCommand(msg));
         });
 
    }
 
-    void setOpenHandler(const std::function<void(connection)>& openHandler)
+    void setOpenHandler(const std::function<void(wpp_connection)>& openHandler)
     {
         m_websocket.set_open_handler(openHandler);
     }
 
-    void setCloseHandler(const std::function<void(connection)>& closeHandler)
+    void setCloseHandler(const std::function<void(wpp_connection)>& closeHandler)
     {
         m_websocket.set_close_handler(closeHandler);
     }
@@ -69,7 +81,7 @@ public:
 
 private:
 
-    std::vector<unsigned char> convertToNexilisCommand(const message& msg)
+    std::vector<unsigned char> convertToNexilisCommand(const wpp_message& msg)
     {
         std::vector<unsigned char> result;
 
@@ -86,7 +98,7 @@ private:
 
     short m_port;
 
-    websocket m_websocket;
+    wpp_websocket m_websocket;
 };
 
 }

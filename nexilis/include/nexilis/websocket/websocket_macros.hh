@@ -10,10 +10,10 @@
 namespace nexilis
 {
 
-using websocket = websocketpp::server<websocketpp::config::asio>;
-using connection = websocketpp::connection_hdl;
-using message = websocket::message_ptr;
-using connectionList = std::map<connection, Connection, std::owner_less<connection>>;
+using wpp_websocket = websocketpp::server<websocketpp::config::asio>;
+using wpp_connection = websocketpp::connection_hdl;
+using wpp_message = wpp_websocket::message_ptr;
+using wpp_connectionList = std::map<wpp_connection, Connection, std::owner_less<wpp_connection>>;
 
 }
 
