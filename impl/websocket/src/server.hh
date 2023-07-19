@@ -9,12 +9,12 @@ public:
     Server() :
         m_websocket(8000)
     {
-        m_websocket.setOpenHandler([](nexilis::connection)
+        m_websocket.setOpenHandler([](nexilis::wpp_connection)
         {
             std::cout << "open handler" << std::endl;
         });
 
-        m_websocket.setCloseHandler([](nexilis::connection)
+        m_websocket.setCloseHandler([](nexilis::wpp_connection)
         {
             std::cout << "close handler" << std::endl;
         });

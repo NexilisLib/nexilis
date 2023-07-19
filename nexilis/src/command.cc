@@ -63,15 +63,15 @@ bool Command::read(const std::vector<unsigned char>& command)
 
 bool Command::read(const char* command_data, size_t lenght)
 {
-	// Create a vector and reserve space for the character.
-	std::vector<unsigned char> result;
-	result.reserve(lenght);
+    // Create a vector and reserve space for the character.
+    std::vector<unsigned char> result;
+    result.reserve(lenght);
 
-	for(size_t i = 0; i < lenght; i++)
-	{
-		result.emplace_back(static_cast<unsigned char>(command_data[i]));
-	}
-	return read(result);
+    for(size_t i = 0; i < lenght; i++)
+    {
+        result.emplace_back(static_cast<unsigned char>(command_data[i]));
+    }
+    return read(result);
 }
 
 std::string Command::createIPv4Address(const std::vector<unsigned char>& characters)

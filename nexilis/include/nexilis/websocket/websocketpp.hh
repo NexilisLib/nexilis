@@ -95,7 +95,6 @@ private:
         return result;
     }
 
-
     short m_port;
 
     wpp_websocket m_websocket;
