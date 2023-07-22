@@ -47,14 +47,14 @@ public:
                 // Message from previously known client.
                 if (connection.getIPAddress() == ip_address && connection.getPortNumber() == port_number)
                 {
-                    Command::read(convertToNexilisCommand(msg));
+                    Command::read(convertToNexilisCommand(msg), connection);
                     return;
                 }
             }
 
             // This is the very first message from the client, we add the client to connections.
-            connections.emplace_back(Connection(ip_address, port_number));
-            Command::read(convertToNexilisCommand(msg));
+            connections.emplace_back(Connection(&m_websocket, ip_address, port_number));
+            Command::read(convertToNexilisCommand(msg), connections.back());
         });
 
    }

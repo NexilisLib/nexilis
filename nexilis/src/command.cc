@@ -1,4 +1,5 @@
 #include "../include/nexilis/command.hh"
+#include "../include/nexilis/dispatcher.hh"
 
 #include <iostream>
 
@@ -7,7 +8,7 @@ namespace nexilis
 
 std::vector<unsigned char> Command::create(unsigned char mainCommand, unsigned char subCommand)
 {
-	return create(static_cast<MainCommand>(mainCommand), static_cast<SubCommand>(subCommand));
+    return create(static_cast<MainCommand>(mainCommand), static_cast<SubCommand>(subCommand));
 }
 
 std::vector<unsigned char> Command::create(MainCommand maincommand, SubCommand subCommand)
@@ -26,8 +27,7 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, SubCommand s
     }
 }
 
-
-bool Command::read(const std::vector<unsigned char>& command)
+bool Command::read(const std::vector<unsigned char>& command, const Connection& connection)
 {
     switch(static_cast<MainCommand>(command.front()))
     {
@@ -51,6 +51,7 @@ bool Command::read(const std::vector<unsigned char>& command)
                 }
             }
             std::cout << "Server pinged!" << std::endl;
+            Dispatcher::sendMessage(wpp_websocket, connection, "Hey from server!");
             return true;
         }
         case MainCommand::info:
@@ -61,7 +62,7 @@ bool Command::read(const std::vector<unsigned char>& command)
     return false;
 }
 
-bool Command::read(const char* command_data, size_t lenght)
+bool Command::read(const char* command_data, size_t lenght, const Connection& connection)
 {
     // Create a vector and reserve space for the character.
     std::vector<unsigned char> result;
@@ -71,7 +72,7 @@ bool Command::read(const char* command_data, size_t lenght)
     {
         result.emplace_back(static_cast<unsigned char>(command_data[i]));
     }
-    return read(result);
+    return read(result, connection);
 }
 
 std::string Command::createIPv4Address(const std::vector<unsigned char>& characters)
