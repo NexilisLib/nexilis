@@ -1,5 +1,5 @@
-#ifndef NEXILIS_WEBSOCKET_WEBSOCKETPP
-#define NEXILIS_WEBSOCKET_WEBSOCKETPP
+#ifndef NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
+#define NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
 
 #include "websocket_macros.hh"
 #include "../command.hh"
@@ -53,7 +53,7 @@ public:
             }
 
             // This is the very first message from the client, we add the client to connections.
-            connections.emplace_back(Connection(&m_websocket, ip_address, port_number));
+            connections.emplace_back(Connection(m_websocket, cnn, ip_address, port_number));
             Command::read(convertToNexilisCommand(msg), connections.back());
         });
 

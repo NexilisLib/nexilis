@@ -51,7 +51,7 @@ bool Command::read(const std::vector<unsigned char>& command, const Connection& 
                 }
             }
             std::cout << "Server pinged!" << std::endl;
-            Dispatcher::sendMessage(wpp_websocket, connection, "Hey from server!");
+            Dispatcher::sendMessage(connection, "Hey from server!");
             return true;
         }
         case MainCommand::info:
