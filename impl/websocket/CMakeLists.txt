@@ -3,16 +3,18 @@ project(impl_websocket)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(../../nexilis/ nexilis_dir)
 
 add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 
+add_subdirectory(../../external/websocketpp-build/)
+
 include_directories(src)
 file(GLOB sources src/*.cc)
 
 add_executable(impl_websocket ${sources}) 
 
-target_link_libraries(impl_websocket nexilis)
+target_link_libraries(impl_websocket nexilis PRIVATE websocketpp)

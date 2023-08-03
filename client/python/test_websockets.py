@@ -15,6 +15,13 @@ async def connect_to_server(server_url):
             message = bytearray([0x10])  # Create a message with a single byte value of 0x10
             await websocket.send(message)  # Send the message to the server
             print("Message sent successfully!")
+
+            # Wait for incoming messages from the server
+            while True:
+                message = await websocket.recv()
+                print("Received message from server:", message.hex())
+                # You can process the received message here, if needed.
+
     except:
         print(res + " is not up!")
 
@@ -23,3 +30,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
