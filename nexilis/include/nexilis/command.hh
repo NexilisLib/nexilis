@@ -18,7 +18,7 @@ public:
     /// \param mainCommand The main command given to the server.
     /// \param subCommand The subCommand aka the value, or parameter given for the mainCommand.
     /// \return std::vector<unsigned char> The vector of bytes in the created command.
-    static std::vector<unsigned char> create(MainCommand mainCommand, SubCommand subCommand = SubCommand::option1);
+    static std::vector<unsigned char> create(MainCommand mainCommand, unsigned char subCommand = 0x10);
 
     /// Same function as before but we use the underlying type.
     /// \param mainCommand The main command given to the server.
@@ -29,12 +29,12 @@ public:
     /// Read the command from client.
     /// \param The vector of bytes that is the command.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const std::vector<unsigned char>& command, const Connection& connection);
+    static bool read(const std::vector<unsigned char>& command, Connection& connection);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
-    static bool read(const char* command_data, size_t lenght, const Connection& connection);
+    static bool read(const char* command_data, size_t lenght, Connection& connection);
 
 private:
 
@@ -42,11 +42,6 @@ private:
     /// \param address The address data.
     /// \return string Created IPV4 string.
     std::string createIPv4Address(const std::vector<unsigned char>& address);
-
-private:
-
-    MainCommand m_mainCommand;
-    SubCommand m_subCommand;
 };
 
 }

@@ -42,7 +42,7 @@ public:
             std::string ip_address = remote_endpoint.address().to_string();
             unsigned short port_number = remote_endpoint.port();
 
-            for (auto connection : connections)
+            for (auto& connection : connections)
             {
                 // Message from previously known client.
                 if (connection.getIPAddress() == ip_address && connection.getPortNumber() == port_number)
@@ -53,7 +53,7 @@ public:
             }
 
             // This is the very first message from the client, we add the client to connections.
-            connections.emplace_back(Connection(m_websocket, cnn, ip_address, port_number));
+            connections.emplace_back(m_websocket, cnn, ip_address, port_number);
             Command::read(convertToNexilisCommand(msg), connections.back());
         });
 

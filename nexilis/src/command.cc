@@ -8,10 +8,10 @@ namespace nexilis
 
 std::vector<unsigned char> Command::create(unsigned char mainCommand, unsigned char subCommand)
 {
-    return create(static_cast<MainCommand>(mainCommand), static_cast<SubCommand>(subCommand));
+    return create(static_cast<MainCommand>(mainCommand), subCommand);
 }
 
-std::vector<unsigned char> Command::create(MainCommand maincommand, SubCommand subCommand)
+std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned char subCommand)
 {
     switch(maincommand)
     {
@@ -24,45 +24,52 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, SubCommand s
         }
         case MainCommand::setup: return std::vector<unsigned char> {};
         case MainCommand::update: return std::vector<unsigned char> {};
+        default:
+        {
+            std::cout << "something went wrong" << std::endl;
+            unsigned char firstByte = static_cast<unsigned char>(maincommand);
+            std::cout << "first byte: " << firstByte << std::endl;
+            std::cout << "second byte: " << subCommand << std::endl;
+        }
     }
+
+    return std::vector<unsigned char> {};
 }
 
-bool Command::read(const std::vector<unsigned char>& command, const Connection& connection)
+bool Command::read(const std::vector<unsigned char>& command, Connection& connection)
 {
     switch(static_cast<MainCommand>(command.front()))
     {
         case MainCommand::ping:
         {
-            switch(static_cast<SubCommand>(command.front() + 1))
-            {
-                case SubCommand::option1:
-                {
-                    break;
-                }
-
-                case SubCommand::option2:
-                {
-                    break;
-                }
-
-                case SubCommand::option3:
-                {
-                    break;
-                }
-            }
-            std::cout << "Server pinged!" << std::endl;
-            Dispatcher::sendMessage(connection, "Hey from server!");
+            std::cout << "ping called" << std::endl;
+            //Dispatcher::sendWebsocketMessage(connection, "Hey from server!");
+            Dispatcher::sendUDPMessage(connection, "hey from udp");
             return true;
         }
         case MainCommand::info:
         {
+            switch(command[1])
+            {
+                // Option for general info.
+                case 0x10:
+                {
+                    break;
+                }
+
+                // Option for help.
+                case 0x20:
+                {
+                    break;
+                }
+            }
             break;
         }
     }
     return false;
 }
 
-bool Command::read(const char* command_data, size_t lenght, const Connection& connection)
+bool Command::read(const char* command_data, size_t lenght, Connection& connection)
 {
     // Create a vector and reserve space for the character.
     std::vector<unsigned char> result;
