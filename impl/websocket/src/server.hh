@@ -8,7 +8,7 @@ class Server
 {
 public:
     Server() :
-        m_websocket(8000),
+        m_websocket(),
         m_core("exampleServer")
     {
         m_websocket.setOpenHandler([](nexilis::wpp_connection)

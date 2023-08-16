@@ -1,6 +1,7 @@
 #ifndef NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
 #define NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
 
+#include "nexilis/ports.hh"
 #include "websocket_macros.hh"
 #include "../command.hh"
 #include "../connection_storage.hh"
@@ -17,8 +18,7 @@ class Websocketpp
 public:
     /// Constructor.
     /// \param port Port for the websocket connection.
-    Websocketpp(short port) :
-        m_port(port)
+    Websocketpp()
     {
         try
         {
@@ -45,7 +45,8 @@ public:
             for (auto& connection : connections)
             {
                 // Message from previously known client.
-                if (connection.getIPAddress() == ip_address && connection.getPortNumber() == port_number)
+                // TODO
+                if (connection.getIPAddress() == ip_address)
                 {
                     Command::read(convertToNexilisCommand(msg), connection);
                     return;
@@ -53,7 +54,7 @@ public:
             }
 
             // This is the very first message from the client, we add the client to connections.
-            connections.emplace_back(m_websocket, cnn, ip_address, port_number);
+            connections.emplace_back(m_websocket, cnn, ip_address);
             Command::read(convertToNexilisCommand(msg), connections.back());
         });
 
@@ -73,7 +74,7 @@ public:
     void start()
     {
         m_websocket.set_reuse_addr(true);
-        m_websocket.listen(m_port);
+        m_websocket.listen(static_cast<short>(Port::Websocket));
         m_websocket.start_accept();
 
         m_websocket.run();
@@ -94,8 +95,6 @@ private:
 
         return result;
     }
-
-    short m_port;
 
     wpp_websocket m_websocket;
 };

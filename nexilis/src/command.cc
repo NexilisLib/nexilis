@@ -43,8 +43,8 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
         case MainCommand::ping:
         {
             std::cout << "ping called" << std::endl;
-            //Dispatcher::sendWebsocketMessage(connection, "Hey from server!");
-            Dispatcher::sendUDPMessage(connection, "hey from udp");
+            Dispatcher::sendWebsocketMessage(connection, "Hey from server!");
+            //Dispatcher::sendUDPMessage(connection, "hey from udp");
             return true;
         }
         case MainCommand::info:

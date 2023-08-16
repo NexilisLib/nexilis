@@ -3,6 +3,7 @@
 
 #include "connection.hh"
 #include "udp/udp_sender.hh"
+#include "ports.hh"
 
 namespace nexilis
 {
@@ -19,7 +20,7 @@ public:
     // self
     static void sendUDPMessage(Connection& connection, const std::string& message)
     {
-        UDPSender sender(connection.getIPAddress(), connection.getPortNumber());
+        UDPSender sender(connection.getIPAddress(), static_cast<unsigned short>(Port::UDP));
         sender.sendMessage(message);
     }
 };
