@@ -8,7 +8,9 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
+#include <cctype>
 #include <functional>
+#include <algorithm>
 
 namespace nexilis
 {
@@ -39,13 +41,22 @@ public:
             auto& tcp_socket = dynamic_cast<boost::asio::ip::tcp::socket&>(socket);
             auto remote_endpoint = tcp_socket.remote_endpoint();
 
+            // Get ip address.
             std::string ip_address = remote_endpoint.address().to_string();
-            unsigned short port_number = remote_endpoint.port();
+
+            // Convert the address to lowercase to for case-insensitive comparison.
+            std::transform(ip_address.begin(), ip_address.end(), ip_address.begin(), ::tolower);
+
+            // Check if the address is an IPv6-mapped Ipv4 address
+            if (ip_address.compare(0, 7, "::ffff:") == 0)
+            {
+                // Remove previous prefix.
+                ip_address = ip_address.substr(7);
+            }
 
             for (auto& connection : connections)
             {
                 // Message from previously known client.
-                // TODO
                 if (connection.getIPAddress() == ip_address)
                 {
                     Command::read(convertToNexilisCommand(msg), connection);

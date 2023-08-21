@@ -20,7 +20,7 @@ public:
     // self
     static void sendUDPMessage(Connection& connection, const std::string& message)
     {
-        UDPSender sender(connection.getIPAddress(), static_cast<unsigned short>(Port::UDP));
+        UDPSender sender(connection.getIPAddress().c_str(), static_cast<int>(Port::UDP));
         sender.sendMessage(message);
     }
 };

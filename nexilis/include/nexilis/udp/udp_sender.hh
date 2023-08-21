@@ -6,6 +6,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 namespace nexilis
 {
@@ -13,7 +14,7 @@ namespace nexilis
 class UDPSender
 {
 public:
-    UDPSender(const std::string& destinationIP, unsigned short destinationPort) :
+    UDPSender(const char* destinationIP, int destinationPort) :
         m_destinationIP(destinationIP),
         m_destinationPort(destinationPort)
     {
@@ -24,29 +25,36 @@ public:
             std::cerr << "Error creating socket" << std::endl;
         }
 
-        // Set up the server address structure
-        std::memset(&m_serverAddress, 0, sizeof(m_serverAddress));
-        m_serverAddress.sin_family = AF_INET;
-        m_serverAddress.sin_port = htons(m_destinationPort);
-        inet_pton(AF_INET, m_destinationIP.c_str(), &m_serverAddress.sin_addr);
+        m_destinationAddress.sin_family = AF_INET;
+        m_destinationAddress.sin_port = htons(m_destinationPort);
+        m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
     }
 
     ~UDPSender()
     {
-        //close(m_socket);
+        close(m_socket);
     }
 
     void sendMessage(const std::string& message)
     {
-        sendto(m_socket, message.c_str(), message.size(), 0,
-               reinterpret_cast<struct sockaddr*>(&m_serverAddress), sizeof(m_serverAddress));
+        ssize_t bytes_sent = sendto(m_socket, message.c_str(), message.size(), 0,
+                (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
+
+        if (bytes_sent == -1)
+        {
+            std::cerr << "Error sending message" << std::endl;
+            close(m_socket);
+        }
     }
 
 private:
+
     int m_socket;
-    std::string m_destinationIP;
-    unsigned short m_destinationPort;
-    struct sockaddr_in m_serverAddress;
+
+    const char* m_destinationIP;
+    int m_destinationPort;
+
+    sockaddr_in m_destinationAddress;
 };
 
 }
