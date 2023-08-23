@@ -5,7 +5,6 @@
 
 static const short PORT = 1999;
 
-
 struct Client
 {
     boost::asio::io_service& m_io_service;
@@ -26,7 +25,7 @@ struct Client
 };
 
 
-void client_thread() 
+void client_thread()
 {
     boost::asio::io_service svc;
     Client client(svc, "127.0.0.1", std::to_string(PORT));

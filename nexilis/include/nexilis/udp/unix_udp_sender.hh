@@ -7,7 +7,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-
 #include <cstdint>
 #include <iostream>
 #include <string>
@@ -17,10 +16,10 @@
 namespace nexilis
 {
 
-class UDPSender
+class UnixUDPSender
 {
 public:
-    UDPSender(const char* destinationIP) :
+    UnixUDPSender(const char* destinationIP) :
         m_destinationIP(destinationIP)
     {
         // Create a UDP socket
@@ -36,7 +35,7 @@ public:
         m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
     }
 
-    ~UDPSender()
+    ~UnixUDPSender()
     {
         close(m_socket);
     }

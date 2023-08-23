@@ -12,16 +12,6 @@ public:
     {
     }
 
-    void startAccept()
-    {
-
-    }
-
-    void sendMessage()
-    {
-
-    }
-
     void start()
     {
         m_io_context.run();
