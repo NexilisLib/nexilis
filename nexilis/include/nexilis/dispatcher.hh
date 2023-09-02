@@ -2,7 +2,7 @@
 #define NEXILIS_WEBSOCKET_DISPATCHER_HH
 
 #include "connection.hh"
-#include "udp/udp_sender.hh"
+#include "udp/unix_udp_sender.hh"
 #include "ports.hh"
 
 namespace nexilis

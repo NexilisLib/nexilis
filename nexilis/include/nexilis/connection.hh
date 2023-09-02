@@ -19,7 +19,7 @@ public:
     {
     }
 
-    /// Copy constructor.
+    /// Move constructor.
     Connection(Connection&& other) noexcept :
         m_websocket(other.m_websocket),
         m_connection(other.m_connection),

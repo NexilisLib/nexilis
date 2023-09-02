@@ -1,10 +1,9 @@
 #ifndef NEXILIS_WEBSOCKET_WEBSOCKET_MACROS_HH
 #define NEXILIS_WEBSOCKET_WEBSOCKET_MACROS_HH
 
-#include <websocketpp/common/connection_hdl.hpp>
-#include <websocketpp/roles/server_endpoint.hpp>
-#include <websocketpp/config/asio_no_tls.hpp>
-
+#include "../../../../external/websocketpp/websocketpp/common/connection_hdl.hpp"
+#include "../../../../external/websocketpp/websocketpp/roles/server_endpoint.hpp"
+#include "../../../../external/websocketpp/websocketpp/config/asio_no_tls.hpp"
 
 namespace nexilis
 {
