@@ -5,6 +5,8 @@
 
 #include <boost/asio.hpp>
 
+#include <boost/asio/ip/address.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <string>
 
 namespace nexilis
@@ -13,12 +15,21 @@ namespace nexilis
 class BoostUDPSender
 {
 public:
-    BoostUDPSender(const std::string& ip_address)
+    BoostUDPSender(boost::asio::io_context& io_context, const std::string& ip) :
+        m_target_endpoint(boost::asio::ip::address::from_string(ip), static_cast<unsigned short>(Port::UDP)),
+        m_socket(io_context)
     {
+        m_socket.open(boost::asio::ip::udp::v4());
+    }
 
+    void sendMessage(const std::string& message)
+    {
+        m_socket.send_to(boost::asio::buffer(message), m_target_endpoint);
     }
 
 private:
+    boost::asio::ip::udp::endpoint m_target_endpoint;
+    boost::asio::ip::udp::socket m_socket;
 
 };
 

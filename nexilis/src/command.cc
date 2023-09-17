@@ -58,6 +58,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
                 {
                     Dispatcher::sendWebsocketMessage(connection, "Hello from websockets!");
                     Dispatcher::sendUDPMessage(connection, "hey from UDP");
+                    Dispatcher::sendBoostUDPMessage(connection, "hey from Boost");
                     return true;
                 }
             }

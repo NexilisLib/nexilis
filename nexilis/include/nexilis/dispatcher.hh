@@ -3,7 +3,9 @@
 
 #include "connection.hh"
 #include "udp/unix_udp_sender.hh"
+#include "udp/boost_udp_sender.hh"
 #include "ports.hh"
+#include <boost/asio/io_context.hpp>
 
 namespace nexilis
 {
@@ -30,6 +32,15 @@ public:
         UnixUDPSender sender(ip_address);
         sender.sendMessage(message);
     }
+
+    static void sendBoostUDPMessage(Connection& connection, const std::string& message)
+    {
+        boost::asio::io_context io_context;
+        BoostUDPSender sender(io_context, connection.getIPAddress());
+        sender.sendMessage(message);
+        io_context.run();
+    }
+
 };
 
 }
