@@ -10,7 +10,7 @@ add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pt
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
-set(SOURCES src/command.cc src/vector3.cc)
+set(SOURCES src/command.cc src/vector3.cc src/udp/boost_io_context.cc)
 
 add_library(nexilis ${SOURCES})
 

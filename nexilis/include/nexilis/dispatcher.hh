@@ -1,11 +1,12 @@
-#ifndef NEXILIS_WEBSOCKET_DISPATCHER_HH
-#define NEXILIS_WEBSOCKET_DISPATCHER_HH
+#ifndef NEXILIS_DISPATCHER_HH
+#define NEXILIS_DISPATCHER_HH
 
 #include "connection.hh"
 #include "udp/unix_udp_sender.hh"
 #include "udp/boost_udp_sender.hh"
+#include "udp/boost_io_context.hh"
+
 #include "ports.hh"
-#include <boost/asio/io_context.hpp>
 
 namespace nexilis
 {
@@ -35,12 +36,10 @@ public:
 
     static void sendBoostUDPMessage(Connection& connection, const std::string& message)
     {
-        boost::asio::io_context io_context;
-        BoostUDPSender sender(io_context, connection.getIPAddress());
+        BoostUDPSender sender(boost_io_context::getIOContext(), connection.getIPAddress());
+        boost_io_context::start();
         sender.sendMessage(message);
-        io_context.run();
     }
-
 };
 
 }

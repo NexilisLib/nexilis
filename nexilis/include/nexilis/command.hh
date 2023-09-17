@@ -3,6 +3,7 @@
 
 #include "command_type.hh"
 #include "connection.hh"
+#include "udp/boost_io_context.hh"
 
 #include <vector>
 #include <cstddef>
@@ -42,6 +43,7 @@ private:
     /// \param address The address data.
     /// \return string Created IPV4 string.
     std::string createIPv4Address(const std::vector<unsigned char>& address);
+
 };
 
 }
