@@ -3,9 +3,11 @@
 
 #include "../ports.hh"
 
+#ifdef __linux__
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#endif
 
 #include <cstdint>
 #include <iostream>
@@ -30,7 +32,6 @@ public:
         }
 
         m_destinationAddress.sin_family = AF_INET;
-
         m_destinationAddress.sin_port = htons(static_cast<uint16_t>(Port::UDP));
         m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
     }
@@ -42,6 +43,8 @@ public:
 
     void sendMessage(const std::string& message)
     {
+        std::cout << m_destinationAddress.sin_port << std::endl;
+
         ssize_t bytes_sent = sendto(m_socket, message.c_str(), message.size(), 0,
                 (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
 
@@ -55,7 +58,6 @@ public:
 private:
 
     int m_socket;
-
     const char* m_destinationIP;
     sockaddr_in m_destinationAddress;
 };

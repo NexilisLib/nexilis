@@ -13,7 +13,7 @@ std::vector<unsigned char> Command::create(unsigned char mainCommand, unsigned c
 
 std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned char subCommand)
 {
-    switch(maincommand)
+    switch (maincommand)
     {
         case MainCommand::ping:
         {
@@ -38,7 +38,7 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned cha
 
 bool Command::read(const std::vector<unsigned char>& command, Connection& connection)
 {
-    switch(static_cast<MainCommand>(command.front()))
+    switch (static_cast<MainCommand>(command.front()))
     {
         case MainCommand::ping:
         {
@@ -46,7 +46,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
             {
                 case 0x10:
                 {
-                    Dispatcher::sendUDPMessage("192.168.1.17", "hey from ip");
+                    //Dispatcher::sendUDPMessage("192.168.1.17", "hey from ip");
                     return true;
                 }
 
@@ -56,9 +56,12 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
 
                 default:
                 {
+                    /*
+                     * Some premade driver code.
                     Dispatcher::sendWebsocketMessage(connection, "Hello from websockets!");
                     Dispatcher::sendUDPMessage(connection, "hey from UDP");
                     Dispatcher::sendBoostUDPMessage(connection, "hey from Boost");
+                    */
                     return true;
                 }
             }
