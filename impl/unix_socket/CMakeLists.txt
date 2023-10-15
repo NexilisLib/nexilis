@@ -14,4 +14,5 @@ include_directories(src)
 file(GLOB sources src/*.cc)
 
 add_executable(impl_unix_socket ${sources})
+
 target_link_libraries(impl_unix_socket nexilis)
