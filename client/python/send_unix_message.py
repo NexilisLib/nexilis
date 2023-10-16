@@ -1,6 +1,6 @@
 import socket;
 
-def send_udp_message(message, server_socket_path):
+def send_unix_message(message, server_socket_path):
     # Create UDP socket.
     udp_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
@@ -17,4 +17,4 @@ if __name__ == "__main__":
     server_socket_path = '/tmp/nexilis'
     message = "hello nih"
 
-    send_udp_message(message, server_socket_path)
+    send_unix_message(message, server_socket_path)

@@ -2,9 +2,9 @@
 #define NEXILIS_DISPATCHER_HH
 
 #include "connection.hh"
-#include "udp/unix_udp_sender.hh"
-#include "udp/boost_udp_sender.hh"
-#include "udp/boost_io_context.hh"
+#include "af_inet/unix_udp_sender.hh"
+#include "boost/boost_udp_sender.hh"
+#include "boost/boost_io_context.hh"
 
 #include "ports.hh"
 

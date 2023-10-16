@@ -1,7 +1,7 @@
 #ifndef IMPL_UNIX_SOCKET_SERVER_HH
 #define IMPL_UNIX_SOCKET_SERVER_HH
 
-#include <nexilis/udp/unix_udp_server.hh>
+#include <nexilis/protocol_manager.hh>
 
 #include <thread>
 
@@ -10,7 +10,9 @@ class Server
 public:
     Server()
     {
-        nexilis::UnixUDPServer server;
+        nexilis::ProtocolManager manager;
+
+        auto server = manager.addConnection<nexilis::UnixUDPServer>();
 
         std::thread serverThread([&server]()
         {
