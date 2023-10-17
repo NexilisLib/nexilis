@@ -1,5 +1,5 @@
-#ifndef NEXILIX_HEADER_HH
-#define NEXILIX_HEADER_HH
+#ifndef NEXILIS_COMMAND_HH
+#define NEXILIS_COMMAND_HH
 
 #include <nexilis/command_type.hh>
 #include <nexilis/connection.hh>

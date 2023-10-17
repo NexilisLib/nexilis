@@ -13,6 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 set(SOURCES
     src/command.cc
     src/vector3.cc
+    src/connection_storage.cc
     src/boost/boost_io_context.cc
     src/af_unix/unix_udp_server.cc)
 

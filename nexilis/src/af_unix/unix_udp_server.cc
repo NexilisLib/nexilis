@@ -1,4 +1,5 @@
 #include <nexilis/af_unix/unix_socket_server.hh>
+#include <nexilis/connection_storage.hh>
 
 #include <arpa/inet.h>
 #include <sys/un.h>
@@ -40,6 +41,14 @@ void UnixSocketServer::receiveMessage()
 
     if (bytesRead > 0)
     {
+        // Create a connection
+        Connection connection(inet_ntoa(clientAddress.sin_addr));
+
+        if (!ConnectionStorage::contains(connection))
+        {
+            ConnectionStorage::add(std::move(connection));
+        }
+
         std::cout << "Received message from " << inet_ntoa(clientAddress.sin_addr) << ": " << m_buffer << std::endl;
     }
 }
@@ -75,7 +84,7 @@ void UnixSocketServer::signalHandler(int signum)
         // Delete the file before exiting
         if (std::remove(path.c_str()) == 0)
         {
-            std::cout << "File deleted successfully:" << "/tmp/nexilis" << std::endl;
+            std::cout << "File deleted successfully:" << path << std::endl;
         }
         else
         {

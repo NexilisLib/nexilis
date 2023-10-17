@@ -27,7 +27,7 @@ public:
     };
 
     template <typename Protocol, typename... Args>
-    Protocol addConnection(Args&&... args)
+    Protocol addProtocol(Args&&... args)
     {
         Type type;
         if constexpr (std::is_same<Protocol, UnixSocketServer>::value)

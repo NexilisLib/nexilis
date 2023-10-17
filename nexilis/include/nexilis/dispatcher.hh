@@ -11,12 +11,6 @@ namespace nexilis
 class Dispatcher
 {
 public:
-    /// Sends websocket message to a connection.
-    static void sendWebsocketMessage(const Connection& connection, const std::string& message)
-    {
-        connection.getWppServer().send(connection.getWppConnection(), message, websocketpp::frame::opcode::text);
-    }
-
     /// Sends UDP message to a connection.
     static void sendUDPMessage(Connection& connection, const std::string& message)
     {
