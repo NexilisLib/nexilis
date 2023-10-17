@@ -10,11 +10,11 @@ namespace nexilis
 {
 
 /// The file path we are reading messages from.
-static std::string filepath;
+static std::string path;
 
-UnixSocketServer::UnixSocketServer(const std::string& file)
+UnixSocketServer::UnixSocketServer(const std::string& socketPath)
 {
-    filepath = file;
+    path = socketPath;
     m_bufferSize = 1024;
     m_buffer = new char[m_bufferSize];
     createSocket();
@@ -58,7 +58,7 @@ void UnixSocketServer::bindSocket()
     struct sockaddr_un serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sun_family = AF_UNIX;
-    strncpy(serverAddr.sun_path, filepath.c_str(), sizeof(serverAddr.sun_path) - 1);
+    strncpy(serverAddr.sun_path, path.c_str(), sizeof(serverAddr.sun_path) - 1);
 
     if (bind(m_serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
     {
@@ -68,13 +68,12 @@ void UnixSocketServer::bindSocket()
     }
 }
 
-
 void UnixSocketServer::signalHandler(int signum)
 {
     if (signum == SIGINT)
     {
         // Delete the file before exiting
-        if (std::remove(filepath.c_str()) == 0)
+        if (std::remove(path.c_str()) == 0)
         {
             std::cout << "File deleted successfully:" << "/tmp/nexilis" << std::endl;
         }

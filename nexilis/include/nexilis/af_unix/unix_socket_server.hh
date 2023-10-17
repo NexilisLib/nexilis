@@ -10,7 +10,7 @@ class UnixSocketServer
 {
 public:
     /// Constructor.
-    UnixSocketServer(const std::string& file);
+    UnixSocketServer(const std::string& socketPath);
 
     /// Destructor.
     ~UnixSocketServer();
