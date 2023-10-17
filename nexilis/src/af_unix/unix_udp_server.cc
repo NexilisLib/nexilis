@@ -1,9 +1,9 @@
-#include <nexilis/af_unix/unix_udp_server.hh>
+#include <nexilis/af_unix/unix_socket_server.hh>
 
 namespace nexilis
 {
 
-UnixUDPServer::UnixUDPServer()
+UnixSocketServer::UnixSocketServer()
 {
     m_bufferSize = 1024;
     m_buffer = new char[m_bufferSize];
@@ -14,14 +14,14 @@ UnixUDPServer::UnixUDPServer()
 }
 
 /// Destructor.
-UnixUDPServer::~UnixUDPServer()
+UnixSocketServer::~UnixSocketServer()
 {
     close(m_serverSocket);
     delete[] m_buffer;
 }
 
 // Receive messages from /tmp/nexilis.
-void UnixUDPServer::receiveMessage()
+void UnixSocketServer::receiveMessage()
 {
     struct sockaddr_in clientAddress;
     socklen_t clientAddressLen = sizeof(clientAddress);
@@ -34,7 +34,7 @@ void UnixUDPServer::receiveMessage()
     }
 }
 
-void UnixUDPServer::createSocket()
+void UnixSocketServer::createSocket()
 {
     m_serverSocket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_serverSocket == -1)
@@ -43,7 +43,7 @@ void UnixUDPServer::createSocket()
     }
 }
 
-void UnixUDPServer::bindSocket()
+void UnixSocketServer::bindSocket()
 {
     struct sockaddr_un serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -59,7 +59,7 @@ void UnixUDPServer::bindSocket()
 }
 
 
-void UnixUDPServer::signalHandler(int signum)
+void UnixSocketServer::signalHandler(int signum)
 {
     if (signum == SIGINT)
     {

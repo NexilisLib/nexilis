@@ -18,10 +18,10 @@
 namespace nexilis
 {
 
-class UnixUDPSender
+class UDPSender
 {
 public:
-    UnixUDPSender(const char* destinationIP) :
+    UDPSender(const char* destinationIP) :
         m_destinationIP(destinationIP)
     {
         // Create a UDP socket
@@ -36,7 +36,7 @@ public:
         m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
     }
 
-    ~UnixUDPSender()
+    ~UDPSender()
     {
         close(m_socket);
     }

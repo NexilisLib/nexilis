@@ -1,7 +1,7 @@
 #ifndef NEXILIS_CONNECTION_MANAGER_HH
 #define NEXILIS_CONNECTION_MANAGER_HH
 
-#include <nexilis/af_unix/unix_udp_server.hh>
+#include <nexilis/af_unix/unix_socket_server.hh>
 
 #include <unordered_map>
 
@@ -30,7 +30,7 @@ public:
     Protocol addConnection(Status status = Status::connecting)
     {
         Type type;
-        if constexpr (std::is_same<Protocol, UnixUDPServer>::value)
+        if constexpr (std::is_same<Protocol, UnixSocketServer>::value)
         {
             type = Type::af_unix;
         }

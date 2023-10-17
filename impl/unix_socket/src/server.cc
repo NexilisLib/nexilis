@@ -12,11 +12,11 @@ public:
     {
         nexilis::ProtocolManager manager;
 
-        auto server = manager.addConnection<nexilis::UnixUDPServer>();
+        auto server = manager.addConnection<nexilis::UnixSocketServer>();
 
         std::thread serverThread([&server]()
         {
-            while(true)
+            while (true)
             {
                 server.receiveMessage();
             }

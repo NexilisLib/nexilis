@@ -1,12 +1,9 @@
 #ifndef NEXILIS_DISPATCHER_HH
 #define NEXILIS_DISPATCHER_HH
 
-#include "connection.hh"
-#include "af_inet/unix_udp_sender.hh"
-#include "boost/boost_udp_sender.hh"
-#include "boost/boost_io_context.hh"
-
-#include "ports.hh"
+#include <nexilis/connection.hh>
+#include <nexilis/af_inet/udp_sender.hh>
+#include <nexilis/boost/boost_udp_sender.hh>
 
 namespace nexilis
 {
@@ -23,14 +20,14 @@ public:
     /// Sends UDP message to a connection.
     static void sendUDPMessage(Connection& connection, const std::string& message)
     {
-        UnixUDPSender sender(connection.getIPAddress().c_str());
+        UDPSender sender(connection.getIPAddress().c_str());
         sender.sendMessage(message);
     }
 
     /// Sends UDP message to ip address.
     static void sendUDPMessage(const char* ip_address, const std::string& message)
     {
-        UnixUDPSender sender(ip_address);
+        UDPSender sender(ip_address);
         sender.sendMessage(message);
     }
 

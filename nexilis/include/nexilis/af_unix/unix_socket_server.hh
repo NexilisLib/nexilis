@@ -1,5 +1,5 @@
-#ifndef NEXILIS_UNIX_UDP_SERVER_HH
-#define NEXILIS_UNIX_UDP_SERVER_HH
+#ifndef NEXILIS_UNIX_SOCKET_SERVER_HH
+#define NEXILIS_UNIX_SOCKET_SERVER_HH
 
 #include "../ports.hh"
 
@@ -15,14 +15,14 @@
 namespace nexilis
 {
 
-class UnixUDPServer
+class UnixSocketServer
 {
 public:
     /// Constructor.
-    UnixUDPServer();
+    UnixSocketServer();
 
     /// Destructor.
-    ~UnixUDPServer();
+    ~UnixSocketServer();
 
     // Receive messages from /tmp/nexilis.
     void receiveMessage();

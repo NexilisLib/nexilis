@@ -1,9 +1,9 @@
 #ifndef NEXILIX_HEADER_HH
 #define NEXILIX_HEADER_HH
 
-#include "command_type.hh"
-#include "connection.hh"
-#include "boost/boost_io_context.hh"
+#include <nexilis/command_type.hh>
+#include <nexilis/connection.hh>
+#include <nexilis/boost/boost_io_context.hh>
 
 #include <vector>
 #include <cstddef>
