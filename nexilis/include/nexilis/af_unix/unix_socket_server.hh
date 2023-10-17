@@ -1,16 +1,7 @@
 #ifndef NEXILIS_UNIX_SOCKET_SERVER_HH
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
-#include "../ports.hh"
-
-#include <arpa/inet.h>
-#include <sys/un.h>
-#include <unistd.h>
-
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <csignal>
+#include <string>
 
 namespace nexilis
 {
@@ -19,12 +10,12 @@ class UnixSocketServer
 {
 public:
     /// Constructor.
-    UnixSocketServer();
+    UnixSocketServer(const std::string& file);
 
     /// Destructor.
     ~UnixSocketServer();
 
-    // Receive messages from /tmp/nexilis.
+    // Read messages from the specified path.
     void receiveMessage();
 
 private:
@@ -37,7 +28,6 @@ private:
     void bindSocket();
 
     static void signalHandler(int signum);
-
 };
 
 }

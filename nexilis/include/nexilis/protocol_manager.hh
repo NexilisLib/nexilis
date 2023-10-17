@@ -26,8 +26,8 @@ public:
         connected
     };
 
-    template <typename Protocol>
-    Protocol addConnection(Status status = Status::connecting)
+    template <typename Protocol, typename... Args>
+    Protocol addConnection(Args&&... args)
     {
         Type type;
         if constexpr (std::is_same<Protocol, UnixSocketServer>::value)
@@ -35,9 +35,9 @@ public:
             type = Type::af_unix;
         }
 
-        m_items.insert(std::pair<Type, Status>(type, status));
+        m_items.insert(std::pair<Type, Status>(type, Status::connecting));
 
-        return Protocol();
+        return Protocol(std::forward<Args>(args)...);
     }
 
 private:

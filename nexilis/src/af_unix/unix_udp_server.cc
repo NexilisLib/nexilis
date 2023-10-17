@@ -1,10 +1,20 @@
 #include <nexilis/af_unix/unix_socket_server.hh>
 
+#include <arpa/inet.h>
+#include <sys/un.h>
+
+#include <iostream>
+#include <csignal>
+
 namespace nexilis
 {
 
-UnixSocketServer::UnixSocketServer()
+/// The file path we are reading messages from.
+static std::string filepath;
+
+UnixSocketServer::UnixSocketServer(const std::string& file)
 {
+    filepath = file;
     m_bufferSize = 1024;
     m_buffer = new char[m_bufferSize];
     createSocket();
@@ -20,7 +30,7 @@ UnixSocketServer::~UnixSocketServer()
     delete[] m_buffer;
 }
 
-// Receive messages from /tmp/nexilis.
+// Read messages.
 void UnixSocketServer::receiveMessage()
 {
     struct sockaddr_in clientAddress;
@@ -48,7 +58,7 @@ void UnixSocketServer::bindSocket()
     struct sockaddr_un serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sun_family = AF_UNIX;
-    strncpy(serverAddr.sun_path, "/tmp/nexilis", sizeof(serverAddr.sun_path) - 1);
+    strncpy(serverAddr.sun_path, filepath.c_str(), sizeof(serverAddr.sun_path) - 1);
 
     if (bind(m_serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
     {
@@ -64,7 +74,7 @@ void UnixSocketServer::signalHandler(int signum)
     if (signum == SIGINT)
     {
         // Delete the file before exiting
-        if (std::remove("/tmp/nexilis") == 0)
+        if (std::remove(filepath.c_str()) == 0)
         {
             std::cout << "File deleted successfully:" << "/tmp/nexilis" << std::endl;
         }

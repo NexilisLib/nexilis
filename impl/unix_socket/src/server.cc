@@ -12,7 +12,7 @@ public:
     {
         nexilis::ProtocolManager manager;
 
-        auto server = manager.addConnection<nexilis::UnixSocketServer>();
+        auto server = manager.addConnection<nexilis::UnixSocketServer>("/tmp/nexilis");
 
         std::thread serverThread([&server]()
         {
