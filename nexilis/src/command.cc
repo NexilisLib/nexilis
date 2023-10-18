@@ -85,6 +85,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
             break;
         }
     }
+
     return false;
 }
 

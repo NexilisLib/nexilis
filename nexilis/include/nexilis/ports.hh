@@ -10,6 +10,7 @@ enum class Port
     Websocket = 54201
 };
 
+const char* portToString(Port port);
 
 }
 

@@ -1,5 +1,6 @@
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/af_unix/unix_socket_sender.hh>
+#include <nexilis/af_inet/udp_server.hh>
 
 #include <thread>
 #include <mutex>

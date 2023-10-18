@@ -1,5 +1,6 @@
 #include <nexilis/af_unix/unix_socket_server.hh>
 #include <nexilis/connection_storage.hh>
+#include <nexilis/command.hh>
 
 #include <arpa/inet.h>
 #include <sys/un.h>
@@ -41,15 +42,17 @@ void UnixSocketServer::receiveMessage()
 
     if (bytesRead > 0)
     {
-        // Create a connection
-        Connection connection(inet_ntoa(clientAddress.sin_addr));
+        std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
 
+        // Creating and adding new connections, I don't think this is really necessary but it's fine.
+        Connection connection(address);
         if (!ConnectionStorage::contains(connection))
         {
             ConnectionStorage::add(std::move(connection));
         }
 
-        std::cout << "Received message from " << inet_ntoa(clientAddress.sin_addr) << ": " << m_buffer << std::endl;
+        // Read the message.
+        Command::read(m_buffer, sizeof(m_buffer), connection);
     }
 }
 
