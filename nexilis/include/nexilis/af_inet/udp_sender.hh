@@ -1,19 +1,9 @@
 #ifndef NEXILIS_UDP_SERVER_HH
 #define NEXILIS_UDP_SERVER_HH
 
-#include "../ports.hh"
-
-#ifdef __linux__
 #include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#endif
 
-#include <cstdint>
-#include <iostream>
 #include <string>
-#include <cstring>
-#include <type_traits>
 
 namespace nexilis
 {
@@ -21,39 +11,16 @@ namespace nexilis
 class UDPSender
 {
 public:
-    UDPSender(const char* destinationIP) :
-        m_destinationIP(destinationIP)
-    {
-        // Create a UDP socket
-        m_socket = socket(AF_INET, SOCK_DGRAM, 0);
-        if (m_socket == -1)
-        {
-            std::cerr << "Error creating socket" << std::endl;
-        }
+    /// Constructor.
+    /// \param destinationIP The IP address where the message(s) will be sent.
+    UDPSender(const char* destinationIP);
 
-        m_destinationAddress.sin_family = AF_INET;
-        m_destinationAddress.sin_port = htons(static_cast<uint16_t>(Port::UDP));
-        m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
-    }
+    // Destructor.
+    ~UDPSender();
 
-    ~UDPSender()
-    {
-        close(m_socket);
-    }
-
-    void sendMessage(const std::string& message)
-    {
-        std::cout << m_destinationAddress.sin_port << std::endl;
-
-        ssize_t bytes_sent = sendto(m_socket, message.c_str(), message.size(), 0,
-                (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
-
-        if (bytes_sent == -1)
-        {
-            std::cerr << "Error sending message" << std::endl;
-            close(m_socket);
-        }
-    }
+    /// Send message to to destination.
+    /// \param message The message to be sent.
+    void sendMessage(const std::string& message);
 
 private:
 

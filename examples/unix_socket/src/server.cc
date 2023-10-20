@@ -14,6 +14,15 @@ public:
 
         nexilis::ProtocolManager manager;
 
+        /*
+        auto server = manager.addProtocol<nexilis::UDPServer>();
+
+        while (true)
+        {
+            server.receiveMessage();
+        }
+        */
+
         auto server = manager.addProtocol<nexilis::UnixSocketServer>("/tmp/nexilis");
 
         std::thread serverThread([&server, &mtx]()

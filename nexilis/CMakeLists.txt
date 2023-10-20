@@ -16,7 +16,11 @@ set(SOURCES
     src/ports.cc
     src/connection_storage.cc
     src/boost/boost_io_context.cc
-    src/af_unix/unix_udp_server.cc)
+
+    src/af_unix/unix_udp_server.cc
+
+    src/af_inet/udp_sender.cc
+    src/af_inet/udp_server.cc)
 
 add_library(nexilis ${SOURCES})
 
