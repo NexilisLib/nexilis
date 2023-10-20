@@ -2,6 +2,8 @@
 #define NEXILIS_UDP_SERVER_HH
 
 #include <nexilis/ports.hh>
+#include <nexilis/connection_storage.hh>
+#include <nexilis/command.hh>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -79,12 +81,42 @@ public:
             return;
         }
 
+        // Hold either IPV4 or IPV6 address.
+        char addressBuffer[INET6_ADDRSTRLEN];
+        const char* address;
+
+        // IPV4
+        if (clientAddr.ss_family == AF_INET)
+        {
+            struct sockaddr_in* ipv4 = (struct sockaddr_in*)&clientAddr;
+            address = inet_ntop(AF_INET, &(ipv4->sin_addr), addressBuffer, INET_ADDRSTRLEN);
+        }
+
+        // IPV6
+        else if (clientAddr.ss_family == AF_INET6)
+        {
+            struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)&clientAddr;
+            address = inet_ntop(AF_INET6, &(ipv6->sin6_addr), addressBuffer, INET6_ADDRSTRLEN);
+        }
+        else
+        {
+            std::cerr << "Unknown address family" << std::endl;
+            return;
+        }
+
+        // Implicit cast from const char* -> string?
+        Connection connection(address);
+        if (!ConnectionStorage::contains(connection))
+        {
+            ConnectionStorage::add(std::move(connection));
+        }
+
         // This part needs to be refactored.
         // Null-terminate the received message and convert it to std::string.
         buffer[bytesRead] = '\0';
         std::string message(buffer);
 
-        std::cout << "Received message: " << message << std::endl;
+        Command::read(message.c_str(), message.size(), connection);
     }
 
 private:
