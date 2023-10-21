@@ -1,6 +1,8 @@
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/af_unix/unix_socket_sender.hh>
 #include <nexilis/af_inet/udp_server.hh>
+#include <nexilis/log.hh>
+#include <nexilis/logger/file_handler.hh>
 
 #include <thread>
 #include <mutex>
@@ -11,17 +13,9 @@ public:
     Server()
     {
         std::mutex mtx;
-
         nexilis::ProtocolManager manager;
 
-        /*
-        auto server = manager.addProtocol<nexilis::UDPServer>();
-
-        while (true)
-        {
-            server.receiveMessage();
-        }
-        */
+        nexilis::Log::startConsoleLogging(nexilis::LogLevel::DEBUG);
 
         auto server = manager.addProtocol<nexilis::UnixSocketServer>("/tmp/nexilis");
 

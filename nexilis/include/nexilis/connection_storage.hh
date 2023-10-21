@@ -1,7 +1,10 @@
 #ifndef NEXILIS_CONNECTION_STORAGE_HH
 #define NEXILIS_CONNECTION_STORAGE_HH
 
+#include <nexilis/logger/console_handler.hh>
+#include <nexilis/logger/logger.hh>
 #include <nexilis/connection.hh>
+#include <nexilis/log.hh>
 
 #include <vector>
 #include <algorithm>
@@ -15,8 +18,8 @@ class ConnectionStorage
 public:
     static void add(Connection&& connection)
     {
+        Log::info("new connection");
         m_connections.emplace_back(std::move(connection));
-        std::cout << "Added new connection: " << connection.getIPAddress() << std::endl;
     }
 
     static bool contains(Connection& connection)

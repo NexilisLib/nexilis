@@ -16,6 +16,7 @@ set(SOURCES
     src/ports.cc
     src/connection_storage.cc
     src/boost/boost_io_context.cc
+    src/log.cc
 
     src/af_unix/unix_udp_server.cc
 
