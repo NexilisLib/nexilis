@@ -1,10 +1,9 @@
 #include <nexilis/af_inet/udp_sender.hh>
 #include <nexilis/ports.hh>
+#include <nexilis/log.hh>
 
 #include <sys/socket.h>
 #include <unistd.h>
-
-#include <iostream>
 
 namespace nexilis
 {
@@ -16,7 +15,7 @@ UDPSender::UDPSender(const char* destinationIP) :
     m_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (m_socket == -1)
     {
-        std::cerr << "Error creating socket" << std::endl;
+        Log::critical("Error creating socket!");
     }
 
     m_destinationAddress.sin_family = AF_INET;
@@ -31,14 +30,14 @@ UDPSender::~UDPSender()
 
 void UDPSender::sendMessage(const std::string& message)
 {
-    std::cout << m_destinationAddress.sin_port << std::endl;
+    Log::info("Sending message to: ", m_destinationAddress.sin_port);
 
     ssize_t bytes_sent = sendto(m_socket, message.c_str(), message.size(), 0,
             (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
 
     if (bytes_sent == -1)
     {
-        std::cerr << "Error sending message" << std::endl;
+        Log::critical("Error sending message!");
         close(m_socket);
     }
 }

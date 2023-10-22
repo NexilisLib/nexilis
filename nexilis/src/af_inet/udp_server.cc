@@ -18,7 +18,7 @@ UDPServer::UDPServer()
 
     if (getaddrinfo(nullptr, portToString(Port::UDP), &hints, &res) != 0)
     {
-        std::cerr << "Cannot get the address info" << std::endl;
+        Log::critical("Cannot get the address info");
         exit(EXIT_FAILURE);
     }
 
@@ -42,7 +42,7 @@ UDPServer::UDPServer()
 
     if (!p)
     {
-        std::cerr << "failed to bind socket" << std::endl;
+        Log::critical("Failed to bind socket");
         exit(EXIT_FAILURE);
     }
 
@@ -65,7 +65,7 @@ void UDPServer::receiveMessage()
     ssize_t bytesRead = recvfrom(m_serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &clientLen);
     if (bytesRead == -1)
     {
-        std::cerr << "Receive failed" << std::endl;
+        Log::critical("Receive failed");
         return;
     }
 
@@ -88,7 +88,7 @@ void UDPServer::receiveMessage()
     }
     else
     {
-        std::cerr << "Unknown address family" << std::endl;
+        Log::critical("Unknown address family");
         return;
     }
 
@@ -106,6 +106,5 @@ void UDPServer::receiveMessage()
 
     Command::read(message.c_str(), message.size(), connection);
 }
-
 
 }

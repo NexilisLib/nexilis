@@ -18,7 +18,8 @@ set(SOURCES
     src/boost/boost_io_context.cc
     src/log.cc
 
-    src/af_unix/unix_udp_server.cc
+    src/af_unix/unix_socket_server.cc
+    src/af_unix/unix_socket_sender.cc
 
     src/af_inet/udp_sender.cc
     src/af_inet/udp_server.cc)

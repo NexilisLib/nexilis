@@ -1,7 +1,6 @@
-#include "../include/nexilis/command.hh"
-#include "../include/nexilis/dispatcher.hh"
-
-#include <iostream>
+#include <nexilis/command.hh>
+#include <nexilis/dispatcher.hh>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -26,10 +25,8 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned cha
         case MainCommand::update: return std::vector<unsigned char> {};
         default:
         {
-            std::cout << "something went wrong" << std::endl;
             unsigned char firstByte = static_cast<unsigned char>(maincommand);
-            std::cout << "first byte: " << firstByte << std::endl;
-            std::cout << "second byte: " << subCommand << std::endl;
+            Log::error("Something went wrong, first byte: ", firstByte);
         }
     }
 
@@ -46,7 +43,6 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
             {
                 case 0x10:
                 {
-                    //Dispatcher::sendUDPMessage("192.168.1.17", "hey from ip");
                     return true;
                 }
 
@@ -56,12 +52,6 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
 
                 default:
                 {
-                    /*
-                     * Some premade driver code.
-                    Dispatcher::sendWebsocketMessage(connection, "Hello from websockets!");
-                    Dispatcher::sendUDPMessage(connection, "hey from UDP");
-                    Dispatcher::sendBoostUDPMessage(connection, "hey from Boost");
-                    */
                     return true;
                 }
             }

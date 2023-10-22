@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 
-#include <iostream>
 #include <csignal>
 
 namespace nexilis
@@ -61,7 +60,7 @@ void UnixSocketServer::createSocket()
     m_serverSocket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_serverSocket == -1)
     {
-        std::cerr << "Error creating socket" << std::endl;
+        Log::critical("Error creating socket");
     }
 }
 
@@ -74,7 +73,7 @@ void UnixSocketServer::bindSocket()
 
     if (bind(m_serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
     {
-        std::cerr << "Error binding socket" << std::endl;
+        Log::critical("Error binding socket");
         close(m_serverSocket);
         exit(1);
     }
@@ -87,11 +86,11 @@ void UnixSocketServer::signalHandler(int signum)
         // Delete the file before exiting
         if (std::remove(path.c_str()) == 0)
         {
-            std::cout << "File deleted successfully:" << path << std::endl;
+            Log::info("File deleted successfully: ", path);
         }
         else
         {
-            perror("Error deleting file");
+            Log::error("Error deleting file");
         }
         std::exit(signum);
     }

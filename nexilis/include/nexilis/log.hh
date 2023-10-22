@@ -1,3 +1,6 @@
+#ifndef NEXILIS_LOG_HH
+#define NEXILIS_LOG_HH
+
 #include <nexilis/logger/logger.hh>
 #include <nexilis/logger/log_level.hh>
 #include <nexilis/logger/console_handler.hh>
@@ -51,3 +54,5 @@ private:
 };
 
 }
+
+#endif
