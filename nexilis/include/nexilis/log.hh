@@ -12,11 +12,18 @@ class Log
 {
 public:
     static void startConsoleLogging(LogLevel minLevel = LogLevel::INFO);
+    static void startConsoleLogging(uint8_t logLevel);
 
     template <typename T>
     static void addHandler(T&& handler)
     {
         log.addHandler(std::move(handler));
+    }
+
+    template <typename T>
+    static void removeHandler(T&& handler)
+    {
+        log.removeHandler(std::forward<T>(handler));
     }
 
     template <typename T, typename ...Args>

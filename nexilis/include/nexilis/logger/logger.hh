@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <mutex>
 #include <memory>
+#include <algorithm>
 
 namespace nexilis
 {
@@ -27,6 +28,26 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m_mtx);
 		m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
+	}
+
+	/// TODO try this somewhere. 
+	/// Maybe finally start testing?
+	template <typename T>
+	void removeHandler(T&& handler)
+	{
+		std::lock_guard<std::mutex> lock(m_mtx);
+
+		// Find the handler in the vector.
+		auto it = std::find_if(m_handlers.begin(), m_handlers.end(), [&](const auto& storedHandler) {
+			return typeid(*storedHandler) == typeid(std::remove_reference_t<T>) && 
+				*static_cast<std::remove_reference_t<T>*>(storedHandler.get()) == handler;
+		});
+
+		// If found, erase it from the vector.
+		if (it != m_handlers.end()) 
+		{
+			m_handlers.erase(it);
+		}
 	}
 
 	/// Send debug message.
@@ -95,6 +116,13 @@ public:
 	bool setMinimumLevel(const LogLevel& level)
 	{
 		return (m_logLevel |= (static_cast<uint8_t>(-1) << static_cast<uint8_t>(level)));
+	}
+
+	/// Set the logLevel with custom byte.
+	/// \param logLevel The byte that determines 
+	void setLogLevel(uint8_t logLevel)
+	{
+		m_logLevel = logLevel;
 	}
 
 private:

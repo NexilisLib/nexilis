@@ -12,4 +12,11 @@ void Log::startConsoleLogging(LogLevel minLevel)
     log.addHandler(ConsoleHandler());
 }
 
+void Log::startConsoleLogging(uint8_t logLevel)
+{
+    log.setLogLevel(logLevel);
+
+    log.addHandler(ConsoleHandler());
+}
+
 }
