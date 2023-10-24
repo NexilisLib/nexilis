@@ -1,8 +1,8 @@
 #ifndef NEXILIS_VECTOR3_HH
 #define NEXILIS_VECTOR3_HH
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 /// Vector3 object to be used in update messages
 
@@ -12,7 +12,6 @@
 class Vector3
 {
 public:
-
     /// Constructor.
     /// \param x The x value of the vector3.
     /// \param y The y value of the vector3.
@@ -23,7 +22,6 @@ public:
     static Vector3 deserialize(const std::vector<uint8_t>& data);
 
 private:
-
     float m_x;
     float m_y;
     float m_z;

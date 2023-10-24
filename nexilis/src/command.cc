@@ -16,13 +16,13 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned cha
     {
         case MainCommand::ping:
         {
-            return std::vector<unsigned char>
-            {
-                static_cast<unsigned char>(maincommand), static_cast<unsigned char>(subCommand)
-            };
+            return std::vector<unsigned char>{
+                static_cast<unsigned char>(maincommand), static_cast<unsigned char>(subCommand)};
         }
-        case MainCommand::setup: return std::vector<unsigned char> {};
-        case MainCommand::update: return std::vector<unsigned char> {};
+        case MainCommand::setup:
+            return std::vector<unsigned char>{};
+        case MainCommand::update:
+            return std::vector<unsigned char>{};
         default:
         {
             unsigned char firstByte = static_cast<unsigned char>(maincommand);
@@ -30,7 +30,7 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned cha
         }
     }
 
-    return std::vector<unsigned char> {};
+    return std::vector<unsigned char>{};
 }
 
 bool Command::read(const std::vector<unsigned char>& command, Connection& connection)
@@ -39,7 +39,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
     {
         case MainCommand::ping:
         {
-            switch(command[1])
+            switch (command[1])
             {
                 case 0x10:
                 {
@@ -58,7 +58,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
         }
         case MainCommand::info:
         {
-            switch(command[1])
+            switch (command[1])
             {
                 // Option for general info.
                 case 0x10:
@@ -85,7 +85,7 @@ bool Command::read(const char* command_data, size_t lenght, Connection& connecti
     std::vector<unsigned char> result;
     result.reserve(lenght);
 
-    for(size_t i = 0; i < lenght; i++)
+    for (size_t i = 0; i < lenght; i++)
     {
         result.emplace_back(static_cast<unsigned char>(command_data[i]));
     }
@@ -109,4 +109,4 @@ std::string Command::createIPv4Address(const std::vector<unsigned char>& charact
     return ipAddress;
 }
 
-}
+} // namespace nexilis

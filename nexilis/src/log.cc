@@ -19,4 +19,4 @@ void Log::startConsoleLogging(uint8_t logLevel)
     log.addHandler(ConsoleHandler());
 }
 
-}
+} // namespace nexilis

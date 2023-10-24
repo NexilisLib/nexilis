@@ -7,9 +7,11 @@ const char* portToString(Port port)
 {
     switch (port)
     {
-        case Port::UDP: return "54200";
-        case Port::Websocket: return "54201";
+        case Port::UDP:
+            return "54200";
+        case Port::Websocket:
+            return "54201";
     }
 }
 
-}
+} // namespace nexilis

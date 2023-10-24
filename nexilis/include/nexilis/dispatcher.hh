@@ -1,9 +1,9 @@
 #ifndef NEXILIS_DISPATCHER_HH
 #define NEXILIS_DISPATCHER_HH
 
-#include <nexilis/connection.hh>
 #include <nexilis/af_inet/udp_sender.hh>
 #include <nexilis/boost/boost_udp_sender.hh>
+#include <nexilis/connection.hh>
 
 namespace nexilis
 {
@@ -33,6 +33,6 @@ public:
     }
 };
 
-}
+} // namespace nexilis
 
 #endif

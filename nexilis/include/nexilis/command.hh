@@ -1,13 +1,13 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
+#include <nexilis/boost/boost_io_context.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/connection.hh>
-#include <nexilis/boost/boost_io_context.hh>
 
-#include <vector>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace nexilis
 {
@@ -38,14 +38,12 @@ public:
     static bool read(const char* command_data, size_t lenght, Connection& connection);
 
 private:
-
     /// Create IPv4 address from IPV4 data.
     /// \param address The address data.
     /// \return string Created IPV4 string.
     std::string createIPv4Address(const std::vector<unsigned char>& address);
-
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -6,4 +6,3 @@ namespace nexilis
 std::vector<Connection> ConnectionStorage::m_connections = {};
 
 }
-

@@ -12,6 +12,6 @@ enum class Port
 
 const char* portToString(Port port);
 
-}
+} // namespace nexilis
 
 #endif

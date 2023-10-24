@@ -10,14 +10,14 @@ class Connection
 {
 public:
     /// Constructor.
-    Connection(std::string ip_address) noexcept :
-        m_ip_address(ip_address)
+    Connection(std::string ip_address) noexcept
+        : m_ip_address(ip_address)
     {
     }
 
     /// Move constructor.
-    Connection(Connection&& other) noexcept :
-        m_ip_address(other.m_ip_address)
+    Connection(Connection&& other) noexcept
+        : m_ip_address(other.m_ip_address)
     {
     }
 
@@ -35,12 +35,15 @@ public:
 
     /// Getter for the ip address.
     /// \return The ip address of the connection.
-    std::string getIPAddress() const { return m_ip_address; }
+    std::string getIPAddress() const
+    {
+        return m_ip_address;
+    }
 
 private:
     std::string m_ip_address;
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -1,13 +1,13 @@
 #ifndef NEXILIS_CONNECTION_STORAGE_HH
 #define NEXILIS_CONNECTION_STORAGE_HH
 
-#include <nexilis/logger/console_handler.hh>
-#include <nexilis/logger/logger.hh>
 #include <nexilis/connection.hh>
 #include <nexilis/log.hh>
+#include <nexilis/logger/console_handler.hh>
+#include <nexilis/logger/logger.hh>
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 namespace nexilis
 {
@@ -30,6 +30,6 @@ private:
     static std::vector<Connection> m_connections;
 };
 
-}
+} // namespace nexilis
 
 #endif

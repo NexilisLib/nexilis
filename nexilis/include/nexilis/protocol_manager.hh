@@ -1,8 +1,8 @@
 #ifndef NEXILIS_CONNECTION_MANAGER_HH
 #define NEXILIS_CONNECTION_MANAGER_HH
 
-#include <nexilis/af_unix/unix_socket_server.hh>
 #include <nexilis/af_inet/udp_server.hh>
+#include <nexilis/af_unix/unix_socket_server.hh>
 #include <nexilis/websocket/websocketpp.hh>
 
 #include <unordered_map>
@@ -53,10 +53,9 @@ public:
     }
 
 private:
-
     std::unordered_map<Type, Status> m_items;
 };
 
-}
+} // namespace nexilis
 
 #endif
