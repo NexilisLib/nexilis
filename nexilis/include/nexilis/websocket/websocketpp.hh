@@ -1,10 +1,12 @@
 #ifndef NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
 #define NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
 
-#include "nexilis/ports.hh"
-#include "websocket_macros.hh"
-#include "../command.hh"
-#include "../connection_storage.hh"
+#include <nexilis/ports.hh>
+#include <nexilis/command.hh>
+#include <nexilis/connection_storage.hh>
+#include <nexilis/log.hh>
+
+#include <nexilis/websocket/websocket_macros.hh>
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -19,7 +21,6 @@ class Websocketpp
 {
 public:
     /// Constructor.
-    /// \param port Port for the websocket connection.
     Websocketpp()
     {
         try
@@ -54,6 +55,7 @@ public:
                 ip_address = ip_address.substr(7);
             }
 
+            /*
             for (auto& connection : connections)
             {
                 // Message from previously known client.
@@ -65,8 +67,23 @@ public:
             }
 
             // This is the very first message from the client, we add the client to connections.
-            connections.emplace_back(m_websocket, cnn, ip_address);
-            Command::read(convertToNexilisCommand(msg), connections.back());
+            //connections.emplace_back(m_websocket, cnn, ip_address);
+            connections.emplace_back()
+            */
+
+            Connection connection(ip_address);
+
+            std::vector<unsigned char> nexilisMessage = convertToNexilisCommand(msg);
+
+            std::string messageStr;
+            for (int i = 0; i < nexilisMessage.size(); i++)
+            {
+                messageStr += nexilisMessage[i];
+            }
+
+            Log::info("Received message:" + messageStr);
+            
+            Command::read(convertToNexilisCommand(msg), connection);
         });
 
    }
@@ -92,7 +109,6 @@ public:
     }
 
 private:
-
     std::vector<unsigned char> convertToNexilisCommand(const wpp_message& msg)
     {
         std::vector<unsigned char> result;

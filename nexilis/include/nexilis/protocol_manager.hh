@@ -2,6 +2,8 @@
 #define NEXILIS_CONNECTION_MANAGER_HH
 
 #include <nexilis/af_unix/unix_socket_server.hh>
+#include <nexilis/af_inet/udp_server.hh>
+#include <nexilis/websocket/websocketpp.hh>
 
 #include <unordered_map>
 
@@ -33,6 +35,16 @@ public:
         if constexpr (std::is_same<Protocol, UnixSocketServer>::value)
         {
             type = Type::af_unix;
+        }
+
+        else if constexpr (std::is_same<Protocol, UDPServer>::value)
+        {
+            type = Type::af_inet;
+        }
+
+        else if constexpr (std::is_same<Protocol, Websocketpp>::value)
+        {
+            type = Type::websocket;
         }
 
         m_items.insert(std::pair<Type, Status>(type, Status::connecting));

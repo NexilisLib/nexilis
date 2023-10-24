@@ -1,7 +1,7 @@
 import asyncio
 import websockets
 
-url = "ws://localhost:8000"
+url = "ws://localhost:54201"
 
 async def connect_to_server(server_url):
     res = "Server " + server_url
