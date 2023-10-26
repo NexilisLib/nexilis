@@ -43,6 +43,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
             {
                 case 0x10:
                 {
+                    Log::info("Received MainCommand::ping(0x10, 0x10)");
                     return true;
                 }
 

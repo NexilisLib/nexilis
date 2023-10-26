@@ -1,5 +1,5 @@
-#ifndef NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
-#define NEXILIS_WEBSOCKET_WEBSOCKETPP_HH
+#ifndef NEXILIS_WEBSOCKET_WEBSOCKET_HH
+#define NEXILIS_WEBSOCKET_WEBSOCKET_HH
 
 #include <nexilis/ports.hh>
 #include <nexilis/command.hh>
@@ -14,14 +14,17 @@
 #include <functional>
 #include <algorithm>
 
+/// At some we need global debug.
+#define WEBSOCKET_DEBUG
+
 namespace nexilis
 {
 
-class Websocketpp
+class Websocket
 {
 public:
     /// Constructor.
-    Websocketpp()
+    Websocket()
     {
         try
         {
@@ -48,44 +51,35 @@ public:
             // Convert the address to lowercase to for case-insensitive comparison.
             std::transform(ip_address.begin(), ip_address.end(), ip_address.begin(), ::tolower);
 
-            // Check if the address is an IPv6-mapped Ipv4 address
+            // Check if the address is an IPv6-mapped Ipv4 address.
             if (ip_address.compare(0, 7, "::ffff:") == 0)
             {
                 // Remove previous prefix.
                 ip_address = ip_address.substr(7);
             }
 
-            /*
-            for (auto& connection : connections)
-            {
-                // Message from previously known client.
-                if (connection.getIPAddress() == ip_address)
-                {
-                    Command::read(convertToNexilisCommand(msg), connection);
-                    return;
-                }
-            }
-
-            // This is the very first message from the client, we add the client to connections.
-            //connections.emplace_back(m_websocket, cnn, ip_address);
-            connections.emplace_back()
-            */
-
             Connection connection(ip_address);
+            auto nexilisMessage = convertToNexilisCommand(msg);
 
-            std::vector<unsigned char> nexilisMessage = convertToNexilisCommand(msg);
-
+#ifdef WEBSOCKET_DEBUG
             std::string messageStr;
             for (int i = 0; i < nexilisMessage.size(); i++)
             {
                 messageStr += nexilisMessage[i];
             }
+            Log::info("Received message: " + messageStr);
+#endif
+            // Add new unknown connection.
+            if (!ConnectionStorage::contains(connection))
+            {
+                ConnectionStorage::add(std::move(connection));
+            }
 
-            Log::info("Received message:" + messageStr);
-            
-            Command::read(convertToNexilisCommand(msg), connection);
+            if (!Command::read(nexilisMessage, connection))
+            {
+                Log::error("Something went wrong with the reading of the command");
+            }
         });
-
    }
 
     void setOpenHandler(const std::function<void(wpp_connection)>& openHandler)
@@ -109,6 +103,9 @@ public:
     }
 
 private:
+    /// Get command as vectors of bytes.
+    /// \param msg Message gotten from websocketpp.
+    /// \return The command of nexilis.
     std::vector<unsigned char> convertToNexilisCommand(const wpp_message& msg)
     {
         std::vector<unsigned char> result;

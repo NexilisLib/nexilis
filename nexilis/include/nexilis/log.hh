@@ -8,18 +8,26 @@
 namespace nexilis
 {
 
+/// This class hold static instance logging library.
 class Log
 {
 public:
+    /// Start static console logging session.
+    /// \param minLevel The minimum logging level, see logLevel.hh.
     static void startConsoleLogging(LogLevel minLevel = LogLevel::INFO);
+
+    /// Custom loglevel can be set with first five bytes from eight byte type.
+    /// \param logLevel Custom logging level.
     static void startConsoleLogging(uint8_t logLevel);
 
+    /// Add handler for logging messages.
     template <typename T>
     static void addHandler(T&& handler)
     {
         log.addHandler(std::move(handler));
     }
 
+    /// Remove handle that logs messages.
     template <typename T>
     static void removeHandler(T&& handler)
     {

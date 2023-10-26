@@ -42,7 +42,7 @@ public:
             type = Type::af_inet;
         }
 
-        else if constexpr (std::is_same<Protocol, Websocketpp>::value)
+        else if constexpr (std::is_same<Protocol, Websocket>::value)
         {
             type = Type::websocket;
         }
