@@ -1,3 +1,4 @@
+#include "nexilis/websocket/websocket_macros.hh"
 #include <nexilis/protocol_manager.hh>
 
 int main()
@@ -6,7 +7,20 @@ int main()
 
     nexilis::Log::startConsoleLogging(nexilis::LogLevel::DEBUG);
 
-    auto websocketServer = manager.addProtocol<nexilis::Websocket>();
+    // Create websocketserver object.
+	auto websocketServer = manager.addProtocol<nexilis::Websocket>();
+
+	// Set functionality when opening connection.
+	websocketServer.setOpenHandler([]()
+	{
+		std::cout << "Opened a connection!" << std::endl;
+	});
+
+	// Same for closing the connection.
+	websocketServer.setCloseHandler([]()
+	{
+		std::cout << "Closed a connection!" << std::endl;
+	});
 
     websocketServer.start();
 

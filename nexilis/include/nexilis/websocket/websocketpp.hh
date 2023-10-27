@@ -67,7 +67,7 @@ public:
             {
                 messageStr += nexilisMessage[i];
             }
-            Log::info("Received message: " + messageStr);
+            Log::info("Received websocket message: " + messageStr);
 #endif
             // Add new unknown connection.
             if (!ConnectionStorage::contains(connection))
@@ -75,21 +75,28 @@ public:
                 ConnectionStorage::add(std::move(connection));
             }
 
-            if (!Command::read(nexilisMessage, connection))
+            // We return false from message that is not understood by nexilis.
+			if (!Command::read(nexilisMessage, connection))
             {
                 Log::error("Something went wrong with the reading of the command");
             }
         });
    }
 
-    void setOpenHandler(const std::function<void(wpp_connection)>& openHandler)
-    {
-        m_websocket.set_open_handler(openHandler);
-    }
+	void setOpenHandler(const std::function<void()>& openHandler)
+	{
+		m_websocket.set_open_handler([&openHandler](wpp_connection)
+		{
+			openHandler();
+		});
+	}
 
-    void setCloseHandler(const std::function<void(wpp_connection)>& closeHandler)
+    void setCloseHandler(const std::function<void()>& closeHandler)
     {
-        m_websocket.set_close_handler(closeHandler);
+        m_websocket.set_close_handler([&closeHandler](wpp_connection)
+		{
+			closeHandler();
+		});
     }
 
     // Start the Websocket server.
