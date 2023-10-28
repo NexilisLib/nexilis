@@ -22,7 +22,9 @@ set(SOURCES
     src/af_unix/unix_socket_sender.cc
 
     src/af_inet/udp_sender.cc
-    src/af_inet/udp_server.cc)
+    src/af_inet/udp_server.cc
+
+	src/websocket/websocket.cc)
 
 add_library(nexilis ${SOURCES})
 

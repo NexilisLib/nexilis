@@ -1,5 +1,5 @@
-#include "nexilis/websocket/websocket_macros.hh"
 #include <nexilis/protocol_manager.hh>
+#include <nexilis/log.hh>
 
 int main()
 {

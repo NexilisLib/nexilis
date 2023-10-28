@@ -6,14 +6,10 @@ try:
     ws = create_connection("ws://localhost:54201")
     print("WebSocket connection established.")
 
-    message = "Moika"
-
     while True:
-        """
         message = input("Enter a message to send (or 'exit' to quit): ")
         if message.lower() == 'exit':
             break
-        """
 
         ws.send(message)
         print("Sent: " + message)
