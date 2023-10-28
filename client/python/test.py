@@ -6,6 +6,8 @@ try:
     ws = create_connection("ws://localhost:54201")
     print("WebSocket connection established.")
 
+    message = "Moika"
+
     while True:
         """
         message = input("Enter a message to send (or 'exit' to quit): ")
@@ -13,8 +15,8 @@ try:
             break
         """
 
-        ws.send("moika")
-        #print("Sent: " + message)
+        ws.send(message)
+        print("Sent: " + message)
 
         response = ws.recv()
         print("Received: " + response)

@@ -20,6 +20,8 @@
 namespace nexilis
 {
 
+// This class acts as a abtraction for the websocketpp library.
+// TODO consider adding source file for this class.
 class Websocket
 {
 public:

@@ -3,7 +3,7 @@
 
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/af_unix/unix_socket_server.hh>
-#include <nexilis/websocket/websocketpp.hh>
+#include <nexilis/websocket/websocket.hh>
 
 #include <unordered_map>
 

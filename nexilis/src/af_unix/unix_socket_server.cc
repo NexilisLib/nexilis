@@ -16,6 +16,10 @@ static std::string path;
 UnixSocketServer::UnixSocketServer(const std::string& socketPath)
 {
     path = socketPath;
+
+	// TODO
+	// This project most definately needs a global max buffer size for a message,
+	// regardless of the protocol we are using.
     m_bufferSize = 1024;
     m_buffer = new char[m_bufferSize];
     createSocket();

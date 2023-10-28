@@ -1,13 +1,13 @@
 #include <nexilis/af_inet/udp_server.hh>
 
-#include <nexilis/ports.hh>
 #include <nexilis/connection_storage.hh>
 #include <nexilis/command.hh>
+#include <string>
 
 namespace nexilis
 {
 
-UDPServer::UDPServer()
+UDPServer::UDPServer(unsigned port)
 {
     struct addrinfo hints, *res, *p;
 
@@ -16,7 +16,7 @@ UDPServer::UDPServer()
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
-    if (getaddrinfo(nullptr, portToString(Port::UDP), &hints, &res) != 0)
+    if (getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &res) != 0)
     {
         Log::critical("Cannot get the address info");
         exit(EXIT_FAILURE);
@@ -92,19 +92,23 @@ void UDPServer::receiveMessage()
         return;
     }
 
-    // Implicit cast from const char* -> string?
+    // Implicit conversion from const char* -> string?
     Connection connection(address);
     if (!ConnectionStorage::contains(connection))
     {
         ConnectionStorage::add(std::move(connection));
     }
 
-    // This part needs to be refactored.
     // Null-terminate the received message and convert it to std::string.
     buffer[bytesRead] = '\0';
+
+	// Create message object.
     std::string message(buffer);
 
-    Command::read(message.c_str(), message.size(), connection);
+    if (!Command::read(message.c_str(), message.size(), connection))
+	{
+		Log::error("UDP server message reading error, message: ", message);
+	}
 }
 
 }

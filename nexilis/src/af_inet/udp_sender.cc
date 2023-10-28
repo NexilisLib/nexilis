@@ -8,7 +8,7 @@
 namespace nexilis
 {
 
-UDPSender::UDPSender(const char* destinationIP) :
+UDPSender::UDPSender(const char* destinationIP, unsigned port) :
     m_destinationIP(destinationIP)
 {
     // Create a UDP socket
@@ -19,7 +19,7 @@ UDPSender::UDPSender(const char* destinationIP) :
     }
 
     m_destinationAddress.sin_family = AF_INET;
-    m_destinationAddress.sin_port = htons(static_cast<uint16_t>(Port::UDP));
+    m_destinationAddress.sin_port = htons(port);
     m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
 }
 
@@ -30,7 +30,7 @@ UDPSender::~UDPSender()
 
 void UDPSender::sendMessage(const std::string& message)
 {
-    Log::info("Sending message to: ", m_destinationAddress.sin_port);
+    Log::info("Sending message: ", message);
 
     ssize_t bytes_sent = sendto(m_socket, message.c_str(), message.size(), 0,
             (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
