@@ -1,6 +1,6 @@
 #include <nexilis/af_unix/unix_socket_server.hh>
-#include <nexilis/connection_storage.hh>
 #include <nexilis/command.hh>
+#include <nexilis/connection_storage.hh>
 
 #include <arpa/inet.h>
 #include <sys/un.h>
@@ -17,9 +17,9 @@ UnixSocketServer::UnixSocketServer(const std::string& socketPath)
 {
     path = socketPath;
 
-	// TODO
-	// This project most definately needs a global max buffer size for a message,
-	// regardless of the protocol we are using.
+    // TODO
+    // This project most definately needs a global max buffer size for a message,
+    // regardless of the protocol we are using.
     m_bufferSize = 1024;
     m_buffer = new char[m_bufferSize];
     createSocket();
@@ -41,7 +41,7 @@ void UnixSocketServer::receiveMessage()
     struct sockaddr_in clientAddress;
     socklen_t clientAddressLen = sizeof(clientAddress);
     memset(m_buffer, '\0', m_bufferSize);
-    ssize_t bytesRead = recvfrom(m_serverSocket, m_buffer, m_bufferSize, 0, (struct sockaddr *)&clientAddress, &clientAddressLen);
+    ssize_t bytesRead = recvfrom(m_serverSocket, m_buffer, m_bufferSize, 0, (struct sockaddr*)&clientAddress, &clientAddressLen);
 
     if (bytesRead > 0)
     {
@@ -75,7 +75,7 @@ void UnixSocketServer::bindSocket()
     serverAddr.sun_family = AF_UNIX;
     strncpy(serverAddr.sun_path, path.c_str(), sizeof(serverAddr.sun_path) - 1);
 
-    if (bind(m_serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
+    if (bind(m_serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
         Log::critical("Error binding socket");
         close(m_serverSocket);
@@ -100,4 +100,4 @@ void UnixSocketServer::signalHandler(int signum)
     }
 }
 
-}
+} // namespace nexilis

@@ -1,7 +1,7 @@
 #include <nexilis/af_inet/udp_server.hh>
 
-#include <nexilis/connection_storage.hh>
 #include <nexilis/command.hh>
+#include <nexilis/connection_storage.hh>
 #include <string>
 
 namespace nexilis
@@ -54,7 +54,6 @@ UDPServer::~UDPServer()
     close(m_serverSocket);
 }
 
-
 void UDPServer::receiveMessage()
 {
     char buffer[1024];
@@ -62,7 +61,7 @@ void UDPServer::receiveMessage()
     socklen_t clientLen = sizeof(clientAddr);
 
     // Receive messages from the client.
-    ssize_t bytesRead = recvfrom(m_serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &clientLen);
+    ssize_t bytesRead = recvfrom(m_serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddr, &clientLen);
     if (bytesRead == -1)
     {
         Log::critical("Receive failed");
@@ -102,13 +101,13 @@ void UDPServer::receiveMessage()
     // Null-terminate the received message and convert it to std::string.
     buffer[bytesRead] = '\0';
 
-	// Create message object.
+    // Create message object.
     std::string message(buffer);
 
     if (!Command::read(message.c_str(), message.size(), connection))
-	{
-		Log::error("UDP server message reading error, message: ", message);
-	}
+    {
+        Log::error("UDP server message reading error, message: ", message);
+    }
 }
 
-}
+} // namespace nexilis

@@ -1,8 +1,8 @@
 #ifndef NEXILIS_WEBSOCKET_WEBSOCKET_HH
 #define NEXILIS_WEBSOCKET_WEBSOCKET_HH
 
-#include <nexilis/websocket/websocket_macros.hh>
 #include <nexilis/ports.hh>
+#include <nexilis/websocket/websocket_macros.hh>
 
 #include <functional>
 
@@ -17,14 +17,14 @@ class Websocket
 {
 public:
     /// Constructor.
-	/// \param port The port where to set the websocket server.
+    /// \param port The port where to set the websocket server.
     Websocket(unsigned port = static_cast<unsigned>(Port::Websocket));
 
-	// Set custom functionality when opening connection.
-	void setOpenHandler(const std::function<void()>& openHandler);
+    // Set custom functionality when opening connection.
+    void setOpenHandler(const std::function<void()>& openHandler);
 
     // Set custom functionality when closing connection.
-	void setCloseHandler(const std::function<void()>& closeHandler);
+    void setCloseHandler(const std::function<void()>& closeHandler);
 
     // Start the Websocket server.
     void start();
@@ -37,9 +37,9 @@ private:
 
     wpp_websocket m_websocket;
 
-	unsigned m_port;
+    unsigned m_port;
 };
 
-}
+} // namespace nexilis
 
 #endif

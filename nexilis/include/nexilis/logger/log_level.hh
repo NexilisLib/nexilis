@@ -14,6 +14,6 @@ enum class LogLevel
     CRITICAL
 };
 
-}
+} // namespace nexilis
 
 #endif

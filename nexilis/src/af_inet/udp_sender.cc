@@ -1,6 +1,6 @@
 #include <nexilis/af_inet/udp_sender.hh>
-#include <nexilis/ports.hh>
 #include <nexilis/log.hh>
+#include <nexilis/ports.hh>
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -8,8 +8,8 @@
 namespace nexilis
 {
 
-UDPSender::UDPSender(const char* destinationIP, unsigned port) :
-    m_destinationIP(destinationIP)
+UDPSender::UDPSender(const char* destinationIP, unsigned port)
+    : m_destinationIP(destinationIP)
 {
     // Create a UDP socket
     m_socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -33,7 +33,7 @@ void UDPSender::sendMessage(const std::string& message)
     Log::info("Sending message: ", message);
 
     ssize_t bytes_sent = sendto(m_socket, message.c_str(), message.size(), 0,
-            (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
+                                (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
 
     if (bytes_sent == -1)
     {
@@ -42,4 +42,4 @@ void UDPSender::sendMessage(const std::string& message)
     }
 }
 
-}
+} // namespace nexilis

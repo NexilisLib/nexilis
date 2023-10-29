@@ -30,6 +30,6 @@ private:
     static void signalHandler(int signum);
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -10,8 +10,8 @@ class UDPServer
 {
 public:
     /// Constructor.
-	/// \param port The port we are assigning the udp server.
-	/// This has been initialized the value of Port::UDP.
+    /// \param port The port we are assigning the udp server.
+    /// This has been initialized the value of Port::UDP.
     UDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
 
     /// Destructor.
@@ -24,6 +24,6 @@ private:
     int m_serverSocket;
 };
 
-}
+} // namespace nexilis
 
 #endif

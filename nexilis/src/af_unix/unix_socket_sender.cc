@@ -10,8 +10,8 @@
 namespace nexilis
 {
 
-UnixSocketSender::UnixSocketSender(const std::string& socketPath) :
-    m_socketPath(socketPath)
+UnixSocketSender::UnixSocketSender(const std::string& socketPath)
+    : m_socketPath(socketPath)
 {
     m_socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_socket_fd == -1)
@@ -39,7 +39,7 @@ void UnixSocketSender::sendMessage(const std::string& message)
     std::strncpy(server_address.sun_path, m_socketPath.c_str(), sizeof(server_address.sun_path) - 1);
 
     ssize_t bytes_sent = sendto(m_socket_fd, message.c_str(), message.size(), 0,
-            (struct sockaddr*)&server_address, sizeof(struct sockaddr_un));
+                                (struct sockaddr*)&server_address, sizeof(struct sockaddr_un));
 
     if (bytes_sent == -1)
     {
@@ -47,4 +47,4 @@ void UnixSocketSender::sendMessage(const std::string& message)
     }
 }
 
-}
+} // namespace nexilis

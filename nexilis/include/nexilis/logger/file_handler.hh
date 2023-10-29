@@ -24,10 +24,11 @@ public:
     {
         ofs << data << std::endl;
     }
+
 private:
     std::ofstream ofs;
 };
 
-}
+} // namespace nexilis
 
 #endif

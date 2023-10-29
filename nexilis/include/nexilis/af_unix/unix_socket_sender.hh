@@ -16,7 +16,7 @@ public:
 
     /// Destructor.
     ~UnixSocketSender();
-    
+
     /// Send message to path given in constructor.
     void sendMessage(const std::string& message);
 
@@ -25,9 +25,8 @@ private:
 
     /// The path where the message is sent.
     std::string m_socketPath;
-
 };
 
-}
+} // namespace nexilis
 
 #endif

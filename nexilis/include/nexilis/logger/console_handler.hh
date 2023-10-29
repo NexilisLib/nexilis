@@ -22,13 +22,15 @@ public:
         std::string color;
         switch (logLevel)
         {
-            case LogLevel::DEBUG: case LogLevel::INFO:
+            case LogLevel::DEBUG:
+            case LogLevel::INFO:
                 color = "\033[37m";
                 break;
             case LogLevel::WARNING:
                 color = "\033[33m";
                 break;
-            case LogLevel::ERROR: case LogLevel::CRITICAL:
+            case LogLevel::ERROR:
+            case LogLevel::CRITICAL:
                 color = "\033[31m";
                 break;
         }
@@ -38,6 +40,6 @@ public:
     }
 };
 
-}
+} // namespace nexilis
 
 #endif

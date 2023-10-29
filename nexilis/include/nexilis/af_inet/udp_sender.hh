@@ -25,12 +25,11 @@ public:
     void sendMessage(const std::string& message);
 
 private:
-
     int m_socket;
     const char* m_destinationIP;
     sockaddr_in m_destinationAddress;
 };
 
-}
+} // namespace nexilis
 
 #endif
