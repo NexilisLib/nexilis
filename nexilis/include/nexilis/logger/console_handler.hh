@@ -38,6 +38,12 @@ public:
         // Print colored data with ANSI escape code reset color.
         std::cout << color << data << "\033[0m" << std::endl;
     }
+
+    // Overloading the equality operator.
+    bool operator==(const ConsoleHandler& other) const
+    {
+        return this == &other;
+    }
 };
 
 } // namespace nexilis

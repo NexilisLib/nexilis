@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.20)
+project(nexilis_tests)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_STANDARD 17)
+
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+add_subdirectory(../../nexilis/ nexilis_dir)
+
+add_compile_options(-Wall -Wextra -pedantic -Wconversion)
+
+add_executable(nexilis_tests
+    src/main.cc
+    src/logging/logging.cc
+    )
+
+target_link_libraries(nexilis_tests nexilis ${GTEST_LIBRARIES})

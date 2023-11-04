@@ -10,6 +10,7 @@
 #include <mutex>
 #include <sstream>
 #include <vector>
+#include <cassert>
 
 namespace nexilis
 {
@@ -117,12 +118,13 @@ public:
         return (m_logLevel |= (static_cast<uint8_t>(-1) << static_cast<uint8_t>(level)));
     }
 
-    /// Set the logLevel with custom byte.
-    /// \param logLevel The byte that determines
-    void setLogLevel(uint8_t logLevel)
-    {
-        m_logLevel = logLevel;
-    }
+	/// Set the logLevel with custom byte.
+	/// \param logLevel The byte that determines 
+	void setLogLevel(uint8_t logLevel)
+	{
+		assert((std::is_same<decltype(logLevel), uint8_t>::value));
+		m_logLevel = logLevel;
+	}
 
 private:
     template <typename T>

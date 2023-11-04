@@ -97,7 +97,7 @@ std::string Command::createIPv4Address(const std::vector<unsigned char>& charact
 {
     if (characters.size() < 4)
     {
-        std::cerr << "Insufficient characters to create an IPv4 address." << std::endl;
+        Log::critical("Insufficient characters to create an IPv4 address.");
         return "";
     }
 

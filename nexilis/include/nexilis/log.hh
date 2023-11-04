@@ -1,7 +1,6 @@
 #ifndef NEXILIS_LOG_HH
 #define NEXILIS_LOG_HH
 
-#include <nexilis/logger/console_handler.hh>
 #include <nexilis/logger/log_level.hh>
 #include <nexilis/logger/logger.hh>
 
@@ -20,6 +19,9 @@ public:
     /// \param logLevel Custom logging level.
     static void startConsoleLogging(uint8_t logLevel);
 
+    /// Shut down logging levels and remove handlers.
+    static void stopLogging();
+
     /// Add handler for logging messages.
     template <typename T>
     static void addHandler(T&& handler)
@@ -33,6 +35,33 @@ public:
     {
         log.removeHandler(std::forward<T>(handler));
     }
+
+public:
+
+    /// LogLevel handling functions.
+
+    static bool setLevel(nexilis::LogLevel logLevel)
+    {
+        return log.setLevel(logLevel);
+    }
+
+    static bool unsetLevel(nexilis::LogLevel logLevel)
+    {
+        return log.unsetLevel(logLevel);
+    }
+
+    static bool getLevel(nexilis::LogLevel logLevel)
+    {
+        return log.getLevel(logLevel);
+    }
+
+    static bool setMinimumLevel(nexilis::LogLevel logLevel)
+    {
+        return log.setMinimumLevel(logLevel);
+    }
+
+public:
+    /// All the overloaded printing functions
 
     template <typename T, typename... Args>
     static void debug(const T& data, const Args&... args)
