@@ -48,19 +48,11 @@ public:
         }
     }
 
-    std::vector<std::unique_ptr<BaseHandler>> getAllHandlers()
-    {
-        return m_handlers;
-    }
-
+    /// Check if there are no handlers for the logger.
+    /// \return True ff there are no handlers.
     bool noHandlers()
     {
         return m_handlers.empty();
-    }
-
-    void removeAllHandlers()
-    {
-        m_handlers.clear();
     }
 
     /// Send debug message.

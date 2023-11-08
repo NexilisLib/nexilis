@@ -36,21 +36,11 @@ public:
         log.removeHandler(std::forward<T>(handler));
     }
 
-    std::vector<std::unique_ptr<BaseHandler>> getAllHandlers()
-    {
-        return log.getAllHandlers();
-    }
-
-    bool noHandlers()
+    static bool noHandlers()
     {
         return log.noHandlers();
     }
-
-    void removeAllHandlers()
-    {
-        log.removeAllHandlers();
-    }
-
+    
 public:
 
     /// LogLevel handling functions.
