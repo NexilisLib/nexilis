@@ -5,12 +5,12 @@
 #include <nexilis/logger/log_level.hh>
 
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <mutex>
 #include <sstream>
 #include <vector>
-#include <cassert>
 
 namespace nexilis
 {
@@ -31,8 +31,6 @@ public:
         m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
     }
 
-    /// TODO try this somewhere.
-    /// Maybe finally start testing?
     template <typename T>
     void removeHandler(T&& handler)
     {
@@ -48,6 +46,21 @@ public:
         {
             m_handlers.erase(it);
         }
+    }
+
+    std::vector<std::unique_ptr<BaseHandler>> getAllHandlers()
+    {
+        return m_handlers;
+    }
+
+    bool noHandlers()
+    {
+        return m_handlers.empty();
+    }
+
+    void removeAllHandlers()
+    {
+        m_handlers.clear();
     }
 
     /// Send debug message.
