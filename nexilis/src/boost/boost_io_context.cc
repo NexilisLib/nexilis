@@ -33,6 +33,6 @@ void stop()
     }
 }
 
-}
+} // namespace boost_io_context
 
-}
+} // namespace nexilis

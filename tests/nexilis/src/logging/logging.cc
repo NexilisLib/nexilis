@@ -42,7 +42,7 @@ TEST(LoggerTest, startStopLogging)
 {
     nexilis::Log::startConsoleLogging();
     nexilis::Log::stopLogging();
-	EXPECT_TRUE(logLevelsEmpty());
+    EXPECT_TRUE(logLevelsEmpty());
 }
 
 TEST(LoggerTest, testNoHandlers)

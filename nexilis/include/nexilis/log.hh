@@ -40,9 +40,8 @@ public:
     {
         return log.noHandlers();
     }
-    
-public:
 
+public:
     /// LogLevel handling functions.
 
     static bool setLevel(nexilis::LogLevel logLevel)

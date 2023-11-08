@@ -18,9 +18,9 @@ namespace nexilis
 class BoostUDPSender
 {
 public:
-    BoostUDPSender(boost::asio::io_context& io_context, const std::string& ip) :
-        m_target_endpoint(boost::asio::ip::address::from_string(ip), static_cast<unsigned short>(Port::UDP)),
-        m_socket(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), static_cast<unsigned short>(Port::UDP)))
+    BoostUDPSender(boost::asio::io_context& io_context, const std::string& ip)
+        : m_target_endpoint(boost::asio::ip::address::from_string(ip), static_cast<unsigned short>(Port::UDP)),
+          m_socket(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), static_cast<unsigned short>(Port::UDP)))
     {
     }
 
@@ -32,9 +32,8 @@ public:
 private:
     boost::asio::ip::udp::endpoint m_target_endpoint;
     boost::asio::ip::udp::socket m_socket;
-
 };
 
-}
+} // namespace nexilis
 
 #endif
