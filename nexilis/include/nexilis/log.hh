@@ -36,6 +36,13 @@ public:
         log.removeHandler(std::forward<T>(handler));
     }
 
+    /// Remove all handlers.
+    static void clearHandlers()
+    {
+        log.clearHandlers();
+    }
+
+    /// Check if there is existing handlers.
     static bool noHandlers()
     {
         return log.noHandlers();

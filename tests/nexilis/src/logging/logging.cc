@@ -43,6 +43,7 @@ TEST(LoggerTest, startStopLogging)
     nexilis::Log::startConsoleLogging();
     nexilis::Log::stopLogging();
     EXPECT_TRUE(logLevelsEmpty());
+    EXPECT_TRUE(nexilis::Log::noHandlers());
 }
 
 TEST(LoggerTest, testNoHandlers)
@@ -60,6 +61,7 @@ TEST(LoggerTest, checkDefaultStartConsoleLogging)
 
     // Debug should be the only non active log by default.
     EXPECT_FALSE(nexilis::Log::getLevel(nexilis::LogLevel::DEBUG));
+    nexilis::Log::stopLogging();
 }
 
 TEST(LoggerTest, ConsoleHandler)
@@ -80,10 +82,12 @@ TEST(LoggerTest, ConsoleHandler)
     // Check if the message was logged.
     std::string message = ss.str();
     EXPECT_NE(message.find("ERROR: This is a test error message"), std::string::npos);
+    nexilis::Log::stopLogging();
 }
 
 TEST(LoggerTest, FileHandler)
 {
+    nexilis::Log::setLevel(nexilis::LogLevel::INFO);
     std::string fileName = "test_file_" + std::to_string(rand()) + ".log";
     nexilis::Log::addHandler(nexilis::FileHandler(fileName));
 
@@ -98,4 +102,5 @@ TEST(LoggerTest, FileHandler)
 
     file.close();
     std::remove(fileName.c_str());
+    nexilis::Log::stopLogging();
 }

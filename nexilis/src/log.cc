@@ -21,7 +21,7 @@ void Log::stopLogging()
     log.unsetLevel(LogLevel::INFO);
     log.unsetLevel(LogLevel::DEBUG);
 
-    log.removeHandler(ConsoleHandler());
+    clearHandlers();
 }
 
 void Log::startConsoleLogging(uint8_t logLevel)

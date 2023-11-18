@@ -31,6 +31,7 @@ public:
         m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
     }
 
+    /// Remove specific handler.
     template <typename T>
     void removeHandler(T&& handler)
     {
@@ -48,8 +49,14 @@ public:
         }
     }
 
+    /// Remove all handlers.
+    void clearHandlers()
+    {
+        m_handlers.clear();
+    }
+
     /// Check if there are no handlers for the logger.
-    /// \return True ff there are no handlers.
+    /// \return True if there are no handlers.
     bool noHandlers()
     {
         return m_handlers.empty();
