@@ -46,8 +46,24 @@ TEST(LoggerTest, startStopLogging)
     EXPECT_TRUE(nexilis::Log::noHandlers());
 }
 
+// Test default state?
 TEST(LoggerTest, testNoHandlers)
 {
+    EXPECT_TRUE(nexilis::Log::noHandlers());
+}
+
+// Test adding handlers
+
+// Test removing handlers.
+TEST(LoggerTest, removeHandlers)
+{
+    EXPECT_TRUE(nexilis::Log::noHandlers());
+
+    auto handler = nexilis::ConsoleHandler();
+
+    nexilis::Log::addHandler(std::move(handler));
+    EXPECT_FALSE(nexilis::Log::noHandlers());
+    nexilis::Log::removeHandler(std::move(handler));
     EXPECT_TRUE(nexilis::Log::noHandlers());
 }
 

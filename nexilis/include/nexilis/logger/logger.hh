@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -31,6 +32,7 @@ public:
         m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
     }
 
+    /*
     /// Remove specific handler.
     template <typename T>
     void removeHandler(T&& handler)
@@ -45,8 +47,25 @@ public:
         // If found, erase it from the vector.
         if (it != m_handlers.end())
         {
+            std::cout << "Found" << std::endl;
             m_handlers.erase(it);
         }
+        else
+        {
+            std::cout << "NOT FOUND" << std::endl;
+        }
+    }
+    */
+
+    template <typename T>
+    void removeHandler(T&& handlerToRemove)
+    {
+        std::lock_guard<std::mutex> lock(m_mtx);
+
+        auto it = std::remove_if(m_handlers.begin(), m_handlers.end(), [&](const std::unique_ptr<BaseHandler>& handler)
+                                 { return *handler == handlerToRemove; });
+
+        m_handlers.erase(it, m_handlers.end());
     }
 
     /// Remove all handlers.
@@ -148,17 +167,17 @@ private:
     template <typename T, typename... Args>
     void concatAndEmit(const LogLevel& logLevel, const T& data, const Args&... args)
     {
-        // return if loglevel is not on
+        // Return if loglevel is not on.
         if (!getLevel(logLevel))
             return;
 
-        // concat arguments
+        // Concat arguments.
         std::stringstream ss;
         ss << data;
 
         int unused[] = {0, (addToStringStream(ss, args), 0)...};
 
-        // silence warning about unused variables
+        // Silence warning about unused variables.
         (void)unused;
 
         emitLog(logLevel, ss.str());
@@ -188,7 +207,7 @@ private:
                 break;
         }
 
-        // create final string to be logged
+        // Create final string to be logged.
         std::ostringstream ss;
         ss << logLevelStr << data;
 

@@ -7,6 +7,9 @@
 
 #include <nexilis/command.hh>
 
+namespace nexilis
+{
+
 class UDPServer
 {
 public:
@@ -30,7 +33,7 @@ public:
                 if (!ec && bytes_received > 0)
                 {
                     // Process the received UDP data.
-                    nexilis::Command::read(m_buffer.data(), bytes_received);
+                    Command::read(m_buffer.data(), bytes_received);
 
                     // sendMessage(remote_endpoint, "nii");
 
@@ -58,5 +61,7 @@ private:
     std::array<char, 1024> m_buffer;
     boost::asio::ip::udp::socket m_socket;
 };
+
+} // namespace nexilis
 
 #endif

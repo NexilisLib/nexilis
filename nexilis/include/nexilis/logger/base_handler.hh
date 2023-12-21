@@ -16,6 +16,12 @@ public:
     {
     }
 
+    // Overloading the equality operator.
+    virtual bool operator==(const BaseHandler& other) const
+    {
+        return this == &other;
+    }
+
     // Handle logs.
     // \param logLevel The log level of the message.
     // \param data The data of the given message.

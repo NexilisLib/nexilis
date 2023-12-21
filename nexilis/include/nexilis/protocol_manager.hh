@@ -3,6 +3,7 @@
 
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/af_unix/unix_socket_server.hh>
+#include <nexilis/protocol.hh>
 #include <nexilis/websocket/websocket.hh>
 
 #include <unordered_map>
@@ -28,28 +29,31 @@ public:
         connected
     };
 
-    template <typename Protocol, typename... Args>
-    Protocol addProtocol(Args&&... args)
+    template <typename T, typename... Args>
+    T addProtocol(Args&&... args)
     {
+        static_assert(std::is_base_of<Protocol, T>::value,
+                      "Type must be derived class of nexilis::Protocol");
+
         Type type;
-        if constexpr (std::is_same<Protocol, UnixSocketServer>::value)
+        if constexpr (std::is_same<T, UnixSocketServer>::value)
         {
             type = Type::af_unix;
         }
 
-        else if constexpr (std::is_same<Protocol, UDPServer>::value)
+        else if constexpr (std::is_same<T, UDPServer>::value)
         {
             type = Type::af_inet;
         }
 
-        else if constexpr (std::is_same<Protocol, Websocket>::value)
+        else if constexpr (std::is_same<T, Websocket>::value)
         {
             type = Type::websocket;
         }
 
         m_items.insert(std::pair<Type, Status>(type, Status::connecting));
 
-        return Protocol(std::forward<Args>(args)...);
+        return T(std::forward<Args>(args)...);
     }
 
 private:

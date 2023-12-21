@@ -2,6 +2,7 @@
 #define NEXILIS_WEBSOCKET_WEBSOCKET_HH
 
 #include <nexilis/ports.hh>
+#include <nexilis/protocol.hh>
 #include <nexilis/websocket/websocket_macros.hh>
 
 #include <functional>
@@ -13,7 +14,7 @@ namespace nexilis
 {
 
 // This class acts as a abtraction for the websocketpp library.
-class Websocket
+class Websocket : public Protocol
 {
 public:
     /// Constructor.
@@ -27,7 +28,7 @@ public:
     void setCloseHandler(const std::function<void()>& closeHandler);
 
     // Start the Websocket server.
-    void start();
+    void start() override;
 
 private:
     /// Get command as vectors of bytes.
@@ -36,8 +37,6 @@ private:
     std::vector<unsigned char> convertToNexilisCommand(const wpp_message& msg);
 
     wpp_websocket m_websocket;
-
-    unsigned m_port;
 };
 
 } // namespace nexilis

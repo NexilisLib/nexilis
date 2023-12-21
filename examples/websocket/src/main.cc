@@ -1,3 +1,4 @@
+#include "nexilis/websocket/websocket.hh"
 #include <nexilis/log.hh>
 #include <nexilis/protocol_manager.hh>
 
@@ -8,7 +9,7 @@ int main()
     nexilis::Log::startConsoleLogging(nexilis::LogLevel::DEBUG);
 
     // Create websocketserver object.
-    auto websocketServer = manager.addProtocol<nexilis::Websocket>();
+    nexilis::Websocket websocketServer = manager.addProtocol<nexilis::Websocket>();
 
     // Set functionality when opening connection.
     websocketServer.setOpenHandler([]()
