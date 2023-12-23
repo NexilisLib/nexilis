@@ -1,5 +1,9 @@
+import threading
+import asyncio
+import websockets
+
 async def websocket_communication():
-    uri = "ws://192.168.1.85:54201"
+    uri = "ws://localhost:54201"
 
     async with websockets.connect(uri) as websocket:
         message = bytearray([0x10])

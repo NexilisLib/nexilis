@@ -27,7 +27,7 @@ int main()
 
     std::thread t2([&udpServer]()
     {
-        udpServer.receiveMessage();
+        udpServer.start();
     });
 
     t1.join();

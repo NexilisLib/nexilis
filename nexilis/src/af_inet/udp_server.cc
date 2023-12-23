@@ -1,3 +1,4 @@
+#include <netdb.h>
 #include <nexilis/af_inet/udp_server.hh>
 
 #include <nexilis/command.hh>
@@ -10,7 +11,7 @@ namespace nexilis
 UDPServer::UDPServer(unsigned port) :
     Protocol(port)
 {
-    struct addrinfo hints, *res, *p;
+    addrinfo hints, *res, *p;
 
     std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -55,14 +56,14 @@ UDPServer::~UDPServer()
     close(m_serverSocket);
 }
 
-void UDPServer::receiveMessage()
+void UDPServer::start()
 {
     char buffer[1024];
-    struct sockaddr_storage clientAddr;
+    sockaddr_storage clientAddr;
     socklen_t clientLen = sizeof(clientAddr);
 
     // Receive messages from the client.
-    ssize_t bytesRead = recvfrom(m_serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddr, &clientLen);
+    ssize_t bytesRead = recvfrom(m_serverSocket, buffer, sizeof(buffer), 0, (sockaddr*)&clientAddr, &clientLen);
     if (bytesRead == -1)
     {
         Log::critical("Receive failed");
@@ -76,14 +77,14 @@ void UDPServer::receiveMessage()
     // IPV4
     if (clientAddr.ss_family == AF_INET)
     {
-        struct sockaddr_in* ipv4 = (struct sockaddr_in*)&clientAddr;
+        sockaddr_in* ipv4 = (sockaddr_in*)&clientAddr;
         address = inet_ntop(AF_INET, &(ipv4->sin_addr), addressBuffer, INET_ADDRSTRLEN);
     }
 
     // IPV6
     else if (clientAddr.ss_family == AF_INET6)
     {
-        struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)&clientAddr;
+        sockaddr_in6* ipv6 = (sockaddr_in6*)&clientAddr;
         address = inet_ntop(AF_INET6, &(ipv6->sin6_addr), addressBuffer, INET6_ADDRSTRLEN);
     }
     else

@@ -18,10 +18,13 @@ public:
     /// Destructor.
     ~UDPServer();
 
-    /// Listen to messages.
-    /// TODO change to Protocol::start();
-    /// also prolly implement Protocol::stop()
-    void receiveMessage();
+    /// Protocol::start() implementation.
+    void start() override;
+
+    /// Protocol::stop() implementation.
+    void stop() override
+    {
+    }
 
 private:
     int m_serverSocket;
