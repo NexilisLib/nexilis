@@ -30,6 +30,11 @@ public:
     // Start the Websocket server.
     void start() override;
 
+    // Protocol::stop() implementation.
+    void stop() override
+    {
+    }
+
 private:
     /// Get command as vectors of bytes.
     /// \param msg Message gotten from websocketpp.

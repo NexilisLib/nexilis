@@ -2,11 +2,12 @@
 #define NEXILIS_UDP_SERVER_HH
 
 #include <nexilis/ports.hh>
+#include <nexilis/protocol.hh>
 
 namespace nexilis
 {
 
-class UDPServer
+class UDPServer : public Protocol
 {
 public:
     /// Constructor.
@@ -18,6 +19,8 @@ public:
     ~UDPServer();
 
     /// Listen to messages.
+    /// TODO change to Protocol::start();
+    /// also prolly implement Protocol::stop()
     void receiveMessage();
 
 private:

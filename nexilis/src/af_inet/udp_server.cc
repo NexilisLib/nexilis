@@ -7,7 +7,8 @@
 namespace nexilis
 {
 
-UDPServer::UDPServer(unsigned port)
+UDPServer::UDPServer(unsigned port) :
+    Protocol(port)
 {
     struct addrinfo hints, *res, *p;
 
