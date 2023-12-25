@@ -26,6 +26,12 @@ public:
     {
     }
 
+    /// Protocol::getType() implementation.
+    Type getType() override
+    {
+        return Type::UDP;
+    }
+
 private:
     int m_serverSocket;
 };

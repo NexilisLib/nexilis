@@ -5,9 +5,9 @@
 
 int main()
 {
-    nexilis::ProtocolManager manager;
-
     nexilis::Log::startConsoleLogging();
+
+    nexilis::ProtocolManager manager;
 
     // Create a websocket server.
     auto websocketServer = manager.addProtocol<nexilis::Websocket>();
@@ -19,7 +19,6 @@ int main()
     auto udpServer = manager.addProtocol<nexilis::UDPServer>();
 
     // Run websocket server and udp server at the same time.
-
     std::thread t1([&websocketServer]()
     {
         websocketServer.start();

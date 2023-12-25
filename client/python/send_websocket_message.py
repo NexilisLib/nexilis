@@ -6,7 +6,7 @@ async def websocket_communication():
     uri = "ws://localhost:54201"
 
     async with websockets.connect(uri) as websocket:
-        message = bytearray([0x10])
+        message = bytearray([0x10, 0x10])
         await websocket.send(message)
         print(f"Sent websocket message: {message}")
 

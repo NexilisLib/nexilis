@@ -4,6 +4,7 @@
 namespace nexilis
 {
 
+// These ports define the default port values for different "protocols".
 enum class Port
 {
     UDP = 54200,

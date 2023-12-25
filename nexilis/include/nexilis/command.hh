@@ -4,6 +4,7 @@
 #include <nexilis/boost/boost_io_context.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/connection.hh>
+#include <nexilis/protocol.hh>
 
 #include <cstddef>
 #include <string>
@@ -28,14 +29,17 @@ public:
     static std::vector<unsigned char> create(unsigned char mainCommand, unsigned char subCommand = 0x10);
 
     /// Read the command from client.
-    /// \param The vector of bytes that is the command.
+    /// \param command The vector of bytes that is the command.
+    /// \param connection The connection that sent the message.
+    /// \param protocol The protocol that was used in the sending of the message.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const std::vector<unsigned char>& command, Connection& connection);
+    static bool read(const std::vector<unsigned char>& command, Connection& connection, Protocol& protocol);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
-    static bool read(const char* command_data, size_t lenght, Connection& connection);
+    /// \param connection The connection that sent the message.
+    static bool read(const char* command_data, size_t lenght, Connection& connection, Protocol& protocol);
 
 private:
     /// Create IPv4 address from IPV4 data.

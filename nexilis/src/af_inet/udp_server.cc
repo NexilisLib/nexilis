@@ -106,7 +106,7 @@ void UDPServer::start()
     // Create message object.
     std::string message(buffer);
 
-    if (!Command::read(message.c_str(), message.size(), connection))
+    if (!Command::read(message.c_str(), message.size(), connection, *this))
     {
         Log::error("UDP server message reading error, message: ", message);
     }

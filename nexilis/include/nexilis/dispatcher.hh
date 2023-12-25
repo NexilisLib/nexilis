@@ -4,6 +4,7 @@
 #include <nexilis/af_inet/udp_sender.hh>
 #include <nexilis/boost/boost_udp_sender.hh>
 #include <nexilis/connection.hh>
+#include <nexilis/websocket/websocket_macros.hh>
 
 namespace nexilis
 {
@@ -30,6 +31,11 @@ public:
         BoostUDPSender sender(boost_io_context::getIOContext(), connection.getIPAddress());
         boost_io_context::start();
         sender.sendMessage(message);
+    }
+
+    static void sendMessage(wpp_websocket websocket, wpp_connection connection, const std::string& message)
+    {
+        websocket.send(connection, message, websocketpp::frame::opcode::text);
     }
 };
 

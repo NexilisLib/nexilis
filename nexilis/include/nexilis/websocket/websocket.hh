@@ -35,6 +35,12 @@ public:
     {
     }
 
+    // Protocol::getType() implementation.
+    Type getType() override
+    {
+        return Type::Websocket;
+    }
+
 private:
     /// Get command as vectors of bytes.
     /// \param msg Message gotten from websocketpp.

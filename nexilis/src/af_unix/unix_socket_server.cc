@@ -13,7 +13,7 @@ namespace nexilis
 /// The file path we are reading messages from.
 static std::string path;
 
-UnixSocketServer::UnixSocketServer(const std::string& socketPath)
+UnixSocketServer::UnixSocketServer(const std::string& socketPath) : Protocol(-1)
 {
     path = socketPath;
 
@@ -55,7 +55,7 @@ void UnixSocketServer::receiveMessage()
         }
 
         // Read the message.
-        Command::read(m_buffer, sizeof(m_buffer), connection);
+        Command::read(m_buffer, sizeof(m_buffer), connection, *this);
     }
 }
 

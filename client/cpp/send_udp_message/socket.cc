@@ -7,7 +7,7 @@
 
 int main()
 {
-    const char* target_ip = "192.168.1.17";
+    const char* target_ip = "192.169.111.74";
     int target_port = 54200;
 
     int udp_socket = socket(AF_INET, SOCK_DGRAM, 0);

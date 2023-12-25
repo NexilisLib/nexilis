@@ -2,11 +2,12 @@
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
 #include <string>
+#include <nexilis/protocol.hh>
 
 namespace nexilis
 {
 
-class UnixSocketServer
+class UnixSocketServer : public Protocol
 {
 public:
     /// Constructor.
@@ -17,6 +18,19 @@ public:
 
     // Read messages from the specified path.
     void receiveMessage();
+
+    void start() override
+    {
+    }
+
+    void stop() override
+    {
+    }
+
+    Type getType() override
+    {
+        return Type::UnixSocket;
+    }
 
 private:
     int m_serverSocket;
