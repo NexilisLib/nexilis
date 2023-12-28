@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Define the directories to run Clang-Format recursively
+# Define the directories to run Clang-Format recursively.
 directories=("nexilis" "tests" "examples")
 
-# Run Clang-Format recursively in the specified directories
+# Run Clang-Format recursively in the specified directories.
 for directory in "${directories[@]}"; do
     echo "Formatting files in directory: $directory"
     find "$directory" -type f \( -name "*.hh" -or -name "*.cc" \) -exec clang-format -i {} +
