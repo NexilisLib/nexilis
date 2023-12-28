@@ -41,7 +41,6 @@ protected:
     };
 
 private:
-
     // Internally -1 if protocol does not need port.
     uint32_t m_port;
 };

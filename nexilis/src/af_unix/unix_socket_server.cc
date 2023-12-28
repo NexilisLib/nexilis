@@ -13,7 +13,8 @@ namespace nexilis
 /// The file path we are reading messages from.
 static std::string path;
 
-UnixSocketServer::UnixSocketServer(const std::string& socketPath) : Protocol(-1)
+UnixSocketServer::UnixSocketServer(const std::string& socketPath)
+    : Protocol(-1)
 {
     path = socketPath;
 

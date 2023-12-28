@@ -53,7 +53,7 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
 
                     auto type = protocol.getType();
 
-                    switch(type)
+                    switch (type)
                     {
                         case Protocol::Type::UDP:
                         {

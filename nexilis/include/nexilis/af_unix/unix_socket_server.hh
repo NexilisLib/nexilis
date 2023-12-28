@@ -1,8 +1,8 @@
 #ifndef NEXILIS_UNIX_SOCKET_SERVER_HH
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
-#include <string>
 #include <nexilis/protocol.hh>
+#include <string>
 
 namespace nexilis
 {
