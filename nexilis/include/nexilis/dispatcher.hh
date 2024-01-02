@@ -13,9 +13,9 @@ class Dispatcher
 {
 public:
     /// Sends UDP message to a connection.
-    static void sendUDPMessage(Connection& connection, const std::string& message)
+    static void sendUDPMessage(Connection& connection, unsigned port, const std::string& message)
     {
-        UDPSender sender(connection.getIPAddress().c_str());
+        UDPSender sender(connection.getIPAddress().c_str(), port);
         sender.sendMessage(message);
     }
 
@@ -33,7 +33,7 @@ public:
         sender.sendMessage(message);
     }
 
-    static void sendMessage(wpp_websocket websocket, wpp_connection connection, const std::string& message)
+    static void sendWebsocketMessage(wpp_websocket websocket, wpp_connection connection, const std::string& message)
     {
         websocket.send(connection, message, websocketpp::frame::opcode::text);
     }

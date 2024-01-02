@@ -8,7 +8,7 @@
 #include <functional>
 
 /// At some we need global debug.
-#define WEBSOCKET_DEBUG
+#define WEBSOCKET_DEBUG true
 
 namespace nexilis
 {
@@ -26,6 +26,8 @@ public:
 
     // Set custom functionality when closing connection.
     void setCloseHandler(const std::function<void()>& closeHandler);
+
+    // m_websocket.set_message_handler([this](wpp_connection cnn, wpp_message msg)
 
     // Start the Websocket server.
     void start() override;

@@ -23,48 +23,49 @@ Websocket::Websocket(unsigned port)
 
     m_websocket.set_message_handler([this](wpp_connection cnn, wpp_message msg)
                                     {
-    auto con = m_websocket.get_con_from_hdl(cnn);
-    auto& socket = con->get_raw_socket();
-    auto& tcp_socket = dynamic_cast<boost::asio::ip::tcp::socket&>(socket);
-    auto remote_endpoint = tcp_socket.remote_endpoint();
+        auto con = m_websocket.get_con_from_hdl(cnn);
+        auto& socket = con->get_raw_socket();
+        auto& tcp_socket = dynamic_cast<boost::asio::ip::tcp::socket&>(socket);
+        auto remote_endpoint = tcp_socket.remote_endpoint();
 
-    // Get ip address.
-    std::string ip_address = remote_endpoint.address().to_string();
+        // Get ip address.
+        std::string ip_address = remote_endpoint.address().to_string();
 
-    // Convert the address to lowercase to for case-insensitive comparison.
-    std::transform(ip_address.begin(), ip_address.end(), ip_address.begin(), ::tolower);
+        // Convert the address to lowercase to for case-insensitive comparison.
+        std::transform(ip_address.begin(), ip_address.end(), ip_address.begin(), ::tolower);
 
-    // Check if the address is an IPv6-mapped Ipv4 address.
-    if (ip_address.compare(0, 7, "::ffff:") == 0)
-    {
-        // Remove previous prefix.
-        ip_address = ip_address.substr(7);
-    }
+        // Check if the address is an IPv6-mapped Ipv4 address.
+        if (ip_address.compare(0, 7, "::ffff:") == 0)
+        {
+            // Remove previous prefix.
+            ip_address = ip_address.substr(7);
+        }
 
-    Connection connection(ip_address);
-    auto nexilisMessage = convertToNexilisCommand(msg);
+        Connection connection(ip_address);
+        auto nexilisMessage = convertToNexilisCommand(msg);
 
 #ifdef WEBSOCKET_DEBUG
-    std::string messageStr;
-    for (int i = 0; i < nexilisMessage.size(); i++)
-    {
-        messageStr += nexilisMessage[i];
-    }
-    Log::info("Received websocket message: " + messageStr);
+        std::string messageStr;
+        for (int i = 0; i < nexilisMessage.size(); i++)
+        {
+            messageStr += nexilisMessage[i];
+        }
+        Log::info("Received websocket message: " + messageStr);
 #endif
-    // Add new unknown connection.
-    if (!ConnectionStorage::contains(connection))
-    {
-        ConnectionStorage::add(std::move(connection));
-    }
+        // Add new unknown connection.
+        if (!ConnectionStorage::contains(connection))
+        {
+            ConnectionStorage::add(std::move(connection));
+        }
 
-    // We return false from message that is not understood by nexilis.
-    if (!Command::read(nexilisMessage, connection, *this))
-    {
-        Log::error("Something went wrong with the reading of the command");
-    } });
+        // We return false from message that is not understood by nexilis.
+        if (!Command::read(nexilisMessage, connection, *this))
+        {
+            Log::error("Something went wrong with the reading of the command");
+        } });
 }
 
+// This shit does not work.
 void Websocket::setOpenHandler(const std::function<void()>& openHandler)
 {
     m_websocket.set_open_handler([&openHandler](wpp_connection)

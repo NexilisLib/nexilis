@@ -7,16 +7,16 @@
 namespace nexilis
 {
 
-class UDPServer : public Protocol
+class AfInetUdpServer : public Protocol
 {
 public:
     /// Constructor.
     /// \param port The port we are assigning the udp server.
     /// This has been initialized the value of Port::UDP.
-    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
+    AfInetUdpServer(unsigned port = static_cast<unsigned>(Port::UDP));
 
     /// Destructor.
-    ~UDPServer();
+    ~AfInetUdpServer();
 
     /// Protocol::start() implementation.
     void start() override;

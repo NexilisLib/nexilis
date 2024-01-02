@@ -34,7 +34,10 @@ public:
 
     virtual Type getType() = 0;
 
-protected:
+    virtual void sendMessage()
+    {
+    }
+
     uint32_t getPort() const
     {
         return m_port;

@@ -13,6 +13,10 @@
 namespace nexilis
 {
 
+/// This class offers an interface for:
+/// - Creating command vector from two header bytes.
+/// - Reading said command vector, returning boolean describing
+/// if command is succesfull.
 class Command
 {
 public:

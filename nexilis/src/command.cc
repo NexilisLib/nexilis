@@ -43,26 +43,19 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
             {
                 case 0x10:
                 {
-                    // What we want to here to happen is that we send message "pong"
-                    // to the same address the message was received from.
-                    // This information can be gathered from "connection".
-                    //
-                    // The thing what makes this little difficult is that we need
-                    // to use the same "Protocol" that the message was received from.
-                    // Can this be added as a parameter to this function?
-
                     auto type = protocol.getType();
 
                     switch (type)
                     {
                         case Protocol::Type::UDP:
                         {
-                            Dispatcher::sendUDPMessage(connection, "pong");
+                            Dispatcher::sendUDPMessage(connection, 54209, "pong");
                             break;
                         }
 
                         case Protocol::Type::Websocket:
                         {
+                            // Dispatcher::sendMessage();
                             break;
                         }
                     }

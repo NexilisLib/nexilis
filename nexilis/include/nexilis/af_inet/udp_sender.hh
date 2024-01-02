@@ -24,6 +24,11 @@ public:
     /// \param message The message to be sent.
     void sendMessage(const std::string& message);
 
+    // Send message as bytes to the destination.
+    // \param data The message to be sent.
+    // \param dataSize The size of the data to be sent.
+    void sendMessage(const unsigned char* data, size_t dataSize);
+
 private:
     int m_socket;
     const char* m_destinationIP;

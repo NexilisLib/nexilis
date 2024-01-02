@@ -42,4 +42,18 @@ void UDPSender::sendMessage(const std::string& message)
     }
 }
 
+void UDPSender::sendMessage(const unsigned char* data, size_t dataSize)
+{
+    Log::info("Sending raw message...");
+
+    ssize_t bytes_sent = sendto(m_socket, data, dataSize, 0,
+                                (struct sockaddr*)&m_destinationAddress, sizeof(m_destinationAddress));
+
+    if (bytes_sent == -1)
+    {
+        Log::critical("Error sending message!");
+        close(m_socket);
+    }
+}
+
 } // namespace nexilis

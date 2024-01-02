@@ -8,7 +8,7 @@
 namespace nexilis
 {
 
-UDPServer::UDPServer(unsigned port)
+AfInetUdpServer::AfInetUdpServer(unsigned port)
     : Protocol(port)
 {
     addrinfo hints, *res, *p;
@@ -51,16 +51,17 @@ UDPServer::UDPServer(unsigned port)
     freeaddrinfo(res);
 }
 
-UDPServer::~UDPServer()
+AfInetUdpServer::~AfInetUdpServer()
 {
     close(m_serverSocket);
 }
 
-void UDPServer::start()
+void AfInetUdpServer::start()
 {
     char buffer[1024];
     sockaddr_storage clientAddr;
     socklen_t clientLen = sizeof(clientAddr);
+    unsigned short clientPort = 0;
 
     // Receive messages from the client.
     ssize_t bytesRead = recvfrom(m_serverSocket, buffer, sizeof(buffer), 0, (sockaddr*)&clientAddr, &clientLen);
@@ -79,6 +80,7 @@ void UDPServer::start()
     {
         sockaddr_in* ipv4 = (sockaddr_in*)&clientAddr;
         address = inet_ntop(AF_INET, &(ipv4->sin_addr), addressBuffer, INET_ADDRSTRLEN);
+        clientPort = ntohs(ipv4->sin_port);
     }
 
     // IPV6
@@ -86,6 +88,7 @@ void UDPServer::start()
     {
         sockaddr_in6* ipv6 = (sockaddr_in6*)&clientAddr;
         address = inet_ntop(AF_INET6, &(ipv6->sin6_addr), addressBuffer, INET6_ADDRSTRLEN);
+        clientPort = ntohs(ipv6->sin6_port);
     }
     else
     {

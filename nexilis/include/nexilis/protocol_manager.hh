@@ -41,7 +41,7 @@ public:
             type = Type::af_unix;
         }
 
-        else if constexpr (std::is_same<T, UDPServer>::value)
+        else if constexpr (std::is_same<T, AfInetUdpServer>::value)
         {
             type = Type::af_inet;
         }

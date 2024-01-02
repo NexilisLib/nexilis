@@ -1,59 +1,39 @@
-#include "nexilis/af_inet/udp_server.hh"
 #include <nexilis/dispatcher.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/log.hh>
 
-#include <sys/types.h>
-
-void sendUdpMessage()
+void startServer()
 {
-    const char* target_ip = "localhost";
-    uint16_t target_port = 54200;
+    nexilis::ProtocolManager manager;
+    auto server = manager.addProtocol<nexilis::AfInetUdpServer>(54209);
+    server.start();
+}
 
-    int udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
+void sendMessageAfterDelay()
+{
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    if (udp_socket == -1)
-    {
-        std::cerr << "Error creating socket" << std::endl;
-    }
+    unsigned char bytesToSend[] = { 0x10, 0x10 };
+    size_t dataSize = sizeof(bytesToSend);
 
-    sockaddr_in target_addr;
-    target_addr.sin_family = AF_INET;
-    target_addr.sin_port = htons(target_port);
-    target_addr.sin_addr.s_addr = inet_addr(target_ip);
-
-    // TODO We want to change this message to be:
-    // 2 bytes [0x10, 0x10]
-    const char* message = "Test";
-
-    ssize_t bytes_sent = sendto(udp_socket, message, strlen(message), 0, (sockaddr*)&target_addr, sizeof(target_addr));
-
-    if (bytes_sent == -1)
-    {
-        std::cerr << "Error sending message" << std::endl;
-        close(udp_socket);
-    }
-
-    close(udp_socket);
+    // Send the message after a delay
+    nexilis::UDPSender sender("192.168.1.85", 54200);
+    sender.sendMessage(bytesToSend, dataSize);
 }
 
 int main()
 {
     nexilis::Log::startConsoleLogging();
 
-    nexilis::ProtocolManager manager;
+    // Start the server in one thread
+    std::thread serverThread(startServer);
 
-    auto server = manager.addProtocol<nexilis::UDPServer>(54209);
+    // Wait for one second before sending the message in another thread
+    std::thread messageThread(sendMessageAfterDelay);
 
-    std::thread serverThread([&server]()
-    {
-        server.start();
-    });
-
+    // Join the threads to ensure they complete before exiting
     serverThread.join();
-
-    // Add sending of the message here.
-    sendUdpMessage();
+    messageThread.join();
 
     return 0;
 }
