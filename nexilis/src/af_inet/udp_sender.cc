@@ -8,8 +8,8 @@
 namespace nexilis
 {
 
-UDPSender::UDPSender(const char* destinationIP, unsigned port)
-    : m_destinationIP(destinationIP)
+UDPSender::UDPSender(const char* destinationIP, unsigned destinationPort)
+    : m_destinationIP(destinationIP), m_destinationPort(destinationPort)
 {
     // Create a UDP socket
     m_socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -19,7 +19,7 @@ UDPSender::UDPSender(const char* destinationIP, unsigned port)
     }
 
     m_destinationAddress.sin_family = AF_INET;
-    m_destinationAddress.sin_port = htons(port);
+    m_destinationAddress.sin_port = htons(destinationPort);
     m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
 }
 

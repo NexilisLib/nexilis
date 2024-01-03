@@ -1,15 +1,17 @@
-#include <netdb.h>
-#include <nexilis/af_inet/udp_server.hh>
+#include <nexilis/af_inet/base_udp_server.hh>
+#include <nexilis/log.hh>
 
-#include <nexilis/command.hh>
-#include <nexilis/connection_storage.hh>
-#include <string>
+#include <netdb.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#include <cstring>
 
 namespace nexilis
 {
 
-AfInetUdpServer::AfInetUdpServer(unsigned port)
-    : Protocol(port)
+BaseUdpServer::BaseUdpServer(unsigned port) :
+    Protocol(port)
 {
     addrinfo hints, *res, *p;
 
@@ -51,13 +53,14 @@ AfInetUdpServer::AfInetUdpServer(unsigned port)
     freeaddrinfo(res);
 }
 
-AfInetUdpServer::~AfInetUdpServer()
+BaseUdpServer::~BaseUdpServer()
 {
     close(m_serverSocket);
 }
 
-void AfInetUdpServer::start()
+BaseUdpServer::Message BaseUdpServer::receiveMessage()
 {
+    // TODO I still need global buffer size.
     char buffer[1024];
     sockaddr_storage clientAddr;
     socklen_t clientLen = sizeof(clientAddr);
@@ -68,7 +71,7 @@ void AfInetUdpServer::start()
     if (bytesRead == -1)
     {
         Log::critical("Receive failed");
-        return;
+        return BaseUdpServer::Message();
     }
 
     // Hold either IPV4 or IPV6 address.
@@ -93,26 +96,20 @@ void AfInetUdpServer::start()
     else
     {
         Log::critical("Unknown address family");
-        return;
-    }
-
-    // Implicit conversion from const char* -> string?
-    Connection connection(address, clientPort);
-    if (!ConnectionStorage::contains(connection))
-    {
-        ConnectionStorage::add(std::move(connection));
+        return BaseUdpServer::Message();
     }
 
     // Null-terminate the received message and convert it to std::string.
     buffer[bytesRead] = '\0';
 
     // Create message object.
-    std::string message(buffer);
-
-    if (!Command::read(message.c_str(), message.size(), connection, *this))
+    return BaseUdpServer::Message
     {
-        Log::error("UDP server message reading error, message: ", message);
-    }
+        address,
+        clientPort,
+        std::string(buffer)
+    };
+
 }
 
-} // namespace nexilis
+}

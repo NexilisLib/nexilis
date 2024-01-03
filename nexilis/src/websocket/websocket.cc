@@ -41,7 +41,7 @@ Websocket::Websocket(unsigned port)
             ip_address = ip_address.substr(7);
         }
 
-        Connection connection(ip_address);
+        Connection connection(ip_address, remote_endpoint.port());
         auto nexilisMessage = convertToNexilisCommand(msg);
 
 #ifdef WEBSOCKET_DEBUG
@@ -65,7 +65,6 @@ Websocket::Websocket(unsigned port)
         } });
 }
 
-// This shit does not work.
 void Websocket::setOpenHandler(const std::function<void()>& openHandler)
 {
     m_websocket.set_open_handler([&openHandler](wpp_connection)

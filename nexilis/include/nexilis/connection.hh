@@ -1,6 +1,8 @@
 #ifndef NEXILIS_CONNECTION_HH
 #define NEXILIS_CONNECTION_HH
 
+#include <nexilis/protocol.hh>
+
 #include <string>
 
 namespace nexilis
@@ -10,8 +12,8 @@ class Connection
 {
 public:
     /// Constructor.
-    Connection(std::string ip_address) noexcept
-        : m_ip_address(ip_address)
+    Connection(std::string ip_address, unsigned port) noexcept
+        : m_ip_address(ip_address), m_port(port)
     {
     }
 
@@ -40,8 +42,17 @@ public:
         return m_ip_address;
     }
 
+    /// Getter for the port.
+    unsigned getPort() const
+    {
+        return m_port;
+    }
+
 private:
     std::string m_ip_address;
+
+    /// Internally -1 if there doesn't have to be associated port.
+    unsigned m_port;
 };
 
 } // namespace nexilis

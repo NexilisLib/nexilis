@@ -1,3 +1,4 @@
+#include "nexilis/protocol.hh"
 #include <nexilis/command.hh>
 #include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
@@ -49,6 +50,10 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
                     {
                         case Protocol::Type::UDP:
                         {
+                            // This should work but it does not.
+                            //Dispatcher::sendUDPMessage(connection, connection.getPort(), "pong");
+                            
+                            // This obviously works.
                             Dispatcher::sendUDPMessage(connection, 54209, "pong");
                             break;
                         }
@@ -56,6 +61,11 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
                         case Protocol::Type::Websocket:
                         {
                             // Dispatcher::sendMessage();
+                            break;
+                        }
+
+                        case Protocol::Type::UnixSocket:
+                        {
                             break;
                         }
                     }

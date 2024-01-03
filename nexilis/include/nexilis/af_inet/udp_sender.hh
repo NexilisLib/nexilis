@@ -15,7 +15,7 @@ class UDPSender
 public:
     /// Constructor.
     /// \param destinationIP The IP address where the message(s) will be sent.
-    UDPSender(const char* destinationIP, unsigned port = static_cast<unsigned>(Port::UDP));
+    UDPSender(const char* destinationIP, unsigned destinationPort = static_cast<unsigned>(Port::UDP));
 
     // Destructor.
     ~UDPSender();
@@ -33,6 +33,8 @@ private:
     int m_socket;
     const char* m_destinationIP;
     sockaddr_in m_destinationAddress;
+
+    unsigned short m_destinationPort;
 };
 
 } // namespace nexilis

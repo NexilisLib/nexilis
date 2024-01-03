@@ -12,7 +12,6 @@ int main()
     // Create a websocket server.
     auto websocketServer = manager.addProtocol<nexilis::Websocket>();
 
-    // These statements are most likely not required.
     websocketServer.setOpenHandler([]()
                                    { std::cout << "Open handler!" << std::endl; });
 
