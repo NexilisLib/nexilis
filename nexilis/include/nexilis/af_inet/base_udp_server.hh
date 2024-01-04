@@ -15,7 +15,6 @@ public:
     struct Message
     {
         const char* m_address;
-        unsigned short m_port;
         std::string message;
     };
 

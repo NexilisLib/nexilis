@@ -8,12 +8,15 @@
 namespace nexilis
 {
 
+// This class acts as an abstraction for different clients.
+// Maybe even should be called "Client".
+
 class Connection
 {
 public:
     /// Constructor.
-    Connection(std::string ip_address, unsigned port) noexcept
-        : m_ip_address(ip_address), m_port(port)
+    Connection(std::string ip_address) noexcept
+        : m_ip_address(ip_address)
     {
     }
 
@@ -42,17 +45,20 @@ public:
         return m_ip_address;
     }
 
-    /// Getter for the port.
-    unsigned getPort() const
+    void setUdpPort(unsigned short udpPort)
     {
-        return m_port;
+        m_upd_port = udpPort;
+    }
+
+    unsigned short getUdpPort()
+    {
+        return m_upd_port;
     }
 
 private:
     std::string m_ip_address;
 
-    /// Internally -1 if there doesn't have to be associated port.
-    unsigned m_port;
+    unsigned short m_upd_port;
 };
 
 } // namespace nexilis

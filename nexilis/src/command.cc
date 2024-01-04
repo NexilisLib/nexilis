@@ -1,3 +1,4 @@
+#include "nexilis/command_type.hh"
 #include "nexilis/protocol.hh"
 #include <nexilis/command.hh>
 #include <nexilis/dispatcher.hh>
@@ -20,8 +21,6 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned cha
             return std::vector<unsigned char>{
                 static_cast<unsigned char>(maincommand), static_cast<unsigned char>(subCommand)};
         }
-        case MainCommand::setup:
-            return std::vector<unsigned char>{};
         case MainCommand::update:
             return std::vector<unsigned char>{};
         default:
@@ -38,6 +37,35 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
 {
     switch (static_cast<MainCommand>(command.front()))
     {
+        case MainCommand::protocol_setup:
+        {
+            switch (command[1])
+            {
+                // UDP setup for the client.
+                case 0x10:
+                {
+                    for (int i = 0; i < command.size(); i++)
+                    {
+                        std::cout << command[i];
+                    }
+                    std::cout << std::endl;
+
+                    auto payload = createVectorWithoutHeaderBytes(command);
+                    auto port = convertToUnsignedShort(payload);
+                    connection.setUdpPort(port);
+
+                    break;
+                }
+
+                // Same for the websocket.
+                case 0x20:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+
         case MainCommand::ping:
         {
             switch (command[1])
@@ -50,11 +78,17 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
                     {
                         case Protocol::Type::UDP:
                         {
-                            // This should work but it does not.
+                            // This is the port where the message was sent from, so random port.
                             //Dispatcher::sendUDPMessage(connection, connection.getPort(), "pong");
-                            
+
                             // This obviously works.
                             Dispatcher::sendUDPMessage(connection, 54209, "pong");
+                            
+                            // This will not work because this port is the port that the server is using.
+                            //Dispatcher::sendUDPMessage(connection, protocol.getPort(), "port");
+
+                            //Dispatcher::sendUDPMessage(connection, connection.getUdpPort(), "pong");
+
                             break;
                         }
 

@@ -1,13 +1,12 @@
 #ifndef NEXILIS_UDP_SERVER_HH
 #define NEXILIS_UDP_SERVER_HH
 
-#include <nexilis/ports.hh>
-#include <nexilis/protocol.hh>
+#include <nexilis/af_inet/base_udp_server.hh>
 
 namespace nexilis
 {
 
-class AfInetUdpServer : public Protocol
+class AfInetUdpServer : public BaseUdpServer
 {
 public:
     /// Constructor.
@@ -31,9 +30,6 @@ public:
     {
         return Type::UDP;
     }
-
-private:
-    int m_serverSocket;
 };
 
 } // namespace nexilis

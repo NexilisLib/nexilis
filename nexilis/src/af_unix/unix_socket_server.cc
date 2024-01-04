@@ -49,7 +49,7 @@ void UnixSocketServer::receiveMessage()
         std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
 
         // Creating and adding new connections, I don't think this is really necessary but it's fine.
-        Connection connection(address, -1);
+        Connection connection(address);
         if (!ConnectionStorage::contains(connection))
         {
             ConnectionStorage::add(std::move(connection));

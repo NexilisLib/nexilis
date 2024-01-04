@@ -5,6 +5,7 @@
 #include <nexilis/command_type.hh>
 #include <nexilis/connection.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/log.hh>
 
 #include <cstddef>
 #include <string>
@@ -50,6 +51,37 @@ private:
     /// \param address The address data.
     /// \return string Created IPV4 string.
     std::string createIPv4Address(const std::vector<unsigned char>& address);
+
+    // This is most likely temporary function until I'll know how to make the interface smarter.
+    static unsigned short convertToUnsignedShort(const std::vector<unsigned char>& bytes)
+    {
+        if (bytes.size() < sizeof(unsigned short))
+        {
+            Log::error("Port conversion failed");
+        }
+
+        unsigned short value = 0;
+
+        for (size_t i = 0; i < sizeof(unsigned short); ++i)
+        {
+            value |= static_cast<unsigned short>(bytes[i] << (8 * i));
+        }
+
+        return value;
+    }
+
+    static std::vector<unsigned char> createVectorWithoutHeaderBytes(const std::vector<unsigned char>& original)
+    {
+        // Return empty vector if the original vector has less than two elements.
+        if (original.size() < 2)
+        {
+            return {};
+        }
+
+        std::vector<unsigned char> modified(original.begin() + 2, original.end());
+
+        return modified;
+    }
 };
 
 } // namespace nexilis

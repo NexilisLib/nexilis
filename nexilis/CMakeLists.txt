@@ -21,6 +21,7 @@ set(SOURCES
     src/af_unix/unix_socket_server.cc
     src/af_unix/unix_socket_sender.cc
 
+    src/af_inet/base_udp_server.cc
     src/af_inet/udp_sender.cc
     src/af_inet/udp_server.cc
 

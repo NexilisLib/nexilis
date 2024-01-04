@@ -41,7 +41,7 @@ Websocket::Websocket(unsigned port)
             ip_address = ip_address.substr(7);
         }
 
-        Connection connection(ip_address, remote_endpoint.port());
+        Connection connection(ip_address);
         auto nexilisMessage = convertToNexilisCommand(msg);
 
 #ifdef WEBSOCKET_DEBUG
