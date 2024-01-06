@@ -16,8 +16,17 @@ public:
 
     void start() override
     {
-        auto msg = BaseUdpServer::receiveMessage();
-        Log::info("Client received message: ", msg.message);
+        BaseUdpServer::start();
+
+        while (true)
+        {
+            BaseUdpServer::Message msg;
+
+            if (BaseUdpServer::getNextMessage(msg))
+            {
+                Log::info("Received message: ", msg.message, " from ", msg.m_address);
+            }
+        }
     }
 
     /// Protocol::stop() implementation.
@@ -30,7 +39,6 @@ public:
     {
         return Type::UDP;
     }
-
 };
 
 }

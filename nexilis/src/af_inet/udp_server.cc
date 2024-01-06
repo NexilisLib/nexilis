@@ -16,18 +16,27 @@ AfInetUdpServer::~AfInetUdpServer()
 
 void AfInetUdpServer::start()
 {
-    auto msg = BaseUdpServer::receiveMessage();
+    BaseUdpServer::start();
 
-    // Implicit conversion from const char* -> string?
-    Connection connection(msg.m_address);
-    if (!ConnectionStorage::contains(connection))
+    while (true)
     {
-        ConnectionStorage::add(std::move(connection));
-    }
+        BaseUdpServer::Message msg;
 
-    if (!Command::read(msg.message.c_str(), msg.message.size(), connection, *this))
-    {
-        Log::error("UDP server message reading error, message: ", msg.message);
+        if (BaseUdpServer::getNextMessage(msg))
+        {
+            Log::info("Received message: ", msg.message, " from ", msg.m_address);
+
+            Connection connection(msg.m_address);
+            if (!ConnectionStorage::contains(connection))
+            {
+                ConnectionStorage::add(std::move(connection));
+            }
+
+            if (!Command::read(msg.message.c_str(), msg.message.size(), connection, *this))
+            {
+                Log::error("UDP server message reading error, message: ", msg.message);
+            }
+        }
     }
 }
 

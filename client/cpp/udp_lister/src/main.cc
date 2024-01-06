@@ -10,8 +10,6 @@
 unsigned char setupCommand[] = { 0x10, 0x10, '5', '4', '2', '0', '9' };
 unsigned char pingCommand[] = { 0x20, 0x10 };
 
-std::mutex mtx;
-
 void startServer()
 {
     nexilis::ProtocolManager manager;

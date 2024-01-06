@@ -23,6 +23,7 @@ public:
     /// Protocol::stop() implementation.
     void stop() override
     {
+        BaseUdpServer::stop();
     }
 
     /// Protocol::getType() implementation.
