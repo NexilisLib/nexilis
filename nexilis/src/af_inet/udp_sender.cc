@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/af_inet/udp_sender.hh>
 #include <nexilis/log.hh>
 #include <nexilis/ports.hh>
@@ -42,7 +43,7 @@ void UDPSender::sendMessage(const std::string& message)
     }
 }
 
-void UDPSender::sendMessage(const unsigned char* data, size_t dataSize)
+void UDPSender::sendMessage(const uint8_t* data, size_t dataSize)
 {
     Log::info("Sending raw message...");
 

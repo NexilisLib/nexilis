@@ -1,23 +1,21 @@
-#include <algorithm>
 #include <nexilis/dispatcher.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/log.hh>
 #include <nexilis/af_inet/udp_client_receiver.hh>
 
-#include <mutex>
-#include <condition_variable>
-
-unsigned char setupCommand[] = { 0x10, 0x10, '5', '4', '2', '0', '9' };
-unsigned char pingCommand[] = { 0x20, 0x10 };
+uint8_t setupCommand[] = { 0x10, 0x10, '5', '4', '2', '0', '9' };
+uint8_t pingCommand[] = { 0x20, 0x10 };
 
 void startServer()
 {
     nexilis::ProtocolManager manager;
     auto server = manager.addProtocol<nexilis::UdpClientReceiver>(54209);
     server.start();
+
+    std::cout << "Server started!" << std::endl;
 }
 
-void sendMessageAfterDelay(unsigned char message[], size_t dataSize, std::string msgName)
+void sendMessageAfterDelay(uint8_t message[], size_t dataSize, std::string msgName)
 {
     std::cout << "Calling thread: " << msgName << std::endl;
 
@@ -29,6 +27,8 @@ void sendMessageAfterDelay(unsigned char message[], size_t dataSize, std::string
 int main()
 {
     nexilis::Log::startConsoleLogging();
+
+    //auto a = nexilis::Thread()
 
     // Start the server in one thread
     std::thread serverThread(startServer);

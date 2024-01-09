@@ -1,6 +1,7 @@
 #ifndef NEXILIS_DISPATCHER_HH
 #define NEXILIS_DISPATCHER_HH
 
+#include <cstdint>
 #include <nexilis/af_inet/udp_sender.hh>
 #include <nexilis/boost/boost_udp_sender.hh>
 #include <nexilis/connection.hh>
@@ -12,11 +13,17 @@ namespace nexilis
 class Dispatcher
 {
 public:
-    /// Sends UDP message to a connection.
+    /// Sends UDP message to a connection as a string.
     static void sendUDPMessage(Connection& connection, unsigned port, const std::string& message)
     {
         UDPSender sender(connection.getIPAddress().c_str(), port);
         sender.sendMessage(message);
+    }
+
+    static void sendUDPMessage(Connection& connection, unsigned port, const uint8_t* data, size_t dataSize)
+    {
+        UDPSender sender(connection.getIPAddress().c_str(), port);
+        sender.sendMessage(data, dataSize);
     }
 
     /// Sends UDP message to ip address.

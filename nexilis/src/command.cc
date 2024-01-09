@@ -1,31 +1,33 @@
 #include "nexilis/command_type.hh"
 #include "nexilis/protocol.hh"
+#include <cstdint>
 #include <nexilis/command.hh>
 #include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
+#include <sys/types.h>
 
 namespace nexilis
 {
 
-std::vector<unsigned char> Command::create(unsigned char mainCommand, unsigned char subCommand)
+std::vector<uint8_t> Command::create(uint8_t mainCommand, uint8_t subCommand)
 {
     return create(static_cast<MainCommand>(mainCommand), subCommand);
 }
 
-std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned char subCommand)
+std::vector<unsigned char> Command::create(MainCommand maincommand, uint8_t subCommand)
 {
     switch (maincommand)
     {
         case MainCommand::ping:
         {
-            return std::vector<unsigned char>{
-                static_cast<unsigned char>(maincommand), static_cast<unsigned char>(subCommand)};
+            return std::vector<uint8_t>{
+                static_cast<uint8_t>(maincommand), static_cast<uint8_t>(subCommand)};
         }
         case MainCommand::update:
-            return std::vector<unsigned char>{};
+            return std::vector<uint8_t>{};
         default:
         {
-            unsigned char firstByte = static_cast<unsigned char>(maincommand);
+            uint8_t firstByte = static_cast<uint8_t>(maincommand);
             Log::error("Something went wrong, first byte: ", firstByte);
         }
     }
@@ -33,7 +35,7 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, unsigned cha
     return std::vector<unsigned char>{};
 }
 
-bool Command::read(const std::vector<unsigned char>& command, Connection& connection, Protocol& protocol)
+bool Command::read(const std::vector<uint8_t>& command, Connection& connection, Protocol& protocol)
 {
     switch (static_cast<MainCommand>(command.front()))
     {
@@ -44,72 +46,84 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
                 // UDP setup for the client.
                 case 0x10:
                 {
-                    for (int i = 0; i < command.size(); i++)
-                    {
-                        std::cout << command[i];
-                    }
-                    std::cout << std::endl;
-
                     auto payload = createVectorWithoutHeaderBytes(command);
                     auto port = convertToUnsignedShort(payload);
                     connection.setUdpPort(port);
-
-                    break;
+                    return true;
                 }
 
                 // Same for the websocket.
                 case 0x20:
                 {
-                    break;
+                    return false;
                 }
+
             }
-            break;
+            Log::error("Undefined control flow");
+            return false;
         }
 
+        // this should be renamed connection management.
         case MainCommand::ping:
         {
             switch (command[1])
             {
                 case 0x10:
                 {
+                    // Consider doing this check with the third byte.
                     auto type = protocol.getType();
+
+                    // DEBUG default ping port
+                    //Dispatcher::sendUDPMessage(connection, 54209, "pong");
 
                     switch (type)
                     {
                         case Protocol::Type::UDP:
                         {
-                            // This is the port where the message was sent from, so random port.
-                            //Dispatcher::sendUDPMessage(connection, connection.getPort(), "pong");
-
-                            // This obviously works.
-                            Dispatcher::sendUDPMessage(connection, 54209, "pong");
-                            
-                            // This will not work because this port is the port that the server is using.
-                            //Dispatcher::sendUDPMessage(connection, protocol.getPort(), "port");
-
-                            //Dispatcher::sendUDPMessage(connection, connection.getUdpPort(), "pong");
-
-                            break;
+                            // TODO send back 0x20 0x20
+                            uint8_t data[] = { 0x20, 0x20 };
+                            Dispatcher::sendUDPMessage(connection, protocol.getPort(), data, 2);
+                            return true;
                         }
 
                         case Protocol::Type::Websocket:
                         {
                             // Dispatcher::sendMessage();
-                            break;
+                            Log::error("Websocket 0x10 not implemented");
+                            return false;
                         }
 
                         case Protocol::Type::UnixSocket:
                         {
-                            break;
+                            Log::error("Unix socket 0x10 not implemented");
+                            return false;
                         }
                     }
 
-                    Log::info("Received MainCommand::ping(0x10, 0x10)");
+                    // This branch should 
+                    Log::error("Received MainCommand::ping(0x10, 0x10)");
+                    return false;
+                }
+
+                // 0x20, 0x20 is the reply to the pong message back.
+                // Consider this in the clientside api.
+                case 0x20:
+                {
+                    Log::info("Received pong");
+                    Dispatcher::sendUDPMessage(connection, protocol.getPort(), "pong");
                     return true;
                 }
 
-                case 0x20:
+                // Start listening
+                case 0x30:
                 {
+                    return false;
+                }
+
+                // Stop listening
+                case 0x40:
+                {
+                    return false;
                 }
 
                 default:
@@ -144,17 +158,17 @@ bool Command::read(const std::vector<unsigned char>& command, Connection& connec
 bool Command::read(const char* command_data, size_t lenght, Connection& connection, Protocol& protocol)
 {
     // Create a vector and reserve space for the character.
-    std::vector<unsigned char> result;
+    std::vector<uint8_t> result;
     result.reserve(lenght);
 
     for (size_t i = 0; i < lenght; i++)
     {
-        result.emplace_back(static_cast<unsigned char>(command_data[i]));
+        result.emplace_back(static_cast<uint8_t>(command_data[i]));
     }
     return read(result, connection, protocol);
 }
 
-std::string Command::createIPv4Address(const std::vector<unsigned char>& characters)
+std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)
 {
     if (characters.size() < 4)
     {
