@@ -3,6 +3,7 @@
 
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/log.hh>
+#include <nexilis/command.hh>
 
 namespace nexilis
 {
@@ -25,6 +26,12 @@ public:
             if (BaseUdpServer::getNextMessage(msg))
             {
                 Log::info("Received message: ", msg.message, " from ", msg.m_address);
+
+                Connection connection(msg.m_address);
+                if (!Command::read(msg.message.c_str(), msg.message.size(), connection, *this))
+                {
+                    Log::error("Received unvalid nexilis command: ", msg.message);
+                }
             }
         }
     }

@@ -6,6 +6,7 @@
 int main()
 {
     nexilis::Log::startConsoleLogging();
+    nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
 
     nexilis::ProtocolManager manager;
 

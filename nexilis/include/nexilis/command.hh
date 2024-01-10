@@ -61,14 +61,12 @@ private:
             Log::error("Port conversion failed");
         }
 
-        unsigned short value = 0;
-
-        for (size_t i = 0; i < sizeof(unsigned short); ++i)
+        std::stringstream ss;
+        for (uint8_t val : bytes)
         {
-            value |= static_cast<unsigned short>(bytes[i] << (8 * i));
+            ss << static_cast<char>(val);
         }
-
-        return value;
+        return std::stoul(ss.str());
     }
 
     // This feels so wrong.

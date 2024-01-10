@@ -1,9 +1,9 @@
-#include "nexilis/command_type.hh"
 #include "nexilis/protocol.hh"
 #include <cstdint>
 #include <nexilis/command.hh>
 #include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
+
 #include <sys/types.h>
 
 namespace nexilis
@@ -14,7 +14,8 @@ std::vector<uint8_t> Command::create(uint8_t mainCommand, uint8_t subCommand)
     return create(static_cast<MainCommand>(mainCommand), subCommand);
 }
 
-std::vector<unsigned char> Command::create(MainCommand maincommand, uint8_t subCommand)
+// Think about this API.
+std::vector<uint8_t> Command::create(MainCommand maincommand, uint8_t subCommand)
 {
     switch (maincommand)
     {
@@ -37,6 +38,13 @@ std::vector<unsigned char> Command::create(MainCommand maincommand, uint8_t subC
 
 bool Command::read(const std::vector<uint8_t>& command, Connection& connection, Protocol& protocol)
 {
+    for (uint8_t commandByte : command)
+    {
+        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
+        Log::debug("");
+        Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
+    }
+
     switch (static_cast<MainCommand>(command.front()))
     {
         case MainCommand::protocol_setup:
@@ -49,6 +57,7 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                     auto payload = createVectorWithoutHeaderBytes(command);
                     auto port = convertToUnsignedShort(payload);
                     connection.setUdpPort(port);
+                    assert(port == connection.getUdpPort());
                     return true;
                 }
 
@@ -80,9 +89,9 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                     {
                         case Protocol::Type::UDP:
                         {
-                            // TODO send back 0x20 0x20
+                            // Send back to second byte.
                             uint8_t data[] = { 0x20, 0x20 };
-                            Dispatcher::sendUDPMessage(connection, protocol.getPort(), data, 2);
+                            Dispatcher::sendUDPMessage(connection, connection.getUdpPort(), "pong");
                             return true;
                         }
 
@@ -100,7 +109,7 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                         }
                     }
 
-                    // This branch should 
+                    // This branch should not exist.
                     Log::error("Received MainCommand::ping(0x10, 0x10)");
                     return false;
                 }
@@ -110,7 +119,7 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                 case 0x20:
                 {
                     Log::info("Received pong");
-                    Dispatcher::sendUDPMessage(connection, protocol.getPort(), "pong");
+                    Dispatcher::sendUDPMessage(connection, connection.getUdpPort(), "pong");
                     return true;
                 }
 
@@ -128,7 +137,7 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
 
                 default:
                 {
-                    return true;
+                    return false;
                 }
             }
         }
