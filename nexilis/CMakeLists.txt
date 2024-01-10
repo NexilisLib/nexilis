@@ -14,7 +14,7 @@ set(SOURCES
     src/command.cc
     src/vector3.cc
     src/ports.cc
-    src/connection_storage.cc
+    src/client_storage.cc
     src/boost/boost_io_context.cc
     src/log.cc
 

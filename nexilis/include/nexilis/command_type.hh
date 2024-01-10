@@ -22,16 +22,17 @@ enum class MainCommand : uint8_t
     general_info = 0x10
     help
     */
+    authentication = 0x40,
 
     // Server management
-    server_management = 0x40,
+    server_management = 0x50,
     /*
     Start
     Stop
     Restart
     */
 
-    player_management = 0x50,
+    player_management = 0x60,
     /*
     kick = 0x10,
     ban = 0x20,
@@ -40,17 +41,17 @@ enum class MainCommand : uint8_t
     unmute = 0x50,
     */
 
-    chat = 0x60,
+    chat = 0x70,
     /*
     say = 0x10,
     whisper = 0x20
     */
 
     // Get stuff
-    give = 0x70,
+    give = 0x80,
 
     // Commands to be overloaded
-    update = 0x80
+    update = 0x90
 };
 
 }

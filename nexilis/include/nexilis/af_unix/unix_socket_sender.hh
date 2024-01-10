@@ -1,8 +1,6 @@
 #ifndef NEXILIS_UNIX_SOCKET_SENDER_HH
 #define NEXILIS_UNIX_SOCKET_SENDER_HH
 
-#include <nexilis/connection.hh>
-
 #include <string>
 
 namespace nexilis

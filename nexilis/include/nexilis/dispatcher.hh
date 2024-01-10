@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <nexilis/af_inet/udp_sender.hh>
 #include <nexilis/boost/boost_udp_sender.hh>
-#include <nexilis/connection.hh>
+#include <nexilis/client.hh>
 #include <nexilis/websocket/websocket_macros.hh>
 
 namespace nexilis
@@ -14,15 +14,15 @@ class Dispatcher
 {
 public:
     /// Sends UDP message to a connection as a string.
-    static void sendUDPMessage(Connection& connection, unsigned port, const std::string& message)
+    static void sendUDPMessage(Client& client, unsigned port, const std::string& message)
     {
-        UDPSender sender(connection.getIPAddress().c_str(), port);
+        UDPSender sender(client.getIPAddress().c_str(), port);
         sender.sendMessage(message);
     }
 
-    static void sendUDPMessage(Connection& connection, unsigned port, const uint8_t* data, size_t dataSize)
+    static void sendUDPMessage(Client& client, unsigned port, const uint8_t* data, size_t dataSize)
     {
-        UDPSender sender(connection.getIPAddress().c_str(), port);
+        UDPSender sender(client.getIPAddress().c_str(), port);
         sender.sendMessage(data, dataSize);
     }
 
@@ -33,9 +33,9 @@ public:
         sender.sendMessage(message);
     }
 
-    static void sendBoostUDPMessage(Connection& connection, const std::string& message)
+    static void sendBoostUDPMessage(Client& client, const std::string& message)
     {
-        BoostUDPSender sender(boost_io_context::getIOContext(), connection.getIPAddress());
+        BoostUDPSender sender(boost_io_context::getIOContext(), client.getIPAddress());
         boost_io_context::start();
         sender.sendMessage(message);
     }

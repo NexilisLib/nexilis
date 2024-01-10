@@ -1,5 +1,5 @@
-#ifndef NEXILIS_CONNECTION_HH
-#define NEXILIS_CONNECTION_HH
+#ifndef NEXILIS_CLIENT_HH
+#define NEXILIS_CLIENT_HH
 
 #include <nexilis/protocol.hh>
 
@@ -9,31 +9,30 @@ namespace nexilis
 {
 
 // This class acts as an abstraction for different clients.
-// Maybe even should be called "Client".
 
-class Connection
+class Client
 {
 public:
     /// Constructor.
-    Connection(std::string ip_address) noexcept
+    Client(std::string ip_address) noexcept
         : m_ip_address(ip_address)
     {
     }
 
     /// Move constructor.
-    Connection(Connection&& other) noexcept
+    Client(Client&& other) noexcept
         : m_ip_address(other.m_ip_address)
     {
     }
 
     /// Deleted copy constructor.
-    Connection(const Connection& other) = delete;
+    Client(const Client& other) = delete;
 
     /// Deleted copy assignment operator.
-    Connection& operator=(const Connection other) = delete;
+    Client& operator=(const Client& other) = delete;
 
     /// Operator overload for comparison operator.
-    bool operator==(const Connection& other) const
+    bool operator==(const Client& other) const
     {
         return m_ip_address == other.getIPAddress();
     }
@@ -55,10 +54,22 @@ public:
         return m_upd_port;
     }
 
+    void setAccess(bool hasAccess)
+    {
+        m_hasAccess = hasAccess;
+    }
+
+    bool hasAccess()
+    {
+        return m_hasAccess;
+    }
+
 private:
     std::string m_ip_address;
 
     unsigned short m_upd_port;
+
+    bool m_hasAccess = false;
 };
 
 } // namespace nexilis

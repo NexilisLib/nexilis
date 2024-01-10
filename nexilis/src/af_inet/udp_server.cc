@@ -1,6 +1,6 @@
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/command.hh>
-#include <nexilis/connection_storage.hh>
+#include <nexilis/client_storage.hh>
 
 namespace nexilis
 {
@@ -26,13 +26,13 @@ void AfInetUdpServer::start()
         {
             Log::info("Received message: ", msg.message, " from ", msg.m_address);
 
-            Connection connection(msg.m_address);
-            if (!ConnectionStorage::contains(connection))
+            Client client(msg.m_address);
+            if (!ClientStorage::contains(client))
             {
-                ConnectionStorage::add(std::move(connection));
+                ClientStorage::add(std::move(client));
             }
 
-            if (!Command::read(msg.message.c_str(), msg.message.size(), connection, *this))
+            if (!Command::read(msg.message.c_str(), msg.message.size(), client, *this, true))
             {
                 Log::error("UDP server message reading error, message: ", msg.message);
             }

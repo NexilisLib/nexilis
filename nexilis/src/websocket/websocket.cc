@@ -1,6 +1,5 @@
-#include "nexilis/protocol.hh"
 #include <nexilis/command.hh>
-#include <nexilis/connection_storage.hh>
+#include <nexilis/client_storage.hh>
 #include <nexilis/websocket/websocket.hh>
 
 namespace nexilis
@@ -41,7 +40,7 @@ Websocket::Websocket(unsigned port)
             ip_address = ip_address.substr(7);
         }
 
-        Connection connection(ip_address);
+        Client client(ip_address);
         auto nexilisMessage = convertToNexilisCommand(msg);
 
 #ifdef WEBSOCKET_DEBUG
@@ -53,13 +52,13 @@ Websocket::Websocket(unsigned port)
         Log::info("Received websocket message: " + messageStr);
 #endif
         // Add new unknown connection.
-        if (!ConnectionStorage::contains(connection))
+        if (!ClientStorage::contains(client))
         {
-            ConnectionStorage::add(std::move(connection));
+            ClientStorage::add(std::move(client));
         }
 
         // We return false from message that is not understood by nexilis.
-        if (!Command::read(nexilisMessage, connection, *this))
+        if (!Command::read(nexilisMessage, client, *this, true))
         {
             Log::error("Something went wrong with the reading of the command");
         } });

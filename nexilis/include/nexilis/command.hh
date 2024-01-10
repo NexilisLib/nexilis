@@ -3,7 +3,7 @@
 
 #include <nexilis/boost/boost_io_context.hh>
 #include <nexilis/command_type.hh>
-#include <nexilis/connection.hh>
+#include <nexilis/client.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/log.hh>
 
@@ -36,18 +36,29 @@ public:
 
     /// Read the command from client.
     /// \param command The vector of bytes that is the command.
-    /// \param connection The connection that sent the message.
+    /// \param client The client that sent the message.
     /// \param protocol The protocol that was used in the sending of the message.
+    /// \param readByServer Tells if the command is read by server or not.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const std::vector<uint8_t>& command, Connection& connection, Protocol& protocol);
+    static bool read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, bool readByServer);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
-    /// \param connection The connection that sent the message.
-    static bool read(const char* command_data, size_t lenght, Connection& connection, Protocol& protocol);
+    /// \param client The client that sent the message.
+    /// \param readByServer Tells if the command is read by server or not.
+    /// \return True if the reading of the command is succesfull.
+    static bool read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, bool readByServer);
 
 private:
+    static bool readServer(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
+    static bool readServer(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
+    static bool readClient(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
+    static bool readClient(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
+
+
+    static std::vector<uint8_t> createVectorFromCommandPtr(const char* command_data, size_t lenght);
+
     /// Create IPv4 address from IPV4 data.
     /// \param address The address data.
     /// \return string Created IPV4 string.

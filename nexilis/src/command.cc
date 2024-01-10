@@ -1,3 +1,4 @@
+#include "nexilis/command_type.hh"
 #include "nexilis/protocol.hh"
 #include <cstdint>
 #include <nexilis/command.hh>
@@ -36,7 +37,60 @@ std::vector<uint8_t> Command::create(MainCommand maincommand, uint8_t subCommand
     return std::vector<unsigned char>{};
 }
 
-bool Command::read(const std::vector<uint8_t>& command, Connection& connection, Protocol& protocol)
+bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, bool readByServer)
+{
+    if (readByServer)
+    {
+        return readServer(command, client, protocol);
+    }
+    else
+    {
+        return readClient(command, client, protocol);
+    }
+}
+
+bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, bool readByServer)
+{
+    if (readByServer)
+    {
+        return readServer(command_data, lenght, client, protocol);
+    }
+    else
+    {
+        return readClient(command_data, lenght, client, protocol);
+    }
+}
+
+std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_data, size_t lenght)
+{
+    std::vector<uint8_t> result;
+    result.reserve(lenght);
+
+    for (size_t i = 0; i < lenght; i++)
+    {
+        result.emplace_back(static_cast<uint8_t>(command_data[i]));
+    }
+    return result;
+}
+
+bool Command::readClient(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
+{
+    return readClient(createVectorFromCommandPtr(command_data, lenght), client, protocol);
+}
+
+
+bool Command::readClient(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
+{
+    for (uint8_t commandByte : command)
+    {
+        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
+        Log::debug("");
+        Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
+    }
+    return true;
+}
+
+bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
 {
     for (uint8_t commandByte : command)
     {
@@ -56,8 +110,8 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                 {
                     auto payload = createVectorWithoutHeaderBytes(command);
                     auto port = convertToUnsignedShort(payload);
-                    connection.setUdpPort(port);
-                    assert(port == connection.getUdpPort());
+                    client.setUdpPort(port);
+                    assert(port == client.getUdpPort());
                     return true;
                 }
 
@@ -91,7 +145,7 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                         {
                             // Send back to second byte.
                             uint8_t data[] = { 0x20, 0x20 };
-                            Dispatcher::sendUDPMessage(connection, connection.getUdpPort(), "pong");
+                            Dispatcher::sendUDPMessage(client, client.getUdpPort(), "pong");
                             return true;
                         }
 
@@ -119,7 +173,7 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
                 case 0x20:
                 {
                     Log::info("Received pong");
-                    Dispatcher::sendUDPMessage(connection, connection.getUdpPort(), "pong");
+                    Dispatcher::sendUDPMessage(client, client.getUdpPort(), "pong");
                     return true;
                 }
 
@@ -159,22 +213,31 @@ bool Command::read(const std::vector<uint8_t>& command, Connection& connection, 
             }
             break;
         }
+
+        case MainCommand::authentication:
+        {
+            switch (command[1])
+            {
+                // Client wants to authenticate.
+                case 0x10:
+                {
+                    break;
+                }
+
+                case 0x20:
+                {
+                    break;
+                }
+            }
+        }
     }
 
     return false;
 }
 
-bool Command::read(const char* command_data, size_t lenght, Connection& connection, Protocol& protocol)
+bool Command::readServer(const char* command_data, size_t lenght, Client& connection, Protocol& protocol)
 {
-    // Create a vector and reserve space for the character.
-    std::vector<uint8_t> result;
-    result.reserve(lenght);
-
-    for (size_t i = 0; i < lenght; i++)
-    {
-        result.emplace_back(static_cast<uint8_t>(command_data[i]));
-    }
-    return read(result, connection, protocol);
+    return readServer(createVectorFromCommandPtr(command_data, lenght), connection, protocol);
 }
 
 std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)

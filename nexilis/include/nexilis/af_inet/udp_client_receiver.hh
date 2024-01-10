@@ -27,8 +27,8 @@ public:
             {
                 Log::info("Received message: ", msg.message, " from ", msg.m_address);
 
-                Connection connection(msg.m_address);
-                if (!Command::read(msg.message.c_str(), msg.message.size(), connection, *this))
+                Client client(msg.m_address);
+                if (!Command::read(msg.message.c_str(), msg.message.size(), client, *this, false))
                 {
                     Log::error("Received unvalid nexilis command: ", msg.message);
                 }
