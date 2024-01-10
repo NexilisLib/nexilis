@@ -10,6 +10,8 @@
 namespace nexilis
 {
 
+Authentication* Command::m_authentication = nullptr;
+
 std::vector<uint8_t> Command::create(uint8_t mainCommand, uint8_t subCommand)
 {
     return create(static_cast<MainCommand>(mainCommand), subCommand);
@@ -77,7 +79,6 @@ bool Command::readClient(const char* command_data, size_t lenght, Client& client
 {
     return readClient(createVectorFromCommandPtr(command_data, lenght), client, protocol);
 }
-
 
 bool Command::readClient(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
 {
@@ -218,18 +219,41 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
         {
             switch (command[1])
             {
-                // Client wants to authenticate.
+                // Setup authentication.
                 case 0x10:
                 {
-                    break;
+                    Log::info("New client wants to authenticate, not implemented");
+                    return false;
                 }
 
+                // Check authentication.
                 case 0x20:
                 {
-                    break;
+                    auto payload = createVectorWithoutHeaderBytes(command);
+                    std::string password = convertToString(payload);
+
+                    if (m_authentication)
+                    {
+                        if (m_authentication->checkPassword(password))
+                        {
+                            client.setAccess(true);
+                            Log::info("Client ", client.getIPAddress(), " has access!");
+                        }
+                        else
+                        {
+                            Log::error("Wrong password!");
+                        }
+                    }
+                    else
+                    {
+                        Log::error("Trying to set password for server without auth!");
+                    }
+                    return true;
                 }
             }
         }
+
+        default: return false;
     }
 
     return false;

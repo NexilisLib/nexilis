@@ -5,6 +5,7 @@
 
 uint8_t setupCommand[] = { 0x10, 0x10, '5', '4', '2', '0', '9' };
 uint8_t pingCommand[] = { 0x20, 0x10 };
+uint8_t passwdCommand[] = { 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
 
 void startServer()
 {
@@ -36,6 +37,8 @@ int main()
     std::thread messageThread(sendMessageAfterDelay, setupCommand, sizeof(setupCommand), "MESSAGE");
 
     std::thread pingThread(sendMessageAfterDelay, pingCommand, sizeof(pingCommand), "PING");
+
+    std::thread authenticationThread(sendMessageAfterDelay, passwdCommand, sizeof(passwdCommand), "PASSWD");
 
     messageThread.join();
     std::this_thread::sleep_for(std::chrono::seconds(1));

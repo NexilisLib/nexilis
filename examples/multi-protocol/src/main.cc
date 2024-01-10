@@ -2,16 +2,23 @@
 #include <nexilis/log.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/websocket/websocket.hh>
+#include <nexilis/server_manager.hh>
 
 int main()
 {
     nexilis::Log::startConsoleLogging();
     nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
 
-    nexilis::ProtocolManager manager;
+    Authentication auth;
+    auth.setPassword("salasana");
+
+    nexilis::ServerManager serverManager;
+    serverManager.setAuthentication(auth);
+
+    nexilis::ProtocolManager protocolManager;
 
     // Create a websocket server.
-    auto websocketServer = manager.addProtocol<nexilis::Websocket>();
+    auto websocketServer = protocolManager.addProtocol<nexilis::Websocket>();
 
     websocketServer.setOpenHandler([]()
                                    { std::cout << "Open handler!" << std::endl; });
@@ -19,7 +26,8 @@ int main()
     websocketServer.setCloseHandler([]()
                                     { std::cout << "Close handler" << std::endl; });
 
-    auto udpServer = manager.addProtocol<nexilis::AfInetUdpServer>();
+    auto udpServer = protocolManager.addProtocol<nexilis::AfInetUdpServer>();
+
 
     // Run websocket server and udp server at the same time.
     std::thread t1([&websocketServer]()

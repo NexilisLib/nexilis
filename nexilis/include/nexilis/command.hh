@@ -6,6 +6,7 @@
 #include <nexilis/client.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/log.hh>
+#include <nexilis/authentication.hh>
 
 #include <cstdint>
 #include <cstddef>
@@ -50,6 +51,11 @@ public:
     /// \return True if the reading of the command is succesfull.
     static bool read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, bool readByServer);
 
+    static void setAuthentication(Authentication& authentication)
+    {
+        m_authentication = &authentication;
+    }
+
 private:
     static bool readServer(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
     static bool readServer(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
@@ -77,7 +83,17 @@ private:
         {
             ss << static_cast<char>(val);
         }
-        return std::stoul(ss.str());
+        return std::stoul(ss.str().c_str());
+    }
+
+    static std::string convertToString(const std::vector<uint8_t>& bytes)
+    {
+        std::string result;
+        for (uint8_t b : bytes)
+        {
+            result += static_cast<char>(b);
+        }
+        return result;
     }
 
     // This feels so wrong.
@@ -93,6 +109,8 @@ private:
 
         return modified;
     }
+
+    static Authentication* m_authentication;
 };
 
 } // namespace nexilis
