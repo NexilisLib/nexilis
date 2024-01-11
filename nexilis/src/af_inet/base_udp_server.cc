@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <mutex>
 #include <netinet/in.h>
 #include <nexilis/af_inet/base_udp_server.hh>
@@ -109,11 +110,15 @@ void BaseUdpServer::receiverThread()
         char addressBuffer[INET6_ADDRSTRLEN];
         const char* address;
 
+        // Store the port number.
+        uint16_t port;
+
         // IPV4
         if (clientAddr.ss_family == AF_INET)
         {
             sockaddr_in* ipv4 = (sockaddr_in*)&clientAddr;
             address = inet_ntop(AF_INET, &(ipv4->sin_addr), addressBuffer, INET_ADDRSTRLEN);
+            port = ntohs(ipv4->sin_port);
         }
 
         // IPV6
@@ -121,12 +126,16 @@ void BaseUdpServer::receiverThread()
         {
             sockaddr_in6* ipv6 = (sockaddr_in6*)&clientAddr;
             address = inet_ntop(AF_INET6, &(ipv6->sin6_addr), addressBuffer, INET6_ADDRSTRLEN);
+            port = ntohs(ipv6->sin6_port);
         }
         else
         {
             Log::critical("Unknown address family");
             address = "";
+            port = 0;
         }
+
+        assert(port != 0);
 
         buffer[bytesRead] = '\0';
         std::string receivedData(buffer);
@@ -134,7 +143,8 @@ void BaseUdpServer::receiverThread()
         Message msg
         {
             address,
-            receivedData
+            receivedData,
+            port
         };
 
         {

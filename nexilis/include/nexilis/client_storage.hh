@@ -18,6 +18,7 @@ public:
     static void add(Client&& client)
     {
         Log::info("new connection");
+        Log::info("Clients amount =", m_clients.size());
         m_clients.emplace_back(std::move(client));
     }
 
@@ -25,6 +26,8 @@ public:
     {
         return std::find(m_clients.begin(), m_clients.end(), client) != m_clients.end();
     }
+
+    static std::vector<Client>& getAllClients();
 
 private:
     static std::vector<Client> m_clients;

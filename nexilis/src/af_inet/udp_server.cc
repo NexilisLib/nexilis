@@ -24,7 +24,7 @@ void AfInetUdpServer::start()
 
         if (BaseUdpServer::getNextMessage(msg))
         {
-            Log::info("Received message: ", msg.message, " from ", msg.m_address);
+            Log::info("Received message: ", msg.message, " from ", msg.m_address, " port", msg.port);
 
             Client client(msg.m_address);
             if (!ClientStorage::contains(client))

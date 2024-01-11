@@ -7,19 +7,32 @@
 class Authentication
 {
 public:
-    void setPassword(const std::string& password)
+    void setRootPassword(const std::string& password)
+    {
+        assert(password != "");
+        m_rootPassword = password;
+    }
+
+    bool checkRootPassword(const std::string& password)
+    {
+        assert(m_rootPassword != "");
+        return m_rootPassword == password;
+    }
+
+    void setCommonPassword(const std::string& password)
     {
         assert(password != "");
         m_password = password;
     }
 
-    bool checkPassword(const std::string& password)
+    bool checkCommonPassword(const std::string& password)
     {
-        assert(m_password != "");
-        return m_password == password;
+        assert(m_rootPassword != "");
+        return password == m_password;
     }
 
 private:
+    std::string m_rootPassword = "";
     std::string m_password = "";
 };
 

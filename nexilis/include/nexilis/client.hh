@@ -17,11 +17,17 @@ public:
     Client(std::string ip_address) noexcept
         : m_ip_address(ip_address)
     {
+        id_counter += 1;
+        m_id = id_counter;
     }
 
     /// Move constructor.
-    Client(Client&& other) noexcept
-        : m_ip_address(other.m_ip_address)
+    Client(Client&& other) noexcept :
+        m_ip_address(other.m_ip_address),
+        m_upd_port(other.m_upd_port),
+        m_hasRootAccess(other.m_hasRootAccess),
+        m_hasCommonAccess(other.m_hasCommonAccess),
+        m_id(other.m_id)
     {
     }
 
@@ -30,6 +36,10 @@ public:
 
     /// Deleted copy assignment operator.
     Client& operator=(const Client& other) = delete;
+
+    ~Client()
+    {
+    }
 
     /// Operator overload for comparison operator.
     bool operator==(const Client& other) const
@@ -54,22 +64,37 @@ public:
         return m_upd_port;
     }
 
-    void setAccess(bool hasAccess)
+    void setRootAccess(bool hasAccess)
     {
-        m_hasAccess = hasAccess;
+        m_hasRootAccess = hasAccess;
     }
 
-    bool hasAccess()
+    bool hasRootAccess()
     {
-        return m_hasAccess;
+        return m_hasRootAccess;
+    }
+
+    void setCommonAccess(bool hasAccess)
+    {
+        m_hasCommonAccess = hasAccess;
+    }
+
+    bool hasCommonAccess()
+    {
+        return m_hasCommonAccess;
     }
 
 private:
     std::string m_ip_address;
-
     unsigned short m_upd_port;
 
-    bool m_hasAccess = false;
+    bool m_hasRootAccess = false;
+    bool m_hasCommonAccess = false;
+
+    size_t m_id;
+
+private:
+    static size_t id_counter;
 };
 
 } // namespace nexilis

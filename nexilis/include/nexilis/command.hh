@@ -70,46 +70,12 @@ private:
     /// \return string Created IPV4 string.
     std::string createIPv4Address(const std::vector<uint8_t>& address);
 
-    // This is most likely temporary function until I'll know how to make the interface smarter.
-    static unsigned short convertToUnsignedShort(const std::vector<uint8_t>& bytes)
-    {
-        if (bytes.size() < sizeof(unsigned short))
-        {
-            Log::error("Port conversion failed");
-        }
+    /// Helper functions
+    static unsigned short convertToUnsignedShort(const std::vector<uint8_t>& bytes);
+    static std::string convertToString(const std::vector<uint8_t>& bytes);
+    static std::vector<uint8_t> removeAmountOfBytesFromVector(const std::vector<uint8_t>& original, uint8_t amount);
 
-        std::stringstream ss;
-        for (uint8_t val : bytes)
-        {
-            ss << static_cast<char>(val);
-        }
-        return std::stoul(ss.str().c_str());
-    }
-
-    static std::string convertToString(const std::vector<uint8_t>& bytes)
-    {
-        std::string result;
-        for (uint8_t b : bytes)
-        {
-            result += static_cast<char>(b);
-        }
-        return result;
-    }
-
-    // This feels so wrong.
-    static std::vector<uint8_t> createVectorWithoutHeaderBytes(const std::vector<uint8_t>& original)
-    {
-        // Return empty vector if the original vector has less than two elements.
-        if (original.size() < 2)
-        {
-            return {};
-        }
-
-        std::vector<uint8_t> modified(original.begin() + 2, original.end());
-
-        return modified;
-    }
-
+private:
     static Authentication* m_authentication;
 };
 

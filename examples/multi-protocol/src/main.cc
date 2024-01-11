@@ -10,7 +10,8 @@ int main()
     nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
 
     Authentication auth;
-    auth.setPassword("salasana");
+    auth.setRootPassword("salasana");
+    auth.setCommonPassword("common");
 
     nexilis::ServerManager serverManager;
     serverManager.setAuthentication(auth);

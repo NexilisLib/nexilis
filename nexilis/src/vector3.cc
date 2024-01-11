@@ -1,6 +1,4 @@
-
-// TODO correct the include paths
-#include "../include/nexilis/vector3.hh"
+#include <nexilis/vector3.hh>
 
 #include <stdexcept>
 
@@ -14,7 +12,7 @@ std::vector<uint8_t> Vector3::serialize() const
     std::vector<uint8_t> serializedData;
 
     // Convert each component into bytes.
-    int32_t xBytes = *reinterpret_cast<const uint32_t*>(&m_x);
+    uint32_t xBytes = *reinterpret_cast<const uint32_t*>(&m_x);
     uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&m_y);
     uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&m_z);
 

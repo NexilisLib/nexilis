@@ -21,6 +21,7 @@ public:
     {
         const char* m_address;
         std::string message;
+        uint16_t port;
     };
 
     BaseUdpServer(unsigned port = static_cast<unsigned>(Port::UDP));

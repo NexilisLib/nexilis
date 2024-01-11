@@ -17,6 +17,7 @@ set(SOURCES
     src/client_storage.cc
     src/boost/boost_io_context.cc
     src/log.cc
+    src/client.cc
 
     src/af_unix/unix_socket_server.cc
     src/af_unix/unix_socket_sender.cc

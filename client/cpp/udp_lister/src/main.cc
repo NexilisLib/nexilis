@@ -5,7 +5,9 @@
 
 uint8_t setupCommand[] = { 0x10, 0x10, '5', '4', '2', '0', '9' };
 uint8_t pingCommand[] = { 0x20, 0x10 };
-uint8_t passwdCommand[] = { 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
+uint8_t rootPasswdCommand[] = { 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
+uint8_t commonPasswdCommand[] = { 0x40, 0x30, 'c', 'o', 'm', 'm', 'o', 'n' };
+uint8_t chatCommand[] = { 0x70, 0x10, 0x10, 'm', 'o', 'i', 'k', 'a' };
 
 void startServer()
 {
@@ -38,12 +40,19 @@ int main()
 
     std::thread pingThread(sendMessageAfterDelay, pingCommand, sizeof(pingCommand), "PING");
 
-    std::thread authenticationThread(sendMessageAfterDelay, passwdCommand, sizeof(passwdCommand), "PASSWD");
+    std::thread authenticationThread(sendMessageAfterDelay, rootPasswdCommand, sizeof(rootPasswdCommand), "ROOTPASSWD");
+    std::thread authenticationThread2(sendMessageAfterDelay, commonPasswdCommand, sizeof(commonPasswdCommand), "COMMONPASSWD");
+
+
+    std::thread chatThread(sendMessageAfterDelay, chatCommand, sizeof(chatCommand), "CHAT THREAD");
 
     messageThread.join();
     std::this_thread::sleep_for(std::chrono::seconds(1));
     pingThread.join();
     std::this_thread::sleep_for(std::chrono::seconds(1));
+    chatThread.join();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
     serverThread.join();
 
     return 0;
