@@ -110,8 +110,15 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
                 {
                     auto payload = removeAmountOfBytesFromVector(command, 2);
                     auto port = convertToUnsignedShort(payload);
-                    client.setUdpPort(port);
-                    assert(port == client.getUdpPort());
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto c = clients.begin(); c != clients.end(); c++)
+                    {
+                        if (*c == client)
+                        {
+                            c->setUdpPort(port);
+                        }
+                    }
                     return true;
                 }
 
@@ -335,9 +342,22 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
                                 }
                             }
 
-                        }
+                            }
 
                         default: return false;
+                    }
+                }
+
+                // Client sends a message to everyone except itself.
+                case 0x20:
+                {
+                    switch (command[2])
+                    {
+                        // String message.
+                        case 0x10:
+                        {
+
+                        }
                     }
                 }
 

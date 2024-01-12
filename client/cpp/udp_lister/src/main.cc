@@ -30,13 +30,14 @@ void sendMessageAfterDelay(uint8_t message[], size_t dataSize, std::string msgNa
 int main()
 {
     nexilis::Log::startConsoleLogging();
+    nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
 
     //auto a = nexilis::Thread()
 
     // Start the server in one thread
     std::thread serverThread(startServer);
 
-    std::thread messageThread(sendMessageAfterDelay, setupCommand, sizeof(setupCommand), "MESSAGE");
+    std::thread messageThread(sendMessageAfterDelay, setupCommand, sizeof(setupCommand), "CALL MEEEEE");
 
     std::thread pingThread(sendMessageAfterDelay, pingCommand, sizeof(pingCommand), "PING");
 
