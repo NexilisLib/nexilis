@@ -50,7 +50,7 @@ void UnixSocketServer::receiveMessage()
 
         // Creating and adding new connections, I don't think this is really necessary but it's fine.
         Client client(address);
-        if (!ClientStorage::contains(client))
+        if (!ClientStorage::contains(address))
         {
             ClientStorage::add(std::move(client));
         }

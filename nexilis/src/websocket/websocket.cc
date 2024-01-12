@@ -52,7 +52,7 @@ Websocket::Websocket(unsigned port)
         Log::info("Received websocket message: " + messageStr);
 #endif
         // Add new unknown connection.
-        if (!ClientStorage::contains(client))
+        if (!ClientStorage::contains(ip_address))
         {
             ClientStorage::add(std::move(client));
         }

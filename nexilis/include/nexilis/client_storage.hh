@@ -3,12 +3,9 @@
 
 #include <nexilis/client.hh>
 #include <nexilis/log.hh>
-#include <nexilis/logger/console_handler.hh>
-#include <nexilis/logger/logger.hh>
 
 #include <algorithm>
 #include <vector>
-#include <optional>
 
 namespace nexilis
 {
@@ -23,12 +20,7 @@ public:
         m_clients.emplace_back(std::move(client));
     }
 
-    static bool contains(Client& client)
-    {
-        return std::find(m_clients.begin(), m_clients.end(), client) != m_clients.end();
-    }
-
-    static bool contains(const std::string& ip_address) 
+    static bool contains(const std::string& ip_address)
     {
         return std::find_if(m_clients.begin(), m_clients.end(),
                             [ip_address](const Client& client)

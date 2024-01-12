@@ -3,7 +3,7 @@
 #include <nexilis/log.hh>
 #include <nexilis/af_inet/udp_client_receiver.hh>
 
-uint8_t setupCommand[] = { '1', 0xFF, 0x10, 0x10, '5', '4', '2', '0', '9' };
+uint8_t setupCommand[] = { '1', 0xFF, 0x10, 0x10, 0x10, '5', '4', '2', '0', '9' };
 uint8_t pingCommand[] = { '1', 0xFF, 0x20, 0x10 };
 uint8_t rootPasswdCommand[] = { '1', 0xFF, 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
 uint8_t commonPasswdCommand[] = { '1', 0xFF, 0x40, 0x30, 'c', 'o', 'm', 'm', 'o', 'n' };

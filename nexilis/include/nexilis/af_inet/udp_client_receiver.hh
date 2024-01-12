@@ -4,11 +4,12 @@
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/log.hh>
 #include <nexilis/command.hh>
+#include <nexilis/client_protocol.hh>
 
 namespace nexilis
 {
 
-class UdpClientReceiver : public BaseUdpServer
+class UdpClientReceiver : public BaseUdpServer, public ClientProtocol
 {
 public:
     UdpClientReceiver(unsigned port) : BaseUdpServer(port)

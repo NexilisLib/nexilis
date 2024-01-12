@@ -1,7 +1,6 @@
-#include "nexilis/client_storage.hh"
-#include "nexilis/command_type.hh"
-#include "nexilis/protocol.hh"
-#include <cstdint>
+#include <nexilis/client_storage.hh>
+#include <nexilis/command_type.hh>
+#include <nexilis/protocol.hh>
 #include <nexilis/command.hh>
 #include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
@@ -16,7 +15,6 @@ std::vector<uint8_t> Command::create(uint8_t mainCommand, uint8_t subCommand)
     return create(static_cast<MainCommand>(mainCommand), subCommand);
 }
 
-// Think about this API.
 std::vector<uint8_t> Command::create(MainCommand maincommand, uint8_t subCommand)
 {
     switch (maincommand)
@@ -87,6 +85,24 @@ bool Command::readClient(const std::vector<uint8_t>& command, Client& client, Pr
         Log::debug("");
         Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
     }
+
+    switch (command.front())
+    {
+        // The server tells client information about itself.
+        case 0x10:
+        {
+            // The server tells client it's id.
+            switch(command[1])
+            {
+                case 0x10:
+                {
+                    Log::info("This client id: ");
+                    break;
+                }
+            }
+        }
+    }
+
     return true;
 }
 
@@ -105,22 +121,50 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
         {
             switch (command[1])
             {
-                // TODO Why not all setup at the same time?
                 // UDP setup for the client.
                 case 0x10:
                 {
-                    auto payload = removeAmountOfBytesFromVector(command, 2);
-                    auto port = convertToUnsignedShort(payload);
-                    auto& clients = ClientStorage::getAllClients();
-
-                    for (auto c = clients.begin(); c != clients.end(); c++)
+                    switch (command[2])
                     {
-                        if (*c == client)
+                        // Set UDP port.
+                        case 0x10:
                         {
-                            c->setUdpPort(port);
+                            auto payload = removeAmountOfBytesFromVector(command, 3);
+                            auto port = convertToUnsignedShort(payload);
+                            auto& clients = ClientStorage::getAllClients();
+
+                            for (auto c = clients.begin(); c != clients.end(); c++)
+                            {
+                                if (*c == client)
+                                {
+                                    c->setUdpPort(port);
+                                }
+                            }
+                            return true;
                         }
+
+                        // Give username to the client.
+                        case 0x20:
+                        {
+                            auto payload = removeAmountOfBytesFromVector(command, 3);
+                            std::string username = convertToString(payload);
+                            auto& clients = ClientStorage::getAllClients();
+
+                            for (auto c = clients.begin(); c != clients.end(); c++)
+                            {
+                                if (*c == client)
+                                {
+                                    c->setUsername(username);
+                                }
+                            }
+
+                            return true;
+                        }
+
+                        // Password to the client?
                     }
-                    return true;
+
+                    default: return false;
                 }
 
                 // Same for the websocket.
@@ -259,7 +303,7 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
                     return false;
                 }
 
-                // Check authentication for valid client.
+                // Set authentication for valid client.
                 case 0x30:
                 {
                     auto payload = removeAmountOfBytesFromVector(command, 2);
