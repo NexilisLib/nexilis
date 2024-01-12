@@ -8,7 +8,7 @@ namespace nexilis
 
 enum class MainCommand : uint8_t
 {
-    protocol_setup = 0x10,
+    setup = 0x10,
     /*
     UDP 0x10,
     Websocket 0x20

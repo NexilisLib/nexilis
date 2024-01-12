@@ -3,11 +3,11 @@
 #include <nexilis/log.hh>
 #include <nexilis/af_inet/udp_client_receiver.hh>
 
-uint8_t setupCommand[] = { 0x10, 0x10, '5', '4', '2', '0', '9' };
-uint8_t pingCommand[] = { 0x20, 0x10 };
-uint8_t rootPasswdCommand[] = { 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
-uint8_t commonPasswdCommand[] = { 0x40, 0x30, 'c', 'o', 'm', 'm', 'o', 'n' };
-uint8_t chatCommand[] = { 0x70, 0x10, 0x10, 'm', 'o', 'i', 'k', 'a' };
+uint8_t setupCommand[] = { '1', 0xFF, 0x10, 0x10, '5', '4', '2', '0', '9' };
+uint8_t pingCommand[] = { '1', 0xFF, 0x20, 0x10 };
+uint8_t rootPasswdCommand[] = { '1', 0xFF, 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
+uint8_t commonPasswdCommand[] = { '1', 0xFF, 0x40, 0x30, 'c', 'o', 'm', 'm', 'o', 'n' };
+uint8_t chatCommand[] = { '1', 0xFF, 0x70, 0x10, 0x10, 'm', 'o', 'i', 'k', 'a' };
 
 void startServer()
 {
@@ -44,7 +44,6 @@ int main()
     std::thread authenticationThread(sendMessageAfterDelay, rootPasswdCommand, sizeof(rootPasswdCommand), "ROOTPASSWD");
     std::thread authenticationThread2(sendMessageAfterDelay, commonPasswdCommand, sizeof(commonPasswdCommand), "COMMONPASSWD");
 
-
     std::thread chatThread(sendMessageAfterDelay, chatCommand, sizeof(chatCommand), "CHAT THREAD");
 
     messageThread.join();
@@ -52,6 +51,8 @@ int main()
     pingThread.join();
     std::this_thread::sleep_for(std::chrono::seconds(1));
     chatThread.join();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    authenticationThread.join();
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     serverThread.join();

@@ -59,7 +59,7 @@ public:
         m_upd_port = udpPort;
     }
 
-    unsigned short getUdpPort()
+    unsigned short getUdpPort() const
     {
         return m_upd_port;
     }
@@ -69,7 +69,7 @@ public:
         m_hasRootAccess = hasAccess;
     }
 
-    bool hasRootAccess()
+    bool hasRootAccess() const
     {
         return m_hasRootAccess;
     }
@@ -79,9 +79,14 @@ public:
         m_hasCommonAccess = hasAccess;
     }
 
-    bool hasCommonAccess()
+    bool hasCommonAccess() const
     {
         return m_hasCommonAccess;
+    }
+
+    size_t getId() const
+    {
+        return m_id;
     }
 
 private:

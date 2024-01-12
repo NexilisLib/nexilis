@@ -27,14 +27,41 @@ void AfInetUdpServer::start()
             Log::info("Received message: ", msg.message, " from ", msg.m_address, " port", msg.port);
 
             Client client(msg.m_address);
-            if (!ClientStorage::contains(client))
+            if (!ClientStorage::contains(msg.m_address))
             {
+                Log::info("The first message of the client: ", msg.m_address, "! clientID: ", client.getId());
                 ClientStorage::add(std::move(client));
             }
 
-            if (!Command::read(msg.message.c_str(), msg.message.size(), client, *this, true))
+            auto command = Command::createVectorFromCommandPtr(msg.message.c_str(), msg.message.size());
+
+            size_t index = 0;
+            size_t playerId = 0;
+
+            while (index < command.size() && command[index] != 0xFF)
             {
-                Log::error("UDP server message reading error, message: ", msg.message);
+                char digitChar = command[index];
+                if (isdigit(digitChar))
+                {
+                    playerId = playerId * 10 + (digitChar - '0');
+                }
+                index++;
+            }
+
+            auto realClient = ClientStorage::getClientById(playerId);
+
+            if (realClient)
+            {
+                auto readyCommand = Command::removeAmountOfBytesFromVector(command, index + 1);
+
+                if (!Command::read(readyCommand, *realClient, *this, true))
+                {
+                    Log::error("UDP server message reading error, message: ", msg.message);
+                }
+            }
+            else
+            {
+                Log::info("Message from unauthorized client!");
             }
         }
     }

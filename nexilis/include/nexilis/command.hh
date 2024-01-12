@@ -51,19 +51,23 @@ public:
     /// \return True if the reading of the command is succesfull.
     static bool read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, bool readByServer);
 
+    // Clientside access only.
+    //static bool read(const std::vector<uint8_t>& command, Protocol& protocol);
+
     static void setAuthentication(Authentication& authentication)
     {
         m_authentication = &authentication;
     }
+
+    static std::vector<uint8_t> createVectorFromCommandPtr(const char* command_data, size_t lenght);
+
+    static std::vector<uint8_t> removeAmountOfBytesFromVector(const std::vector<uint8_t>& original, uint8_t amount);
 
 private:
     static bool readServer(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
     static bool readServer(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
     static bool readClient(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
     static bool readClient(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
-
-
-    static std::vector<uint8_t> createVectorFromCommandPtr(const char* command_data, size_t lenght);
 
     /// Create IPv4 address from IPV4 data.
     /// \param address The address data.
@@ -73,7 +77,6 @@ private:
     /// Helper functions
     static unsigned short convertToUnsignedShort(const std::vector<uint8_t>& bytes);
     static std::string convertToString(const std::vector<uint8_t>& bytes);
-    static std::vector<uint8_t> removeAmountOfBytesFromVector(const std::vector<uint8_t>& original, uint8_t amount);
 
 private:
     static Authentication* m_authentication;

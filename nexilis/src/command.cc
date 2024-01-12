@@ -101,10 +101,11 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
 
     switch (static_cast<MainCommand>(command.front()))
     {
-        case MainCommand::protocol_setup:
+        case MainCommand::setup:
         {
             switch (command[1])
             {
+                // TODO Why not all setup at the same time?
                 // UDP setup for the client.
                 case 0x10:
                 {

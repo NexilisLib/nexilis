@@ -27,6 +27,9 @@ public:
             {
                 Log::info("Received message: ", msg.message, " from ", msg.m_address);
 
+                // This is totally unnecessary abstraction.
+                // Command should be refactored to take in an ip address instead.
+                // However this client is not at least stored anywhere so we should be fine.
                 Client client(msg.m_address);
                 if (!Command::read(msg.message.c_str(), msg.message.size(), client, *this, false))
                 {

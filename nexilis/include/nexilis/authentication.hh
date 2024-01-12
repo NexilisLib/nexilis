@@ -4,6 +4,9 @@
 #include <string>
 #include <cassert>
 
+namespace nexilis
+{
+
 class Authentication
 {
 public:
@@ -35,5 +38,7 @@ private:
     std::string m_rootPassword = "";
     std::string m_password = "";
 };
+
+}
 
 #endif
