@@ -58,7 +58,7 @@ Websocket::Websocket(unsigned port)
         }
 
         // We return false from message that is not understood by nexilis.
-        if (!Command::read(nexilisMessage, client, *this, true))
+        if (!Command::read(nexilisMessage, client, *this))
         {
             Log::error("Something went wrong with the reading of the command");
         } });

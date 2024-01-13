@@ -1,4 +1,7 @@
-#include <nexilis/client.hh>
+#ifndef NEXILIS_CLIENT_API_HH
+#define NEXILIS_CLIENT_API_HH
+
+#include <cstddef>
 
 namespace nexilis
 {
@@ -10,13 +13,16 @@ public:
     {
     }
 
+protected:
+    size_t getClientId()
+    {
+        return m_client_id;
+    }
+
 private:
     size_t m_client_id;
-    // Ideally this would be really cool.
-    //Client& client;
-
-    // Or even.
-    //Client client;
 };
 
 }
+
+#endif

@@ -19,7 +19,7 @@ class BaseUdpServer : public Protocol
 public:
     struct Message
     {
-        const char* m_address;
+        const char* address;
         std::string message;
         uint16_t port;
     };

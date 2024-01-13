@@ -5,78 +5,7 @@
 #include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
 
-namespace nexilis
-{
-
-Authentication* Command::m_authentication = nullptr;
-
-std::vector<uint8_t> Command::create(uint8_t mainCommand, uint8_t subCommand)
-{
-    return create(static_cast<MainCommand>(mainCommand), subCommand);
-}
-
-std::vector<uint8_t> Command::create(MainCommand maincommand, uint8_t subCommand)
-{
-    switch (maincommand)
-    {
-        case MainCommand::ping:
-        {
-            return std::vector<uint8_t>{
-                static_cast<uint8_t>(maincommand), static_cast<uint8_t>(subCommand)};
-        }
-        case MainCommand::update:
-            return std::vector<uint8_t>{};
-        default:
-        {
-            uint8_t firstByte = static_cast<uint8_t>(maincommand);
-            Log::error("Something went wrong, first byte: ", firstByte);
-        }
-    }
-
-    return std::vector<unsigned char>{};
-}
-
-bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, bool readByServer)
-{
-    if (readByServer)
-    {
-        return readServer(command, client, protocol);
-    }
-    else
-    {
-        return readClient(command, client, protocol);
-    }
-}
-
-bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, bool readByServer)
-{
-    if (readByServer)
-    {
-        return readServer(command_data, lenght, client, protocol);
-    }
-    else
-    {
-        return readClient(command_data, lenght, client, protocol);
-    }
-}
-
-std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_data, size_t lenght)
-{
-    std::vector<uint8_t> result;
-    result.reserve(lenght);
-
-    for (size_t i = 0; i < lenght; i++)
-    {
-        result.emplace_back(static_cast<uint8_t>(command_data[i]));
-    }
-    return result;
-}
-
-bool Command::readClient(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
-{
-    return readClient(createVectorFromCommandPtr(command_data, lenght), client, protocol);
-}
-
+/*
 bool Command::readClient(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
 {
     for (uint8_t commandByte : command)
@@ -105,8 +34,33 @@ bool Command::readClient(const std::vector<uint8_t>& command, Client& client, Pr
 
     return true;
 }
+*/
 
-bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
+
+
+namespace nexilis
+{
+
+Authentication* Command::m_authentication = nullptr;
+
+bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
+{
+    return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol);
+}
+
+std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_data, size_t lenght)
+{
+    std::vector<uint8_t> result;
+    result.reserve(lenght);
+
+    for (size_t i = 0; i < lenght; i++)
+    {
+        result.emplace_back(static_cast<uint8_t>(command_data[i]));
+    }
+    return result;
+}
+
+bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
 {
     for (uint8_t commandByte : command)
     {
@@ -419,11 +373,6 @@ bool Command::readServer(const std::vector<uint8_t>& command, Client& client, Pr
     }
 
     return false;
-}
-
-bool Command::readServer(const char* command_data, size_t lenght, Client& connection, Protocol& protocol)
-{
-    return readServer(createVectorFromCommandPtr(command_data, lenght), connection, protocol);
 }
 
 std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)

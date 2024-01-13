@@ -18,6 +18,7 @@ set(SOURCES
     src/boost/boost_io_context.cc
     src/log.cc
     src/client.cc
+    src/message_handler.cc
 
     src/af_unix/unix_socket_server.cc
     src/af_unix/unix_socket_sender.cc
@@ -25,6 +26,8 @@ set(SOURCES
     src/af_inet/base_udp_server.cc
     src/af_inet/udp_sender.cc
     src/af_inet/udp_server.cc
+
+    src/client_api/client_api.cc
 
 	src/websocket/websocket.cc)
 

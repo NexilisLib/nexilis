@@ -56,7 +56,7 @@ void UnixSocketServer::receiveMessage()
         }
 
         // Read the message.
-        Command::read(m_buffer, sizeof(m_buffer), client, *this, true);
+        Command::read(m_buffer, sizeof(m_buffer), client, *this);
     }
 }
 
