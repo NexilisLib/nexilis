@@ -11,10 +11,10 @@
 
 #include <cstring>
 
-namespace nexilis
+namespace nexilis::af_inet
 {
 
-BaseUdpServer::BaseUdpServer(unsigned port) :
+BaseUDPServer::BaseUDPServer(unsigned port) :
     Protocol(port)
 {
     addrinfo hints, *res, *p;
@@ -57,19 +57,19 @@ BaseUdpServer::BaseUdpServer(unsigned port) :
     freeaddrinfo(res);
 }
 
-BaseUdpServer::~BaseUdpServer()
+BaseUDPServer::~BaseUDPServer()
 {
     stop();
     close(m_serverSocket);
 }
 
-void BaseUdpServer::start()
+void BaseUDPServer::start()
 {
     m_running = true;
-    m_recvThread = std::thread(&BaseUdpServer::receiverThread, this);
+    m_recvThread = std::thread(&BaseUDPServer::receiverThread, this);
 }
 
-void BaseUdpServer::stop()
+void BaseUDPServer::stop()
 {
     m_running = false;
     m_condition.notify_all();
@@ -79,7 +79,7 @@ void BaseUdpServer::stop()
     }
 }
 
-bool BaseUdpServer::getNextMessage(Message& msg)
+bool BaseUDPServer::getNextMessage(Message& msg)
 {
     std::lock_guard<std::mutex> lock(m_mtx);
     if (!m_messageQueue.empty())
@@ -91,7 +91,7 @@ bool BaseUdpServer::getNextMessage(Message& msg)
     return false;
 }
 
-void BaseUdpServer::receiverThread()
+void BaseUDPServer::receiverThread()
 {
     while (m_running)
     {
@@ -157,4 +157,5 @@ void BaseUdpServer::receiverThread()
     }
 }
 
-}
+} // namespace nexilis::af_inet
+

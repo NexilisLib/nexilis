@@ -1,6 +1,7 @@
 #ifndef NEXILIS_UDP_SENDER_HH
 #define NEXILIS_UDP_SENDER_HH
 
+#include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/ports.hh>
 
 #include <arpa/inet.h>
@@ -10,15 +11,15 @@
 namespace nexilis
 {
 
-class UDPSender
+class AfInetUdpSender
 {
 public:
     /// Constructor.
     /// \param destinationIP The IP address where the message(s) will be sent.
-    UDPSender(const char* destinationIP, unsigned destinationPort = static_cast<unsigned>(Port::UDP));
+    AfInetUdpSender(const char* destinationIP, unsigned destinationPort = static_cast<unsigned>(Port::UDP));
 
     // Destructor.
-    ~UDPSender();
+    ~AfInetUdpSender();
 
     /// Send message to to destination.
     /// \param message The message to be sent.

@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/protocol.hh>
@@ -5,38 +6,7 @@
 #include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
 
-/*
-bool Command::readClient(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
-{
-    for (uint8_t commandByte : command)
-    {
-        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
-        Log::debug("");
-        Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
-    }
-
-    switch (command.front())
-    {
-        // The server tells client information about itself.
-        case 0x10:
-        {
-            // The server tells client it's id.
-            switch(command[1])
-            {
-                case 0x10:
-                {
-                    Log::info("This client id: ");
-                    break;
-                }
-            }
-        }
-    }
-
-    return true;
-}
-*/
-
-
+#include <nexilis/common/util.hh>
 
 namespace nexilis
 {
@@ -71,7 +41,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
     switch (static_cast<MainCommand>(command.front()))
     {
-        case MainCommand::setup:
+        case MainCommand::set:
         {
             switch (command[1])
             {
@@ -80,11 +50,9 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 {
                     switch (command[2])
                     {
-                        // Set UDP port.
                         case 0x10:
                         {
-                            auto payload = removeAmountOfBytesFromVector(command, 3);
-                            auto port = convertToUnsignedShort(payload);
+                            auto port = Util::uint8PairToUint16(command[3], command[4]);
                             auto& clients = ClientStorage::getAllClients();
 
                             for (auto c = clients.begin(); c != clients.end(); c++)
@@ -132,6 +100,41 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             return false;
         }
 
+        case MainCommand::get:
+        {
+            switch (command[1])
+            {
+                // Get client id.
+                case 0x10:
+                {
+                    switch (protocol.getType())
+                    {
+                        case Protocol::Type::UDP:
+                        {
+                            // Reminder of the client parsing.
+                            // 0x20 = GET
+                            // 0x10 = IP
+                            std::vector<uint8_t> data = { 0x20, 0x10 };
+
+                            auto idBytes = Util::convertToByteVector(client.getId());
+
+                            for (uint8_t i = 0; i < idBytes.size(); i++)
+                            {
+                                data.push_back(idBytes[i]);
+                            }
+
+                            Dispatcher::sendUDPMessage(client, client.getUdpPort(), Util::convertToString(data));
+                            return true;
+                        }
+
+                        // Not implemented.
+                        case Protocol::Type::Websocket: return false;
+                        case Protocol::Type::UnixSocket: return false;
+                    }
+                }
+            }
+        }
+
         // this should be renamed connection management.
         case MainCommand::ping:
         {
@@ -139,13 +142,10 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             {
                 case 0x10:
                 {
-                    // Consider doing this check with the third byte.
-                    auto type = protocol.getType();
-
                     // DEBUG default ping port
                     //Dispatcher::sendUDPMessage(connection, 54209, "pong");
 
-                    switch (type)
+                    switch (protocol.getType())
                     {
                         case Protocol::Type::UDP:
                         {
@@ -300,7 +300,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             return false;
         }
 
-        case MainCommand::chat:
+        case MainCommand::communicate:
         {
             switch (command[1])
             {
@@ -341,7 +341,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                                 }
                             }
 
-                            }
+                        }
 
                         default: return false;
                     }
@@ -422,7 +422,12 @@ std::vector<uint8_t> Command::removeAmountOfBytesFromVector(const std::vector<ui
     // Return empty vector if the original vector has less elements than we want to remove.
     if (original.size() < amount)
     {
-        Log::error("Cannot remove more bytes than existing command has.");
+        for(auto i : original)
+        {
+            std::cout << std::hex << i;
+        }
+
+        Log::error("COMMAND ERROR: Cannot remove more bytes than existing command has.");
         return {};
     }
 

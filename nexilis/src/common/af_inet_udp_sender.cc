@@ -1,5 +1,6 @@
+#include "nexilis/af_inet/udp_server.hh"
 #include <cstdint>
-#include <nexilis/af_inet/udp_sender.hh>
+#include <nexilis/common/af_inet_udp_sender.hh>
 #include <nexilis/log.hh>
 #include <nexilis/ports.hh>
 
@@ -9,7 +10,7 @@
 namespace nexilis
 {
 
-UDPSender::UDPSender(const char* destinationIP, unsigned destinationPort)
+AfInetUdpSender::AfInetUdpSender(const char* destinationIP, unsigned destinationPort)
     : m_destinationIP(destinationIP), m_destinationPort(destinationPort)
 {
     // Create a UDP socket
@@ -24,12 +25,12 @@ UDPSender::UDPSender(const char* destinationIP, unsigned destinationPort)
     m_destinationAddress.sin_addr.s_addr = inet_addr(m_destinationIP);
 }
 
-UDPSender::~UDPSender()
+AfInetUdpSender::~AfInetUdpSender()
 {
     close(m_socket);
 }
 
-void UDPSender::sendMessage(const std::string& message)
+void AfInetUdpSender::sendMessage(const std::string& message)
 {
     Log::info("Sending message: ", message);
 
@@ -43,7 +44,7 @@ void UDPSender::sendMessage(const std::string& message)
     }
 }
 
-void UDPSender::sendMessage(const uint8_t* data, size_t dataSize)
+void AfInetUdpSender::sendMessage(const uint8_t* data, size_t dataSize)
 {
     Log::info("Sending raw message...");
 

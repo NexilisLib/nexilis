@@ -8,31 +8,33 @@ namespace nexilis
 
 enum class MainCommand : uint8_t
 {
-    setup = 0x10,
+    set = 0x10,
+
+    get = 0x20,
     /*
     UDP 0x10,
     Websocket 0x20
     */
 
-    ping = 0x20,
+    ping = 0x30,
 
     // Get information from the server
-    info = 0x30,
+    info = 0x40,
     /*
     general_info = 0x10
     help
     */
-    authentication = 0x40,
+    authentication = 0x50,
 
     // Server management
-    server_management = 0x50,
+    server_management = 0x60,
     /*
     Start
     Stop
     Restart
     */
 
-    player_management = 0x60,
+    player_management = 0x70,
     /*
     kick = 0x10,
     ban = 0x20,
@@ -41,16 +43,12 @@ enum class MainCommand : uint8_t
     unmute = 0x50,
     */
 
-    chat = 0x70,
+    communicate = 0x80,
     /*
     say = 0x10,
     whisper = 0x20
     */
 
-    // Get stuff
-    give = 0x80,
-
-    // Commands to be overloaded
     update = 0x90
 };
 

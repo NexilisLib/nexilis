@@ -4,19 +4,23 @@
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/message_handler.hh>
 
-namespace nexilis
+namespace nexilis::af_inet
 {
 
-class AfInetUdpServer : public BaseUdpServer
+class UDPServer : public BaseUDPServer
 {
 public:
     /// Constructor.
     /// \param port The port we are assigning the udp server.
     /// This has been initialized the value of Port::UDP.
-    AfInetUdpServer(unsigned port = static_cast<unsigned>(Port::UDP));
+    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP)) : BaseUDPServer(port)
+    {
+    }
 
     /// Destructor.
-    ~AfInetUdpServer();
+    ~UDPServer()
+    {
+    }
 
     /// Protocol::start() implementation.
     void start() override;
@@ -24,15 +28,15 @@ public:
     /// Protocol::stop() implementation.
     void stop() override
     {
-        BaseUdpServer::stop();
+        BaseUDPServer::stop();
     }
 
     // Get message from server.
     // \return Message from the BaseUdpServer.
-    BaseUdpServer::Message getNextMessage()
+    BaseUDPServer::Message getNextMessage()
     {
-        BaseUdpServer::Message msg;
-        BaseUdpServer::getNextMessage(msg);
+        BaseUDPServer::Message msg;
+        BaseUDPServer::getNextMessage(msg);
         return msg;
     }
 
@@ -46,6 +50,7 @@ private:
     MessageHandler m_messageHandler;
 };
 
-} // namespace nexilis
+
+} // namespace nexilis::af_inet
 
 #endif

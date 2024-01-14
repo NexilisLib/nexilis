@@ -1,20 +1,20 @@
-#include "nexilis/message_handler.hh"
+#include <nexilis/message_handler.hh>
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
 
-namespace nexilis
+namespace nexilis::af_inet
 {
 
-void AfInetUdpServer::start()
+void UDPServer::start()
 {
-    BaseUdpServer::start();
+    BaseUDPServer::start();
 
     while (true)
     {
-        BaseUdpServer::Message msg;
+        BaseUDPServer::Message msg;
 
-        if (BaseUdpServer::getNextMessage(msg))
+        if (BaseUDPServer::getNextMessage(msg))
         {
             auto message = m_messageHandler.readMessage(msg.address, msg.message, msg.port);
 

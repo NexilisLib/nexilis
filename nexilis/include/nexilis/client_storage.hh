@@ -15,9 +15,8 @@ class ClientStorage
 public:
     static void add(Client&& client)
     {
-        Log::info("new connection");
-        Log::info("Clients amount =", m_clients.size());
         m_clients.emplace_back(std::move(client));
+        Log::info("New client, total amount = ", m_clients.size());
     }
 
     static bool contains(const std::string& ip_address)

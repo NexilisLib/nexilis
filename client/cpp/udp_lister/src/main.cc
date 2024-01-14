@@ -1,17 +1,17 @@
+#include <nexilis/common/af_inet_udp_sender.hh>
 #include <nexilis/dispatcher.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/log.hh>
 #include <nexilis/af_inet/udp_client_receiver.hh>
 #include <nexilis/client_api/client_api.hh>
 
+// Legacy file but I won't delete at least yet.
 uint8_t setupCommand[] = { '1', 0xFF, 0x10, 0x10, 0x10, '5', '4', '2', '0', '9' };
 uint8_t pingCommand[] = { '1', 0xFF, 0x20, 0x10 };
 uint8_t rootPasswdCommand[] = { '1', 0xFF, 0x40, 0x20, 's', 'a', 'l', 'a', 's', 'a', 'n', 'a' };
 uint8_t commonPasswdCommand[] = { '1', 0xFF, 0x40, 0x30, 'c', 'o', 'm', 'm', 'o', 'n' };
 uint8_t chatCommand[] = { '1', 0xFF, 0x70, 0x10, 0x10, 'm', 'o', 'i', 'k', 'a' };
 
-
-nexilis::ClientAPI api(12);
 
 void startServer()
 {
@@ -27,7 +27,7 @@ void sendMessageAfterDelay(uint8_t message[], size_t dataSize, std::string msgNa
     std::cout << "Calling thread: " << msgName << std::endl;
 
     // Send the message after a delay
-    nexilis::UDPSender sender("192.168.1.85", 54200);
+    nexilis::AfInetUdpSender sender("192.168.1.85", 54200);
     sender.sendMessage(message, dataSize);
 }
 

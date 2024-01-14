@@ -4,17 +4,17 @@
 #include <nexilis/protocol.hh>
 #include <nexilis/ports.hh>
 
-#include <string>
 #include <atomic>
+#include <string>
 #include <thread>
 #include <mutex>
 #include <queue>
 #include <condition_variable>
 
-namespace nexilis
+namespace nexilis::af_inet
 {
 
-class BaseUdpServer : public Protocol
+class BaseUDPServer : public Protocol
 {
 public:
     struct Message
@@ -24,9 +24,9 @@ public:
         uint16_t port;
     };
 
-    BaseUdpServer(unsigned port = static_cast<unsigned>(Port::UDP));
+    BaseUDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
 
-    virtual ~BaseUdpServer();
+    virtual ~BaseUDPServer();
 
     /// Start listening to incoming messages.
     void start() override;

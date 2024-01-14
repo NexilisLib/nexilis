@@ -2,6 +2,7 @@
 #define NEXILIS_CONNECTION_MANAGER_HH
 
 #include <nexilis/af_inet/udp_server.hh>
+#include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_unix/unix_socket_server.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/websocket/websocket.hh>
@@ -18,7 +19,8 @@ public:
     {
         websocket,
         boost_udp,
-        af_inet,
+        af_inet_server,
+        af_inet_client,
         af_unix
     };
 
@@ -40,12 +42,14 @@ public:
         {
             type = Type::af_unix;
         }
-
-        else if constexpr (std::is_same<T, AfInetUdpServer>::value)
+        else if constexpr (std::is_same<T, af_inet::UDPServer>::value)
         {
-            type = Type::af_inet;
+            type = Type::af_inet_server;
         }
-
+        else if constexpr (std::is_same<T, af_inet::UDPClient>::value)
+        {
+            type = Type::af_inet_client;
+        }
         else if constexpr (std::is_same<T, Websocket>::value)
         {
             type = Type::websocket;
