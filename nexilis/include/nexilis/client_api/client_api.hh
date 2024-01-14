@@ -19,28 +19,75 @@ namespace nexilis
 class ClientAPI
 {
 public:
-    struct Message
+    class Message
     {
-        std::string address;
-        std::vector<uint8_t> data;
+    public:
+        Message(std::string address, std::vector<uint8_t> data) :
+            m_address(address), m_data(data)
+        {
+        }
+
+        std::string getAddress() const
+        {
+            return m_address;
+        }
+
+        std::vector<uint8_t> getData() const
+        {
+            return m_data;
+        }
+    private:
+        std::string m_address;
+        std::vector<uint8_t> m_data;
     };
 
-    struct ServerData
+    class ServerData
     {
+    public:
+        ServerData(std::string afInetServerAddress, uint16_t afInetPort, const std::string& username) :
+            m_AfInetServeraddress(afInetServerAddress),
+            m_afInetPort(afInetPort),
+            m_username(username)
+        {
+        }
+
+        ServerData(std::string afInetServerAddress, uint16_t afInetPort) :
+            m_AfInetServeraddress(afInetServerAddress),
+            m_afInetPort(afInetPort)
+        {
+        }
+
+        std::string getAfInetServerAddress() const
+        {
+            return m_AfInetServeraddress;
+        }
+
+        uint16_t getAfInetServerPort() const
+        {
+            return m_afInetPort;
+        }
+
+        std::string getUsername() const
+        {
+            return m_username;
+        }
+
+    private:
         // Data related specifically to server.
-        std::string af_inet_server_address;
-        uint16_t af_inet_port = 0xFFFF;
+        std::string m_AfInetServeraddress;
+        uint16_t m_afInetPort = 0xFFFF;
 
         // Client data in the server.
-        std::string client_username;
+        std::string m_username;
     };
 
     ClientAPI(ServerData data) :
         m_data(data),
-        m_af_inet_sender(data.af_inet_server_address.c_str(), data.af_inet_port)
+        m_af_inet_sender(data.getAfInetServerAddress().c_str(), data.getAfInetServerPort())
     {
 
         {
+            // It would be cool if this was like a password.
             uint8_t msg[] = { 0x20, 0x10 };
             m_af_inet_sender.sendMessage(msg, sizeof(msg));
         }
@@ -49,9 +96,8 @@ public:
     bool IsAfInetUdpReady()
     {
         return  m_clientId &&
-                !m_data.af_inet_server_address.empty() &&
-                m_data.af_inet_port != 0xFFFF;
-                //m_data.client_af_inet_listener_port != 0xFFFF;
+                !m_data.getAfInetServerAddress().empty() &&
+                m_data.getAfInetServerPort() != 0xFFFF;
                 //!m_data.client_username.empty();
     }
 
@@ -114,12 +160,12 @@ public:
 
     std::string getServerAddress()
     {
-        return m_data.af_inet_server_address;
+        return m_data.getAfInetServerAddress();
     }
 
     uint16_t getServerAfInetUDPPortNumber()
     {
-        return m_data.af_inet_port;
+        return m_data.getAfInetServerPort();
     }
 
 private:

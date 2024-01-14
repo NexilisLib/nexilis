@@ -9,6 +9,37 @@
 namespace nexilis
 {
 
+size_t extractSizeFromVector(const std::vector<uint8_t>& data)
+{
+    size_t result = 0;
+
+    for (auto byte : data)
+    {
+        if (byte == 0xFF)
+        {
+            break;
+        }
+        result = (result << 8) | byte;
+    }
+
+    return result;
+}
+
+std::vector<uint8_t> removeItemsUntilFF(std::vector<uint8_t>& data)
+{
+    auto ffPosition = std::find(data.begin(), data.end(), 0xFF);
+
+    if (ffPosition != data.end())
+    {
+        // Erase items including 0xFF
+        return std::vector<uint8_t>(ffPosition + 1, data.end());
+    }
+    else
+    {
+        return {};
+    }
+}
+
 MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port)
 {
     Log::info("Received message: ", message, " from ", address, " port", port);
@@ -16,84 +47,60 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     // Create new client.
     Client client(address);
 
-    // Yeah this needs to be modifier alot.
-    // However as long as we get stuff to happen it's fine.
-    if (!ClientStorage::contains(address))
+    // Magic bytes 0x20, 0x10
+    if (message[0] == 0x20 && message[1] == 0x10)
     {
-        // Magic bytes 0x20, 0x10
-        if (message[0] == 0x20 && message[1] == 0x10)
+        Log::info("Registering user ", client.getIPAddress());
+
+        std::vector<uint8_t> readyMessage;
+
+        auto idVector = Util::convertToByteVector(client.getId());
+
+        // clientside command.
+        readyMessage.push_back(0x10);
+        readyMessage.push_back(0x10);
+
+        for (uint8_t i = 0; i < idVector.size(); i++)
         {
-            Log::info("Registering user ", client.getIPAddress());
-
-            std::vector<uint8_t> readyMessage;
-
-            auto idVector = Util::convertToByteVector(client.getId());
-
-            // clientside command.
-            readyMessage.push_back(0x10);
-            readyMessage.push_back(0x10);
-
-            for (uint8_t i = 0; i < idVector.size(); i++)
-            {
-                readyMessage.push_back(idVector[i]);
-            }
-
-            // Authentication.
-            ClientStorage::add(std::move(client));
-            auto realClient = ClientStorage::getClientById(client.getId());
-
-            assert(realClient);
-
-            return Message
-            {
-                address,
-                readyMessage,
-                port,
-                realClient
-            };
+            readyMessage.push_back(idVector[i]);
         }
-        else
+
+        // Authentication.
+        ClientStorage::add(std::move(client));
+        auto realClient = ClientStorage::getClientById(client.getId());
+
+        assert(realClient);
+
+        return Message
         {
-            Log::info("Message from unregistered user: ", message, " address ", address, "! clientID: ", client.getId());
-        }
+            address,
+            readyMessage,
+            port,
+            realClient
+        };
     }
 
-    Log::info("Message from registered client ", address, " message: ", message);
+    std::vector<uint8_t> msg = Util::convertToByteVector(message.c_str(), message.size());
+    size_t id = extractSizeFromVector(msg);
+    auto realClient = ClientStorage::getClientById(id);
 
-    std::vector<uint8_t> msg;
-
-    auto command = Command::createVectorFromCommandPtr(message.c_str(), message.size());
-    for (uint8_t i = 0; i < command.size(); i++)
+    if (realClient)
     {
-        msg.push_back(command[i]);
-    }
+        auto readyCommand = removeItemsUntilFF(msg);
 
-    size_t index = 0;
-    size_t playerId = 0;
-
-    while (index < command.size() && command[index] != 0xFF)
-    {
-        char digitChar = command[index];
-        if (isdigit(digitChar))
+        return Message
         {
-            playerId = playerId * 10 + (digitChar - '0');
-        }
-        index++;
+            address,
+            readyCommand,
+            port,
+            realClient,
+        };
     }
-
-    auto fullCommandInBytes = Command::createVectorFromCommandPtr(message.c_str(), message.size());
-    auto readyCommand = Command::removeAmountOfBytesFromVector(fullCommandInBytes, index + 1);
-
-    auto realClient = ClientStorage::getClientById(playerId);
-    assert(realClient);
-
-    return Message
+    else
     {
-        address,
-        readyCommand,
-        port,
-        realClient,
-    };
+        Log::info("Message from unidentified user!");
+        return {};
+    }
 }
 
 }

@@ -2,21 +2,9 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/client_api/client_api.hh>
 
-nexilis::ClientAPI::ServerData serverData
-{
-    //std::string af_inet_server_address;
-    "192.168.1.85",
-
-    //uint16_t af_inet_port = 0xFFFF;
-    54200,
-
-    //std::string client_username;
-    "Valtsuuni"
-};
-
-
 int main()
 {
+    nexilis::ClientAPI::ServerData serverData("192.168.1.85", static_cast<uint16_t>(54200), "Valtsuuni");
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
 

@@ -19,12 +19,12 @@ public:
         Log::info("New client, total amount = ", m_clients.size());
     }
 
-    static bool contains(const std::string& ip_address)
+    static bool contains(size_t id)
     {
         return std::find_if(m_clients.begin(), m_clients.end(),
-                            [ip_address](const Client& client)
+                            [id](const Client& client)
                             {
-                                return client.getIPAddress() == ip_address;
+                                return client.getId() == id;
                             }) != m_clients.end();
     }
 
