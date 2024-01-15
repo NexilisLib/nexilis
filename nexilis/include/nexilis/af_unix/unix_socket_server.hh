@@ -1,10 +1,11 @@
 #ifndef NEXILIS_UNIX_SOCKET_SERVER_HH
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
+#include <nexilis/message_handler.hh>
 #include <nexilis/protocol.hh>
 #include <string>
 
-namespace nexilis
+namespace nexilis::af_unix
 {
 
 class UnixSocketServer : public Protocol
@@ -21,6 +22,10 @@ public:
 
     void start() override
     {
+        while(true)
+        {
+            receiveMessage();
+        }
     }
 
     void stop() override
@@ -42,8 +47,10 @@ private:
     void bindSocket();
 
     static void signalHandler(int signum);
+
+    MessageHandler m_messageHandler;
 };
 
-} // namespace nexilis
+} // namespace nexilis::af_unix
 
 #endif

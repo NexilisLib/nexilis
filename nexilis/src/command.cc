@@ -129,7 +129,21 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                         // Not implemented.
                         case Protocol::Type::Websocket: return false;
-                        case Protocol::Type::UnixSocket: return false;
+                        case Protocol::Type::UnixSocket:
+                        {
+                            std::vector<uint8_t> data = { 0x20, 0x10 };
+
+                            auto idBytes = Util::convertToByteVector(client.getId());
+
+                            for (uint8_t i = 0; i < idBytes.size(); i++)
+                            {
+                                data.push_back(idBytes[i]);
+                            }
+
+                            //Dispatcher::sendUDPMessage(client, client.getUdpPort(), Util::convertToString(data));
+                            //Dispatcher::
+                            return true;
+                        }
                     }
                 }
             }

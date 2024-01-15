@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(impl_unix_socket)
+project(unix_socket)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
@@ -13,6 +13,6 @@ add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 include_directories(src)
 file(GLOB sources src/*.cc)
 
-add_executable(impl_unix_socket ${sources})
+add_executable(unix_socket ${sources})
 
-target_link_libraries(impl_unix_socket nexilis)
+target_link_libraries(unix_socket nexilis)

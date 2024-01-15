@@ -38,7 +38,7 @@ public:
                       "Type must be derived class of nexilis::Protocol");
 
         Type type;
-        if constexpr (std::is_same<T, UnixSocketServer>::value)
+        if constexpr (std::is_same<T, af_unix::UnixSocketServer>::value)
         {
             type = Type::af_unix;
         }

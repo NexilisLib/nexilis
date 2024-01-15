@@ -78,6 +78,7 @@ public:
     {
     }
 
+    /// Protocol::stop() implementation.
     void stop() override
     {
         // Join the thread when stopping
@@ -86,8 +87,6 @@ public:
             m_receiverThread.join();
         }
     }
-
-    /// Protocol::stop() implementation.
 
     /// Protocol::getType() implementation.
     Type getType() override
@@ -105,6 +104,7 @@ private:
             socklen_t srcAddrLen;
 
             receiveData(buffer, sizeof(buffer), &srcAddr, &srcAddrLen);
+            std::cout << "data" << buffer << std::endl;
 
             auto message = Util::convertToByteVector(buffer, sizeof(buffer));
 

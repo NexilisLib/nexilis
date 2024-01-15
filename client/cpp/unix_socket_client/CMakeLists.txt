@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 3.20)
-project(impl_unix_message)
+
+project(unix_socket_client)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(../../nexilis/ nexilis_dir)
+add_subdirectory(../../../nexilis/ nexilis_dir)
 
 add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 
 include_directories(src)
-file(GLOB sources src/*.cc)
+FILE(GLOB sources src/*.cc)
 
-add_executable(impl_unix_message ${sources})
+add_executable(unix_socket_client ${sources})
 
-target_link_libraries(impl_unix_message nexilis)
+target_link_libraries(unix_socket_client nexilis)
+

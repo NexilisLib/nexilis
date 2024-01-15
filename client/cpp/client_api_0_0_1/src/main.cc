@@ -10,12 +10,13 @@ int main()
 
     auto afInet = protocolManager.addProtocol<nexilis::af_inet::UDPClient>(api);
 
-    std::thread serverThread([&afInet](){ afInet.attach(); });
+    //std::thread serverThread([&afInet](){ afInet.attach(); });
+    afInet.attach();
 
-    while (api.IsAfInetUdpReady())
+    while (api.IsInetUdpReady())
     {
-        std::cout << "Not readyy " << std::endl;
+        //std::cout << "Not readyy " << std::endl;
     }
-    serverThread.join();
+    //serverThread.join();
 }
 

@@ -19,6 +19,11 @@ public:
         UnixSocket
     };
 
+    Protocol()
+        : m_port(static_cast<uint32_t>(-1))
+    {
+    }
+
     Protocol(uint32_t port)
         : m_port(port)
     {
@@ -33,10 +38,6 @@ public:
     }
 
     virtual Type getType() = 0;
-
-    virtual void sendMessage()
-    {
-    }
 
     uint32_t getPort() const
     {

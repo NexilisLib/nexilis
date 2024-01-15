@@ -44,27 +44,37 @@ public:
     class ServerData
     {
     public:
-        ServerData(std::string afInetServerAddress, uint16_t afInetPort, const std::string& username) :
-            m_AfInetServeraddress(afInetServerAddress),
-            m_afInetPort(afInetPort),
+        ServerData(std::string inetServerAddress, uint16_t inetPort, const std::string& username) :
+            m_inetServeraddress(inetServerAddress),
+            m_inetPort(inetPort),
             m_username(username)
         {
         }
 
         ServerData(std::string afInetServerAddress, uint16_t afInetPort) :
-            m_AfInetServeraddress(afInetServerAddress),
-            m_afInetPort(afInetPort)
+            m_inetServeraddress(afInetServerAddress),
+            m_inetPort(afInetPort)
         {
         }
 
-        std::string getAfInetServerAddress() const
+        // Yeah we need some sort a system here.
+        ServerData(std::string unixSocketPath) : m_unixSocketPath(unixSocketPath){}
+
+        /// af_inet
+        std::string getInetServerAddress() const
         {
-            return m_AfInetServeraddress;
+            return m_inetServeraddress;
         }
 
-        uint16_t getAfInetServerPort() const
+        /// af_unix
+        uint16_t getInetServerPort() const
         {
-            return m_afInetPort;
+            return m_inetPort;
+        }
+
+        std::string getUnixSocketPath() const
+        {
+            return m_unixSocketPath;
         }
 
         std::string getUsername() const
@@ -73,37 +83,45 @@ public:
         }
 
     private:
-        // Data related specifically to server.
-        std::string m_AfInetServeraddress;
-        uint16_t m_afInetPort = 0xFFFF;
+        /// af_inet
+        std::string m_inetServeraddress;
+        uint16_t m_inetPort = 0xFFFF;
 
-        // Client data in the server.
+        /// af_unix
+        std::string m_unixSocketPath;
+
+        /// Other client data.
         std::string m_username;
     };
 
     ClientAPI(ServerData data) :
         m_data(data),
-        m_af_inet_sender(data.getAfInetServerAddress().c_str(), data.getAfInetServerPort())
+        m_inet_sender(data.getInetServerAddress().c_str(), data.getInetServerPort())
     {
 
         {
             // It would be cool if this was like a password.
             uint8_t msg[] = { 0x20, 0x10 };
-            m_af_inet_sender.sendMessage(msg, sizeof(msg));
+            m_inet_sender.sendMessage(msg, sizeof(msg));
         }
     }
 
-    bool IsAfInetUdpReady()
+    bool IsInetUdpReady()
     {
         return  m_clientId &&
-                !m_data.getAfInetServerAddress().empty() &&
-                m_data.getAfInetServerPort() != 0xFFFF;
-                //!m_data.client_username.empty();
+                !m_data.getInetServerAddress().empty() &&
+                m_data.getInetServerPort() != 0xFFFF;
+    }
+
+    bool isUnixSocketClientReady()
+    {
+        return m_clientId &&
+               !m_data.getUnixSocketPath().empty();
     }
 
     void sendAfInetMessage(const std::string& message)
     {
-        m_af_inet_sender.sendMessage(message);
+        m_inet_sender.sendMessage(message);
     }
 
     bool readMessage(std::vector<uint8_t> message)
@@ -160,19 +178,20 @@ public:
 
     std::string getServerAddress()
     {
-        return m_data.getAfInetServerAddress();
+        return m_data.getInetServerAddress();
     }
 
     uint16_t getServerAfInetUDPPortNumber()
     {
-        return m_data.getAfInetServerPort();
+        return m_data.getInetServerPort();
+    }
+
+    std::string getUnixSocketPath()
+    {
+        return m_data.getUnixSocketPath();
     }
 
 private:
-    void initializeAfInetUdpConnection()
-    {
-    }
-
     void setClientId(size_t id)
     {
         m_clientId = &id;
@@ -180,7 +199,7 @@ private:
 
 private:
     ServerData m_data;
-    AfInetUdpSender m_af_inet_sender;
+    AfInetUdpSender m_inet_sender;
     size_t* m_clientId;
 };
 

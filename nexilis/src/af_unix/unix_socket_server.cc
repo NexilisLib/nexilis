@@ -7,7 +7,7 @@
 
 #include <csignal>
 
-namespace nexilis
+namespace nexilis::af_unix
 {
 
 /// The file path we are reading messages from.
@@ -47,16 +47,19 @@ void UnixSocketServer::receiveMessage()
     if (bytesRead > 0)
     {
         std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
+        auto message = m_messageHandler.readMessage(address, m_buffer, -1);
 
-        // Creating and adding new connections, I don't think this is really necessary but it's fine.
-        Client client(address);
-        if (!ClientStorage::contains(client.getId()))
+        if (message.client)
         {
-            ClientStorage::add(std::move(client));
+            if (!Command::read(message.message, *message.client, *this))
+            {
+                Log::error("Unix socket server message reading error from message: ");
+            }
         }
-
-        // Read the message.
-        Command::read(m_buffer, sizeof(m_buffer), client, *this);
+        else
+        {
+            Log::info("Message from unauhorized client!");
+        }
     }
 }
 
@@ -101,4 +104,4 @@ void UnixSocketServer::signalHandler(int signum)
     }
 }
 
-} // namespace nexilis
+} // namespace nexilis::af_unix

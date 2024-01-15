@@ -10,33 +10,51 @@ namespace nexilis
 class Authentication
 {
 public:
+    enum class Mode
+    {
+        free,
+        passwordProtected,
+        whiteListed
+    };
+
     void setRootPassword(const std::string& password)
     {
-        assert(password != "");
+        assert(!password.empty());
         m_rootPassword = password;
     }
 
-    bool checkRootPassword(const std::string& password)
+    bool isRootPassword(const std::string& password)
     {
-        assert(m_rootPassword != "");
+        assert(!m_rootPassword.empty());
         return m_rootPassword == password;
     }
 
     void setCommonPassword(const std::string& password)
     {
-        assert(password != "");
+        assert(!password.empty());
         m_password = password;
     }
 
-    bool checkCommonPassword(const std::string& password)
+    bool isCommonPassword(const std::string& password)
     {
-        assert(m_rootPassword != "");
+        assert(!m_password.empty());
         return password == m_password;
     }
 
+    void setMode(Mode mode)
+    {
+        m_mode = mode;
+    }
+
+    Mode getMode()
+    {
+        return m_mode;
+    }
+
 private:
-    std::string m_rootPassword = "";
-    std::string m_password = "";
+    std::string m_rootPassword;
+    std::string m_password;
+    Mode m_mode = Mode::free;
 };
 
 }
