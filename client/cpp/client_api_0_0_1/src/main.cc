@@ -4,11 +4,12 @@
 
 int main()
 {
-    nexilis::ClientAPI::ServerData serverData("192.168.1.85", static_cast<uint16_t>(54200), "Valtsuuni");
+    //nexilis::ClientAPI::ServerData serverData("192.168.1.85", static_cast<uint16_t>(54200), "Valtsuuni");
+    nexilis::ClientAPI::ServerData serverData;
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
 
-    auto afInet = protocolManager.addProtocol<nexilis::af_inet::UDPClient>(api);
+    auto afInet = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
 
     //std::thread serverThread([&afInet](){ afInet.attach(); });
     afInet.attach();

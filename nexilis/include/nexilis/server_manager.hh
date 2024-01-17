@@ -10,14 +10,10 @@ namespace nexilis
 class ServerManager
 {
 public:
-    void setAuthentication(const Authentication& authentication)
+    void setAuthentication(Authentication& authentication)
     {
-        m_authentication = authentication;
-        Command::setAuthentication(m_authentication);
+        Command::setAuthentication(authentication);
     }
-
-private:
-    Authentication m_authentication;
 };
 
 }

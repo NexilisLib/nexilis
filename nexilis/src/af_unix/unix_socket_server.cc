@@ -18,9 +18,6 @@ UnixSocketServer::UnixSocketServer(const std::string& socketPath)
 {
     path = socketPath;
 
-    // TODO
-    // This project most definately needs a global max buffer size for a message,
-    // regardless of the protocol we are using.
     m_bufferSize = 1024;
     m_buffer = new char[m_bufferSize];
     createSocket();
@@ -37,6 +34,7 @@ UnixSocketServer::~UnixSocketServer()
 }
 
 // Read messages.
+/*
 void UnixSocketServer::receiveMessage()
 {
     struct sockaddr_in clientAddress;
@@ -46,8 +44,13 @@ void UnixSocketServer::receiveMessage()
 
     if (bytesRead > 0)
     {
+        int clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
+
+        std::string testMessage = "client";
+        send(clientSocket, testMessage.c_str(), testMessage.length(), 0);
+
         std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
-        auto message = m_messageHandler.readMessage(address, m_buffer, -1);
+        auto message = m_messageHandler.readMessage(address, m_buffer, -1, Command::getAuthentication());
 
         if (message.client)
         {
@@ -58,9 +61,42 @@ void UnixSocketServer::receiveMessage()
         }
         else
         {
-            Log::info("Message from unauhorized client!");
+            Log::info("UNIX: Message from unauhorized client!");
         }
     }
+}
+*/
+
+void UnixSocketServer::receiveMessage() {
+    struct sockaddr_un clientAddress;
+    socklen_t clientAddressLen = sizeof(clientAddress);
+    memset(m_buffer, '\0', m_bufferSize);
+
+    // Accept a new connection
+    int clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
+
+    if (clientSocket == -1)
+    {
+        return;
+    }
+
+    // Send a test message to the client
+    std::string testMessage = "client";
+    send(clientSocket, testMessage.c_str(), testMessage.length(), 0);
+
+    std::string address = std::string(clientAddress.sun_path);
+    auto message = m_messageHandler.readMessage(address, m_buffer, -1, Command::getAuthentication());
+
+    if (message.client) {
+        if (!Command::read(message.message, *message.client, *this)) {
+            Log::error("Unix socket server message reading error from message: ");
+        }
+    } else {
+        Log::info("UNIX: Message from unauthorized client!");
+    }
+
+    // Close the client socket when done processing the message
+    close(clientSocket);
 }
 
 void UnixSocketServer::createSocket()

@@ -40,6 +40,12 @@ public:
         m_authentication = &authentication;
     }
 
+    /// Get authentication details.
+    static Authentication* getAuthentication()
+    {
+        return m_authentication;
+    }
+
     /// Helper functions.
 
     /// Create IPv4 address from IPV4 data.

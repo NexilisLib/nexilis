@@ -28,6 +28,8 @@ public:
         m_client_id_set = true;
     }
 
+    virtual void sendMessage(const std::string& message) = 0;
+
 private:
     size_t m_client_id;
     bool m_client_id_set = false;

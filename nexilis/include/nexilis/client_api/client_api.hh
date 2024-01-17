@@ -16,6 +16,11 @@
 namespace nexilis
 {
 
+namespace af_unix
+{
+class UnixSocketClient;
+}
+
 class ClientAPI
 {
 public:
@@ -44,21 +49,17 @@ public:
     class ServerData
     {
     public:
-        ServerData(std::string inetServerAddress, uint16_t inetPort, const std::string& username) :
-            m_inetServeraddress(inetServerAddress),
-            m_inetPort(inetPort),
+        ServerData() = default;
+
+        ServerData(const std::string& password) : m_password(password)
+        {
+        }
+
+        ServerData(const std::string password, const std::string username) :
+            m_password(password),
             m_username(username)
         {
         }
-
-        ServerData(std::string afInetServerAddress, uint16_t afInetPort) :
-            m_inetServeraddress(afInetServerAddress),
-            m_inetPort(afInetPort)
-        {
-        }
-
-        // Yeah we need some sort a system here.
-        ServerData(std::string unixSocketPath) : m_unixSocketPath(unixSocketPath){}
 
         /// af_inet
         std::string getInetServerAddress() const
@@ -66,20 +67,56 @@ public:
             return m_inetServeraddress;
         }
 
-        /// af_unix
         uint16_t getInetServerPort() const
         {
             return m_inetPort;
         }
 
-        std::string getUnixSocketPath() const
+        void setInet(const std::string& serverAddress, uint16_t inetPort)
         {
-            return m_unixSocketPath;
+            m_inetServeraddress = serverAddress;
+            m_inetPort = inetPort;
+        }
+
+        /// af_unix
+        std::string getUnixSocketServerPath() const
+        {
+            return m_unixSocketServerPath;
+        }
+
+        void setUnixSocketServerPath(const std::string& socketPath)
+        {
+            m_unixSocketServerPath = socketPath;
+        }
+
+        std::string getUnixSocketClientPath() const
+        {
+            return m_unixSocketClientPath;
+        }
+
+        void setUnixSocketClientPath(const std::string& clientPath)
+        {
+            m_unixSocketClientPath = clientPath;
         }
 
         std::string getUsername() const
         {
             return m_username;
+        }
+
+        void setUserName(const std::string username)
+        {
+            m_username = username;
+        }
+
+        std::string getPassword() const
+        {
+            return m_password;
+        }
+
+        void setPassword(const std::string& password)
+        {
+            m_password = password;
         }
 
     private:
@@ -88,9 +125,11 @@ public:
         uint16_t m_inetPort = 0xFFFF;
 
         /// af_unix
-        std::string m_unixSocketPath;
+        std::string m_unixSocketServerPath;
+        std::string m_unixSocketClientPath;
 
         /// Other client data.
+        std::string m_password;
         std::string m_username;
     };
 
@@ -98,12 +137,6 @@ public:
         m_data(data),
         m_inet_sender(data.getInetServerAddress().c_str(), data.getInetServerPort())
     {
-
-        {
-            // It would be cool if this was like a password.
-            uint8_t msg[] = { 0x20, 0x10 };
-            m_inet_sender.sendMessage(msg, sizeof(msg));
-        }
     }
 
     bool IsInetUdpReady()
@@ -116,7 +149,7 @@ public:
     bool isUnixSocketClientReady()
     {
         return m_clientId &&
-               !m_data.getUnixSocketPath().empty();
+               !m_data.getUnixSocketServerPath().empty();
     }
 
     void sendAfInetMessage(const std::string& message)
@@ -124,57 +157,12 @@ public:
         m_inet_sender.sendMessage(message);
     }
 
-    bool readMessage(std::vector<uint8_t> message)
+    void sendUnixMessage(const std::string& message)
     {
-        for (uint8_t commandByte : message)
-        {
-            std::cout << "Commandbyte hex: " << std::hex << static_cast<int>(commandByte);
-            std::cout << std::endl;
-            std::cout << "Commandbyte char: " <<  static_cast<char>(commandByte);
-        }
-
-        switch (message.front())
-        {
-            // Set
-            case 0x10:
-            {
-                switch (message[1])
-                {
-                    // Client ID.
-                    case 0x10:
-                    {
-                        auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
-                        auto id = Util::convertToType<size_t>(sizeVector);
-                        setClientId(id);
-                        return true;
-                    }
-
-                    default: return false;
-                }
-
-            }
-
-            // Get.
-            case 0x20:
-            {
-                switch (message[1])
-                {
-                    case 0x10:
-                    {
-                        size_t clientId = Util::convertToType<size_t>(Util::removeAmountOfBytesFromVector(message, 1));
-                        std::cout << "client id set to" << clientId << std::endl;
-                        setClientId(clientId);
-                        return true;
-                    }
-
-                    default: return false;
-                }
-            }
-
-            default: return false;
-        }
-
     }
+
+    /// Read incoming message to client.
+    bool readMessage(std::vector<uint8_t> message);
 
     std::string getServerAddress()
     {
@@ -186,9 +174,19 @@ public:
         return m_data.getInetServerPort();
     }
 
-    std::string getUnixSocketPath()
+    std::string getUnixSocketServerPath()
     {
-        return m_data.getUnixSocketPath();
+        return m_data.getUnixSocketServerPath();
+    }
+
+    std::string getUnixSocketClientPath()
+    {
+        return m_data.getUnixSocketClientPath();
+    }
+
+    std::string getClientPassword()
+    {
+        return m_data.getPassword();
     }
 
 private:
@@ -199,8 +197,13 @@ private:
 
 private:
     ServerData m_data;
-    AfInetUdpSender m_inet_sender;
     size_t* m_clientId;
+
+private:
+    // Why is this the sender class and not the client?
+    AfInetUdpSender m_inet_sender;
+
+    af_unix::UnixSocketClient* m_unixSocketClient;
 };
 
 }

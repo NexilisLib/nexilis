@@ -16,7 +16,7 @@ void UDPServer::start()
 
         if (BaseUDPServer::getNextMessage(msg))
         {
-            auto message = m_messageHandler.readMessage(msg.address, msg.message, msg.port);
+            auto message = m_messageHandler.readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
 
             if (message.client)
             {

@@ -1,3 +1,4 @@
+#include "nexilis/af_unix/unix_socket_sender.hh"
 #include <cstdint>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command_type.hh>
@@ -45,7 +46,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
-                // UDP setup for the client.
+                // I don't actually like this, should be changed.
                 case 0x10:
                 {
                     switch (command[2])
@@ -131,6 +132,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         case Protocol::Type::Websocket: return false;
                         case Protocol::Type::UnixSocket:
                         {
+                            std::cout << "GET::CLIENTID" << std::endl;
                             std::vector<uint8_t> data = { 0x20, 0x10 };
 
                             auto idBytes = Util::convertToByteVector(client.getId());
@@ -140,8 +142,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                                 data.push_back(idBytes[i]);
                             }
 
-                            //Dispatcher::sendUDPMessage(client, client.getUdpPort(), Util::convertToString(data));
-                            //Dispatcher::
+                            //UnixSocketSender sender("/tmp/nexilis_client");
+                            //sender.sendMessageToClient(Util::convertToString(data), "/tmp/nexilis_client");
                             return true;
                         }
                     }
@@ -253,7 +255,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     if (m_authentication)
                     {
-                        if (m_authentication->checkRootPassword(password))
+                        if (m_authentication->isRootPassword(password))
                         {
                             client.setRootAccess(true);
                             Log::info("Client ", client.getIPAddress(), " has root access!");
@@ -279,7 +281,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     if (m_authentication)
                     {
-                        if (m_authentication->checkCommonPassword(password))
+                        if (m_authentication->isCommonPassword(password))
                         {
                             client.setCommonAccess(true);
                             Log::info("Client ", client.getIPAddress(), " has common access!");

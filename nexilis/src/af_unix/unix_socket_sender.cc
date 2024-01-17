@@ -25,7 +25,17 @@ UnixSocketSender::~UnixSocketSender()
     close(m_socket_fd);
 }
 
-void UnixSocketSender::sendMessage(const std::string& message)
+void UnixSocketSender::sendMessageToServer(const std::string& message)
+{
+    sendMessage(message, m_socketPath);
+}
+
+void UnixSocketSender::sendMessageToClient(const std::string& message, const std::string& clientPath)
+{
+    sendMessage(message, clientPath);
+}
+
+void UnixSocketSender::sendMessage(const std::string& message, const std::string& destinationPath)
 {
     if (m_socket_fd == -1)
     {
@@ -36,7 +46,7 @@ void UnixSocketSender::sendMessage(const std::string& message)
     struct sockaddr_un server_address;
     std::memset(&server_address, 0, sizeof(struct sockaddr_un));
     server_address.sun_family = AF_UNIX;
-    std::strncpy(server_address.sun_path, m_socketPath.c_str(), sizeof(server_address.sun_path) - 1);
+    std::strncpy(server_address.sun_path, destinationPath.c_str(), sizeof(server_address.sun_path) - 1);
 
     ssize_t bytes_sent = sendto(m_socket_fd, message.c_str(), message.size(), 0,
                                 (struct sockaddr*)&server_address, sizeof(struct sockaddr_un));

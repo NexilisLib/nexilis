@@ -32,7 +32,7 @@ public:
     };
 
     template <typename T, typename... Args>
-    T addProtocol(Args&&... args)
+    T createProtocol(Args&&... args)
     {
         static_assert(std::is_base_of<Protocol, T>::value,
                       "Type must be derived class of nexilis::Protocol");

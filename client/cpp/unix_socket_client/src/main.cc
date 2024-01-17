@@ -4,13 +4,21 @@
 
 int main()
 {
-    nexilis::ClientAPI::ServerData serverData("/tmp/nexilis");
+    nexilis::ClientAPI::ServerData serverData("salasana");
+    serverData.setUnixSocketServerPath("/tmp/nexilis");
+
     nexilis::ClientAPI api(serverData);
+
     nexilis::ProtocolManager protocolManager;
 
-    auto unix_client = protocolManager.addProtocol<nexilis::af_unix::UnixSocketClient>(api);
+    auto unix_client = protocolManager.createProtocol<nexilis::af_unix::UnixSocketClient>(api);
 
-    unix_client.start();
+    //unix_client.start();
+
+    while (api.isUnixSocketClientReady())
+    {
+        std::cout << "Not ready for action!" << std::endl;
+    }
 
     return 0;
 }

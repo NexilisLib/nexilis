@@ -1,3 +1,4 @@
+#include "nexilis/authentication.hh"
 #include <cstdint>
 #include <nexilis/message_handler.hh>
 #include <nexilis/client_storage.hh>
@@ -40,44 +41,69 @@ std::vector<uint8_t> removeItemsUntilFF(std::vector<uint8_t>& data)
     }
 }
 
-MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port)
+MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication)
 {
-    Log::info("Received message: ", message, " from ", address, " port", port);
+    Log::info("Received message: ", message, " from ", address, " port ", port);
 
     // Create new client.
     Client client(address);
 
-    // Magic bytes 0x20, 0x10
-    if (message[0] == 0x20 && message[1] == 0x10)
+    // We do the authentication here.
+    switch (authentication->getMode())
     {
-        Log::info("Registering user ", client.getIPAddress());
-
-        std::vector<uint8_t> readyMessage;
-
-        auto idVector = Util::convertToByteVector(client.getId());
-
-        // clientside command.
-        readyMessage.push_back(0x10);
-        readyMessage.push_back(0x10);
-
-        for (uint8_t i = 0; i < idVector.size(); i++)
+        case Authentication::Mode::free: break;
+        case Authentication::Mode::whiteListed:
         {
-            readyMessage.push_back(idVector[i]);
+            Log::error("Not implemented!");
+            return {};
         }
-
-        // Authentication.
-        ClientStorage::add(std::move(client));
-        auto realClient = ClientStorage::getClientById(client.getId());
-
-        assert(realClient);
-
-        return Message
+        case Authentication::Mode::passwordProtected:
         {
-            address,
-            readyMessage,
-            port,
-            realClient
-        };
+            if (client.hasCommonAccess())
+            {
+                std::cout << "Client has common access!" << std::endl;
+                break;
+            }
+            else
+            {
+                // Only accept the password as a message from unidentied clients.
+                std::vector<uint8_t> bytes = Util::convertToByteVector(message.c_str(), message.size());
+                std::string password = Util::convertToString(bytes);
+                if (authentication->isCommonPassword(password))
+                {
+                    Log::info("Correct password by user ", client.getId());
+                    client.setCommonAccess(true);
+
+                    size_t clientId = client.getId();
+                    ClientStorage::add(std::move(client));
+                    auto realClient = ClientStorage::getClientById(clientId);
+                    assert(realClient);
+
+                    std::vector<uint8_t> message;
+                    message.push_back(0x20);
+                    message.push_back(0x10);
+
+                    std::vector<uint8_t> idBytes = Util::convertToByteVector(realClient->getId());
+                    for (size_t i = 0; i < idBytes.size(); i++)
+                    {
+                        message.push_back(idBytes[i]);
+                    }
+
+                    return Message
+                    {
+                        address,
+                        message,
+                        port,
+                        realClient
+                    };
+                }
+            }
+        }
+        default:
+        {
+            Log::error("Missing authentication mode");
+            return {};
+        }
     }
 
     std::vector<uint8_t> msg = Util::convertToByteVector(message.c_str(), message.size());
