@@ -13,12 +13,14 @@ int main()
 
     auto unix_client = protocolManager.createProtocol<nexilis::af_unix::UnixSocketClient>(api);
 
-    //unix_client.start();
+    unix_client.start();
 
+    /*
     while (api.isUnixSocketClientReady())
     {
         std::cout << "Not ready for action!" << std::endl;
     }
+    */
 
     return 0;
 }

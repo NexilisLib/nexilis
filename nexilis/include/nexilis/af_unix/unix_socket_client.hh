@@ -15,6 +15,9 @@ public:
     /// Constructor.
     UnixSocketClient(ClientAPI& api);
 
+    /// Destructor.
+    ~UnixSocketClient();
+
     /// Send message to the server.
     void sendMessage(const std::string& message) override;
 
@@ -34,7 +37,6 @@ public:
 
 private:
     void createSocket();
-    void connectToServer();
 
 private:
     ClientAPI& m_api;
@@ -44,7 +46,6 @@ private:
     std::string m_clientSocketPath;
     int m_clientSocket;
     struct sockaddr_un m_serverAddr;
-
 };
 
 }
