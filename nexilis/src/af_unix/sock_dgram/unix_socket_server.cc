@@ -1,4 +1,4 @@
-#include <nexilis/af_unix/unix_socket_server.hh>
+#include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
 
@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
+
+#include <unistd.h>
 
 #include <csignal>
 
@@ -52,6 +54,7 @@ void UnixSocketServer::receiveMessage()
         std::cout << "Received data: " << m_buffer << std::endl;
 
         std::cout << "Received address family: " << clientAddress.sun_family << std::endl;
+        std::cout << "Received address path: " << clientAddress.sun_path << std::endl;
 
         if (clientAddress.sun_family == AF_UNIX)
         {
@@ -97,71 +100,39 @@ void UnixSocketServer::receiveMessage()
             std::cerr << "Received message from unexpected address family: " << clientAddress.sun_family << std::endl;
         }
     }
+    else if (bytesRead == -1)
+    {
+        perror("recvfrom");
+    }
 }
-
-/*
-void UnixSocketServer::receiveMessage()
-{
-    struct sockaddr_un clientAddress;
-    socklen_t clientAddressLen = sizeof(clientAddress);
-    memset(m_buffer, '\0', m_bufferSize);
-
-    // Accept a new connection
-    int clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
-
-    if (clientSocket == -1)
-    {
-        return;
-    }
-    else
-    {
-        std::cout << "Received message from client!" << std::endl;
-    }
-
-    // Send a test message to the client
-    std::string testMessage = "client";
-    send(clientSocket, testMessage.c_str(), testMessage.length(), 0);
-
-    std::string address = std::string(clientAddress.sun_path);
-    auto message = m_messageHandler.readMessage(address, m_buffer, -1, Command::getAuthentication());
-
-    if (message.client)
-    {
-        if (!Command::read(message.message, *message.client, *this))
-        {
-            Log::error("Unix socket server message reading error from message: ");
-        }
-    }
-    else
-    {
-        Log::info("UNIX: Message from unauthorized client!");
-    }
-
-    // Close the client socket when done processing the message
-    close(clientSocket);
-}
-*/
 
 void UnixSocketServer::createSocket()
 {
     m_serverSocket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_serverSocket == -1)
     {
+        perror("socket");
         Log::critical("Error creating socket");
     }
 }
 
 void UnixSocketServer::bindSocket()
 {
-    std::cout << "SUN PATH INITIALIZATION: " << path.c_str() << std::endl;
-
     struct sockaddr_un serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sun_family = AF_UNIX;
-    strncpy(serverAddr.sun_path, path.c_str(), sizeof(serverAddr.sun_path) - 1);
+    strcpy(serverAddr.sun_path, path.c_str());
+
+    // Remove old socket file.
+    if (unlink(path.c_str()) != 0)
+    {
+        perror("unlink");
+        std::cout << "Failed to unlink the socket file from " << path << std::endl;
+    }
 
     if (bind(m_serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
+        perror("bind");
         Log::critical("Error binding socket");
         close(m_serverSocket);
         exit(1);

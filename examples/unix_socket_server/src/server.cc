@@ -1,6 +1,6 @@
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/logger/log_level.hh>
-#include <nexilis/af_unix/unix_socket_server.hh>
+#include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
 #include <nexilis/log.hh>
 #include <nexilis/server_manager.hh>
 #include <nexilis/authentication.hh>

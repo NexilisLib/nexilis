@@ -43,9 +43,7 @@ private:
     char* m_buffer;
 
     void createSocket();
-
     void bindSocket();
-
     static void signalHandler(int signum);
 
     MessageHandler m_messageHandler;

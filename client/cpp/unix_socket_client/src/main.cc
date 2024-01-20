@@ -1,4 +1,4 @@
-#include <nexilis/af_unix/unix_socket_client.hh>
+#include <nexilis/af_unix/sock_dgram/unix_socket_client.hh>
 #include <nexilis/client_api/client_api.hh>
 #include <nexilis/protocol_manager.hh>
 

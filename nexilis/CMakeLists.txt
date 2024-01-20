@@ -20,9 +20,9 @@ set(SOURCES
     src/client.cc
     src/message_handler.cc
 
-    src/af_unix/unix_socket_server.cc
-    src/af_unix/unix_socket_sender.cc
-    src/af_unix/unix_socket_client.cc
+    src/af_unix/sock_dgram/unix_socket_server.cc
+    src/af_unix/sock_dgram/unix_socket_sender.cc
+    src/af_unix/sock_dgram/unix_socket_client.cc
 
     src/af_inet/udp_client.cc
     src/af_inet/udp_server.cc

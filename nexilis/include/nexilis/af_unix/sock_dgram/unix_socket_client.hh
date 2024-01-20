@@ -36,14 +36,15 @@ public:
     }
 
 private:
+    // Initialize sockets and stuff, TODO rename
     void createSocket();
 
 private:
     ClientAPI& m_api;
 
 private:
+    // TODO create unixSocket.hh
     std::string m_serverSocketPath;
-    std::string m_clientSocketPath;
     int m_clientSocket;
     struct sockaddr_un m_serverAddr;
 };

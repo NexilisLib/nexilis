@@ -3,7 +3,7 @@
 
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/af_inet/udp_client.hh>
-#include <nexilis/af_unix/unix_socket_server.hh>
+#include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/websocket/websocket.hh>
 

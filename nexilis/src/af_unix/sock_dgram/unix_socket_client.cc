@@ -1,4 +1,5 @@
-#include <nexilis/af_unix/unix_socket_client.hh>
+#include <cstdlib>
+#include <nexilis/af_unix/sock_dgram/unix_socket_client.hh>
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -25,8 +26,10 @@ UnixSocketClient::~UnixSocketClient()
 
 void UnixSocketClient::sendMessage(const std::string& message)
 {
-    ssize_t sentBytes = sendto(m_clientSocket, message.c_str(), message.length(), 0,
-           reinterpret_cast<const struct sockaddr*>(&m_serverAddr), sizeof(m_serverAddr));
+    std::cout << "SENDING MESSAGE: " << m_serverAddr.sun_path << std::endl;
+
+    ssize_t sentBytes = sendto(m_clientSocket, message.c_str(), message.size(), 0,
+                           (struct sockaddr*)&m_serverAddr, sizeof(m_serverAddr));
 
     if (sentBytes == -1)
     {
@@ -67,7 +70,6 @@ void UnixSocketClient::start()
 
 void UnixSocketClient::stop()
 {
-    close(m_clientSocket);
 }
 
 void UnixSocketClient::createSocket()
@@ -78,13 +80,13 @@ void UnixSocketClient::createSocket()
         std::cerr << "Error creating client socket" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));
     m_serverAddr.sun_family = AF_UNIX;
-    strncpy(m_serverAddr.sun_path, m_serverSocketPath.c_str(), sizeof(m_serverAddr.sun_path) - 1);
+    strcpy(m_serverAddr.sun_path, m_serverSocketPath.c_str());
 
-    std::cout << "Connected to server, address family: " << m_serverAddr.sun_family << std::endl;
-    std::cout << "Server path: " << m_serverSocketPath << std::endl;
+    std::cout << "SERVER SOCKET" << std::endl;
+    std::cout << "address path: " << m_serverAddr.sun_path << std::endl;
+    std::cout << "address family: " << m_serverAddr.sun_family << std::endl;
 }
 
 }
