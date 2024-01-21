@@ -24,6 +24,9 @@ set(SOURCES
     src/af_unix/sock_dgram/unix_socket_sender.cc
     src/af_unix/sock_dgram/unix_socket_client.cc
 
+    src/af_unix/sock_stream/server.cc
+    src/af_unix/sock_stream/client.cc
+
     src/af_inet/udp_client.cc
     src/af_inet/udp_server.cc
     src/af_inet/base_udp_server.cc

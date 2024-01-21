@@ -46,6 +46,9 @@ void UnixSocketServer::receiveMessage()
     memset(&clientAddress, 0, sizeof(clientAddress));
     memset(m_buffer, '\0', m_bufferSize);
     clientAddress.sun_family = AF_UNIX;
+    
+    // Server is sending messages to itself with this.
+    //strcpy(clientAddress.sun_path, "/tmp/nexilis");
 
     ssize_t bytesRead = recvfrom(m_serverSocket, m_buffer, m_bufferSize, 0, (struct sockaddr*)&clientAddress, &clientAddressLen);
 
