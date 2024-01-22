@@ -14,9 +14,9 @@ namespace nexilis
 
 Authentication* Command::m_authentication = nullptr;
 
-bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
+bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient)
 {
-    return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol);
+    return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol, sendMessageToClient);
 }
 
 std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_data, size_t lenght)
@@ -31,7 +31,7 @@ std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_dat
     return result;
 }
 
-bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
+bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient)
 {
     for (uint8_t commandByte : command)
     {
@@ -108,46 +108,22 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get client id.
                 case 0x10:
                 {
-                    switch (protocol.getType())
+                    // Reminder of the client parsing.
+                    // 0x20 = GET
+                    // 0x10 = IP
+                    std::vector<uint8_t> data = { 0x20, 0x10 };
+
+                    auto idBytes = Util::convertToByteVector(client.getId());
+
+                    for (uint8_t i = 0; i < idBytes.size(); i++)
                     {
-                        case Protocol::Type::UDP:
-                        {
-                            // Reminder of the client parsing.
-                            // 0x20 = GET
-                            // 0x10 = IP
-                            std::vector<uint8_t> data = { 0x20, 0x10 };
-
-                            auto idBytes = Util::convertToByteVector(client.getId());
-
-                            for (uint8_t i = 0; i < idBytes.size(); i++)
-                            {
-                                data.push_back(idBytes[i]);
-                            }
-
-                            Dispatcher::sendUDPMessage(client, client.getUdpPort(), Util::convertToString(data));
-                            return true;
-                        }
-
-                        // Not implemented.
-                        case Protocol::Type::Websocket: return false;
-                        case Protocol::Type::UnixSocket:
-                        {
-                            std::cout << "GET::CLIENTID" << std::endl;
-                            std::vector<uint8_t> data = { 0x20, 0x10 };
-
-                            auto idBytes = Util::convertToByteVector(client.getId());
-
-                            for (uint8_t i = 0; i < idBytes.size(); i++)
-                            {
-                                data.push_back(idBytes[i]);
-                            }
-
-                            //UnixSocketSender sender("/tmp/nexilis_client");
-                            //sender.sendMessageToClient(Util::convertToString(data), "/tmp/nexilis_client");
-                            return true;
-                        }
+                        data.push_back(idBytes[i]);
                     }
+
+                    sendMessageToClient(data);
+                    return true;
                 }
+                return false;
             }
         }
 
@@ -336,6 +312,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                             auto& allClients = ClientStorage::getAllClients();
                             Log::info("New client amount: ", allClients.size());
 
+                            /*
                             switch (protocol.getType())
                             {
                                 case Protocol::Type::UDP:
@@ -356,7 +333,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                                     return false;
                                 }
                             }
-
+                            */
                         }
 
                         default: return false;

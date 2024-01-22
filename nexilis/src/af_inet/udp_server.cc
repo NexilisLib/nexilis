@@ -20,7 +20,8 @@ void UDPServer::start()
 
             if (message.client)
             {
-                if (!Command::read(message.message, *message.client, *this))
+                // TODO
+                if (!Command::read(message.message, *message.client, *this, [](const std::vector<uint8_t>&){}))
                 {
                     Log::error("UDP server message reading error, message: ", msg.message);
                 }

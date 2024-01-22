@@ -4,6 +4,7 @@
 #include <nexilis/protocol.hh>
 #include <nexilis/message_handler.hh>
 
+#include <cstdint>
 #include <string>
 
 namespace nexilis::af_unix::sock_stream
@@ -39,6 +40,8 @@ public:
     {
         return Type::UnixSocket;
     }
+
+    void sendMessage(int clientSocket, const std::vector<uint8_t>& message);
 
 private:
     std::string m_socketPath;

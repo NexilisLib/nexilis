@@ -92,7 +92,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     return Message
                     {
                         address,
-                        message,
+                        std::move(message),
                         port,
                         realClient
                     };

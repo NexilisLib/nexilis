@@ -1,6 +1,7 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 
+#include <cstdint>
 #include <nexilis/protocol.hh>
 #include <nexilis/client_protocol.hh>
 #include <nexilis/client_api/client_api.hh>
@@ -23,7 +24,8 @@ public:
     /// ClientProtocol::sendMessage implementation.
     void sendMessage(const std::string& message) override;
 
-    std::string receiveMessage();
+    /// Receive messages from the server.
+    std::vector<uint8_t> receiveMessage();
 
     /// Protocol::start() implementation.
     void start() override;

@@ -19,8 +19,8 @@ public:
         UnixSocket
     };
 
-    Protocol()
-        : m_port(static_cast<uint32_t>(-1))
+    Protocol() :
+        m_port(static_cast<uint32_t>(-1))
     {
     }
 

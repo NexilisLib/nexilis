@@ -1,5 +1,7 @@
+#include <cstdint>
 #include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/buffer.hh>
+#include <nexilis/command.hh>
 
 #include <sys/types.h>
 #include <sys/un.h>
@@ -7,6 +9,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <functional>
 
 namespace nexilis::af_unix::sock_stream
 {
@@ -55,10 +58,24 @@ void Server::bindSocket()
         close(m_serverSocket);
     }
 
+    // The five here refers to max amount of clients.
+    // TODO add global value to here.
     if (listen(m_serverSocket, 5) == -1)
     {
         perror("listen");
         close(m_serverSocket);
+    }
+}
+
+void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
+{
+    std::cout << "BYTES AMOUNT " << message.size() << std::endl;
+
+    ssize_t sentBytes = send(clientSocket, message.data(), sizeof(message), 0);
+
+    if (sentBytes == -1)
+    {
+        perror("send");
     }
 }
 
@@ -69,31 +86,37 @@ void Server::receiveMessage()
     int clientSocket = accept(m_serverSocket, nullptr, nullptr);
     if (clientSocket == -1)
     {
-        //perror("accept");
-        //close(m_serverSocket);
+        perror("accept");
+        close(m_serverSocket);
     }
 
     ssize_t bytesRead = recv(clientSocket, m_buffer, sizeof(m_buffer), 0);
 
     if (bytesRead == -1)
     {
-        //perror("recv");
+        perror("recv");
     }
     else
     {
         m_buffer[bytesRead] = '\0';
         std::cout << "Received message from client: " << m_buffer << std::endl;
 
-        // Send response back to the client.
-        std::string response = "Hello from the server!";
-        ssize_t sentBytes = send(clientSocket, response.c_str(), response.size(), 0);
+        auto msg = m_messageHandler.readMessage("", std::string(m_buffer), -1, Command::getAuthentication());
 
-        if (sentBytes == -1)
+        if (msg.client)
         {
-            perror("send");
+            if (!Command::read(msg.message, *msg.client, *this, [this, &clientSocket](const std::vector<uint8_t>& message)
+                {
+                    sendMessage(clientSocket, message);
+                }))
+            {
+                std::cerr << "Server message reading error!" << std::endl;
+            }
         }
-
-        /// Here we need to the the nexilis command reading.
+        else
+        {
+            std::cerr << "Message from unauthorized client!" << std::endl;
+        }
     }
 }
 

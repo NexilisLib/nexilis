@@ -88,7 +88,8 @@ void UnixSocketServer::receiveMessage()
 
             if (message.client)
             {
-                if (!Command::read(message.message, *message.client, *this))
+                // TODO
+                if (!Command::read(message.message, *message.client, *this, [](const std::vector<uint8_t>&){}))
                 {
                     Log::error("Unix socket server message reading error from message: ");
                 }

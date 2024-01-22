@@ -1,6 +1,8 @@
+#include <cstdint>
 #include <nexilis/af_unix/sock_stream/client.hh>
 #include <nexilis/buffer.hh>
 
+#include <sys/types.h>
 #include <unistd.h>
 
 namespace nexilis::af_unix::sock_stream
@@ -68,15 +70,7 @@ void Client::start()
     while (true)
     {
         auto data = receiveMessage();
-
-        if (data != "")
-        {
-            std::cout << "data" << data << std::endl;
-
-            auto message = Util::convertToByteVector(data.c_str(), data.size());
-
-            m_api.readMessage(message);
-        }
+        m_api.readMessage(data);
     }
 }
 
@@ -85,23 +79,22 @@ void Client::stop()
     close(m_clientSocket);
 }
 
-std::string Client::receiveMessage()
+std::vector<uint8_t> Client::receiveMessage()
 {
-    char buffer[NEXILIS_BUFFER];
+    // Receive buffer.
+    std::vector<uint8_t> receivedData(NEXILIS_BUFFER);
 
-    ssize_t bytesRead = recv(m_clientSocket, buffer, sizeof(buffer), 0);
+    // Receive data into buffer.
+    ssize_t bytesRead = recv(m_clientSocket, receivedData.data(), receivedData.size(), 0);
 
     if (bytesRead == -1)
     {
-        //perror("recv");
+        perror("recv");
+        close(m_clientSocket);
     }
-    else
-    {
-        buffer[bytesRead] = '\0';
-        std::cout << "Received response from the server" << buffer << std::endl;
-        return std::string(buffer);
-    }
-    return "";
+
+    receivedData.resize(bytesRead);
+    return receivedData;
 }
 
 }

@@ -11,7 +11,7 @@ int main()
 
     nexilis::Authentication auth;
     auth.setMode(nexilis::Authentication::Mode::passwordProtected);
-    auth.setRootPassword("salasana");
+    auth.setCommonPassword("salasana");
 
     nexilis::ServerManager serverManager;
     serverManager.setAuthentication(auth);
