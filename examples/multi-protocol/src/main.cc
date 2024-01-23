@@ -19,7 +19,7 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     // Create a websocket server.
-    auto websocketServer = protocolManager.addProtocol<nexilis::Websocket>();
+    auto websocketServer = protocolManager.createProtocol<nexilis::Websocket>();
 
     /*
     websocketServer.setOpenHandler([]()
@@ -29,7 +29,7 @@ int main()
                                     { std::cout << "Close handler" << std::endl; });
     */
 
-    auto udpServer = protocolManager.addProtocol<nexilis::af_inet::UDPServer>();
+    auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
 
 
     // Run websocket server and udp server at the same time.

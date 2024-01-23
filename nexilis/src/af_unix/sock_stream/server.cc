@@ -1,7 +1,7 @@
-#include <cstdint>
 #include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/buffer.hh>
 #include <nexilis/command.hh>
+#include <nexilis/server_manager.hh>
 
 #include <sys/types.h>
 #include <sys/un.h>
@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include <iostream>
-#include <functional>
 
 namespace nexilis::af_unix::sock_stream
 {
@@ -58,9 +57,7 @@ void Server::bindSocket()
         close(m_serverSocket);
     }
 
-    // The five here refers to max amount of clients.
-    // TODO add global value to here.
-    if (listen(m_serverSocket, 5) == -1)
+    if (listen(m_serverSocket, ServerManager::getMaxAmountOfClients()) == -1)
     {
         perror("listen");
         close(m_serverSocket);
@@ -69,8 +66,6 @@ void Server::bindSocket()
 
 void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
 {
-    std::cout << "BYTES AMOUNT " << message.size() << std::endl;
-
     ssize_t sentBytes = send(clientSocket, message.data(), sizeof(message), 0);
 
     if (sentBytes == -1)
@@ -105,10 +100,15 @@ void Server::receiveMessage()
 
         if (msg.client)
         {
-            if (!Command::read(msg.message, *msg.client, *this, [this, &clientSocket](const std::vector<uint8_t>& message)
-                {
-                    sendMessage(clientSocket, message);
-                }))
+            bool readCommand = Command::read(msg.message, *msg.client, *this,
+                    [this, &clientSocket](const std::vector<uint8_t>& message) { sendMessage(clientSocket, message); }
+                    );
+
+            if (readCommand)
+            {
+                std::cout << "Command read succesfully!" << std::endl;
+            }
+            else
             {
                 std::cerr << "Server message reading error!" << std::endl;
             }

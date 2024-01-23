@@ -19,6 +19,7 @@ set(SOURCES
     src/log.cc
     src/client.cc
     src/message_handler.cc
+    src/server_manager.cc
 
     src/af_unix/sock_dgram/unix_socket_server.cc
     src/af_unix/sock_dgram/unix_socket_sender.cc

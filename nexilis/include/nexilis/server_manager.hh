@@ -14,6 +14,20 @@ public:
     {
         Command::setAuthentication(authentication);
     }
+
+    void setMaxAmountOfClients(size_t amount)
+    {
+        m_maxClients = amount;
+    }
+
+    static size_t getMaxAmountOfClients()
+    {
+        return m_maxClients;
+    }
+
+private:
+    /// Max amount of clients in the server, default 1000.
+    static size_t m_maxClients;
 };
 
 }

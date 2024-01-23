@@ -46,58 +46,41 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
-                // I don't actually like this, should be changed.
                 case 0x10:
                 {
-                    switch (command[2])
+                    auto port = Util::uint8PairToUint16(command[3], command[4]);
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto c = clients.begin(); c != clients.end(); c++)
                     {
-                        case 0x10:
+                        if (*c == client)
                         {
-                            auto port = Util::uint8PairToUint16(command[3], command[4]);
-                            auto& clients = ClientStorage::getAllClients();
-
-                            for (auto c = clients.begin(); c != clients.end(); c++)
-                            {
-                                if (*c == client)
-                                {
-                                    c->setUdpPort(port);
-                                }
-                            }
-                            return true;
+                            c->setUdpPort(port);
                         }
-
-                        // Give username to the client.
-                        case 0x20:
-                        {
-                            auto payload = removeAmountOfBytesFromVector(command, 3);
-                            std::string username = convertToString(payload);
-                            auto& clients = ClientStorage::getAllClients();
-
-                            for (auto c = clients.begin(); c != clients.end(); c++)
-                            {
-                                if (*c == client)
-                                {
-                                    c->setUsername(username);
-                                }
-                            }
-
-                            return true;
-                        }
-
-                        // Password to the client?
                     }
-
-                    default: return false;
+                    return true;
                 }
 
-                // Same for the websocket.
+                // Give username to the client.
                 case 0x20:
                 {
-                    return false;
+                    auto payload = removeAmountOfBytesFromVector(command, 3);
+                    std::string username = convertToString(payload);
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto c = clients.begin(); c != clients.end(); c++)
+                    {
+                        if (*c == client)
+                        {
+                            c->setUsername(username);
+                        }
+                    }
+
+                    return true;
                 }
 
+                default: return false;
             }
-            Log::error("Undefined control flow");
             return false;
         }
 
@@ -134,45 +117,16 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             {
                 case 0x10:
                 {
-                    // DEBUG default ping port
-                    //Dispatcher::sendUDPMessage(connection, 54209, "pong");
-
-                    switch (protocol.getType())
-                    {
-                        case Protocol::Type::UDP:
-                        {
-                            // Send back to second byte.
-                            Log::debug("PING Sending UDP port ", client.getUdpPort(), " back pong");
-                            Dispatcher::sendUDPMessage(client, client.getUdpPort(), "pong");
-                            return true;
-                        }
-
-                        case Protocol::Type::Websocket:
-                        {
-                            // Dispatcher::sendMessage();
-                            Log::error("Websocket 0x10 not implemented");
-                            return false;
-                        }
-
-                        case Protocol::Type::UnixSocket:
-                        {
-                            Log::error("Unix socket 0x10 not implemented");
-                            return false;
-                        }
-                    }
-
-                    // This branch should not exist.
-                    Log::error("Received MainCommand::ping(0x10, 0x10)");
-                    return false;
+                    Log::debug("PING Sending UDP port ", client.getUdpPort(), " back pong");
+                    // TODO create pong message, I mean this is kinda stupid.
+                    std::vector<uint8_t> message = { 0x10, 0x10 };
+                    sendMessageToClient(message);
+                    return true;
                 }
 
-                // 0x20, 0x20 is the reply to the pong message back.
-                // Consider this in the clientside api.
                 case 0x20:
                 {
-                    Log::info("Received pong");
-                    //Dispatcher::sendUDPMessage(client, client.getUdpPort(), "pong");
-                    return true;
+                    return false;
                 }
 
                 // Start listening
@@ -312,7 +266,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                             auto& allClients = ClientStorage::getAllClients();
                             Log::info("New client amount: ", allClients.size());
 
-                            /*
                             switch (protocol.getType())
                             {
                                 case Protocol::Type::UDP:
@@ -333,7 +286,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                                     return false;
                                 }
                             }
-                            */
                         }
 
                         default: return false;
