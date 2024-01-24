@@ -24,7 +24,7 @@ public:
     // Send data using UDP
     void sendData(const char* data, size_t dataSize);
 
-    void receiveData(char* buffer, size_t bufferSize, struct sockaddr* srcAddr, socklen_t* srcAddrLen);
+    std::vector<uint8_t> receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
 
     void start() override;
 

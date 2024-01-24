@@ -4,6 +4,8 @@
 #include <nexilis/protocol.hh>
 #include <nexilis/ports.hh>
 
+#include <sys/socket.h>
+
 #include <atomic>
 #include <string>
 #include <thread>
@@ -22,6 +24,8 @@ public:
         const char* address;
         std::string message;
         uint16_t port;
+        const struct sockaddr* clientAddr;
+        socklen_t clientAddrLen;
     };
 
     BaseUDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
@@ -37,14 +41,14 @@ public:
     /// Retrieve message from the queue (if available).
     bool getNextMessage(Message& msg);
 
-private:
+protected:
     int m_serverSocket;
 
+private:
     std::atomic<bool> m_running = false;
     std::thread m_recvThread;
     std::mutex m_mtx;
     std::queue<Message> m_messageQueue;
-
     std::condition_variable m_condition;
 
     // Thread function to handle incoming messages.

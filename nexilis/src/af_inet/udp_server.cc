@@ -18,10 +18,14 @@ void UDPServer::start()
         {
             auto message = m_messageHandler.readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
 
+            auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
+            {
+                sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
+            };
+
             if (message.client)
             {
-                // TODO
-                if (!Command::read(message.message, *message.client, *this, [](const std::vector<uint8_t>&){}))
+                if (!Command::read(message.message, *message.client, *this, sendMsg))
                 {
                     Log::error("UDP server message reading error, message: ", msg.message);
                 }
@@ -32,6 +36,11 @@ void UDPServer::start()
             }
         }
     }
+}
+
+void UDPServer::sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen)
+{
+    sendto(BaseUDPServer::m_serverSocket, data.data(), data.size(), 0, clientAddr, clientAddrLen);
 }
 
 } // namespace nexilis

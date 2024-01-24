@@ -1,6 +1,6 @@
 #include <nexilis/af_inet/udp_client.hh>
+#include <nexilis/buffer.hh>
 
-#include <cstring>
 #include <arpa/inet.h>
 
 namespace nexilis::af_inet
@@ -47,9 +47,19 @@ void UDPClient::sendData(const char* data, size_t dataSize)
     sendto(m_clientSocket, data, dataSize, 0, serverAddr, sizeof(m_serverAddr));
 }
 
-void UDPClient::receiveData(char* buffer, size_t bufferSize, struct sockaddr* srcAddr, socklen_t* srcAddrLen)
+std::vector<uint8_t> UDPClient::receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen)
 {
-    recvfrom(m_clientSocket, buffer, bufferSize, 0, srcAddr, srcAddrLen);
+    std::vector<uint8_t> receivedData(NEXILIS_BUFFER);
+    ssize_t bytesRead = recvfrom(m_clientSocket, receivedData.data(), receivedData.size(), 0, srcAddr, srcAddrLen);
+
+    if (bytesRead == -1)
+    {
+        perror("recvfrom");
+        Log::error("UDPClient receiveData");
+    }
+
+    receivedData.resize(bytesRead);
+    return receivedData;
 }
 
 void UDPClient::start()
@@ -71,16 +81,11 @@ void UDPClient::receiveLoop()
 {
     while (true)
     {
-        char buffer[1024];
-        struct sockaddr srcAddr;
+        sockaddr srcAddr;
         socklen_t srcAddrLen;
 
-        receiveData(buffer, sizeof(buffer), &srcAddr, &srcAddrLen);
-        std::cout << "data" << buffer << std::endl;
-
-        auto message = Util::convertToByteVector(buffer, sizeof(buffer));
-
-        m_api.readMessage(message);
+        auto data = receiveData(&srcAddr, &srcAddrLen);
+        m_api.readMessage(data);
     }
 }
 

@@ -1,11 +1,7 @@
-#include <cstdint>
-#include <mutex>
-#include <netinet/in.h>
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/log.hh>
 
 #include <netdb.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
@@ -144,7 +140,9 @@ void BaseUDPServer::receiverThread()
         {
             address,
             receivedData,
-            port
+            port,
+            (const sockaddr*)&clientAddr,
+            sizeof(clientAddr)
         };
 
         {

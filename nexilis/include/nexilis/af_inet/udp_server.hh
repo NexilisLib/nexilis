@@ -13,7 +13,8 @@ public:
     /// Constructor.
     /// \param port The port we are assigning the udp server.
     /// This has been initialized the value of Port::UDP.
-    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP)) : BaseUDPServer(port)
+    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP)) : 
+        BaseUDPServer(port)
     {
     }
 
@@ -46,6 +47,8 @@ public:
         return Type::UDP;
     }
 
+    void sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen);
+    
 private:
     MessageHandler m_messageHandler;
 };

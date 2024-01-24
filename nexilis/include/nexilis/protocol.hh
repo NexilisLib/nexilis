@@ -6,8 +6,6 @@
 namespace nexilis
 {
 
-// Forward declarations of inherited class might be necessary here.
-
 class Protocol
 {
 public:
