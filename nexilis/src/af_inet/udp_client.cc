@@ -1,6 +1,7 @@
 #include <nexilis/af_inet/udp_client.hh>
 
 #include <cstring>
+#include <arpa/inet.h>
 
 namespace nexilis::af_inet
 {
@@ -13,11 +14,14 @@ UDPClient::UDPClient(ClientAPI& api) :
     m_serverAddr.sin_port = htons(api.getServerAfInetUDPPortNumber());
     if (inet_pton(AF_INET, api.getServerAddress().c_str(), &m_serverAddr.sin_addr) <= 0)
     {
-        std::cerr << "Invalid server address" << std::endl;
+        Log::critical("Invalid server address");
         exit(EXIT_FAILURE);
     }
 
     m_clientSocket = createSocket();
+
+    // I don't actually know if this should be abstracted or not.
+    sendMessage(m_api.getClientPassword());
 }
 
 int UDPClient::createSocket()
@@ -25,7 +29,7 @@ int UDPClient::createSocket()
     int socketFD = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFD == -1)
     {
-        std::cerr << "Failed to create socket." << std::endl;
+        Log::critical("Failed to create socket.");
         exit(EXIT_FAILURE);
     }
     return socketFD;
@@ -48,13 +52,9 @@ void UDPClient::receiveData(char* buffer, size_t bufferSize, struct sockaddr* sr
     recvfrom(m_clientSocket, buffer, bufferSize, 0, srcAddr, srcAddrLen);
 }
 
-void UDPClient::attach()
-{
-    m_receiverThread = std::thread(&UDPClient::receiveLoop, this);
-}
-
 void UDPClient::start()
 {
+    m_receiverThread = std::thread(&UDPClient::receiveLoop, this);
 }
 
 /// Protocol::stop() implementation.

@@ -3,6 +3,7 @@
 #include <nexilis/buffer.hh>
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 namespace nexilis::af_unix::sock_stream

@@ -1,7 +1,6 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 
-#include <cstdint>
 #include <nexilis/protocol.hh>
 #include <nexilis/client_protocol.hh>
 #include <nexilis/client_api/client_api.hh>
@@ -40,7 +39,7 @@ public:
     }
 
 private:
-    // Initialize sockets and stuff, TODO rename
+    // Initialize sockets and stuff.
     void createSocket();
     void connectToServer();
 

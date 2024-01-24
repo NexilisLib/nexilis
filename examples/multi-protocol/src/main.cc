@@ -10,37 +10,17 @@ int main()
     nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
 
     nexilis::Authentication auth;
-    auth.setRootPassword("salasana");
-    auth.setCommonPassword("common");
+    auth.setMode(nexilis::Authentication::Mode::passwordProtected);
+    auth.setCommonPassword("salasana");
 
     nexilis::ServerManager serverManager;
     serverManager.setAuthentication(auth);
 
     nexilis::ProtocolManager protocolManager;
 
-    // Create a websocket server.
-    auto websocketServer = protocolManager.createProtocol<nexilis::Websocket>();
-
-    /*
-    websocketServer.setOpenHandler([]()
-                                   { std::cout << "Open handler!" << std::endl; });
-
-    websocketServer.setCloseHandler([]()
-                                    { std::cout << "Close handler" << std::endl; });
-    */
-
     auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
 
-
-    // Run websocket server and udp server at the same time.
-    std::thread t1([&websocketServer]()
-                   { websocketServer.start(); });
-
-    std::thread t2([&udpServer]()
-                   { udpServer.start(); });
-
-    t1.join();
-    t2.join();
+    udpServer.start();
 
     return 0;
 }

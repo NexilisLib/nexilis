@@ -3,6 +3,7 @@
 
 #include <nexilis/client_protocol.hh>
 #include <nexilis/client_api/client_api.hh>
+#include <nexilis/protocol.hh>
 
 #include <sys/un.h>
 

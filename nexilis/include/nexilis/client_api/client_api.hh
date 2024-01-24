@@ -10,7 +10,6 @@
 
 // Remember that only "common" libraries should be imported here.
 // Maybe it would be clearler if these parts would be rewritten to clientside.
-#include <nexilis/common/af_inet_udp_sender.hh>
 #include <nexilis/common/util.hh>
 
 namespace nexilis
@@ -61,21 +60,21 @@ public:
         {
         }
 
-        /// af_inet
+        /// af_inet UDP
         std::string getInetServerAddress() const
         {
-            return m_inetServeraddress;
+            return m_inetUDPServeraddress;
         }
 
         uint16_t getInetServerPort() const
         {
-            return m_inetPort;
+            return m_inetUDPPort;
         }
 
-        void setInet(const std::string& serverAddress, uint16_t inetPort)
+        void setInetUDP(const std::string& serverAddress, uint16_t inetPort)
         {
-            m_inetServeraddress = serverAddress;
-            m_inetPort = inetPort;
+            m_inetUDPServeraddress = serverAddress;
+            m_inetUDPPort = inetPort;
         }
 
         /// af_unix
@@ -121,8 +120,8 @@ public:
 
     private:
         /// af_inet
-        std::string m_inetServeraddress;
-        uint16_t m_inetPort = 0xFFFF;
+        std::string m_inetUDPServeraddress;
+        uint16_t m_inetUDPPort = 0xFFFF;
 
         /// af_unix
         std::string m_unixSocketServerPath;
@@ -134,8 +133,7 @@ public:
     };
 
     ClientAPI(ServerData data) :
-        m_data(data),
-        m_inet_sender(data.getInetServerAddress().c_str(), data.getInetServerPort())
+        m_data(data)
     {
     }
 
@@ -150,15 +148,6 @@ public:
     {
         return m_clientId &&
                !m_data.getUnixSocketServerPath().empty();
-    }
-
-    void sendAfInetMessage(const std::string& message)
-    {
-        m_inet_sender.sendMessage(message);
-    }
-
-    void sendUnixMessage(const std::string& message)
-    {
     }
 
     /// Read incoming message to client.
@@ -200,9 +189,6 @@ private:
     size_t* m_clientId;
 
 private:
-    // Why is this the sender class and not the client?
-    AfInetUdpSender m_inet_sender;
-
     af_unix::UnixSocketClient* m_unixSocketClient;
 };
 

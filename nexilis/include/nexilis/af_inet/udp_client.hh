@@ -1,8 +1,15 @@
 #ifndef NEXILIS_UDP_CLIENT_HH
 #define NEXILIS_UDP_CLIENT_HH
 
-#include <nexilis/client_protocol.hh>
+#include <nexilis/protocol.hh>
 #include <nexilis/client_api/client_api.hh>
+#include <nexilis/client_protocol.hh>
+
+#include <sys/un.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include <thread>
 
 namespace nexilis::af_inet
 {
@@ -18,8 +25,6 @@ public:
     void sendData(const char* data, size_t dataSize);
 
     void receiveData(char* buffer, size_t bufferSize, struct sockaddr* srcAddr, socklen_t* srcAddrLen);
-
-    void attach();
 
     void start() override;
 
@@ -38,7 +43,7 @@ private:
 
 private:
     int m_clientSocket;
-    struct sockaddr_in m_serverAddr;
+    sockaddr_in m_serverAddr;
 
     std::thread m_receiverThread;
 

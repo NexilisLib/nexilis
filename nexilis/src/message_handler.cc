@@ -51,7 +51,11 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     // We do the authentication here.
     switch (authentication->getMode())
     {
-        case Authentication::Mode::free: break;
+        case Authentication::Mode::free:
+        {
+            Log::error("Not implemented!");
+            return {};
+        }
         case Authentication::Mode::whiteListed:
         {
             Log::error("Not implemented!");
@@ -67,9 +71,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
             else
             {
                 // Only accept the password as a message from unidentied clients.
-                std::vector<uint8_t> bytes = Util::convertToByteVector(message.c_str(), message.size());
-                std::string password = Util::convertToString(bytes);
-                if (authentication->isCommonPassword(password))
+                if (authentication->isCommonPassword(std::string(message)))
                 {
                     Log::info("Correct password by user ", client.getId());
                     client.setCommonAccess(true);
@@ -79,9 +81,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     auto realClient = ClientStorage::getClientById(clientId);
                     assert(realClient);
 
-                    std::vector<uint8_t> message;
-                    message.push_back(0x20);
-                    message.push_back(0x10);
+                    std::vector<uint8_t> message { 0x20, 0x10 };
 
                     std::vector<uint8_t> idBytes = Util::convertToByteVector(realClient->getId());
                     for (size_t i = 0; i < idBytes.size(); i++)
@@ -96,6 +96,10 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                         port,
                         realClient
                     };
+                }
+                else
+                {
+                    std::cout << "PASSWORD WAS NOT CORRECT" << std::endl;
                 }
             }
         }
