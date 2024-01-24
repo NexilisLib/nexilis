@@ -7,12 +7,12 @@ namespace nexilis::af_inet
 {
 
 UDPClient::UDPClient(ClientAPI& api) :
-    Protocol(api.getServerAfInetUDPPortNumber()), m_api(api)
+    Protocol(api.getInetUDPPortNumber()), m_api(api)
 {
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));
     m_serverAddr.sin_family = AF_INET;
-    m_serverAddr.sin_port = htons(api.getServerAfInetUDPPortNumber());
-    if (inet_pton(AF_INET, api.getServerAddress().c_str(), &m_serverAddr.sin_addr) <= 0)
+    m_serverAddr.sin_port = htons(api.getInetUDPPortNumber());
+    if (inet_pton(AF_INET, api.getInetUDPServerAddress().c_str(), &m_serverAddr.sin_addr) <= 0)
     {
         Log::critical("Invalid server address");
         exit(EXIT_FAILURE);

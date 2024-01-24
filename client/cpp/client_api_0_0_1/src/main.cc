@@ -1,18 +1,32 @@
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/af_inet/udp_client.hh>
+#include <nexilis/af_inet/tcp_client.hh>
 #include <nexilis/client_api/client_api.hh>
 
 int main()
 {
+    nexilis::Log::startConsoleLogging();
+    nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
+
     nexilis::ClientAPI::ServerData serverData("salasana");
     serverData.setInetUDP("192.168.1.85", 54200);
+    serverData.setInetTCP("192.168.1.85", 54300);
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
 
-    auto afInet = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
+    // TCP
+    auto tcpClient = protocolManager.createProtocol<nexilis::af_inet::TCPClient>(api);
 
-    afInet.start();
+    if (tcpClient.connectToServer())
+    {
+        const char* message = "salasana";
+        tcpClient.send(message, strlen(message));
+    }
+
+    /// UDP
+    //auto afInet = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
+    //afInet.start();
 
     while (true) {}
 

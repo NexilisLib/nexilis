@@ -13,6 +13,7 @@ public:
     enum class Type
     {
         UDP,
+        TCP,
         Websocket,
         UnixSocket
     };

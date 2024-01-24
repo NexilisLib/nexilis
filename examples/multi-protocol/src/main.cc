@@ -3,6 +3,7 @@
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/websocket/websocket.hh>
 #include <nexilis/server_manager.hh>
+#include <nexilis/af_inet/tcp_server.hh>
 
 int main()
 {
@@ -18,9 +19,13 @@ int main()
 
     nexilis::ProtocolManager protocolManager;
 
-    auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
+    // UDP
+    //auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
+    //udpServer.start();
 
-    udpServer.start();
+    // TCP
+    auto tcpServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
+    tcpServer.start();
 
     return 0;
 }

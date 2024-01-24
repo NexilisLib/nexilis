@@ -1,5 +1,5 @@
-#ifndef NEXILIS_BASE_UDP_SERVER_HH
-#define NEXILIS_BASE_UDP_SERVER_HH
+#ifndef NEXILIS_AF_INET_BASE_UDP_SERVER_HH
+#define NEXILIS_AF_INET_BASE_UDP_SERVER_HH
 
 #include <nexilis/protocol.hh>
 #include <nexilis/ports.hh>

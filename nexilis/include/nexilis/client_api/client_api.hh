@@ -1,6 +1,8 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
+#include <nexilis/common/util.hh>
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -8,17 +10,8 @@
 #include <vector>
 #include <iostream>
 
-// Remember that only "common" libraries should be imported here.
-// Maybe it would be clearler if these parts would be rewritten to clientside.
-#include <nexilis/common/util.hh>
-
 namespace nexilis
 {
-
-namespace af_unix
-{
-class UnixSocketClient;
-}
 
 class ClientAPI
 {
@@ -60,44 +53,6 @@ public:
         {
         }
 
-        /// af_inet UDP
-        std::string getInetServerAddress() const
-        {
-            return m_inetUDPServeraddress;
-        }
-
-        uint16_t getInetServerPort() const
-        {
-            return m_inetUDPPort;
-        }
-
-        void setInetUDP(const std::string& serverAddress, uint16_t inetPort)
-        {
-            m_inetUDPServeraddress = serverAddress;
-            m_inetUDPPort = inetPort;
-        }
-
-        /// af_unix
-        std::string getUnixSocketServerPath() const
-        {
-            return m_unixSocketServerPath;
-        }
-
-        void setUnixSocketServerPath(const std::string& socketPath)
-        {
-            m_unixSocketServerPath = socketPath;
-        }
-
-        std::string getUnixSocketClientPath() const
-        {
-            return m_unixSocketClientPath;
-        }
-
-        void setUnixSocketClientPath(const std::string& clientPath)
-        {
-            m_unixSocketClientPath = clientPath;
-        }
-
         std::string getUsername() const
         {
             return m_username;
@@ -118,18 +73,67 @@ public:
             m_password = password;
         }
 
-    private:
-        /// af_inet
-        std::string m_inetUDPServeraddress;
-        uint16_t m_inetUDPPort = 0xFFFF;
+        /// af_inet UDP
+        std::string getInetUDPServerAddress() const
+        {
+            return m_inetUDPServerAddress;
+        }
+
+        uint16_t getInetUDPServerPort() const
+        {
+            return m_inetUDPPort;
+        }
+
+        void setInetUDP(const std::string& serverAddress, uint16_t port)
+        {
+            m_inetUDPServerAddress = serverAddress;
+            m_inetUDPPort = port;
+        }
+
+        /// af_inet TCP
+        std::string getInetTCPServerAddress() const
+        {
+            return m_inetTCPServerAddress;
+        }
+
+        uint16_t getInetTCPServerPort() const
+        {
+            return m_inetTCPPort;
+        }
+
+        void setInetTCP(const std::string& serverAddress, uint16_t port)
+        {
+            m_inetTCPServerAddress = serverAddress;
+            m_inetTCPPort = port;
+        }
 
         /// af_unix
-        std::string m_unixSocketServerPath;
-        std::string m_unixSocketClientPath;
+        std::string getUnixSocketServerPath() const
+        {
+            return m_unixSocketServerPath;
+        }
 
-        /// Other client data.
+        void setUnixSocketServerPath(const std::string& socketPath)
+        {
+            m_unixSocketServerPath = socketPath;
+        }
+
+    private:
+        /// Client data.
         std::string m_password;
         std::string m_username;
+
+        /// af_inet UDP
+        std::string m_inetUDPServerAddress;
+        uint16_t m_inetUDPPort = 0xFFFF;
+
+        /// af_inet TCP
+        std::string m_inetTCPServerAddress;
+        uint16_t m_inetTCPPort = 0xFFFF;
+
+        /// af_unix
+        // TODO separation between sock_stream and sock_dgram.
+        std::string m_unixSocketServerPath;
     };
 
     ClientAPI(ServerData data) :
@@ -137,11 +141,18 @@ public:
     {
     }
 
-    bool IsInetUdpReady()
+    bool IsInetUDPReady()
     {
         return  m_clientId &&
-                !m_data.getInetServerAddress().empty() &&
-                m_data.getInetServerPort() != 0xFFFF;
+                !m_data.getInetUDPServerAddress().empty() &&
+                m_data.getInetUDPServerPort() != 0xFFFF;
+    }
+
+    bool isInetTCPReady()
+    {
+        return m_clientId &&
+               !getInetTCPServerAddress().empty() &&
+               getInetTCPPortNumber() != 0xFFFF;
     }
 
     bool isUnixSocketClientReady()
@@ -153,24 +164,29 @@ public:
     /// Read incoming message to client.
     bool readMessage(std::vector<uint8_t> message);
 
-    std::string getServerAddress()
+    std::string getInetUDPServerAddress()
     {
-        return m_data.getInetServerAddress();
+        return m_data.getInetUDPServerAddress();
     }
 
-    uint16_t getServerAfInetUDPPortNumber()
+    uint16_t getInetUDPPortNumber()
     {
-        return m_data.getInetServerPort();
+        return m_data.getInetUDPServerPort();
+    }
+
+    std::string getInetTCPServerAddress()
+    {
+        return m_data.getInetTCPServerAddress();
+    }
+
+    uint16_t getInetTCPPortNumber()
+    {
+        return m_data.getInetTCPServerPort();
     }
 
     std::string getUnixSocketServerPath()
     {
         return m_data.getUnixSocketServerPath();
-    }
-
-    std::string getUnixSocketClientPath()
-    {
-        return m_data.getUnixSocketClientPath();
     }
 
     std::string getClientPassword()
@@ -187,9 +203,6 @@ private:
 private:
     ServerData m_data;
     size_t* m_clientId;
-
-private:
-    af_unix::UnixSocketClient* m_unixSocketClient;
 };
 
 }

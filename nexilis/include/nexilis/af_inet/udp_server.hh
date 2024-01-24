@@ -1,5 +1,5 @@
-#ifndef NEXILIS_UDP_SERVER_HH
-#define NEXILIS_UDP_SERVER_HH
+#ifndef NEXILIS_AF_INET_UDP_SERVER_HH
+#define NEXILIS_AF_INET_UDP_SERVER_HH
 
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/message_handler.hh>

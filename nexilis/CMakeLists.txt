@@ -31,6 +31,8 @@ set(SOURCES
     src/af_inet/udp_client.cc
     src/af_inet/udp_server.cc
     src/af_inet/base_udp_server.cc
+    src/af_inet/tcp_client.cc
+    src/af_inet/tcp_server.cc
 
     src/client_api/client_api.cc
     src/websocket/websocket.cc
