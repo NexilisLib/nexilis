@@ -2,6 +2,7 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_inet/tcp_client.hh>
 #include <nexilis/client_api/client_api.hh>
+#include <nexilis/boost/tcp_client.hh>
 
 int main()
 {
@@ -16,6 +17,7 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     // TCP
+    /*
     auto tcpClient = protocolManager.createProtocol<nexilis::af_inet::TCPClient>(api);
 
     if (tcpClient.connectToServer())
@@ -23,12 +25,18 @@ int main()
         const char* message = "salasana";
         tcpClient.send(message, strlen(message));
     }
+    */
 
     /// UDP
     //auto afInet = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     //afInet.start();
 
-    while (true) {}
+    // Boost TCP
+    auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");
+
+    boostTCP.start();
+
+    //while (true) {}
 
     return 0;
 }

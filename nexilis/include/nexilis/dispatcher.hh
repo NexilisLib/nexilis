@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <nexilis/common/af_inet_udp_sender.hh>
-#include <nexilis/boost/boost_udp_sender.hh>
 #include <nexilis/client.hh>
 #include <nexilis/websocket/websocket_macros.hh>
 
@@ -30,13 +29,6 @@ public:
     static void sendUDPMessage(const char* ip_address, const std::string& message)
     {
         AfInetUdpSender sender(ip_address);
-        sender.sendMessage(message);
-    }
-
-    static void sendBoostUDPMessage(Client& client, const std::string& message)
-    {
-        BoostUDPSender sender(boost_io_context::getIOContext(), client.getIPAddress());
-        boost_io_context::start();
         sender.sendMessage(message);
     }
 

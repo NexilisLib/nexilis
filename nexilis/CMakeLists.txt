@@ -6,6 +6,10 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Boost
+find_package(Boost COMPONENTS system REQUIRED)    
+include_directories(${Boost_INCLUDE_DIRS})
+
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
@@ -15,7 +19,6 @@ set(SOURCES
     src/vector3.cc
     src/ports.cc
     src/client_storage.cc
-    src/boost/boost_io_context.cc
     src/log.cc
     src/client.cc
     src/message_handler.cc
@@ -34,6 +37,9 @@ set(SOURCES
     src/af_inet/tcp_client.cc
     src/af_inet/tcp_server.cc
 
+    src/boost/tcp_client.cc
+    src/boost/tcp_server.cc
+
     src/client_api/client_api.cc
     src/websocket/websocket.cc
 
@@ -42,3 +48,4 @@ set(SOURCES
 add_library(nexilis ${SOURCES})
 
 target_include_directories(nexilis PUBLIC include ../external/websocketpp)
+target_link_libraries(nexilis ${Boost_LIBRARIES})

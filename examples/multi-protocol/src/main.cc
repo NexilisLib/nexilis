@@ -4,6 +4,7 @@
 #include <nexilis/websocket/websocket.hh>
 #include <nexilis/server_manager.hh>
 #include <nexilis/af_inet/tcp_server.hh>
+#include <nexilis/boost/tcp_server.hh>
 
 int main()
 {
@@ -24,8 +25,44 @@ int main()
     //udpServer.start();
 
     // TCP
-    auto tcpServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
-    tcpServer.start();
+    //auto tcpServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
+    //tcpServer.start();
+
+    // Boost TCP
+    auto tcpServer = protocolManager.createProtocol<nexilis::boost::TCPServer>("12345");
+    tcpServer.startListening();
+
+    std::cout << "Started listening" << std::endl;
+
+    if (tcpServer.acceptClient())
+    {
+        std::cout << "Client accepted" << std::endl;
+        while (true)
+        {
+            std::string buffer;
+            if (tcpServer.receiveFromClient(buffer))
+            {
+                if (!buffer.empty())
+                {
+                    std::cout << "Received from client: " << buffer << std::endl;
+                    tcpServer.sendToClient("moika\n");
+                }
+                else
+                {
+                    std::cout << "Received empty message from client" << std::endl;
+                    break;
+                }
+            }
+            else
+            {
+                std::cout << "Not received from client" << std::endl;
+            }
+        }
+    }
+    else
+    {
+        std::cout << "Not accepted" << std::endl;
+    }
 
     return 0;
 }
