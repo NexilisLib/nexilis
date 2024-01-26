@@ -30,38 +30,10 @@ int main()
 
     // Boost TCP
     auto tcpServer = protocolManager.createProtocol<nexilis::boost::TCPServer>("12345");
-    tcpServer.startListening();
 
-    std::cout << "Started listening" << std::endl;
-
-    if (tcpServer.acceptClient())
+    if (tcpServer.startListening())
     {
-        std::cout << "Client accepted" << std::endl;
-        while (true)
-        {
-            std::string buffer;
-            if (tcpServer.receiveFromClient(buffer))
-            {
-                if (!buffer.empty())
-                {
-                    std::cout << "Received from client: " << buffer << std::endl;
-                    tcpServer.sendToClient("moika\n");
-                }
-                else
-                {
-                    std::cout << "Received empty message from client" << std::endl;
-                    break;
-                }
-            }
-            else
-            {
-                std::cout << "Not received from client" << std::endl;
-            }
-        }
-    }
-    else
-    {
-        std::cout << "Not accepted" << std::endl;
+        tcpServer.acceptClients();
     }
 
     return 0;

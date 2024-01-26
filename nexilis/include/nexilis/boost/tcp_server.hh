@@ -15,7 +15,7 @@ public:
     ~TCPServer();
 
     bool startListening();
-    bool acceptClient();
+    bool acceptClients();
     bool sendToClient(const std::string& data);
     bool receiveFromClient(std::string& buffer);
 
