@@ -40,14 +40,29 @@ bool TCPServer::acceptClients()
                 {
                     // Receive data from the client
                     ::boost::asio::streambuf receiveBuffer;
-                    ::boost::asio::read_until(newSocket, receiveBuffer, '\n');
+                    ::boost::system::error_code error;
+
+                    size_t bytesRead = ::boost::asio::read(newSocket, receiveBuffer, ::boost::asio::transfer_at_least(1), error);
+
+                    if (error == ::boost::asio::error::eof)
+                    {
+                        // Client closed the connection
+                        break;
+                    }
+                    else if (error)
+                    {
+                        // Handle other errors
+                        std::cerr << "Error reading from client: " << error.message() << std::endl;
+                        break;
+                    }
+
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
 
                     // Process the received message (replace with your logic)
                     std::cout << "Received from client: " << message << std::endl;
 
                     // Send a response back to the client
-                    ::boost::asio::write(newSocket, ::boost::asio::buffer("Server received: " + message + "\n"));
+                    ::boost::asio::write(newSocket, ::boost::asio::buffer("Server received: " + message));
                 }
             }
             catch (const ::boost::system::system_error& e)
