@@ -31,16 +31,6 @@ bool TCPClient::send(const std::string& data)
     return true;
 }
 
-/*
-bool TCPClient::receive(std::string& buffer) 
-{
-    ::boost::asio::streambuf receiveBuffer;
-    ::boost::asio::read_until(m_socket, receiveBuffer, '\n');
-    buffer = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-    return true;
-}
-*/
-
 bool TCPClient::receive(std::string& buffer)
 {
     std::cout << "Client receive called" << std::endl;

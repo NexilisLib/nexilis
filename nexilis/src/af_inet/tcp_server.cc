@@ -83,16 +83,16 @@ void TCPServer::start()
 
         if (bytesRead > 0)
         {
-            auto message = m_messageHandler.readMessage(client.address, receivedData, client.port, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(client.address, receivedData, client.port, Command::getAuthentication());
 
             auto sendMsg = [this, &client, &buffer](const std::vector<uint8_t> data)
             {
                 sendToClient(client.socket, buffer, sizeof(buffer));
             };
 
-            if (message.client)
+            if (message.getClient())
             {
-                if (!Command::read(message.message, *message.client, *this, sendMsg))
+                if (!Command::read(message.getData(), *message.getClient(), *this, sendMsg))
                 {
                     Log::error("TCPServer: message reading error, message: ", receivedData);
                 }

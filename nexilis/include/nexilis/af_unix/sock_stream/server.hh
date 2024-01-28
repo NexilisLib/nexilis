@@ -50,8 +50,6 @@ private:
 
     void createSocket();
     void bindSocket();
-
-    MessageHandler m_messageHandler;
 };
 
 }

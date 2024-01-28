@@ -96,11 +96,11 @@ void Server::receiveMessage()
         m_buffer[bytesRead] = '\0';
         std::cout << "Received message from client: " << m_buffer << std::endl;
 
-        auto msg = m_messageHandler.readMessage("", std::string(m_buffer), -1, Command::getAuthentication());
+        auto msg = getMessageHandler().readMessage("", std::string(m_buffer), -1, Command::getAuthentication());
 
-        if (msg.client)
+        if (msg.getClient())
         {
-            bool readCommand = Command::read(msg.message, *msg.client, *this,
+            bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this,
                     [this, &clientSocket](const std::vector<uint8_t>& message) { sendMessage(clientSocket, message); }
                     );
 

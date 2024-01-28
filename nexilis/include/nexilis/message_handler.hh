@@ -5,6 +5,7 @@
 #include <nexilis/client.hh>
 
 #include <vector>
+#include <cstdint>
 
 namespace nexilis
 {
@@ -16,17 +17,47 @@ namespace nexilis
 /// `Protocol` then sends the `MessageHandler::Message` to `Command` for parsing.
 ///
 /// `MessageHandler::Message.message` is nexilis bytevector containing pure command data.
+
+class Client;
+
 class MessageHandler
 {
 public:
-    /// The object we are sending is done using C-style construction.
-    /// TODO R5
-    struct Message
+    class Message
     {
-        std::string address;
-        std::vector<uint8_t> message;
-        uint16_t port = 0;
-        Client* client = nullptr;
+    public:
+        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, Client* client) :
+            m_address(address),
+            m_data(data),
+            m_port(port),
+            m_client(client)
+        {
+        }
+
+        std::string getAddress()
+        {
+            return m_address;
+        }
+        std::vector<uint8_t> getData()
+        {
+            return m_data;
+        }
+
+        uint16_t getPort()
+        {
+            return m_port;
+        }
+
+        Client* getClient()
+        {
+            return m_client;
+        }
+
+    private:
+        std::string m_address;
+        std::vector<uint8_t> m_data;
+        uint16_t m_port = 0;
+        Client* m_client = nullptr;
     };
 
     /// Read the unifiltered server message and return it ready for `Command`.

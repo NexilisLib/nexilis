@@ -314,6 +314,19 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             return false;
         }
 
+        case MainCommand::error:
+        {
+            // Internal server error
+            switch (command[1])
+            {
+                // Classname X
+                case 0x10:
+                {
+                    Log::critical("Error in place x");
+                }
+            }
+        }
+
         default: return false;
     }
 

@@ -84,12 +84,12 @@ void UnixSocketServer::receiveMessage()
 
 
             //std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
-            auto message = m_messageHandler.readMessage("test", m_buffer, -1, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage("test", m_buffer, -1, Command::getAuthentication());
 
-            if (message.client)
+            if (message.getClient())
             {
                 // TODO
-                if (!Command::read(message.message, *message.client, *this, [](const std::vector<uint8_t>&){}))
+                if (!Command::read(message.getData(), *message.getClient(), *this, [](const std::vector<uint8_t>&){}))
                 {
                     Log::error("Unix socket server message reading error from message: ");
                 }

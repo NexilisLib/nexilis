@@ -45,8 +45,6 @@ private:
     void createSocket();
     void bindSocket();
     static void signalHandler(int signum);
-
-    MessageHandler m_messageHandler;
 };
 
 } // namespace nexilis::af_unix

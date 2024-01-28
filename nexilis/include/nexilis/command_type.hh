@@ -49,7 +49,9 @@ enum class MainCommand : uint8_t
     whisper = 0x20
     */
 
-    update = 0x90
+    update = 0x90,
+
+    error = 0xa
 };
 
 }

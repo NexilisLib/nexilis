@@ -24,6 +24,7 @@ public:
         af_unix
     };
 
+    // TODO not implemented
     enum class Status
     {
         undefined,

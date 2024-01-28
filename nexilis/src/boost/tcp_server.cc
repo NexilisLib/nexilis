@@ -5,19 +5,19 @@
 namespace nexilis::boost
 {
 
-TCPServer::TCPServer(const std::string& serverPort) : 
-    m_acceptor(m_ioService, 
-    ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(serverPort))),
-    m_socket(m_ioService)
+TCPServer::TCPServer(const std::string& serverPort)
+    : m_acceptor(m_ioService,
+                 ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(serverPort))),
+      m_socket(m_ioService)
 {
 }
 
-TCPServer::~TCPServer() 
+TCPServer::~TCPServer()
 {
     m_socket.close();
 }
 
-bool TCPServer::startListening() 
+bool TCPServer::startListening()
 {
     m_acceptor.listen();
     return true;
@@ -25,7 +25,7 @@ bool TCPServer::startListening()
 
 bool TCPServer::acceptClients()
 {
-    while (true) 
+    while (true)
     {
         // Create a new socket for each client connection
         ::boost::asio::ip::tcp::socket newSocket(m_ioService);
@@ -33,7 +33,7 @@ bool TCPServer::acceptClients()
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-        {
+                    {
             try 
             {
                 while (true)
@@ -46,20 +46,20 @@ bool TCPServer::acceptClients()
 
                     if (error == ::boost::asio::error::eof)
                     {
-                        // Client closed the connection
+                        // Client closed the connection.
                         break;
                     }
                     else if (error)
                     {
                         // Handle other errors
-                        std::cerr << "Error reading from client: " << error.message() << std::endl;
+                        Log::error("Error reading from client: ", error.message());
                         break;
                     }
 
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
 
                     // Process the received message (replace with your logic)
-                    std::cout << "Received from client: " << message << std::endl;
+                    Log::info("Received from client: ", message);
 
                     // Send a response back to the client
                     ::boost::asio::write(newSocket, ::boost::asio::buffer("Server received: " + message));
@@ -69,12 +69,12 @@ bool TCPServer::acceptClients()
             {
                 // Handle errors or client disconnect here
                 std::cerr << "Error in client thread: " << e.what() << std::endl;
-            }
-        }).detach(); // Detach the thread to run independently
+            } })
+            .detach();
     }
 }
 
-bool TCPServer::sendToClient(const std::string& data) 
+bool TCPServer::sendToClient(const std::string& data)
 {
     ::boost::asio::write(m_socket, ::boost::asio::buffer(data));
     return true;
@@ -84,7 +84,7 @@ bool TCPServer::receiveFromClient(std::string& buffer)
 {
     ::boost::asio::streambuf receiveBuffer;
 
-    try 
+    try
     {
         // Attempt to read data from the socket
         size_t bytesRead = ::boost::asio::read_until(m_socket, receiveBuffer, '\n');
@@ -116,4 +116,4 @@ bool TCPServer::receiveFromClient(std::string& buffer)
     }
 }
 
-}
+} // namespace nexilis::boost

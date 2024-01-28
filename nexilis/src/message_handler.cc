@@ -1,10 +1,10 @@
-#include "nexilis/authentication.hh"
-#include <cstdint>
+#include <nexilis/authentication.hh>
 #include <nexilis/message_handler.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
 
 #include <nexilis/common/util.hh>
+
 #include <sys/types.h>
 
 namespace nexilis
@@ -48,24 +48,29 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     // Create new client.
     Client client(address);
 
+    // Error Message
+    std::vector<uint8_t> errordata = { 0xa, 0x10, 0x10 };
+    Message errorMessage("empty", errordata, -1, &client);
+
+
     // We do the authentication here.
     switch (authentication->getMode())
     {
         case Authentication::Mode::free:
         {
             Log::error("Not implemented!");
-            return {};
+            return errorMessage;
         }
         case Authentication::Mode::whiteListed:
         {
             Log::error("Not implemented!");
-            return {};
+            return errorMessage;
         }
         case Authentication::Mode::passwordProtected:
         {
             if (client.hasCommonAccess())
             {
-                std::cout << "Client has common access!" << std::endl;
+                Log::info("Known client sends a message!");
                 break;
             }
             else
@@ -89,13 +94,12 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                         message.push_back(idBytes[i]);
                     }
 
-                    return Message
-                    {
+                    return Message(
                         address,
-                        std::move(message),
+                        message,
                         port,
-                        realClient
-                    };
+                        realClient 
+                    );
                 }
                 else
                 {
@@ -106,7 +110,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
         default:
         {
             Log::error("Missing authentication mode");
-            return {};
+            return errorMessage;
         }
     }
 
@@ -118,18 +122,17 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     {
         auto readyCommand = removeItemsUntilFF(msg);
 
-        return Message
-        {
+        return Message(
             address,
             readyCommand,
             port,
-            realClient,
-        };
+            realClient
+        );
     }
     else
     {
-        Log::info("Message from unidentified user!");
-        return {};
+        Log::warning("UNWANTED MESSAGE");
+        return errorMessage;
     }
 }
 

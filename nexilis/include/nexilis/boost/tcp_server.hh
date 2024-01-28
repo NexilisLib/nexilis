@@ -2,6 +2,7 @@
 #define NEXILIS_BOOST_TCP_SERVER_HH
 
 #include <nexilis/protocol.hh>
+#include <nexilis/message_handler.hh>
 
 #include <boost/asio.hpp>
 

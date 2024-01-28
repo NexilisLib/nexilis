@@ -15,12 +15,12 @@ add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pt
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 set(SOURCES
+    src/client.cc
     src/command.cc
     src/vector3.cc
     src/ports.cc
     src/client_storage.cc
     src/log.cc
-    src/client.cc
     src/message_handler.cc
     src/server_manager.cc
 

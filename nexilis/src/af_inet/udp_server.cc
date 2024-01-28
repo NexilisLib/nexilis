@@ -16,20 +16,20 @@ void UDPServer::start()
 
         if (BaseUDPServer::getNextMessage(msg))
         {
-            auto message = m_messageHandler.readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
 
             auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
             {
                 sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
             };
 
-            if (message.client)
-            {
-                if (!Command::read(message.message, *message.client, *this, sendMsg))
+            //if (message.client)
+            //{
+                if (!Command::read(message.getData(), *message.getClient(), *this, sendMsg))
                 {
                     Log::error("UDP server message reading error, message: ", msg.message);
                 }
-            }
+            //}
             else
             {
                 Log::info("Message from unauthorized client!");

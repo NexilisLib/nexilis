@@ -1,8 +1,6 @@
 #ifndef NEXILIS_CLIENT_HH
 #define NEXILIS_CLIENT_HH
 
-#include <nexilis/protocol.hh>
-
 #include <string>
 
 namespace nexilis
@@ -22,7 +20,7 @@ public:
     }
 
     /// Move constructor.
-    Client(Client&& other) noexcept :
+    Client(Client&& other) :
         m_ip_address(other.m_ip_address),
         m_username(other.m_username),
         m_id(other.m_id),
@@ -30,6 +28,22 @@ public:
         m_hasRootAccess(other.m_hasRootAccess),
         m_hasCommonAccess(other.m_hasCommonAccess)
     {
+    }
+
+    Client& operator=(Client&& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        m_ip_address = other.m_ip_address;
+        m_username = other.m_username;
+        m_id = other.m_id;
+        m_upd_port = other.m_upd_port;
+        m_hasRootAccess = other.m_hasRootAccess;
+        m_hasCommonAccess = other.m_hasCommonAccess;
+        return *this;
     }
 
     /// Deleted copy constructor.
@@ -99,6 +113,9 @@ public:
     {
         return m_username;
     }
+
+    // TODO implment validation for different protocols.
+
 private:
     std::string m_ip_address;
     std::string m_username;

@@ -49,8 +49,6 @@ public:
 
     void sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen);
     
-private:
-    MessageHandler m_messageHandler;
 };
 
 

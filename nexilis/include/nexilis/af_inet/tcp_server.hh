@@ -37,8 +37,6 @@ public:
     }
 
     void start() override;
-private:
-    MessageHandler m_messageHandler;
 
     int m_serverSocket;
 
