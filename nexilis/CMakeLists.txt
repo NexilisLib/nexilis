@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Boost
-find_package(Boost COMPONENTS system REQUIRED)    
+find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
@@ -47,5 +47,5 @@ set(SOURCES
 
 add_library(nexilis ${SOURCES})
 
-target_include_directories(nexilis PUBLIC include ../external/websocketpp)
+target_include_directories(nexilis PUBLIC include)
 target_link_libraries(nexilis ${Boost_LIBRARIES})

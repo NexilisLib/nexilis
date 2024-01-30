@@ -64,8 +64,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Give username to the client.
                 case 0x20:
                 {
-                    auto payload = removeAmountOfBytesFromVector(command, 3);
-                    std::string username = convertToString(payload);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                    std::string username = Util::convertToString(payload);
                     auto& clients = ClientStorage::getAllClients();
 
                     for (auto c = clients.begin(); c != clients.end(); c++)
@@ -180,8 +180,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Check authentication for root access.
                 case 0x20:
                 {
-                    auto payload = removeAmountOfBytesFromVector(command, 2);
-                    std::string password = convertToString(payload);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    std::string password = Util::convertToString(payload);
 
                     if (m_authentication)
                     {
@@ -206,8 +206,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Set authentication for valid client.
                 case 0x30:
                 {
-                    auto payload = removeAmountOfBytesFromVector(command, 2);
-                    std::string password = convertToString(payload);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    std::string password = Util::convertToString(payload);
 
                     if (m_authentication)
                     {
@@ -258,14 +258,15 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         // String message.
                         case 0x10:
                         {
-                            auto payload = removeAmountOfBytesFromVector(command, 3);
-                            std::string chat = convertToString(payload);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                            std::string chat = Util::convertToString(payload);
 
                             Log::debug("Chat: ", chat);
 
                             auto& allClients = ClientStorage::getAllClients();
                             Log::info("New client amount: ", allClients.size());
 
+                            
                             switch (protocol.getType())
                             {
                                 case Protocol::Type::UDP:
@@ -282,6 +283,11 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                                     return false;
                                 }
                                 case Protocol::Type::UnixSocket:
+                                {
+                                    return false;
+                                }
+
+                                case Protocol::Type::TCP:
                                 {
                                     return false;
                                 }
@@ -348,48 +354,6 @@ std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)
                  std::to_string(characters[3]);
 
     return ipAddress;
-}
-
-unsigned short Command::convertToUnsignedShort(const std::vector<uint8_t>& bytes)
-{
-    if (bytes.size() < sizeof(unsigned short))
-    {
-        Log::error("Port conversion failed");
-    }
-
-    std::stringstream ss;
-    for (uint8_t val : bytes)
-    {
-        ss << static_cast<char>(val);
-    }
-    return static_cast<unsigned short>(std::stoul(ss.str()));
-}
-
-std::string Command::convertToString(const std::vector<uint8_t>& bytes)
-{
-    std::string result;
-    for (uint8_t b : bytes)
-    {
-        result += static_cast<char>(b);
-    }
-    return result;
-}
-
-std::vector<uint8_t> Command::removeAmountOfBytesFromVector(const std::vector<uint8_t>& original, uint8_t amount)
-{
-    // Return empty vector if the original vector has less elements than we want to remove.
-    if (original.size() < amount)
-    {
-        for(auto i : original)
-        {
-            std::cout << std::hex << i;
-        }
-
-        Log::error("COMMAND ERROR: Cannot remove more bytes than existing command has.");
-        return {};
-    }
-
-    return std::vector<uint8_t> (original.begin() + amount, original.end());
 }
 
 } // namespace nexilis

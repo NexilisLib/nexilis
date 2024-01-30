@@ -8,6 +8,7 @@
 #include <functional>
 
 /// At some we need global debug.
+/// What the fuck?
 #define WEBSOCKET_DEBUG true
 
 namespace nexilis

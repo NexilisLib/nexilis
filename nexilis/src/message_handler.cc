@@ -32,7 +32,7 @@ std::vector<uint8_t> removeItemsUntilFF(std::vector<uint8_t>& data)
 
     if (ffPosition != data.end())
     {
-        // Erase items including 0xFF
+        // Erase items including 0xFF.
         return std::vector<uint8_t>(ffPosition + 1, data.end());
     }
     else
@@ -41,6 +41,8 @@ std::vector<uint8_t> removeItemsUntilFF(std::vector<uint8_t>& data)
     }
 }
 
+//NEXILIS_ERROR("myfilename", ErrorType::NOT_IMPLEMENTED);
+
 MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication)
 {
     Log::info("Received message: ", message, " from ", address, " port ", port);
@@ -48,12 +50,10 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     // Create new client.
     Client client(address);
 
-    // Error Message
+    // Error Messages.
     std::vector<uint8_t> errordata = { 0xa, 0x10, 0x10 };
-    Message errorMessage("empty", errordata, -1, &client);
+    Message errorMessage("", errordata, -1, nullptr);
 
-
-    // We do the authentication here.
     switch (authentication->getMode())
     {
         case Authentication::Mode::free:
@@ -98,7 +98,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                         address,
                         message,
                         port,
-                        realClient 
+                        realClient
                     );
                 }
                 else

@@ -59,11 +59,6 @@ public:
 
     static std::vector<uint8_t> createVectorFromCommandPtr(const char* command_data, size_t lenght);
 
-    static std::vector<uint8_t> removeAmountOfBytesFromVector(const std::vector<uint8_t>& original, uint8_t amount);
-
-    static unsigned short convertToUnsignedShort(const std::vector<uint8_t>& bytes);
-    static std::string convertToString(const std::vector<uint8_t>& bytes);
-
 private:
     static Authentication* m_authentication;
 };

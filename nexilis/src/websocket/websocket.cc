@@ -8,6 +8,9 @@ namespace nexilis
 Websocket::Websocket(unsigned port)
     : Protocol(port)
 {
+    std::cout << "Debricated xd" << std::endl;
+    assert(false);
+
     try
     {
         // Initialize websocketpp.
@@ -45,7 +48,7 @@ Websocket::Websocket(unsigned port)
 
 #ifdef WEBSOCKET_DEBUG
         std::string messageStr;
-        for (int i = 0; i < nexilisMessage.size(); i++)
+        for (int i = 0; i < static_cast<int>(nexilisMessage.size()); i++)
         {
             messageStr += nexilisMessage[i];
         }
@@ -57,8 +60,11 @@ Websocket::Websocket(unsigned port)
             ClientStorage::add(std::move(client));
         }
 
+
+
         // We return false from message that is not understood by nexilis.
         // TODO
+        //auto sendMessage = [this](const std::vector<uint8_t>&){};
         if (!Command::read(nexilisMessage, client, *this, [](const std::vector<uint8_t>&){}))
         {
             Log::error("Something went wrong with the reading of the command");

@@ -1,6 +1,10 @@
+#include <cstdint>
+#include <nexilis/command.hh>
+#include <nexilis/common/util.hh>
 #include <nexilis/boost/tcp_server.hh>
 
 #include <nexilis/log.hh>
+#include <string>
 
 namespace nexilis::boost
 {
@@ -33,11 +37,26 @@ bool TCPServer::acceptClients()
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-                    {
-            try 
+        {
+            try
             {
                 while (true)
                 {
+                    std::string clientAddress;
+                    uint16_t clientPort;
+                    try
+                    {
+                        ::boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
+                        ::boost::asio::ip::address remoteAddress = remoteEndpoint.address();
+                        clientAddress = remoteAddress.to_string();
+                        clientPort = remoteEndpoint.port();
+                        Log::debug("Remote IP address: ", clientAddress);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Error: " << e.what() << std::endl;
+                    }
+
                     // Receive data from the client
                     ::boost::asio::streambuf receiveBuffer;
                     ::boost::system::error_code error;
@@ -47,6 +66,13 @@ bool TCPServer::acceptClients()
                     if (error == ::boost::asio::error::eof)
                     {
                         // Client closed the connection.
+                        // TODO
+                        // Consider sending error message.
+                        break;
+                    }
+                    else if (bytesRead <= 0)
+                    {
+                        // Other type of error.
                         break;
                     }
                     else if (error)
@@ -57,12 +83,25 @@ bool TCPServer::acceptClients()
                     }
 
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-
-                    // Process the received message (replace with your logic)
                     Log::info("Received from client: ", message);
+                    auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
-                    // Send a response back to the client
-                    ::boost::asio::write(newSocket, ::boost::asio::buffer("Server received: " + message));
+                    auto clientSender = [this](const std::vector<uint8_t>& bytes)
+                    {
+                        auto toString = Util::convertToString(bytes);
+                        sendToClient(toString);
+                    };
+
+                    bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, clientSender);
+
+                    if (passCommand)
+                    {
+                        Log::info("Passed with command: ", message);
+                    }
+                    else
+                    {
+                        Log::info("Failed with command", message);
+                    }
                 }
             }
             catch (const ::boost::system::system_error& e)

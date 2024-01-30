@@ -1,3 +1,0 @@
-[submodule "external/websocketpp"]
-	path = external/websocketpp
-	url = https://github.com/zaphoyd/websocketpp.git

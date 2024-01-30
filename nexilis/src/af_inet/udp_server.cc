@@ -23,13 +23,13 @@ void UDPServer::start()
                 sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
             };
 
-            //if (message.client)
-            //{
+            if (message.getClient())
+            {
                 if (!Command::read(message.getData(), *message.getClient(), *this, sendMsg))
                 {
                     Log::error("UDP server message reading error, message: ", msg.message);
                 }
-            //}
+            }
             else
             {
                 Log::info("Message from unauthorized client!");
