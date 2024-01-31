@@ -19,7 +19,7 @@ public:
     explicit Vector3(float x, float y, float z);
 
     std::vector<uint8_t> serialize() const;
-    static Vector3 deserialize(const std::vector<uint8_t>& data);
+    //static Vector3 deserialize(const std::vector<uint8_t>& data);
 
 private:
     float m_x;

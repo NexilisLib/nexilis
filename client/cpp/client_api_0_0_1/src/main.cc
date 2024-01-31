@@ -7,7 +7,7 @@
 int main()
 {
     nexilis::Log::startConsoleLogging();
-    nexilis::Log::setLevel(nexilis::LogLevel::DEBUG);
+    nexilis::Log::setLevel(nexilis::logger::LogLevel::DEBUG);
 
     nexilis::ClientAPI::ServerData serverData("salasana");
     serverData.setInetUDP("192.168.1.85", 54200);

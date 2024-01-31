@@ -40,10 +40,6 @@ public:
         return Type::TCP;
     }
 
-    void sendMessage(const std::string& message) override
-    {
-    }
-
 private:
     ClientAPI& m_api;
 

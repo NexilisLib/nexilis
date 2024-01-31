@@ -106,7 +106,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     sendMessageToClient(data);
                     return true;
                 }
-                return false;
+                default: return false;
             }
         }
 
@@ -232,7 +232,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return false;
                 }
 
-                // We could implement more authentication methods here.
+                default: return false;
             }
         }
 
@@ -266,7 +266,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                             auto& allClients = ClientStorage::getAllClients();
                             Log::info("New client amount: ", allClients.size());
 
-                            
                             switch (protocol.getType())
                             {
                                 case Protocol::Type::UDP:
@@ -291,6 +290,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                                 {
                                     return false;
                                 }
+
+                                default: return false;
                             }
                         }
 
@@ -329,7 +330,9 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 case 0x10:
                 {
                     Log::critical("Error in place x");
+                    return true;
                 }
+                default: return false;
             }
         }
 

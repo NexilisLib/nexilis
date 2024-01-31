@@ -195,9 +195,9 @@ public:
     }
 
 private:
-    void setClientId(size_t id)
+    void setClientId(size_t* id)
     {
-        m_clientId = &id;
+        m_clientId = id;
     }
 
 private:

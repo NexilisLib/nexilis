@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-namespace nexilis
+namespace nexilis::logger
 {
 
 class ConsoleHandler : public BaseHandler
@@ -40,7 +40,7 @@ public:
     }
 
     // Overloading the equality operator.
-    bool operator==(const ConsoleHandler& other) const
+    bool operator==(const BaseHandler& other) const override
     {
         return this == &other;
     }

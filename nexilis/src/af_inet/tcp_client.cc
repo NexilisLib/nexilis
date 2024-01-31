@@ -41,7 +41,7 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const char* data, size_t dataSize)
 {
-    return write(m_clientSocket, data, dataSize) == dataSize;
+    return write(m_clientSocket, data, dataSize) == static_cast<long>(dataSize);
 }
 
 bool TCPClient::receive(char* buffer, size_t bufferSize)

@@ -9,7 +9,7 @@ namespace nexilis::boost
 
 TCPClient::TCPClient(const std::string& serverIP, const std::string& serverPort) :
     m_socket(m_ioService),
-    m_resolver(m_ioService), 
+    m_resolver(m_ioService),
     m_iterator(m_resolver.resolve({serverIP, serverPort}))
 {
 }
@@ -33,22 +33,20 @@ bool TCPClient::send(const std::string& data)
 
 bool TCPClient::receive(std::string& buffer)
 {
-    std::cout << "Client receive called" << std::endl;
-
     ::boost::asio::streambuf receiveBuffer;
     ::boost::system::error_code error;
 
-    size_t bytesRead = ::boost::asio::read(m_socket, receiveBuffer, ::boost::asio::transfer_at_least(1), error);
+    ::boost::asio::read(m_socket, receiveBuffer, ::boost::asio::transfer_at_least(1), error);
 
     if (error == ::boost::asio::error::eof)
     {
-        // Server closed the connection
-        std::cout << "Server closed the connection" << std::endl;
+        // Server closed the connection.
+        Log::error("Server closed the connection");
     }
     else if (error)
     {
-        // Handle other errors
-        std::cerr << "Error reading from server: " << error.message() << std::endl;
+        // Handle other errors.
+        Log::error("Error reading from server: ", error.message());
     }
 
     buffer = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
@@ -60,10 +58,6 @@ void TCPClient::start()
     if (connectToServer())
     {
         Log::info("Connected to server!");
-
-        // Send a message to server.
-        const std::string message = "moikamoi\n";
-        send(message);
 
         // Start a separate thread to continuously receive messages.
         std::thread receiveThread(&TCPClient::receiveLoop, this);

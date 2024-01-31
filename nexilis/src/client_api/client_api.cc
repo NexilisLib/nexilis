@@ -24,7 +24,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                 {
                     auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
                     auto id = Util::convertToType<size_t>(sizeVector);
-                    setClientId(id);
+                    setClientId(&id);
                     return true;
                 }
 
@@ -42,7 +42,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                 {
                     size_t clientId = Util::convertToType<size_t>(Util::removeAmountOfBytesFromVector(message, 2));
                     std::cout << "client id set to" << clientId << std::endl;
-                    setClientId(clientId);
+                    setClientId(&clientId);
                     return true;
                 }
 

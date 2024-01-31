@@ -5,7 +5,7 @@
 
 #include <fstream>
 
-namespace nexilis
+namespace nexilis::logger
 {
 
 class FileHandler : public BaseHandler

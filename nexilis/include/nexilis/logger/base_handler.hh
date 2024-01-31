@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace nexilis
+namespace nexilis::logger
 {
 
 class BaseHandler
@@ -17,10 +17,7 @@ public:
     }
 
     // Overloading the equality operator.
-    virtual bool operator==(const BaseHandler& other) const
-    {
-        return this == &other;
-    }
+    virtual bool operator==(const BaseHandler& other) const = 0;
 
     // Handle logs.
     // \param logLevel The log level of the message.
@@ -28,6 +25,6 @@ public:
     virtual void emit(const LogLevel& logLevel, const std::string& data) = 0;
 };
 
-} // namespace nexilis
+} // namespace nexilis::logger
 
 #endif

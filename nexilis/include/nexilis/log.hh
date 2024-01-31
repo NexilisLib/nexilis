@@ -13,7 +13,7 @@ class Log
 public:
     /// Start static console logging session.
     /// \param minLevel The minimum logging level, see logLevel.hh.
-    static void startConsoleLogging(LogLevel minLevel = LogLevel::INFO);
+    static void startConsoleLogging(logger::LogLevel minLevel = logger::LogLevel::INFO);
 
     /// Custom loglevel can be set with first five bytes from eight byte type.
     /// \param logLevel Custom logging level.
@@ -51,22 +51,22 @@ public:
 public:
     /// LogLevel handling functions.
 
-    static bool setLevel(nexilis::LogLevel logLevel)
+    static bool setLevel(logger::LogLevel logLevel)
     {
         return log.setLevel(logLevel);
     }
 
-    static bool unsetLevel(nexilis::LogLevel logLevel)
+    static bool unsetLevel(logger::LogLevel logLevel)
     {
         return log.unsetLevel(logLevel);
     }
 
-    static bool getLevel(nexilis::LogLevel logLevel)
+    static bool getLevel(logger::LogLevel logLevel)
     {
         return log.getLevel(logLevel);
     }
 
-    static bool setMinimumLevel(nexilis::LogLevel logLevel)
+    static bool setMinimumLevel(logger::LogLevel logLevel)
     {
         return log.setMinimumLevel(logLevel);
     }
@@ -105,7 +105,7 @@ public:
     }
 
 private:
-    static Logger log;
+    static logger::Logger log;
 };
 
 } // namespace nexilis

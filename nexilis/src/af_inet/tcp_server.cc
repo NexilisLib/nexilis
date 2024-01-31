@@ -66,7 +66,7 @@ TCPServer::Client TCPServer::acceptClient()
 
 bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize) 
 {
-    return write(clientSocket, data, dataSize) == dataSize;
+    return write(clientSocket, data, dataSize) == static_cast<long>(dataSize);
 }
 
 void TCPServer::start()
@@ -87,6 +87,7 @@ void TCPServer::start()
 
             auto sendMsg = [this, &client, &buffer](const std::vector<uint8_t> data)
             {
+                (void)data;
                 sendToClient(client.socket, buffer, sizeof(buffer));
             };
 

@@ -12,6 +12,7 @@ const char* portToString(Port port)
         case Port::Websocket:
             return "54201";
     }
+    return "";
 }
 
 } // namespace nexilis

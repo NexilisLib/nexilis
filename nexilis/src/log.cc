@@ -4,22 +4,22 @@
 namespace nexilis
 {
 
-Logger Log::log;
+logger::Logger Log::log;
 
-void Log::startConsoleLogging(LogLevel minLevel)
+void Log::startConsoleLogging(logger::LogLevel minLevel)
 {
     log.setMinimumLevel(minLevel);
 
-    log.addHandler(ConsoleHandler());
+    log.addHandler(logger::ConsoleHandler());
 }
 
 void Log::stopLogging()
 {
-    log.unsetLevel(LogLevel::CRITICAL);
-    log.unsetLevel(LogLevel::ERROR);
-    log.unsetLevel(LogLevel::WARNING);
-    log.unsetLevel(LogLevel::INFO);
-    log.unsetLevel(LogLevel::DEBUG);
+    log.unsetLevel(logger::LogLevel::CRITICAL);
+    log.unsetLevel(logger::LogLevel::ERROR);
+    log.unsetLevel(logger::LogLevel::WARNING);
+    log.unsetLevel(logger::LogLevel::INFO);
+    log.unsetLevel(logger::LogLevel::DEBUG);
 
     clearHandlers();
 }
@@ -28,7 +28,7 @@ void Log::startConsoleLogging(uint8_t logLevel)
 {
     log.setLogLevel(logLevel);
 
-    log.addHandler(ConsoleHandler());
+    log.addHandler(logger::ConsoleHandler());
 }
 
 } // namespace nexilis

@@ -27,6 +27,7 @@ std::vector<uint8_t> Vector3::serialize() const
     return serializedData;
 }
 
+/*
 static Vector3 deserialize(const std::vector<uint8_t>& data)
 {
     if (data.size() != sizeof(uint32_t) * 3)
@@ -46,3 +47,4 @@ static Vector3 deserialize(const std::vector<uint8_t>& data)
 
     return Vector3(x, y, z);
 }
+*/

@@ -9,10 +9,10 @@
 namespace nexilis::boost
 {
 
-TCPServer::TCPServer(const std::string& serverPort)
-    : m_acceptor(m_ioService,
-                 ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(serverPort))),
-      m_socket(m_ioService)
+TCPServer::TCPServer(const std::string& serverPort) :
+    m_acceptor(m_ioService,
+    ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(serverPort))),
+    m_socket(m_ioService)
 {
 }
 

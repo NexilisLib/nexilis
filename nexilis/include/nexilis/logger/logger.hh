@@ -13,7 +13,7 @@
 #include <sstream>
 #include <vector>
 
-namespace nexilis
+namespace nexilis::logger
 {
 
 class Logger
@@ -31,31 +31,6 @@ public:
         std::lock_guard<std::mutex> lock(m_mtx);
         m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
     }
-
-    /*
-    /// Remove specific handler.
-    template <typename T>
-    void removeHandler(T&& handler)
-    {
-        std::lock_guard<std::mutex> lock(m_mtx);
-
-        // Find the handler in the vector.
-        auto it = std::find_if(m_handlers.begin(), m_handlers.end(), [&](const auto& storedHandler)
-                               { return typeid(*storedHandler) == typeid(std::remove_reference_t<T>) &&
-                                        *static_cast<std::remove_reference_t<T>*>(storedHandler.get()) == handler; });
-
-        // If found, erase it from the vector.
-        if (it != m_handlers.end())
-        {
-            std::cout << "Found" << std::endl;
-            m_handlers.erase(it);
-        }
-        else
-        {
-            std::cout << "NOT FOUND" << std::endl;
-        }
-    }
-    */
 
     template <typename T>
     void removeHandler(T&& handlerToRemove)

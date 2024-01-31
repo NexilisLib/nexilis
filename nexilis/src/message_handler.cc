@@ -103,7 +103,8 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                 }
                 else
                 {
-                    std::cout << "PASSWORD WAS NOT CORRECT" << std::endl;
+                    Log::error("PASSWORD WAS NOT CORRECT");
+                    return errorMessage;
                 }
             }
         }

@@ -24,7 +24,7 @@ Websocket::Websocket(unsigned port)
     }
 
     m_websocket.set_message_handler([this](wpp_connection cnn, wpp_message msg)
-                                    {
+    {
         auto con = m_websocket.get_con_from_hdl(cnn);
         auto& socket = con->get_raw_socket();
         auto& tcp_socket = dynamic_cast<boost::asio::ip::tcp::socket&>(socket);
@@ -68,7 +68,8 @@ Websocket::Websocket(unsigned port)
         if (!Command::read(nexilisMessage, client, *this, [](const std::vector<uint8_t>&){}))
         {
             Log::error("Something went wrong with the reading of the command");
-        } });
+        }
+    });
 }
 
 void Websocket::setOpenHandler(const std::function<void()>& openHandler)
