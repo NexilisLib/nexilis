@@ -1,7 +1,6 @@
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol_manager.hh>
-#include <nexilis/websocket/websocket.hh>
 #include <nexilis/server_manager.hh>
 #include <nexilis/af_inet/tcp_server.hh>
 #include <nexilis/boost/tcp_server.hh>
@@ -30,11 +29,7 @@ int main()
 
     // Boost TCP
     auto tcpServer = protocolManager.createProtocol<nexilis::boost::TCPServer>("12345");
-
-    if (tcpServer.startListening())
-    {
-        tcpServer.acceptClients();
-    }
+    tcpServer.start();
 
     return 0;
 }

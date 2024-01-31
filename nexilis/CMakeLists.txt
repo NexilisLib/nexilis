@@ -41,8 +41,6 @@ set(SOURCES
     src/boost/tcp_server.cc
 
     src/client_api/client_api.cc
-    src/websocket/websocket.cc
-
     src/common/af_inet_udp_sender.cc)
 
 add_library(nexilis ${SOURCES})

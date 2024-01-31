@@ -65,30 +65,29 @@ bool TCPServer::acceptClients()
 
                     if (error == ::boost::asio::error::eof)
                     {
-                        // Client closed the connection.
-                        // TODO
-                        // Consider sending error message.
+                        Log::debug("End receive ", clientAddress);
                         break;
                     }
                     else if (bytesRead <= 0)
                     {
                         // Other type of error.
+                        Log::error("TCPServer Error: boost::asio::read");
                         break;
                     }
                     else if (error)
                     {
                         // Handle other errors
-                        Log::error("Error reading from client: ", error.message());
+                        Log::error("TCPServer Error reading from client: ", error.message());
                         break;
                     }
 
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-                    Log::info("Received from client: ", message);
+                    Log::info("TCPServer Received from client: ", message);
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
                     auto clientSender = [this](const std::vector<uint8_t>& bytes)
                     {
-                        auto toString = Util::convertToString(bytes);
+                        std::string toString = Util::convertToString(bytes);
                         sendToClient(toString);
                     };
 
@@ -117,6 +116,14 @@ bool TCPServer::sendToClient(const std::string& data)
 {
     ::boost::asio::write(m_socket, ::boost::asio::buffer(data));
     return true;
+}
+
+void TCPServer::start()
+{
+    if (startListening())
+    {
+        acceptClients();
+    }
 }
 
 bool TCPServer::receiveFromClient(std::string& buffer)

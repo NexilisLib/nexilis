@@ -1,7 +1,7 @@
+#include "../src/websocket.hh"
+
 #include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
-#include <nexilis/websocket/websocket.hh>
-
 namespace nexilis
 {
 
@@ -59,8 +59,6 @@ Websocket::Websocket(unsigned port)
         {
             ClientStorage::add(std::move(client));
         }
-
-
 
         // We return false from message that is not understood by nexilis.
         // TODO

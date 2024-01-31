@@ -1,9 +1,10 @@
 #ifndef NEXILIS_WEBSOCKET_WEBSOCKET_HH
 #define NEXILIS_WEBSOCKET_WEBSOCKET_HH
 
+#include "../src/websocket_macros.hh"
+
 #include <nexilis/ports.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/websocket/websocket_macros.hh>
 
 #include <functional>
 

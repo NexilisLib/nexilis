@@ -30,10 +30,9 @@ public:
     {
     }
 
-    virtual void start()
-    {
-    }
+    virtual void start() = 0;
 
+    // Should be made pure virtual.
     virtual void stop()
     {
     }
@@ -46,7 +45,7 @@ public:
     };
 
 protected:
-    MessageHandler getMessageHandler()
+    MessageHandler& getMessageHandler()
     {
         return m_messageHandler;
     }

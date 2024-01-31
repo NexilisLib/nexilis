@@ -5,7 +5,6 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/websocket/websocket.hh>
 
 #include <unordered_map>
 
@@ -51,11 +50,6 @@ public:
         {
             type = Type::af_inet_client;
         }
-        else if constexpr (std::is_same<T, Websocket>::value)
-        {
-            type = Type::websocket;
-        }
-
         m_items.insert(std::pair<Type, Status>(type, Status::connecting));
 
         return T(std::forward<Args>(args)...);

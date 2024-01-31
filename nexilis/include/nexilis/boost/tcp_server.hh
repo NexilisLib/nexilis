@@ -25,6 +25,8 @@ public:
         return Type::TCP;
     }
 
+    void start() override;
+
 private:
     ::boost::asio::io_service m_ioService;
     ::boost::asio::ip::tcp::acceptor m_acceptor;

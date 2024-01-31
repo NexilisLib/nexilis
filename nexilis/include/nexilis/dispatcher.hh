@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <nexilis/common/af_inet_udp_sender.hh>
 #include <nexilis/client.hh>
-#include <nexilis/websocket/websocket_macros.hh>
 
 namespace nexilis
 {
@@ -30,11 +29,6 @@ public:
     {
         AfInetUdpSender sender(ip_address);
         sender.sendMessage(message);
-    }
-
-    static void sendWebsocketMessage(wpp_websocket websocket, wpp_connection connection, const std::string& message)
-    {
-        websocket.send(connection, message, websocketpp::frame::opcode::text);
     }
 };
 
