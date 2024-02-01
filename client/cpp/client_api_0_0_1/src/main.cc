@@ -34,7 +34,12 @@ int main()
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");
 
-    boostTCP.start();
+    std::thread tcpThread([&boostTCP]()
+    {
+        boostTCP.start();
+    });
+    tcpThread.join();
+    boostTCP.send("moi");
 
     //while (true) {}
 
