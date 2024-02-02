@@ -106,7 +106,7 @@ bool TCPServer::acceptClients()
             catch (const ::boost::system::system_error& e)
             {
                 // Handle errors or client disconnect here
-                std::cerr << "Error in client thread: " << e.what() << std::endl;
+                Log::error("Error in client thread: ", e.what());
             } })
             .detach();
     }
@@ -114,8 +114,13 @@ bool TCPServer::acceptClients()
 
 bool TCPServer::sendToClient(const std::string& data)
 {
-    ::boost::asio::write(m_socket, ::boost::asio::buffer(data));
-    return true;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (m_socket.is_open())
+    {
+        ::boost::asio::write(m_socket, ::boost::asio::buffer(data));
+        return true;
+    }
+    return false;
 }
 
 void TCPServer::start()
@@ -151,13 +156,13 @@ bool TCPServer::receiveFromClient(std::string& buffer)
     catch (const ::boost::system::system_error& e)
     {
         // Handle boost::asio errors
-        std::cerr << "Error receiving data: " << e.what() << std::endl;
+        Log::error("Error receiving data: ", e.what());
         return false;
     }
     catch (const std::exception& e)
     {
         // Handle other exceptions
-        std::cerr << "Exception: " << e.what() << std::endl;
+        Log::error("Exception: ", e.what());
         return false;
     }
 }

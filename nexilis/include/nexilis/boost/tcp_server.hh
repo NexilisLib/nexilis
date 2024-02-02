@@ -28,6 +28,8 @@ public:
     void start() override;
 
 private:
+    std::mutex m_mutex;
+
     ::boost::asio::io_service m_ioService;
     ::boost::asio::ip::tcp::acceptor m_acceptor;
     ::boost::asio::ip::tcp::socket m_socket;

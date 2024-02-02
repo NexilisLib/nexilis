@@ -20,15 +20,24 @@ public:
     bool connectToServer();
     bool send(const std::string& data);
     bool receive(std::string& buffer);
+    
     void start() override;
+    void stop() override;
 
     Type getType() override
     {
         return Type::TCP;
     }
+
+protected:    
+    std::thread m_ioServiceThread;
+    std::thread m_receiveThread;
 private:
     void receiveLoop();
+
+    bool m_stopped = false;
 private:
+    std::mutex m_socketMutex;
     ::boost::asio::io_service m_ioService;
     ::boost::asio::ip::tcp::socket m_socket;
     ::boost::asio::ip::tcp::resolver m_resolver;

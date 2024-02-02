@@ -16,7 +16,22 @@ TCPClient::TCPClient(const std::string& serverIP, const std::string& serverPort)
 
 TCPClient::~TCPClient()
 {
-    m_socket.close();
+    stop();
+}
+
+void TCPClient::stop()
+{
+    m_stopped = true;
+    m_ioService.stop();
+
+    if (m_ioServiceThread.joinable())
+    {
+        m_ioServiceThread.join();
+    }
+    if (m_receiveThread.joinable())
+    {
+        m_receiveThread.join();
+    }
 }
 
 bool TCPClient::connectToServer()
@@ -27,26 +42,46 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const std::string& data)
 {
-    ::boost::asio::write(m_socket, ::boost::asio::buffer(data));
-    return true;
+    std::lock_guard<std::mutex> lock(m_socketMutex);
+
+    if (m_socket.is_open())
+    {
+        // Asynchronously send data to the server
+        ::boost::asio::async_write(m_socket, ::boost::asio::buffer(data),
+            [this](const ::boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+            {
+                if (!error)
+                {
+                    Log::info("Message sent successfully.");
+                    return true;
+                }
+                else
+                {
+                    Log::error("Send error: " + error.message());
+                    return false;
+                }
+            });
+        return false;
+    }
+    else
+    {
+        Log::error("TCPClient socket is not open SOCKET SEND");
+        return false;
+    }
 }
 
 bool TCPClient::receive(std::string& buffer)
 {
+    std::lock_guard<std::mutex> lock(m_socketMutex);
+
     ::boost::asio::streambuf receiveBuffer;
     ::boost::system::error_code error;
 
     ::boost::asio::read(m_socket, receiveBuffer, ::boost::asio::transfer_at_least(1), error);
 
-    if (error == ::boost::asio::error::eof)
+    if (receiveBuffer.data().size() <= 0)
     {
-        // Server closed the connection.
-        Log::error("Server closed the connection");
-    }
-    else if (error)
-    {
-        // Handle other errors.
-        Log::error("Error reading from server: ", error.message());
+        return false;
     }
 
     buffer = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
@@ -59,9 +94,10 @@ void TCPClient::start()
     {
         Log::info("Connected to server!");
 
+        m_ioServiceThread = std::thread([this]() { m_ioService.run(); });
+
         // Start a separate thread to continuously receive messages.
-        std::thread receiveThread(&TCPClient::receiveLoop, this);
-        receiveThread.join();
+        m_receiveThread = std::thread(&TCPClient::receiveLoop, this);
     }
     else
     {
@@ -79,18 +115,17 @@ void TCPClient::receiveLoop()
         {
             if (!buffer.empty())
             {
-                std::cout << "Received from server: " << buffer << std::endl;
-                send("clientreply");
+                Log::error("Reveived from server: ", buffer);
             }
             else
             {
-                std::cout << "Received empty message from server" << std::endl;
+                Log::info("Received empty message from server");
                 break;
             }
         }
         else
         {
-            std::cout << "Error receiving from server" << std::endl;
+            Log::info("Error receiving from server");
             break;
         }
 

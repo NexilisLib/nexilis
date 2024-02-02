@@ -8,11 +8,11 @@
 
 bool logLevelsEmpty()
 {
-    return !nexilis::Log::getLevel(nexilis::LogLevel::CRITICAL) &&
-           !nexilis::Log::getLevel(nexilis::LogLevel::DEBUG) &&
-           !nexilis::Log::getLevel(nexilis::LogLevel::WARNING) &&
-           !nexilis::Log::getLevel(nexilis::LogLevel::INFO) &&
-           !nexilis::Log::getLevel(nexilis::LogLevel::DEBUG);
+    return !nexilis::Log::getLevel(nexilis::logger::LogLevel::CRITICAL) &&
+           !nexilis::Log::getLevel(nexilis::logger::LogLevel::DEBUG) &&
+           !nexilis::Log::getLevel(nexilis::logger::LogLevel::WARNING) &&
+           !nexilis::Log::getLevel(nexilis::logger::LogLevel::INFO) &&
+           !nexilis::Log::getLevel(nexilis::logger::LogLevel::DEBUG);
 }
 
 TEST(LoggerTest, loggerDefaultLogLevel)
@@ -20,13 +20,13 @@ TEST(LoggerTest, loggerDefaultLogLevel)
     EXPECT_TRUE(logLevelsEmpty());
 }
 
-class SetLevelTest : public testing::TestWithParam<nexilis::LogLevel>
+class SetLevelTest : public testing::TestWithParam<nexilis::logger::LogLevel>
 {
 };
 
 TEST_P(SetLevelTest, setLevel)
 {
-    nexilis::LogLevel level = GetParam();
+    nexilis::logger::LogLevel level = GetParam();
 
     nexilis::Log::unsetLevel(level);
     EXPECT_FALSE(nexilis::Log::getLevel(level));
@@ -36,7 +36,8 @@ TEST_P(SetLevelTest, setLevel)
     EXPECT_FALSE(nexilis::Log::getLevel(level));
 }
 
-INSTANTIATE_TEST_CASE_P(setLevelTests, SetLevelTest, testing::Values(nexilis::LogLevel::CRITICAL, nexilis::LogLevel::ERROR, nexilis::LogLevel::WARNING, nexilis::LogLevel::INFO, nexilis::LogLevel::DEBUG));
+INSTANTIATE_TEST_CASE_P(setLevelTests, SetLevelTest, testing::Values(nexilis::logger::LogLevel::CRITICAL, nexilis::logger::LogLevel::ERROR, 
+nexilis::logger::LogLevel::WARNING, nexilis::logger::LogLevel::INFO, nexilis::logger::LogLevel::DEBUG));
 
 TEST(LoggerTest, startStopLogging)
 {
@@ -59,7 +60,7 @@ TEST(LoggerTest, removeHandlers)
 {
     EXPECT_TRUE(nexilis::Log::noHandlers());
 
-    auto handler = nexilis::ConsoleHandler();
+    auto handler = nexilis::logger::ConsoleHandler();
 
     nexilis::Log::addHandler(std::move(handler));
     EXPECT_FALSE(nexilis::Log::noHandlers());
@@ -70,13 +71,13 @@ TEST(LoggerTest, removeHandlers)
 TEST(LoggerTest, checkDefaultStartConsoleLogging)
 {
     nexilis::Log::startConsoleLogging();
-    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::LogLevel::CRITICAL));
-    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::LogLevel::ERROR));
-    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::LogLevel::WARNING));
-    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::LogLevel::INFO));
+    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::logger::LogLevel::CRITICAL));
+    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::logger::LogLevel::ERROR));
+    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::logger::LogLevel::WARNING));
+    EXPECT_TRUE(nexilis::Log::getLevel(nexilis::logger::LogLevel::INFO));
 
     // Debug should be the only non active log by default.
-    EXPECT_FALSE(nexilis::Log::getLevel(nexilis::LogLevel::DEBUG));
+    EXPECT_FALSE(nexilis::Log::getLevel(nexilis::logger::LogLevel::DEBUG));
     nexilis::Log::stopLogging();
 }
 
@@ -89,7 +90,7 @@ TEST(LoggerTest, ConsoleHandler)
     std::streambuf* old_cout = std::cout.rdbuf();
     std::cout.rdbuf(ss.rdbuf());
 
-    nexilis::Log::addHandler(nexilis::ConsoleHandler());
+    nexilis::Log::addHandler(nexilis::logger::ConsoleHandler());
     nexilis::Log::error("This is a test error message");
 
     // Reset cout's buffer to the original.
@@ -103,9 +104,9 @@ TEST(LoggerTest, ConsoleHandler)
 
 TEST(LoggerTest, FileHandler)
 {
-    nexilis::Log::setLevel(nexilis::LogLevel::INFO);
+    nexilis::Log::setLevel(nexilis::logger::LogLevel::INFO);
     std::string fileName = "test_file_" + std::to_string(rand()) + ".log";
-    nexilis::Log::addHandler(nexilis::FileHandler(fileName));
+    nexilis::Log::addHandler(nexilis::logger::FileHandler(fileName));
 
     nexilis::Log::info("Test message");
 

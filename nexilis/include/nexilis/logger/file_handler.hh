@@ -25,6 +25,11 @@ public:
         ofs << data << std::endl;
     }
 
+    // Overloading the equality operator.
+    bool operator==(const BaseHandler& other) const override
+    {
+        return this == &other;
+    }
 private:
     std::ofstream ofs;
 };
