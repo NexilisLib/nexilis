@@ -44,7 +44,7 @@ public:
     /// Protocol::getType() implementation.
     Type getType() override
     {
-        return Type::UDP;
+        return Type::AF_INET_UDP_SERVER;
     }
 
     void sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen);

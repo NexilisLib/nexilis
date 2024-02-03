@@ -37,7 +37,7 @@ public:
     /// Protocol::getType() implementation.
     Type getType() override
     {
-        return Type::TCP;
+        return Type::AF_INET_TCP_CLIENT;
     }
 
 private:

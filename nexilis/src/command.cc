@@ -268,29 +268,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                             switch (protocol.getType())
                             {
-                                case Protocol::Type::UDP:
-                                {
-                                    for (auto&& c : allClients)
-                                    {
-                                        Log::debug("SENDING UDP PORT", c.getUdpPort());
-                                        Dispatcher::sendUDPMessage(c, c.getUdpPort(), chat);
-                                    }
-                                    return true;
-                                }
-                                case Protocol::Type::Websocket:
-                                {
-                                    return false;
-                                }
-                                case Protocol::Type::UnixSocket:
-                                {
-                                    return false;
-                                }
-
-                                case Protocol::Type::TCP:
-                                {
-                                    return false;
-                                }
-
                                 default: return false;
                             }
                         }

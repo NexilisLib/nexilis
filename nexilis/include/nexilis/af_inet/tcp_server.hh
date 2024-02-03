@@ -33,7 +33,7 @@ public:
 
     Type getType() override
     {
-        return Type::TCP;
+        return Type::AF_INET_TCP_SERVER;
     }
 
     void start() override;

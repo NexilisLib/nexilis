@@ -14,10 +14,20 @@ public:
     // These are the types inherited from this class.
     enum class Type
     {
-        UDP,
-        TCP,
-        Websocket,
-        UnixSocket
+        AF_INET_UDP_SERVER,
+        AF_INET_UDP_CLIENT,
+        AF_INET_TCP_SERVER,
+        AF_INET_TCP_CLIENT,
+
+        BOOST_UDP_SERVER,
+        BOOST_UDP_CLIENT,
+        BOOST_TCP_SERVER,
+        BOOST_TCP_CLIENT,
+
+        AF_UNIX_SOCK_DGRAM_CLIENT,
+        AF_UNIX_SOCK_DGRAM_SERVER,
+        AF_UNIX_SOCK_STREAM_CLIENT,
+        AF_UNIX_SOCK_STREAM_SERVER
     };
 
     Protocol() :

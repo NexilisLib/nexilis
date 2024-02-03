@@ -34,7 +34,7 @@ public:
 
     Type getType() override
     {
-        return Type::UnixSocket;
+        return Type::AF_UNIX_SOCK_DGRAM_SERVER;
     }
 
 private:

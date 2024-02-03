@@ -38,7 +38,7 @@ public:
 
     Type getType() override
     {
-        return Type::UnixSocket;
+        return Type::AF_UNIX_SOCK_STREAM_SERVER;
     }
 
     void sendMessage(int clientSocket, const std::vector<uint8_t>& message);

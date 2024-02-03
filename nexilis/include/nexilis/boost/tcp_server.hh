@@ -22,7 +22,7 @@ public:
 
     Type getType() override
     {
-        return Type::TCP;
+        return Type::BOOST_TCP_SERVER;
     }
 
     void start() override;

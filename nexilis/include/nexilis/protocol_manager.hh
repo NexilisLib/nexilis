@@ -14,19 +14,10 @@ namespace nexilis
 class ProtocolManager
 {
 public:
-    enum class Type
-    {
-        websocket,
-        boost_udp,
-        af_inet_server,
-        af_inet_client,
-        af_unix
-    };
-
-    // TODO not implemented
     enum class Status
     {
         undefined,
+        unconnected,
         connecting,
         connected
     };
@@ -37,26 +28,16 @@ public:
         static_assert(std::is_base_of<Protocol, T>::value,
                       "Type must be derived class of nexilis::Protocol");
 
-        Type type;
-        if constexpr (std::is_same<T, af_unix::UnixSocketServer>::value)
-        {
-            type = Type::af_unix;
-        }
-        else if constexpr (std::is_same<T, af_inet::UDPServer>::value)
-        {
-            type = Type::af_inet_server;
-        }
-        else if constexpr (std::is_same<T, af_inet::UDPClient>::value)
-        {
-            type = Type::af_inet_client;
-        }
-        m_items.insert(std::pair<Type, Status>(type, Status::connecting));
-
+        m_index++;
+        //auto a = T::Type;
+        m_items.insert(std::pair<size_t, Status>(m_index, Status::connecting));
         return T(std::forward<Args>(args)...);
     }
 
 private:
-    std::unordered_map<Type, Status> m_items;
+    std::unordered_map<size_t, Status> m_items;
+
+    size_t m_index;
 };
 
 } // namespace nexilis

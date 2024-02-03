@@ -33,7 +33,7 @@ public:
     /// Protocol::getType() implementation.
     Protocol::Type getType() override
     {
-        return Protocol::Type::UnixSocket;
+        return Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT;
     }
 
 private:

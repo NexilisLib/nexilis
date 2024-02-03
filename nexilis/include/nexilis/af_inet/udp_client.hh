@@ -34,7 +34,7 @@ public:
     /// Protocol::getType() implementation.
     Type getType() override
     {
-        return Type::UDP;
+        return Type::AF_INET_UDP_CLIENT;
     }
 
 private:
