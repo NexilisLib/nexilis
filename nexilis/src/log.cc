@@ -9,7 +9,12 @@ logger::Logger Log::log;
 void Log::startConsoleLogging(logger::LogLevel minLevel)
 {
     log.setMinimumLevel(minLevel);
+    log.addHandler(logger::ConsoleHandler());
+}
 
+void Log::startConsoleDebugging()
+{
+    log.setMinimumLevel(logger::LogLevel::DEBUG);
     log.addHandler(logger::ConsoleHandler());
 }
 

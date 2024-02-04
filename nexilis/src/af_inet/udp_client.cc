@@ -1,5 +1,5 @@
 #include <nexilis/af_inet/udp_client.hh>
-#include <nexilis/buffer.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <arpa/inet.h>
 

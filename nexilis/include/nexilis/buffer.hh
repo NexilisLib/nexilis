@@ -1,1 +1,0 @@
-#define NEXILIS_BUFFER 1024

@@ -1,5 +1,5 @@
 #include <nexilis/af_unix/sock_stream/server.hh>
-#include <nexilis/buffer.hh>
+#include <nexilis/nexilis_macros.hh>
 #include <nexilis/command.hh>
 #include <nexilis/server_manager.hh>
 

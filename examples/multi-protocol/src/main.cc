@@ -7,8 +7,7 @@
 
 int main()
 {
-    nexilis::Log::startConsoleLogging();
-    nexilis::Log::setLevel(nexilis::logger::LogLevel::DEBUG);
+    nexilis::Log::startConsoleDebugging();
 
     nexilis::Authentication auth;
     auth.setMode(nexilis::Authentication::Mode::passwordProtected);

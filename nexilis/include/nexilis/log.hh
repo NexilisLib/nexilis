@@ -15,6 +15,9 @@ public:
     /// \param minLevel The minimum logging level, see logLevel.hh.
     static void startConsoleLogging(logger::LogLevel minLevel = logger::LogLevel::INFO);
 
+    /// Start static console logging setup with all log levels.
+    static void startConsoleDebugging();
+
     /// Custom loglevel can be set with first five bytes from eight byte type.
     /// \param logLevel Custom logging level.
     static void startConsoleLogging(uint8_t logLevel);

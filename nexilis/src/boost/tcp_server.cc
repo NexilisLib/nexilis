@@ -16,6 +16,29 @@ TCPServer::TCPServer(const std::string& serverPort) :
 {
 }
 
+TCPServer::TCPServer(TCPServer&& other) :
+    m_mutex(std::make_unique<std::mutex>()),
+    m_ioService(::boost::asio::io_service()),
+    m_acceptor(std::move(other.m_acceptor)),
+    m_socket(std::move(other.m_socket)) 
+{
+}
+
+/*
+TCPServer& TCPServer::operator=(TCPServer&& other)
+{
+    if (this != &other)
+    {
+        m_mutex = std::move(other.m_mutex);
+        m_ioService = std::move(other.m_ioService);
+        m_acceptor = std::move(other.m_acceptor);
+        m_socket = std::move(other.m_socket);
+    }
+    return *this;
+}
+*/
+
+
 TCPServer::~TCPServer()
 {
     m_socket.close();
@@ -114,7 +137,7 @@ bool TCPServer::acceptClients()
 
 bool TCPServer::sendToClient(const std::string& data)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(*m_mutex);
     if (m_socket.is_open())
     {
         ::boost::asio::write(m_socket, ::boost::asio::buffer(data));

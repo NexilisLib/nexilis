@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <nexilis/af_unix/sock_stream/client.hh>
-#include <nexilis/buffer.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <sys/types.h>
 #include <sys/socket.h>

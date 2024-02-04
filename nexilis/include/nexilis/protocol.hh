@@ -39,6 +39,8 @@ public:
         : m_port(port)
     {
     }
+    
+    virtual ~Protocol() = default;
 
     virtual void start() = 0;
 
