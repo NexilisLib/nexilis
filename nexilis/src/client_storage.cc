@@ -1,5 +1,7 @@
 #include <nexilis/client_storage.hh>
 
+#include <nexilis/log.hh>
+
 namespace nexilis
 {
 

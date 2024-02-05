@@ -8,7 +8,6 @@
 #include <nexilis/nexilis_macros.hh>
 
 #include <unordered_map>
-#include <climits>
 
 namespace nexilis
 {
@@ -89,7 +88,8 @@ public:
         auto a = T(std::forward<Args>(args)...);
         m_items.emplace_back(ProtocolData(a.getType()));
 
-        return std::move(a);
+        //return std::move(a);
+        return a;
     }
 
 private:

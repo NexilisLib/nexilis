@@ -1,4 +1,5 @@
 #include <nexilis/common/util.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <random>
 
@@ -31,6 +32,14 @@ size_t Util::getRandomSizeT(size_t from, size_t to)
     std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
     std::uniform_int_distribution<size_t> dist(from, to);
+    return dist(generator);
+}
+
+size_t Util::getRandomSizeT()
+{
+    std::random_device rand_dev;
+    std::mt19937_64 generator(rand_dev());
+    std::uniform_int_distribution<size_t> dist(0, NEXILIS_MAX);
     return dist(generator);
 }
 

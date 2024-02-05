@@ -17,6 +17,15 @@ public:
     /// Destructor.
     ~TCPClient();
 
+    /// Move constructor.
+    TCPClient(TCPClient&& other);
+
+    /// Move assignment operator.
+    TCPClient& operator=(TCPClient other);
+
+    TCPClient(const TCPClient& other) = delete;
+    TCPClient& operator=(const TCPClient& other) = delete;
+
     bool connectToServer();
     bool send(const std::string& data);
     bool receive(std::string& buffer);
@@ -30,18 +39,19 @@ public:
     }
 
 protected:    
-    std::thread m_ioServiceThread;
+    std::thread m_ioContextThread;
     std::thread m_receiveThread;
 private:
     void receiveLoop();
 
     bool m_stopped = false;
 private:
-    std::mutex m_socketMutex;
-    ::boost::asio::io_service m_ioService;
+    ::boost::asio::io_context m_ioContext;
     ::boost::asio::ip::tcp::socket m_socket;
     ::boost::asio::ip::tcp::resolver m_resolver;
     ::boost::asio::ip::tcp::resolver::iterator m_iterator;
+
+    std::mutex m_mutexLock;
 };
 
 } // namespace nexilis::boost

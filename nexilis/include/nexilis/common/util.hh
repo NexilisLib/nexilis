@@ -42,6 +42,9 @@ public:
 
     static size_t getRandomSizeT(size_t from, size_t to);
 
+    /// Get random size_t value between 0 and max uint64.
+    static size_t getRandomSizeT();
+
     static std::vector<uint8_t> convertToByteVector(const char* command_data, size_t lenght);
     
     static std::vector<uint8_t> convertToByteVector(size_t value);

@@ -21,13 +21,11 @@ public:
     /// Move constructor.
     TCPServer(TCPServer&& other);
 
-    /*
     /// Move assignment operator.
     TCPServer& operator=(TCPServer&& other);
 
     TCPServer(const TCPServer&) = delete;
     TCPServer& operator=(const TCPServer&) = delete;
-    */
 
     bool startListening();
     bool acceptClients();
@@ -42,8 +40,8 @@ public:
     void start() override;
 
 private:
-    std::unique_ptr<std::mutex> m_mutex;
-    ::boost::asio::io_service m_ioService;
+    std::mutex m_mutex;
+    ::boost::asio::io_context m_ioContext;
 
     ::boost::asio::ip::tcp::acceptor m_acceptor;
     ::boost::asio::ip::tcp::socket m_socket;

@@ -1,7 +1,11 @@
 #ifndef NEXILIS_CLIENT_HH
 #define NEXILIS_CLIENT_HH
 
+#include <nexilis/common/util.hh>
+#include <nexilis/nexilis_macros.hh>
+
 #include <string>
+
 
 namespace nexilis
 {
@@ -12,11 +16,10 @@ class Client
 {
 public:
     /// Constructor.
-    Client(std::string ip_address) noexcept
-        : m_ip_address(ip_address)
+    Client(std::string ip_address) noexcept : 
+        m_ip_address(ip_address),
+        m_id(Util::getRandomSizeT(0, NEXILIS_MAX))
     {
-        id_counter += 1;
-        m_id = id_counter;
     }
 
     /// Move constructor.
@@ -126,9 +129,6 @@ private:
 
     bool m_hasRootAccess = false;
     bool m_hasCommonAccess = false;
-
-private:
-    static size_t id_counter;
 };
 
 } // namespace nexilis

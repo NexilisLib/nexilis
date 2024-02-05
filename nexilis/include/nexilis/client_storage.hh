@@ -2,9 +2,7 @@
 #define NEXILIS_CONNECTION_STORAGE_HH
 
 #include <nexilis/client.hh>
-#include <nexilis/log.hh>
 
-#include <algorithm>
 #include <vector>
 
 namespace nexilis
