@@ -7,9 +7,11 @@ namespace nexilis::boost
 {
 
 TCPClient::TCPClient(const std::string& serverIP, const std::string& serverPort) :
-    m_socket(m_ioContext),
-    m_resolver(m_ioContext),
-    m_iterator(m_resolver.resolve({serverIP, serverPort}))
+    m_ioContext(std::make_unique<::boost::asio::io_context>()),
+    m_socket(*m_ioContext),
+    m_resolver(*m_ioContext),
+    m_iterator(m_resolver.resolve({serverIP, serverPort})),
+    m_mutex(std::make_unique<std::mutex>())
 {
 }
 
@@ -17,12 +19,33 @@ TCPClient::TCPClient(TCPClient&& other) :
     m_ioContextThread(std::move(other.m_ioContextThread)),
     m_receiveThread(std::move(other.m_receiveThread)),
     m_stopped(std::move(other.m_stopped)),
-    m_ioContext(::boost::asio::io_context()),
+    m_ioContext(std::move(other.m_ioContext)),
     m_socket(std::move(other.m_socket)),
     m_resolver(std::move(other.m_resolver)),
-    m_iterator(std::move(other.m_iterator))
-    //m_mutexLock(std::move(other.m_mutexLock))
+    m_iterator(std::move(other.m_iterator)),
+    m_mutex(std::move(other.m_mutex))
 {
+    other.m_ioContext = nullptr;
+    other.m_mutex = nullptr;
+}
+
+TCPClient& TCPClient::operator=(TCPClient&& other)
+{
+    if (this != &other)
+    {
+        m_ioContextThread = std::move(other.m_ioContextThread);
+        m_receiveThread = std::move(other.m_receiveThread);
+        m_stopped = std::move(other.m_stopped);
+        m_ioContext = std::move(other.m_ioContext);
+        m_socket = std::move(other.m_socket);
+        m_resolver = std::move(other.m_resolver);
+        m_iterator = std::move(other.m_iterator);
+        m_mutex = std::move(other.m_mutex);
+
+        other.m_mutex = nullptr;
+        other.m_ioContext = nullptr;
+    }
+    return *this;
 }
 
 TCPClient::~TCPClient()
@@ -33,7 +56,7 @@ TCPClient::~TCPClient()
 void TCPClient::stop()
 {
     m_stopped = true;
-    m_ioContext.stop();
+    m_ioContext->stop();
 
     if (m_ioContextThread.joinable())
     {
@@ -53,7 +76,7 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const std::string& data)
 {
-    std::lock_guard<std::mutex> lock(m_mutexLock);
+    std::lock_guard<std::mutex> lock(*m_mutex);
 
     if (m_socket.is_open())
     {
@@ -83,7 +106,7 @@ bool TCPClient::send(const std::string& data)
 
 bool TCPClient::receive(std::string& buffer)
 {
-    std::lock_guard<std::mutex> lock(m_mutexLock);
+    std::lock_guard<std::mutex> lock(*m_mutex);
 
     ::boost::asio::streambuf receiveBuffer;
     ::boost::system::error_code error;
@@ -105,7 +128,7 @@ void TCPClient::start()
     {
         Log::info("Connected to server!");
 
-        m_ioContextThread = std::thread([this]() { m_ioContext.run(); });
+        m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
 
         // Start a separate thread to continuously receive messages.
         m_receiveThread = std::thread(&TCPClient::receiveLoop, this);

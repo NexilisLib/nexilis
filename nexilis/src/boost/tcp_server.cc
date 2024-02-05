@@ -8,15 +8,17 @@ namespace nexilis::boost
 {
 
 TCPServer::TCPServer(const std::string& serverPort) :
-    m_acceptor(m_ioContext,
+    m_mutex(std::make_unique<std::mutex>()),
+    m_ioContext(std::make_unique<::boost::asio::io_context>()),
+    m_acceptor(*m_ioContext,
     ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(serverPort))),
-    m_socket(m_ioContext)
+    m_socket(*m_ioContext)
 {
 }
 
 TCPServer::TCPServer(TCPServer&& other) :
-    //m_mutex(std::make_unique<std::mutex>()),
-    m_ioContext(::boost::asio::io_context()),
+    m_mutex(std::move(other.m_mutex)),
+    m_ioContext(std::move(other.m_ioContext)),
     m_acceptor(std::move(other.m_acceptor)),
     m_socket(std::move(other.m_socket)) 
 {
@@ -26,10 +28,8 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 {
     if (this != &other)
     {
-        //m_mutex = std::make_unique<std::mutex>();
-        
-        // This leads to deleted copy assignment of boost::asio::io_context wtf
-        //m_ioContext = std::move(other.m_ioContext);
+        m_mutex = std::move(other.m_mutex);
+        m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
         m_socket = std::move(other.m_socket);
     }
@@ -52,7 +52,7 @@ bool TCPServer::acceptClients()
     while (true)
     {
         // Create a new socket for each client connection
-        ::boost::asio::ip::tcp::socket newSocket(m_ioContext);
+        ::boost::asio::ip::tcp::socket newSocket(*m_ioContext);
         m_acceptor.accept(newSocket);
 
         // Handle each client in a separate thread
@@ -134,7 +134,7 @@ bool TCPServer::acceptClients()
 
 bool TCPServer::sendToClient(const std::string& data)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(*m_mutex);
     if (m_socket.is_open())
     {
         ::boost::asio::write(m_socket, ::boost::asio::buffer(data));

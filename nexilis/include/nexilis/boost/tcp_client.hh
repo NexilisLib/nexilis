@@ -21,7 +21,7 @@ public:
     TCPClient(TCPClient&& other);
 
     /// Move assignment operator.
-    TCPClient& operator=(TCPClient other);
+    TCPClient& operator=(TCPClient&& other);
 
     TCPClient(const TCPClient& other) = delete;
     TCPClient& operator=(const TCPClient& other) = delete;
@@ -46,12 +46,12 @@ private:
 
     bool m_stopped = false;
 private:
-    ::boost::asio::io_context m_ioContext;
+    std::unique_ptr<::boost::asio::io_context> m_ioContext;
     ::boost::asio::ip::tcp::socket m_socket;
     ::boost::asio::ip::tcp::resolver m_resolver;
     ::boost::asio::ip::tcp::resolver::iterator m_iterator;
 
-    std::mutex m_mutexLock;
+    std::unique_ptr<std::mutex> m_mutex;
 };
 
 } // namespace nexilis::boost
