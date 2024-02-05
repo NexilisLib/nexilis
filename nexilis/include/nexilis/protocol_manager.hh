@@ -5,7 +5,6 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/nexilis_macros.hh>
 
 #include <unordered_map>
 
@@ -26,52 +25,20 @@ public:
     class ProtocolData
     {
     public:
-        ProtocolData(Protocol::Type type) :
-            m_type(type),
-            m_status(Status::connecting),
-            m_id(Util::getRandomSizeT(0, NEXILIS_MAX))
-        {
-        }
+        /// Constructor.
+        ProtocolData(Protocol::Type type);
 
         /// Copy constructor.
-        ProtocolData(const ProtocolData& other) :
-            m_type(other.m_type),
-            m_status(other.m_status),
-            m_id(other.m_id)
-        {
-        }
+        ProtocolData(const ProtocolData& other);
 
         /// Move constructor.
-        ProtocolData(ProtocolData&& other) :
-            m_type(std::move(other.m_type)),
-            m_status(std::move(other.m_status)),
-            m_id(std::move(m_id))
-        {
-        }
+        ProtocolData(ProtocolData&& other);
 
         /// Copy assignment operator.
-        ProtocolData& operator=(const ProtocolData& other)
-        {
-            if (this != &other)
-            {
-                m_type = other.m_type;
-                m_status = other.m_status;
-                m_id = other.m_id;
-            }
-            return *this;
-        }
+        ProtocolData& operator=(const ProtocolData& other);
 
         /// Move assignment operator.
-        ProtocolData& operator=(ProtocolData&& other)
-        {
-            if (this != &other)
-            {
-                m_type = std::move(other.m_type);
-                m_status = std::move(other.m_status);
-                m_id = std::move(other.m_id);
-            }
-            return *this;
-        }
+        ProtocolData& operator=(ProtocolData&& other);
 
     private:
         Protocol::Type m_type;
@@ -85,11 +52,10 @@ public:
         static_assert(std::is_base_of<Protocol, T>::value,
                       "Type must be derived class of nexilis::Protocol");
 
-        auto a = T(std::forward<Args>(args)...);
-        m_items.emplace_back(ProtocolData(a.getType()));
+        auto protocol = T(std::forward<Args>(args)...);
+        m_items.emplace_back(ProtocolData(protocol.getType()));
 
-        //return std::move(a);
-        return a;
+        return protocol;
     }
 
 private:
