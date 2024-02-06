@@ -28,8 +28,8 @@ int main()
     */
 
     /// UDP
-    //auto afInet = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
-    //afInet.start();
+    auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
+    inetUDP.start();
 
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");

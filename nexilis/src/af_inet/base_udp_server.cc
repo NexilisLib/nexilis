@@ -11,7 +11,10 @@ namespace nexilis::af_inet
 {
 
 BaseUDPServer::BaseUDPServer(unsigned port) :
-    Protocol(port)
+    Protocol(port),
+    m_running(std::make_unique<std::atomic<bool>>(false)),
+    m_mtx(std::make_unique<std::mutex>()),
+    m_condition(std::make_unique<std::condition_variable>())
 {
     addrinfo hints, *res, *p;
 
@@ -53,6 +56,30 @@ BaseUDPServer::BaseUDPServer(unsigned port) :
     freeaddrinfo(res);
 }
 
+BaseUDPServer::BaseUDPServer(BaseUDPServer&& other) :
+    m_serverSocket(std::move(other.m_serverSocket)),
+    m_running(std::move(other.m_running)),
+    m_recvThread(std::move(other.m_recvThread)),
+    m_mtx(std::move(other.m_mtx)),
+    m_messageQueue(std::move(other.m_messageQueue)),
+    m_condition(std::move(other.m_condition))
+{
+}
+
+BaseUDPServer& BaseUDPServer::operator=(BaseUDPServer&& other)
+{
+    if (this != &other)
+    {
+        m_serverSocket = std::move(other.m_serverSocket);
+        m_running = std::move(other.m_running);
+        m_recvThread = std::move(other.m_recvThread);
+        m_mtx = std::move(other.m_mtx);
+        m_messageQueue = std::move(other.m_messageQueue);
+        m_condition = std::move(other.m_condition);
+    }
+    return *this;
+}
+
 BaseUDPServer::~BaseUDPServer()
 {
     stop();
@@ -61,14 +88,14 @@ BaseUDPServer::~BaseUDPServer()
 
 void BaseUDPServer::start()
 {
-    m_running = true;
+    *m_running = true;
     m_recvThread = std::thread(&BaseUDPServer::receiverThread, this);
 }
 
 void BaseUDPServer::stop()
 {
-    m_running = false;
-    m_condition.notify_all();
+    *m_running = false;
+    m_condition->notify_all();
     if (m_recvThread.joinable())
     {
         m_recvThread.join();
@@ -77,7 +104,7 @@ void BaseUDPServer::stop()
 
 bool BaseUDPServer::getNextMessage(Message& msg)
 {
-    std::lock_guard<std::mutex> lock(m_mtx);
+    std::lock_guard<std::mutex> lock(*m_mtx);
     if (!m_messageQueue.empty())
     {
         msg = m_messageQueue.front();
@@ -146,12 +173,12 @@ void BaseUDPServer::receiverThread()
         };
 
         {
-            std::lock_guard<std::mutex> lock(m_mtx);
+            std::lock_guard<std::mutex> lock(*m_mtx);
             m_messageQueue.push(msg);
         }
 
         // Notify waiting threads.
-        m_condition.notify_one();
+        m_condition->notify_one();
     }
 }
 

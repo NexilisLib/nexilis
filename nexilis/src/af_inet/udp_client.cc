@@ -19,9 +19,26 @@ UDPClient::UDPClient(ClientAPI& api) :
     }
 
     m_clientSocket = createSocket();
+}
 
-    // I don't actually know if this should be abstracted or not.
-    sendMessage(m_api.getClientPassword());
+UDPClient::UDPClient(UDPClient&& other) :
+    m_clientSocket(std::move(other.m_clientSocket)),
+    m_serverAddr(std::move(other.m_serverAddr)),
+    m_receiverThread(std::move(other.m_receiverThread)),
+    m_api(other.m_api)
+{
+}
+
+UDPClient& UDPClient::operator=(UDPClient&& other)
+{
+    if (this != &other)
+    {
+        m_clientSocket = std::move(other.m_clientSocket);
+        m_serverAddr = std::move(other.m_serverAddr);
+        m_receiverThread = std::move(other.m_receiverThread);
+        m_api = std::move(other.m_api);
+    }
+    return *this;
 }
 
 int UDPClient::createSocket()

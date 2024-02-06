@@ -19,6 +19,18 @@ class UDPClient : public Protocol, public ClientProtocol
 public:
     UDPClient(ClientAPI& api);
 
+    /// Move constructor.
+    UDPClient(UDPClient&& other);
+
+    /// Move assignment operator.
+    UDPClient& operator=(UDPClient&& other);
+
+    /// Deleted copy constructor.
+    UDPClient(const UDPClient& other) = delete;
+
+    /// Deleted copy assignment operator.
+    UDPClient& operator=(const UDPClient& other) = delete;
+
     void sendMessage(const std::string& message) override;
 
     // Send data using UDP

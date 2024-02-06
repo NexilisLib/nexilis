@@ -18,6 +18,22 @@ public:
     {
     }
 
+    UDPServer(UDPServer&& other) :
+        BaseUDPServer(std::move(other)),
+        m_receiveThread(std::move(other.m_receiveThread))
+    {
+    }
+
+    UDPServer& operator=(UDPServer&& other)
+    {
+        if (this != &other)
+        {
+            BaseUDPServer::operator=(std::move(other));
+            m_receiveThread = std::move(other.m_receiveThread);
+        }
+        return *this;
+    }
+
     /// Destructor.
     ~UDPServer()
     {
@@ -48,7 +64,9 @@ public:
     }
 
     void sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen);
-    
+
+private:
+    std::thread m_receiveThread;
 };
 
 

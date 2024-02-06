@@ -30,6 +30,18 @@ public:
 
     BaseUDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
 
+    /// Move constructor.
+    BaseUDPServer(BaseUDPServer&& other);
+
+    /// Move assignment operator.
+    BaseUDPServer& operator=(BaseUDPServer&& other);
+
+    /// Deleted copy constructor..
+    BaseUDPServer(const BaseUDPServer& other) = delete;
+
+    /// Deleted copy assignment operator.
+    BaseUDPServer& operator=(const BaseUDPServer& other) = delete;
+
     virtual ~BaseUDPServer();
 
     /// Start listening to incoming messages.
@@ -44,12 +56,12 @@ public:
 protected:
     int m_serverSocket;
 
-private:
-    std::atomic<bool> m_running = false;
+    std::unique_ptr<std::atomic<bool>> m_running;
     std::thread m_recvThread;
-    std::mutex m_mtx;
+    std::unique_ptr<std::mutex> m_mtx;
     std::queue<Message> m_messageQueue;
-    std::condition_variable m_condition;
+    std::unique_ptr<std::condition_variable> m_condition;
+private:
 
     // Thread function to handle incoming messages.
     void receiverThread();

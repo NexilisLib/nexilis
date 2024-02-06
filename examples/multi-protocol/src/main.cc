@@ -19,8 +19,8 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     // UDP
-    //auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
-    //udpServer.start();
+    auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
+    udpServer.start();
 
     // TCP
     //auto tcpServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);

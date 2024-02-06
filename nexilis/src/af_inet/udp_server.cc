@@ -8,34 +8,37 @@ namespace nexilis::af_inet
 
 void UDPServer::start()
 {
-    BaseUDPServer::start();
-
-    while (true)
+    m_receiveThread = std::thread([this]()
     {
-        BaseUDPServer::Message msg;
+        BaseUDPServer::start();
 
-        if (BaseUDPServer::getNextMessage(msg))
+        while (true)
         {
-            auto message = getMessageHandler().readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
+            BaseUDPServer::Message msg;
 
-            auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
+            if (BaseUDPServer::getNextMessage(msg))
             {
-                sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
-            };
+                auto message = getMessageHandler().readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
 
-            if (message.getClient())
-            {
-                if (!Command::read(message.getData(), *message.getClient(), *this, sendMsg))
+                auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
                 {
-                    Log::error("UDP server message reading error, message: ", msg.message);
+                    sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
+                };
+
+                if (message.getClient())
+                {
+                    if (!Command::read(message.getData(), *message.getClient(), *this, sendMsg))
+                    {
+                        Log::error("UDP server message reading error, message: ", msg.message);
+                    }
+                }
+                else
+                {
+                    Log::info("Message from unauthorized client!");
                 }
             }
-            else
-            {
-                Log::info("Message from unauthorized client!");
-            }
         }
-    }
+    });
 }
 
 void UDPServer::sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen)
