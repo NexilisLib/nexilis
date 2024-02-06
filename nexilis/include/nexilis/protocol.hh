@@ -30,15 +30,25 @@ public:
         AF_UNIX_SOCK_STREAM_SERVER
     };
 
-    Protocol() :
-        m_port(static_cast<uint32_t>(-1))
-    {
-    }
+    /// Default constructor.
+    /// \note m_port has been initialized to -1.
+    Protocol();
 
-    Protocol(uint32_t port)
-        : m_port(port)
-    {
-    }
+    /// Constructor.
+    /// \param port The port number for the protocol.
+    Protocol(uint32_t port);
+
+    /// Move constructor.
+    Protocol(Protocol&& other);
+
+    /// Move assignment operator.
+    Protocol& operator=(Protocol&& other);
+
+    /// Deleted copy constructor.
+    Protocol(const Protocol& other) = delete;
+
+    /// Deleted copy assignment operator.
+    Protocol& operator=(const Protocol& other) = delete;
     
     virtual ~Protocol() = default;
 

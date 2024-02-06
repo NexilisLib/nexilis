@@ -27,6 +27,7 @@ set(SOURCES
     src/log.cc
     src/message_handler.cc
     src/server_manager.cc
+    src/protocol.cc
     src/protocol_manager.cc
 
     src/af_unix/sock_dgram/unix_socket_server.cc

@@ -16,6 +16,7 @@ TCPClient::TCPClient(const std::string& serverIP, const std::string& serverPort)
 }
 
 TCPClient::TCPClient(TCPClient&& other) :
+    Protocol(std::move(other)),
     m_ioContextThread(std::move(other.m_ioContextThread)),
     m_receiveThread(std::move(other.m_receiveThread)),
     m_stopped(std::move(other.m_stopped)),
@@ -33,6 +34,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
 {
     if (this != &other)
     {
+        Protocol::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
         m_stopped = std::move(other.m_stopped);

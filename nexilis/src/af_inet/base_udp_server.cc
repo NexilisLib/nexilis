@@ -57,6 +57,7 @@ BaseUDPServer::BaseUDPServer(unsigned port) :
 }
 
 BaseUDPServer::BaseUDPServer(BaseUDPServer&& other) :
+    Protocol(std::move(other)),
     m_serverSocket(std::move(other.m_serverSocket)),
     m_running(std::move(other.m_running)),
     m_recvThread(std::move(other.m_recvThread)),
@@ -70,6 +71,7 @@ BaseUDPServer& BaseUDPServer::operator=(BaseUDPServer&& other)
 {
     if (this != &other)
     {
+        Protocol::operator=(std::move(other));
         m_serverSocket = std::move(other.m_serverSocket);
         m_running = std::move(other.m_running);
         m_recvThread = std::move(other.m_recvThread);

@@ -30,6 +30,7 @@ int main()
     /// UDP
     auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     inetUDP.start();
+    inetUDP.sendMessage(serverData.getPassword());
 
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");

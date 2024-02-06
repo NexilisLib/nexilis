@@ -17,6 +17,7 @@ TCPServer::TCPServer(const std::string& serverPort) :
 }
 
 TCPServer::TCPServer(TCPServer&& other) :
+    Protocol(std::move(other)),
     m_mutex(std::move(other.m_mutex)),
     m_ioContext(std::move(other.m_ioContext)),
     m_acceptor(std::move(other.m_acceptor)),
@@ -28,6 +29,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 {
     if (this != &other)
     {
+        Protocol::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
