@@ -19,6 +19,18 @@ public:
     /// Destructor.
     ~Server();
 
+    /// Move constructor.
+    Server(Server&& other);
+
+    /// Move assignment operator.
+    Server& operator=(Server&& other);
+
+    /// Deleted copy constructor.
+    Server(const Server& other) = delete;
+
+    /// Deleted copy assignment.
+    Server& operator=(const Server& other) = delete;
+
     /// Read messages from a specified path.
     void receiveMessage();
 
@@ -44,12 +56,14 @@ public:
     void sendMessage(int clientSocket, const std::vector<uint8_t>& message);
 
 private:
+    void createSocket();
+    void bindSocket();
+
+private:
     std::string m_socketPath;
     int m_serverSocket;
     char* m_buffer;
 
-    void createSocket();
-    void bindSocket();
 };
 
 }

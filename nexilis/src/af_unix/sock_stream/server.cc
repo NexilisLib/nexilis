@@ -28,6 +28,24 @@ Server::~Server()
     delete[] m_buffer;
 }
 
+Server::Server(Server&& other) :
+    m_socketPath(std::move(other.m_socketPath)),
+    m_serverSocket(std::move(other.m_serverSocket)),
+    m_buffer(std::move(std::move(other.m_buffer)))
+{
+}
+
+Server& Server::operator=(Server&& other)
+{
+    if (this != &other)
+    {
+        m_socketPath = std::move(other.m_socketPath);
+        m_serverSocket = std::move(other.m_serverSocket);
+        m_buffer = std::move(other.m_buffer);
+    }
+    return *this;
+}
+
 void Server::createSocket()
 {
     m_serverSocket = socket(AF_UNIX, SOCK_STREAM, 0);

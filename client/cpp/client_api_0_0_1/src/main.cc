@@ -3,6 +3,7 @@
 #include <nexilis/af_inet/tcp_client.hh>
 #include <nexilis/client_api/client_api.hh>
 #include <nexilis/boost/tcp_client.hh>
+#include <nexilis/af_unix/sock_stream/client.hh>
 
 int main()
 {
@@ -34,10 +35,12 @@ int main()
 
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");
-
     boostTCP.start();
     std::cout << "Server started!" << std::endl;
     boostTCP.send(serverData.getPassword());
+
+    auto sockStream = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
+    sockStream.start();
 
     std::this_thread::sleep_for(std::chrono::seconds(60));
     std::cout << "END TIMER" << std::endl;

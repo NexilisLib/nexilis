@@ -6,6 +6,36 @@
 namespace nexilis::af_inet
 {
 
+UDPServer::UDPServer(unsigned port) : 
+    BaseUDPServer(port)
+{
+}
+
+UDPServer::UDPServer(UDPServer&& other) :
+    BaseUDPServer(std::move(other)),
+    m_receiveThread(std::move(other.m_receiveThread))
+{
+}
+
+UDPServer& UDPServer::operator=(UDPServer&& other)
+{
+    if (this != &other)
+    {
+        BaseUDPServer::operator=(std::move(other));
+        m_receiveThread = std::move(other.m_receiveThread);
+    }
+    return *this;
+}
+
+/// Destructor.
+UDPServer::~UDPServer()
+{
+    if (m_receiveThread.joinable())
+    {
+        m_receiveThread.join();
+    }
+}
+
 void UDPServer::start()
 {
     m_receiveThread = std::thread([this]()

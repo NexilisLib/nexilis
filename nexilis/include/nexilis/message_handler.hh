@@ -38,6 +38,7 @@ public:
         {
             return m_address;
         }
+
         std::vector<uint8_t> getData()
         {
             return m_data;

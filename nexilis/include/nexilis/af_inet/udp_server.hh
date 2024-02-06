@@ -13,31 +13,22 @@ public:
     /// Constructor.
     /// \param port The port we are assigning the udp server.
     /// This has been initialized the value of Port::UDP.
-    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP)) : 
-        BaseUDPServer(port)
-    {
-    }
-
-    UDPServer(UDPServer&& other) :
-        BaseUDPServer(std::move(other)),
-        m_receiveThread(std::move(other.m_receiveThread))
-    {
-    }
-
-    UDPServer& operator=(UDPServer&& other)
-    {
-        if (this != &other)
-        {
-            BaseUDPServer::operator=(std::move(other));
-            m_receiveThread = std::move(other.m_receiveThread);
-        }
-        return *this;
-    }
+    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
 
     /// Destructor.
-    ~UDPServer()
-    {
-    }
+    ~UDPServer();
+
+    /// Move constructor.
+    UDPServer(UDPServer&& other);
+
+    /// Move assignment operator.
+    UDPServer& operator=(UDPServer&& other);
+
+    /// Deleted copy constructor.
+    UDPServer(const UDPServer& other) = delete;
+
+    /// Deleted copy assignment operator.
+    UDPServer& operator=(const UDPServer& other) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
