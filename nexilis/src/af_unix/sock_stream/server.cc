@@ -8,8 +8,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <iostream>
-
 namespace nexilis::af_unix::sock_stream
 {
 
@@ -24,6 +22,11 @@ Server::Server(const std::string& socketPath) :
 
 Server::~Server()
 {
+    if (m_receiveThread.joinable())
+    {
+        m_receiveThread.join();
+    }
+
     close(m_serverSocket);
     delete[] m_buffer;
 }
@@ -31,7 +34,8 @@ Server::~Server()
 Server::Server(Server&& other) :
     m_socketPath(std::move(other.m_socketPath)),
     m_serverSocket(std::move(other.m_serverSocket)),
-    m_buffer(std::move(std::move(other.m_buffer)))
+    m_buffer(std::move(std::move(other.m_buffer))),
+    m_receiveThread(std::move(other.m_receiveThread))
 {
 }
 
@@ -42,8 +46,20 @@ Server& Server::operator=(Server&& other)
         m_socketPath = std::move(other.m_socketPath);
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
+        m_receiveThread = std::move(other.m_receiveThread);
     }
     return *this;
+}
+
+void Server::start()
+{
+    m_receiveThread = std::thread([this]()
+    {
+        while (true)
+        {
+            receiveMessage();
+        }
+    });
 }
 
 void Server::createSocket()

@@ -2,10 +2,10 @@
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
 #include <nexilis/protocol.hh>
-#include <nexilis/message_handler.hh>
 
 #include <cstdint>
 #include <string>
+#include <thread>
 
 namespace nexilis::af_unix::sock_stream
 {
@@ -35,14 +35,7 @@ public:
     void receiveMessage();
 
     /// Protocol start() implementation.
-    /// \note blocking
-    void start() override
-    {
-        while (true)
-        {
-            receiveMessage();
-        }
-    }
+    void start() override;
 
     void stop() override
     {
@@ -63,7 +56,7 @@ private:
     std::string m_socketPath;
     int m_serverSocket;
     char* m_buffer;
-
+    std::thread m_receiveThread;
 };
 
 }

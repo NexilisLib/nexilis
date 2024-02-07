@@ -150,6 +150,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         std::cout << "Commandbyte hex: " << std::hex << static_cast<int>(commandByte);
         std::cout << std::endl;
         std::cout << "Commandbyte char: " <<  static_cast<char>(commandByte);
+        std::cout << std::endl;
     }
 
     switch (message.front())
@@ -181,7 +182,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                 case 0x10:
                 {
                     size_t clientId = Util::convertToType<size_t>(Util::removeAmountOfBytesFromVector(message, 2));
-                    std::cout << "client id set to" << clientId << std::endl;
+                    std::cout << "client id set to " << clientId << std::endl;
                     setClientId(&clientId);
                     return true;
                 }

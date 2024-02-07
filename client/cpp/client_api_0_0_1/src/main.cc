@@ -33,6 +33,9 @@ int main()
     inetUDP.start();
     inetUDP.sendMessage(serverData.getPassword());
 
+    while(true){}
+    
+    /*
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");
     boostTCP.start();
@@ -45,6 +48,7 @@ int main()
     std::this_thread::sleep_for(std::chrono::seconds(60));
     std::cout << "END TIMER" << std::endl;
     boostTCP.stop();
+    */
 
     return 0;
 }

@@ -23,22 +23,11 @@ int main()
     auto udpServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
     udpServer.start();
 
-    // TCP
-    //auto tcpServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
-    //tcpServer.start();
-
-    std::cout << "udpserver is not blocking" << std::endl;
-
+    /*
     // Boost TCP
     auto tcpServer = protocolManager.createProtocol<nexilis::boost::TCPServer>("12345");
     tcpServer.start();
-
-    std::cout << "tcpServer is not blocking" << std::endl;
-
-    auto sockStream = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Server>("/tmp/nexilis");
-    sockStream.start();
-
-    std::cout << "start is blocking" << std::endl;
+    */
 
     return 0;
 }
