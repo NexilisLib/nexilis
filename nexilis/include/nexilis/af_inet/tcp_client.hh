@@ -3,7 +3,7 @@
 
 #include <nexilis/client_protocol.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/client_api/client_api.hh>
+#include <nexilis/client_api.hh>
 
 #include <netinet/in.h>
 

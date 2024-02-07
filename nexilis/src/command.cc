@@ -1,5 +1,3 @@
-#include "nexilis/af_unix/sock_dgram/unix_socket_sender.hh"
-#include <cstdint>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/protocol.hh>

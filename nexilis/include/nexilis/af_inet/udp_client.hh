@@ -2,7 +2,7 @@
 #define NEXILIS_AF_INET_UDP_CLIENT_HH
 
 #include <nexilis/protocol.hh>
-#include <nexilis/client_api/client_api.hh>
+#include <nexilis/client_api.hh>
 #include <nexilis/client_protocol.hh>
 
 #include <sys/un.h>

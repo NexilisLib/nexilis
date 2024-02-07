@@ -1,7 +1,7 @@
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_inet/tcp_client.hh>
-#include <nexilis/client_api/client_api.hh>
+#include <nexilis/client_api.hh>
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/af_unix/sock_stream/client.hh>
 

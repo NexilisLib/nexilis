@@ -21,7 +21,8 @@ TCPServer::TCPServer(TCPServer&& other) :
     m_mutex(std::move(other.m_mutex)),
     m_ioContext(std::move(other.m_ioContext)),
     m_acceptor(std::move(other.m_acceptor)),
-    m_socket(std::move(other.m_socket)) 
+    m_socket(std::move(other.m_socket)),
+    m_listenThread(std::move(other.m_listenThread))
 {
 }
 
@@ -34,6 +35,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
         m_socket = std::move(other.m_socket);
+        m_listenThread = std::move(other.m_listenThread);
     }
     return *this;
 }
@@ -41,6 +43,11 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 TCPServer::~TCPServer()
 {
     m_socket.close();
+    
+    if (m_listenThread.joinable())
+    {
+        m_listenThread.join();
+    }
 }
 
 bool TCPServer::startListening()
@@ -147,10 +154,16 @@ bool TCPServer::sendToClient(const std::string& data)
 
 void TCPServer::start()
 {
-    if (startListening())
+    // TODO
+    // Continue here by creating the iocontext thread.
+    
+    m_listenThread = std::thread([this]()
     {
-        acceptClients();
-    }
+        if (startListening())
+        {
+            acceptClients();
+        }
+    });
 }
 
 bool TCPServer::receiveFromClient(std::string& buffer)

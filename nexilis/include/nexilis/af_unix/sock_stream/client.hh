@@ -3,7 +3,7 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/client_protocol.hh>
-#include <nexilis/client_api/client_api.hh>
+#include <nexilis/client_api.hh>
 
 #include <sys/un.h>
 
@@ -18,6 +18,18 @@ public:
 
     /// Destructor.
     ~Client();
+
+    /// Move constructor.
+    Client(Client&& other);
+
+    /// Move assignment operator.
+    Client& operator=(Client&& other);
+
+    /// Deleted copy constructor.
+    Client(const Client& other) = delete;
+
+    /// Deleted copy assignment operator.
+    Client& operator=(const Client& other) = delete;
 
     /// Send message to the server.
     /// ClientProtocol::sendMessage implementation.
@@ -44,10 +56,9 @@ private:
     void connectToServer();
 
 private:
-    ClientAPI& m_api;
+    ClientAPI m_api;
 
 private:
-    // TODO create unixSocket.hh
     std::string m_serverSocketPath;
     int m_clientSocket;
     sockaddr_un m_serverAddr;

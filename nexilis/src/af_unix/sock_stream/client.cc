@@ -12,13 +12,13 @@ namespace nexilis::af_unix::sock_stream
 Client::Client(ClientAPI& clientApi) :
     Protocol(),
     m_api(clientApi),
-    m_serverSocketPath(m_api.getUnixSocketServerPath())
+    m_serverSocketPath(m_api.getUnixStreamPath())
 {
     createSocket();
     connectToServer();
 
     std::cout << "Sending password to server: " << m_api.getClientPassword() << std::endl;
-    std::cout << "Server socket path: " << m_api.getUnixSocketServerPath() << std::endl;
+    std::cout << "Server socket path: " << m_api.getUnixStreamPath() << std::endl;
 
     sendMessage(m_api.getClientPassword());
 }
@@ -29,6 +29,28 @@ Client::~Client()
     {
         close(m_clientSocket);
     }
+}
+
+Client::Client(Client&& other) :
+    Protocol(std::move(other)),
+    m_api(std::move(other.m_api)),
+    m_serverSocketPath(std::move(other.m_serverSocketPath)),
+    m_clientSocket(std::move(other.m_clientSocket)),
+    m_serverAddr(std::move(other.m_serverAddr))
+{
+}
+
+Client& Client::operator=(Client&& other)
+{
+    if (this != &other)
+    {
+        Protocol::operator=(std::move(other));
+        m_api = std::move(other.m_api);
+        m_serverSocketPath = std::move(other.m_serverSocketPath);
+        m_clientSocket = std::move(other.m_clientSocket);
+        m_serverAddr = std::move(other.m_serverAddr);
+    }
+    return *this;
 }
 
 void Client::createSocket()

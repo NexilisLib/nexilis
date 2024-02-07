@@ -45,6 +45,8 @@ private:
 
     ::boost::asio::ip::tcp::acceptor m_acceptor;
     ::boost::asio::ip::tcp::socket m_socket;
+
+    std::thread m_listenThread;
 };
 
 } // namespace nexilis::boost

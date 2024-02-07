@@ -41,17 +41,28 @@ public:
     class ServerData
     {
     public:
+        /// Default constructor.
         ServerData() = default;
 
-        ServerData(const std::string& password) : m_password(password)
-        {
-        }
+        /// Constructor.
+        /// \param password The password matching "commonPassword" in the server code.
+        ServerData(const std::string& password);
 
-        ServerData(const std::string password, const std::string username) :
-            m_password(password),
-            m_username(username)
-        {
-        }
+        /// Constructor.
+        /// \param password The password matching "commonPassword" in the server code.
+        ServerData(const std::string password, const std::string username);
+
+        /// Move constructor.
+        ServerData(ServerData&& other);
+
+        /// Move assignment operator.
+        ServerData& operator=(ServerData&& other);
+
+        /// Copy constructor.
+        ServerData(const ServerData& other);
+
+        /// Copy assignment operator.
+        ServerData& operator=(const ServerData& other);
 
         std::string getUsername() const
         {
@@ -107,15 +118,45 @@ public:
             m_inetTCPPort = port;
         }
 
-        /// af_unix
-        std::string getUnixSocketServerPath() const
+        /// boost TCP.
+        std::string getBoostTCPServerAddress() const
         {
-            return m_unixSocketServerPath;
+            return m_boostTCPServerAddress;
         }
 
-        void setUnixSocketServerPath(const std::string& socketPath)
+        uint16_t getBoostTCPServerPort() const
         {
-            m_unixSocketServerPath = socketPath;
+            return m_boostTCPServerPort;
+        }
+
+        void setBoostTCP(const std::string& serverAddress, uint16_t port)
+        {
+            m_boostTCPServerAddress = serverAddress;
+            m_boostTCPServerPort = port;
+        }
+
+        /// TODO boost UDP.
+
+        /// af_unix DGRAM
+        std::string getUnixDgramServerPath() const
+        {
+            return m_unixDgramServerPath;
+        }
+
+        void setUnixDgramServerPath(const std::string& socketPath)
+        {
+            m_unixDgramServerPath = socketPath;
+        }
+
+        /// af_unix STREAM
+        std::string getUnixStreamServerPath() const
+        {
+            return m_unixStreamServerPath;
+        }
+
+        void setUnixStreamServerPath(const std::string& socketPath)
+        {
+            m_unixStreamServerPath = socketPath;
         }
 
     private:
@@ -131,38 +172,54 @@ public:
         std::string m_inetTCPServerAddress;
         uint16_t m_inetTCPPort = 0xFFFF;
 
-        /// af_unix
-        // TODO separation between sock_stream and sock_dgram.
-        std::string m_unixSocketServerPath;
+        /// boost TCP
+        std::string m_boostTCPServerAddress;
+        uint16_t m_boostTCPServerPort = 0xFFFF;
+
+        /// boost UDP TODO.
+
+        /// af_unix DGRAM
+        std::string m_unixDgramServerPath;
+
+        /// af_unix STREAM
+        std::string m_unixStreamServerPath;
     };
 
-    ClientAPI(ServerData data) :
-        m_data(data)
-    {
-    }
+    /// Constructor.
+    ClientAPI(ServerData data);
 
-    bool IsInetUDPReady()
-    {
-        return  m_clientId &&
-                !m_data.getInetUDPServerAddress().empty() &&
-                m_data.getInetUDPServerPort() != 0xFFFF;
-    }
+    /// Move constructor.
+    ClientAPI(ClientAPI&& other);
 
-    bool isInetTCPReady()
-    {
-        return m_clientId &&
-               !getInetTCPServerAddress().empty() &&
-               getInetTCPPortNumber() != 0xFFFF;
-    }
+    /// Move assignment operator.
+    ClientAPI& operator=(ClientAPI&& other);
 
-    bool isUnixSocketClientReady()
-    {
-        return m_clientId &&
-               !m_data.getUnixSocketServerPath().empty();
-    }
+    /// Deleted copy constructor.
+    ClientAPI(const ClientAPI& other);
+
+    /// Deleted copy assignment.
+    ClientAPI& operator=(const ClientAPI& other);
+
+    bool IsInetUDPReady();
+
+    bool isInetTCPReady();
+
+    bool isUnixDgramReady();
 
     /// Read incoming message to client.
     bool readMessage(std::vector<uint8_t> message);
+
+public:
+    /// Getters.
+    std::string getClientPassword()
+    {
+        return m_data.getPassword();
+    }
+
+    std::string getClientUserName()
+    {
+        return m_data.getUsername();
+    }
 
     std::string getInetUDPServerAddress()
     {
@@ -184,16 +241,17 @@ public:
         return m_data.getInetTCPServerPort();
     }
 
-    std::string getUnixSocketServerPath()
+    std::string getUnixDgramPath()
     {
-        return m_data.getUnixSocketServerPath();
+        return m_data.getUnixDgramServerPath();
     }
 
-    std::string getClientPassword()
+    std::string getUnixStreamPath()
     {
-        return m_data.getPassword();
+        return m_data.getUnixStreamServerPath();
     }
 
+    /// Setters.
 private:
     void setClientId(size_t* id)
     {

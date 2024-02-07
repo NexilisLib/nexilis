@@ -10,7 +10,7 @@ namespace nexilis::af_unix
 UnixSocketClient::UnixSocketClient(ClientAPI& api) :
     Protocol(),
     m_api(api),
-    m_serverSocketPath(m_api.getUnixSocketServerPath())
+    m_serverSocketPath(m_api.getUnixDgramPath())
 {
     createSocket();
     sendMessage(api.getClientPassword());
