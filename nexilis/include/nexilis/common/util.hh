@@ -48,7 +48,6 @@ public:
     static std::vector<uint8_t> convertToByteVector(const char* command_data, size_t lenght);
     
     static std::vector<uint8_t> convertToByteVector(size_t value);
-
 };
 
 }

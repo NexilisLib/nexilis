@@ -84,7 +84,9 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     size_t clientId = client.getId();
                     ClientStorage::add(std::move(client));
                     auto realClient = ClientStorage::getClientById(clientId);
+
                     assert(realClient);
+                    assert(client.getId() == realClient->getId());
 
                     std::vector<uint8_t> message { 0x20, 0x10 };
 

@@ -1,4 +1,7 @@
 #include <nexilis/client_api.hh>
+#include <nexilis/log.hh>
+
+#include <iomanip>
 
 namespace nexilis
 {
@@ -153,6 +156,9 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         std::cout << std::endl;
     }
 
+    std::cout << std::endl << std::endl;
+    std::cout << std::dec;
+
     switch (message.front())
     {
         // Set
@@ -163,8 +169,18 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                 // Client ID.
                 case 0x10:
                 {
+                    std::cout << "original message lenght: " << message.size() << std::endl;
+                    Log::info("Original message lenght: ", message.size());
+                    
                     auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
-                    auto id = Util::convertToType<size_t>(sizeVector);
+
+                    std::cout << "id lenght: " << sizeVector.size() << std::endl;
+                    size_t id = Util::convertToType<size_t>(sizeVector);
+
+                    Log::info("ID: ", id);
+
+                    std::cout << "ID from cout " << id << std::endl;
+
                     setClientId(&id);
                     return true;
                 }
@@ -177,18 +193,6 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         // Get.
         case 0x20:
         {
-            switch (message[1])
-            {
-                case 0x10:
-                {
-                    size_t clientId = Util::convertToType<size_t>(Util::removeAmountOfBytesFromVector(message, 2));
-                    std::cout << "client id set to " << clientId << std::endl;
-                    setClientId(&clientId);
-                    return true;
-                }
-
-                default: return false;
-            }
         }
 
         default: return false;

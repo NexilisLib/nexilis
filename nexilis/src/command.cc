@@ -89,12 +89,12 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get client id.
                 case 0x10:
                 {
-                    // Reminder of the client parsing.
-                    // 0x20 = GET
-                    // 0x10 = IP
-                    std::vector<uint8_t> data = { 0x20, 0x10 };
+                    /// Client package: 0x10, 0x10 = SET, ID.
+                    std::vector<uint8_t> data = { 0x10, 0x10 };
 
                     auto idBytes = Util::convertToByteVector(client.getId());
+
+                    std::cout << "ID HERE " << client.getId() << std::endl;
 
                     for (uint8_t i = 0; i < idBytes.size(); i++)
                     {
