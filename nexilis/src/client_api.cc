@@ -1,8 +1,6 @@
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>
 
-#include <iomanip>
-
 namespace nexilis
 {
 
@@ -169,19 +167,13 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                 // Client ID.
                 case 0x10:
                 {
-                    std::cout << "original message lenght: " << message.size() << std::endl;
-                    Log::info("Original message lenght: ", message.size());
-                    
                     auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
-
-                    std::cout << "id lenght: " << sizeVector.size() << std::endl;
                     size_t id = Util::convertToType<size_t>(sizeVector);
-
-                    Log::info("ID: ", id);
-
-                    std::cout << "ID from cout " << id << std::endl;
-
                     setClientId(&id);
+
+                    // Maybe there should be some sort of verification here,
+                    // to check that the id here is actually the same id than in the server.
+
                     return true;
                 }
 
