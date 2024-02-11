@@ -17,29 +17,13 @@ public:
         whiteListed
     };
 
-    void setRootPassword(const std::string& password)
-    {
-        assert(!password.empty());
-        m_rootPassword = password;
-    }
+    void setRootPassword(const std::string& password);
 
-    bool isRootPassword(const std::string& password)
-    {
-        assert(!m_rootPassword.empty());
-        return m_rootPassword == password;
-    }
+    bool isRootPassword(const std::string& password);
 
-    void setCommonPassword(const std::string& password)
-    {
-        assert(!password.empty());
-        m_password = password;
-    }
+    void setCommonPassword(const std::string& password);
 
-    bool isCommonPassword(const std::string& password)
-    {
-        assert(!m_password.empty());
-        return password == m_password;
-    }
+    bool isCommonPassword(const std::string& password);
 
     void setMode(Mode mode)
     {
