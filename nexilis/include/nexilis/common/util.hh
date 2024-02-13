@@ -1,6 +1,8 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
+#include <nexilis/config.hh>
+
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -23,10 +25,19 @@ public:
 
         T result = 0;
 
-        // Assuming little-endian byte order
-        for (size_t i = 0; i < sizeof(T); ++i)
+        if (Config::getBigEndian())
         {
-            result |= static_cast<T>(bytes[i]) << (8 * i);
+            for (size_t i = 0; i < sizeof(T); ++i)
+            {
+                result |= static_cast<T>(bytes[i]) << (8 * (sizeof(T) - 1 - i));
+            }
+        }
+        else
+        {
+            for (size_t i = 0; i < sizeof(T); ++i)
+            {
+                result |= static_cast<T>(bytes[i]) << (8 * i);
+            }
         }
 
         return result;
@@ -40,6 +51,7 @@ public:
 
     static std::vector<uint8_t> removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount);
 
+    /// Get random size_t between two values.
     static size_t getRandomSizeT(size_t from, size_t to);
 
     /// Get random size_t value between 0 and max uint64.

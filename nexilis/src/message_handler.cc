@@ -3,6 +3,7 @@
 #include <nexilis/message_handler.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
+#include <nexilis/config.hh>
 
 #include <nexilis/common/util.hh>
 
@@ -12,11 +13,11 @@ namespace nexilis
 {
 
 // TODO need global setting for endian.
-size_t extractSizeFromVector(const std::vector<uint8_t>& data, bool bigEndian = false)
+size_t extractSizeFromVector(const std::vector<uint8_t>& data)
 {
     size_t result = 0;
 
-    if (bigEndian)
+    if (Config::getBigEndian())
     {
         for (auto byte : data)
         {
@@ -27,7 +28,6 @@ size_t extractSizeFromVector(const std::vector<uint8_t>& data, bool bigEndian = 
             result = (result << 8) | byte;
         }
     }
-    // Little-endian
     else
     {
         for (size_t i = 0; i < data.size(); ++i)

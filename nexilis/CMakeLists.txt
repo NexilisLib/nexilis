@@ -22,6 +22,7 @@ set(SOURCES
     src/authentication.cc
     src/client.cc
     src/command.cc
+    src/config.cc
     src/vector3.cc
     src/ports.cc
     src/client_storage.cc
