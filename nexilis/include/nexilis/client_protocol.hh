@@ -1,7 +1,9 @@
 #ifndef NEXILIS_CLIENT_PROTOCOL_HH
 #define NEXILIS_CLIENT_PROTOCOL_HH
 
-#include <nexilis/log.hh>
+#include <string>
+#include <vector>
+#include <cstdint>
 
 namespace nexilis
 {
@@ -9,30 +11,16 @@ namespace nexilis
 class ClientProtocol
 {
 public:
-    size_t getClientId()
-    {
-        if (m_client_id_set)
-        {
-            return m_client_id;
-        }
-        else
-        {
-            Log::error("Cannot get unset client ID!");
-            return 0;
-        }
-    }
-
-    void setClientId(size_t clientId)
-    {
-        m_client_id = clientId;
-        m_client_id_set = true;
-    }
-
+    /// Send message from client to server.
+    /// \param message The string message that is sent.
     virtual void sendMessage(const std::string& message) = 0;
 
-private:
-    size_t m_client_id;
-    bool m_client_id_set = false;
+    /// Send message from client to server.
+    /// TODO Pure virtualize.
+    virtual void sendMessage(const std::vector<uint8_t>& message)
+    {
+        (void)message;
+    }
 };
 
 }

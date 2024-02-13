@@ -1,4 +1,5 @@
 #include <nexilis/af_inet/tcp_client.hh>
+#include <nexilis/log.hh>
 
 #include <arpa/inet.h>
 #include <unistd.h>

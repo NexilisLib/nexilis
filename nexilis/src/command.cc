@@ -94,8 +94,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     auto idBytes = Util::convertToByteVector(client.getId());
 
-                    std::cout << "ID HERE " << client.getId() << std::endl;
-
                     for (uint8_t i = 0; i < idBytes.size(); i++)
                     {
                         data.push_back(idBytes[i]);

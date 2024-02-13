@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/authentication.hh>
 #include <nexilis/message_handler.hh>
 #include <nexilis/client_storage.hh>
@@ -10,29 +11,44 @@
 namespace nexilis
 {
 
-size_t extractSizeFromVector(const std::vector<uint8_t>& data)
+// TODO need global setting for endian.
+size_t extractSizeFromVector(const std::vector<uint8_t>& data, bool bigEndian = false)
 {
     size_t result = 0;
 
-    for (auto byte : data)
+    if (bigEndian)
     {
-        if (byte == 0xFF)
+        for (auto byte : data)
         {
-            break;
+            if (byte == 0xFF)
+            {
+                break;
+            }
+            result = (result << 8) | byte;
         }
-        result = (result << 8) | byte;
+    }
+    // Little-endian
+    else
+    {
+        for (size_t i = 0; i < data.size(); ++i)
+        {
+            if (data[i] == 0xFF)
+            {
+                break;
+            }
+            result |= static_cast<size_t>(data[i]) << (i * 8);
+        }
     }
 
     return result;
 }
 
-std::vector<uint8_t> removeItemsUntilFF(std::vector<uint8_t>& data)
+std::vector<uint8_t> removeItemsUntilFF(const std::vector<uint8_t>& data)
 {
     auto ffPosition = std::find(data.begin(), data.end(), 0xFF);
 
     if (ffPosition != data.end())
     {
-        // Erase items including 0xFF.
         return std::vector<uint8_t>(ffPosition + 1, data.end());
     }
     else
@@ -41,18 +57,46 @@ std::vector<uint8_t> removeItemsUntilFF(std::vector<uint8_t>& data)
     }
 }
 
+bool containsFF(const std::vector<uint8_t>& data)
+{
+    for (auto byte : data)
+    {
+        if (byte == 0xFF)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 //NEXILIS_ERROR("myfilename", ErrorType::NOT_IMPLEMENTED);
 
 MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication)
 {
     Log::info("Received message: ", message, " from ", address, " port ", port);
+    Log::info("Message size: ", message.size());
 
     // Create new client.
     Client client(address);
 
+    // TODO
     // Error Messages.
     std::vector<uint8_t> errordata = { 0xa, 0x10, 0x10 };
     Message errorMessage("", errordata, -1, nullptr);
+
+    std::vector<uint8_t> convertedMessage = Util::convertToByteVector(message.c_str(), message.size());
+    bool normalMessage = containsFF(convertedMessage);
+
+    Client* realClient = nullptr;
+    if (normalMessage)
+    {
+        size_t id = extractSizeFromVector(convertedMessage);
+        Log::info("ClientID here: ", id);
+        realClient = ClientStorage::getClientById(id);
+    }
+    else
+    {
+        Log::info("NO ID IN THE MESSAGE");
+    }
 
     switch (authentication->getMode())
     {
@@ -68,10 +112,25 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
         }
         case Authentication::Mode::passwordProtected:
         {
-            if (client.hasCommonAccess())
+            if (realClient)
             {
-                Log::info("Known client sends a message!");
-                break;
+                if (realClient->hasCommonAccess())
+                {
+                    Log::info("Known client sends a message!");
+
+                    return Message(
+                        address,
+                        removeItemsUntilFF(convertedMessage),
+                        port,
+                        realClient
+                    );
+                }
+                // Message from verified client that has no access.
+                else
+                {
+                    Log::error("Internal error");
+                    return errorMessage;
+                }
             }
             else
             {
@@ -81,16 +140,16 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     Log::info("Correct password by user ", client.getId());
                     client.setCommonAccess(true);
 
-                    size_t clientId = client.getId();
+                    size_t newClientId = client.getId();
                     ClientStorage::add(std::move(client));
-                    auto realClient = ClientStorage::getClientById(clientId);
+                    auto realNewClient = ClientStorage::getClientById(newClientId);
 
-                    assert(realClient);
-                    assert(client.getId() == realClient->getId());
+                    assert(realNewClient);
+                    assert(client.getId() == realNewClient->getId());
 
                     std::vector<uint8_t> message { 0x20, 0x10 };
 
-                    std::vector<uint8_t> idBytes = Util::convertToByteVector(realClient->getId());
+                    std::vector<uint8_t> idBytes = Util::convertToByteVector(realNewClient->getId());
                     for (size_t i = 0; i < idBytes.size(); i++)
                     {
                         message.push_back(idBytes[i]);
@@ -100,12 +159,12 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                         address,
                         message,
                         port,
-                        realClient
+                        realNewClient
                     );
                 }
                 else
                 {
-                    Log::error("PASSWORD WAS NOT CORRECT");
+                    Log::error("UNWANTED MESSAGE");
                     return errorMessage;
                 }
             }
@@ -115,27 +174,6 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
             Log::error("Missing authentication mode");
             return errorMessage;
         }
-    }
-
-    std::vector<uint8_t> msg = Util::convertToByteVector(message.c_str(), message.size());
-    size_t id = extractSizeFromVector(msg);
-    auto realClient = ClientStorage::getClientById(id);
-
-    if (realClient)
-    {
-        auto readyCommand = removeItemsUntilFF(msg);
-
-        return Message(
-            address,
-            readyCommand,
-            port,
-            realClient
-        );
-    }
-    else
-    {
-        Log::warning("UNWANTED MESSAGE");
-        return errorMessage;
     }
 }
 

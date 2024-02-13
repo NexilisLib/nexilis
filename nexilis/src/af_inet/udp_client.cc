@@ -1,5 +1,6 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/log.hh>
 
 #include <arpa/inet.h>
 
@@ -55,6 +56,12 @@ int UDPClient::createSocket()
 void UDPClient::sendMessage(const std::string& message)
 {
     sendData(message.c_str(), message.size());
+}
+
+void UDPClient::sendMessage(const std::vector<uint8_t>& message)
+{
+    const char* data = reinterpret_cast<const char*>(message.data());
+    sendData(data, message.size());
 }
 
 // Send data using UDP

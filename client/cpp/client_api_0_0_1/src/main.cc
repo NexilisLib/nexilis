@@ -4,6 +4,7 @@
 #include <nexilis/client_api.hh>
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/af_unix/sock_stream/client.hh>
+#include <nexilis/log.hh>
 
 int main()
 {
@@ -32,6 +33,10 @@ int main()
     auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     inetUDP.start();
     inetUDP.sendMessage(serverData.getPassword());
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    auto id = nexilis::ClientAPI::Command::Get::clientId(api);
+    inetUDP.sendMessage(id);
 
     while(true){}
     

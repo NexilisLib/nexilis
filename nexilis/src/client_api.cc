@@ -87,7 +87,7 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
 /// ClientAPI
 ///
 
-ClientAPI::ClientAPI(ServerData data) : 
+ClientAPI::ClientAPI(ServerData data) :
     m_data(data)
 {
 }
@@ -169,7 +169,10 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                 {
                     auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
                     size_t id = Util::convertToType<size_t>(sizeVector);
-                    setClientId(&id);
+
+                    Log::info("CLIENT ID WHEN SETTING: ", id);
+
+                    setClientId(id);
 
                     // Maybe there should be some sort of verification here,
                     // to check that the id here is actually the same id than in the server.

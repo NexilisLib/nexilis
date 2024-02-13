@@ -33,19 +33,18 @@ public:
     {
     }
 
+    /// Move assignment operator.
     Client& operator=(Client&& other)
     {
-        if (this == &other)
+        if (this != &other)
         {
-            return *this;
+            m_ip_address = other.m_ip_address;
+            m_username = other.m_username;
+            m_id = other.m_id;
+            m_upd_port = other.m_upd_port;
+            m_hasRootAccess = other.m_hasRootAccess;
+            m_hasCommonAccess = other.m_hasCommonAccess;
         }
-
-        m_ip_address = other.m_ip_address;
-        m_username = other.m_username;
-        m_id = other.m_id;
-        m_upd_port = other.m_upd_port;
-        m_hasRootAccess = other.m_hasRootAccess;
-        m_hasCommonAccess = other.m_hasCommonAccess;
         return *this;
     }
 
@@ -55,6 +54,7 @@ public:
     /// Deleted copy assignment operator.
     Client& operator=(const Client& other) = delete;
 
+    /// Destructor.
     ~Client()
     {
     }

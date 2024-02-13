@@ -30,7 +30,7 @@ public:
         m_mode = mode;
     }
 
-    Mode getMode()
+    Mode getMode() const
     {
         return m_mode;
     }

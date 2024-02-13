@@ -185,6 +185,24 @@ public:
         std::string m_unixStreamServerPath;
     };
 
+    class Command
+    {
+    public:
+        class Get
+        {
+        public:
+            static std::vector<uint8_t> clientId(ClientAPI& api)
+            {
+                std::cout << "CLIENTID WHEN SENDING" << api.m_clientId << std::endl;
+                std::vector<uint8_t> clientIdVector = Util::convertToByteVector(api.m_clientId);
+                clientIdVector.push_back(0xFF);
+                clientIdVector.push_back(0x20);
+                clientIdVector.push_back(0x10);
+                return clientIdVector;
+            }
+        };
+    };
+
     /// Constructor.
     ClientAPI(ServerData data);
 
@@ -253,14 +271,14 @@ public:
 
     /// Setters.
 private:
-    void setClientId(size_t* id)
+    void setClientId(size_t id)
     {
         m_clientId = id;
     }
 
 private:
     ServerData m_data;
-    size_t* m_clientId;
+    size_t m_clientId;
 };
 
 }
