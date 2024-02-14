@@ -5,6 +5,7 @@
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/af_unix/sock_stream/client.hh>
 #include <nexilis/log.hh>
+#include <nexilis/packet.hh>
 
 int main()
 {
@@ -29,32 +30,31 @@ int main()
     }
     */
 
+    auto id = nexilis::Packet::Get::clientId(api);
     /// UDP
+    /*
     auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     inetUDP.start();
     inetUDP.sendMessage(serverData.getPassword());
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    auto id = nexilis::ClientAPI::Command::Get::clientId(api);
     inetUDP.sendMessage(id);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    */
 
-    while(true){}
-    
-    /*
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");
     boostTCP.start();
-    std::cout << "Server started!" << std::endl;
-    boostTCP.send(serverData.getPassword());
-
+    boostTCP.sendMessage(serverData.getPassword());
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    boostTCP.sendMessage(id);
+    
+    /*
     auto sockStream = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
     sockStream.start();
-
-    std::this_thread::sleep_for(std::chrono::seconds(60));
-    std::cout << "END TIMER" << std::endl;
-    boostTCP.stop();
     */
 
+    while(true){}
     return 0;
 }
 

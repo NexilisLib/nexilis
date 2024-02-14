@@ -29,6 +29,7 @@ set(SOURCES
     src/log.cc
     src/message_handler.cc
     src/server_manager.cc
+    src/packet.cc
     src/protocol.cc
     src/protocol_manager.cc
 

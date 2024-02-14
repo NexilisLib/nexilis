@@ -17,6 +17,7 @@ namespace nexilis::af_inet
 class UDPClient : public Protocol, public ClientProtocol
 {
 public:
+    /// Constructor.
     UDPClient(ClientAPI& api);
 
     /// Move constructor.
@@ -37,11 +38,7 @@ public:
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
 
-    // Send data using UDP
-    void sendData(const char* data, size_t dataSize);
-
-    std::vector<uint8_t> receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
-
+    /// Protocol::start() implementation.
     void start() override;
 
     /// Protocol::stop() implementation.
@@ -56,6 +53,12 @@ public:
 private:
     int createSocket();
     void receiveLoop();
+
+    /// Internal function for sending data.
+    void sendData(const char* data, size_t dataSize);
+
+    /// Internel function for receiving data (recvfrom).
+    std::vector<uint8_t> receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
 
 private:
     int m_clientSocket;

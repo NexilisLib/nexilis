@@ -70,6 +70,16 @@ void TCPClient::stop()
     }
 }
 
+void TCPClient::sendMessage(const std::string& message)
+{
+    send(message);
+}
+
+void TCPClient::sendMessage(const std::vector<uint8_t>& message)
+{
+    send(Util::convertToString(message));
+}
+
 bool TCPClient::connectToServer()
 {
     ::boost::asio::connect(m_socket, m_iterator);

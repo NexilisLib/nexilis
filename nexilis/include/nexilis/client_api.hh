@@ -185,24 +185,6 @@ public:
         std::string m_unixStreamServerPath;
     };
 
-    class Command
-    {
-    public:
-        class Get
-        {
-        public:
-            static std::vector<uint8_t> clientId(ClientAPI& api)
-            {
-                std::cout << "CLIENTID WHEN SENDING" << api.m_clientId << std::endl;
-                std::vector<uint8_t> clientIdVector = Util::convertToByteVector(api.m_clientId);
-                clientIdVector.push_back(0xFF);
-                clientIdVector.push_back(0x20);
-                clientIdVector.push_back(0x10);
-                return clientIdVector;
-            }
-        };
-    };
-
     /// Constructor.
     ClientAPI(ServerData data);
 
@@ -229,42 +211,47 @@ public:
 
 public:
     /// Getters.
-    std::string getClientPassword()
+    size_t getClientId() const
+    {
+        return m_clientId;
+    }
+
+    std::string getClientPassword() const
     {
         return m_data.getPassword();
     }
 
-    std::string getClientUserName()
+    std::string getClientUserName() const
     {
         return m_data.getUsername();
     }
 
-    std::string getInetUDPServerAddress()
+    std::string getInetUDPServerAddress() const
     {
         return m_data.getInetUDPServerAddress();
     }
 
-    uint16_t getInetUDPPortNumber()
+    uint16_t getInetUDPPortNumber() const
     {
         return m_data.getInetUDPServerPort();
     }
 
-    std::string getInetTCPServerAddress()
+    std::string getInetTCPServerAddress() const
     {
         return m_data.getInetTCPServerAddress();
     }
 
-    uint16_t getInetTCPPortNumber()
+    uint16_t getInetTCPPortNumber() const
     {
         return m_data.getInetTCPServerPort();
     }
 
-    std::string getUnixDgramPath()
+    std::string getUnixDgramPath() const
     {
         return m_data.getUnixDgramServerPath();
     }
 
-    std::string getUnixStreamPath()
+    std::string getUnixStreamPath() const
     {
         return m_data.getUnixStreamServerPath();
     }

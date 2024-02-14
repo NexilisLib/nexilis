@@ -2,13 +2,14 @@
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
 #include <nexilis/protocol.hh>
+#include <nexilis/client_protocol.hh>
 
 #include <boost/asio.hpp>
 
 namespace nexilis::boost
 {
 
-class TCPClient : public Protocol
+class TCPClient : public Protocol, public ClientProtocol
 {
 public:
     /// Constructor.
@@ -23,16 +24,25 @@ public:
     /// Move assignment operator.
     TCPClient& operator=(TCPClient&& other);
 
+    /// Deleted copy constructor.
     TCPClient(const TCPClient& other) = delete;
+
+    /// Deleted copy assignment operator.
     TCPClient& operator=(const TCPClient& other) = delete;
 
-    bool connectToServer();
-    bool send(const std::string& data);
-    bool receive(std::string& buffer);
-    
+    /// ClientProtocol::sendMessage(const std::string&) implementation.
+    void sendMessage(const std::string& message) override;
+
+    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
+    void sendMessage(const std::vector<uint8_t>& message) override;
+
+    /// Protocol::start() implementation.
     void start() override;
+
+    /// Protocol::stop() implementation.
     void stop() override;
 
+    /// Protocol::getType() implementation.
     Type getType() override
     {
         return Type::BOOST_TCP_CLIENT;
@@ -43,6 +53,9 @@ protected:
     std::thread m_receiveThread;
 private:
     void receiveLoop();
+    bool connectToServer();
+    bool send(const std::string& data);
+    bool receive(std::string& buffer);
 
     bool m_stopped = false;
 private:

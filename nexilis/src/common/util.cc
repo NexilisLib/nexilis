@@ -71,12 +71,20 @@ std::vector<uint8_t> Util::convertToByteVector(size_t value)
 {
     std::vector<uint8_t> result(sizeof(size_t));
 
-    for (size_t i = 0; i < sizeof(size_t); ++i)
+    if (Config::getBigEndian())
     {
-        // Extract the i-th byte and push it into the vector
-        result[i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
+        for (size_t i = 0; i < sizeof(size_t); ++i)
+        {
+            result[sizeof(size_t) - 1 - i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
+        }
     }
-
+    else
+    {
+        for (size_t i = 0; i < sizeof(size_t); ++i)
+        {
+            result[i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
+        }
+    }
     return result;
 }
 
