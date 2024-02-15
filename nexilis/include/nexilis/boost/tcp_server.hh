@@ -38,12 +38,14 @@ public:
 
     bool startListening();
     bool acceptClients();
-    bool sendToClient(const std::string& data);
 
     Type getType() override
     {
         return Type::BOOST_TCP_SERVER;
     }
+
+private:
+    bool sendToClient(const std::string& data, ::boost::asio::ip::tcp::socket& clientSocket);
 
 private:
     std::unique_ptr<std::mutex> m_mutex;

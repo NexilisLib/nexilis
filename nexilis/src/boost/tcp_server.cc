@@ -141,10 +141,17 @@ bool TCPServer::acceptClients()
                     Log::info("TCPServer Received from client: ", message);
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
-                    auto clientSender = [this](const std::vector<uint8_t>& bytes)
+                    auto clientSender = [this, &newSocket](const std::vector<uint8_t>& bytes)
                     {
                         std::string toString = Util::convertToString(bytes);
-                        sendToClient(toString);
+                        if (sendToClient(toString, newSocket))
+                        {
+                            Log::info("Sended message to client succesfully");
+                        }
+                        else
+                        {
+                            Log::error("Error sending message to client");
+                        }
                     };
 
                     bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, clientSender);
@@ -168,12 +175,13 @@ bool TCPServer::acceptClients()
     }
 }
 
-bool TCPServer::sendToClient(const std::string& data)
+bool TCPServer::sendToClient(const std::string& data, ::boost::asio::ip::tcp::socket& clientSocket)
 {
-    std::lock_guard<std::mutex> lock(*m_mutex);
-    if (m_socket.is_open())
+    Log::info("sendToClient called!");
+    if (clientSocket.is_open())
     {
-        ::boost::asio::write(m_socket, ::boost::asio::buffer(data));
+        Log::info("m_socket is open");
+        ::boost::asio::write(clientSocket, ::boost::asio::buffer(data));
         return true;
     }
     return false;

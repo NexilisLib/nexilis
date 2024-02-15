@@ -99,7 +99,9 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         data.push_back(idBytes[i]);
                     }
 
+                    Log::info("sending to client");
                     sendMessageToClient(data);
+                    Log::info("sent message to client");
                     return true;
                 }
                 default: return false;

@@ -57,7 +57,7 @@ private:
     /// Internal function for sending data.
     void sendData(const char* data, size_t dataSize);
 
-    /// Internel function for receiving data (recvfrom).
+    /// Internal function for receiving data (recvfrom).
     std::vector<uint8_t> receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
 
 private:

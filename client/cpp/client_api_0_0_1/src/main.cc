@@ -15,6 +15,7 @@ int main()
     nexilis::ClientAPI::ServerData serverData("salasana");
     serverData.setInetUDP("192.168.1.85", 54200);
     serverData.setInetTCP("192.168.1.85", 54300);
+    serverData.setBoostTCP("192.168.1.85", 12345);
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
@@ -41,7 +42,7 @@ int main()
     */
 
     // Boost TCP
-    auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>("192.168.1.85", "12345");
+    auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>(api);
     boostTCP.start();
     boostTCP.sendMessage(serverData.getPassword());
     std::this_thread::sleep_for(std::chrono::seconds(1));

@@ -3,6 +3,7 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/client_protocol.hh>
+#include <nexilis/client_api.hh>
 
 #include <boost/asio.hpp>
 
@@ -13,7 +14,7 @@ class TCPClient : public Protocol, public ClientProtocol
 {
 public:
     /// Constructor.
-    TCPClient(const std::string& serverIP, const std::string& serverPort);
+    TCPClient(ClientAPI& api);
 
     /// Destructor.
     ~TCPClient();
@@ -65,6 +66,8 @@ private:
     ::boost::asio::ip::tcp::resolver::iterator m_iterator;
 
     std::unique_ptr<std::mutex> m_mutex;
+
+    ClientAPI m_api;
 };
 
 } // namespace nexilis::boost

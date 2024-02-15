@@ -6,12 +6,16 @@
 namespace nexilis::boost
 {
 
-TCPClient::TCPClient(const std::string& serverIP, const std::string& serverPort) :
+TCPClient::TCPClient(ClientAPI& api) :
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_socket(*m_ioContext),
     m_resolver(*m_ioContext),
-    m_iterator(m_resolver.resolve({serverIP, serverPort})),
-    m_mutex(std::make_unique<std::mutex>())
+    m_iterator(m_resolver.resolve({ 
+        api.getBoostTCPServerAddress(), 
+        std::to_string(api.getBoostTCPServerPortNumber()) 
+    })),
+    m_mutex(std::make_unique<std::mutex>()),
+    m_api(api)
 {
 }
 
@@ -24,7 +28,8 @@ TCPClient::TCPClient(TCPClient&& other) :
     m_socket(std::move(other.m_socket)),
     m_resolver(std::move(other.m_resolver)),
     m_iterator(std::move(other.m_iterator)),
-    m_mutex(std::move(other.m_mutex))
+    m_mutex(std::move(other.m_mutex)),
+    m_api(std::move(other.m_api))
 {
     other.m_ioContext = nullptr;
     other.m_mutex = nullptr;
@@ -43,6 +48,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_resolver = std::move(other.m_resolver);
         m_iterator = std::move(other.m_iterator);
         m_mutex = std::move(other.m_mutex);
+        m_api = std::move(other.m_api);
 
         other.m_mutex = nullptr;
         other.m_ioContext = nullptr;
@@ -162,6 +168,8 @@ void TCPClient::receiveLoop()
             if (!buffer.empty())
             {
                 Log::error("Reveived from server: ", buffer);
+                auto message = Util::convertToByteVector(buffer.c_str(), buffer.size());
+                m_api.readMessage(message);
             }
             else
             {

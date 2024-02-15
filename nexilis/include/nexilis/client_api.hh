@@ -211,6 +211,8 @@ public:
 
 public:
     /// Getters.
+
+    /// General.
     size_t getClientId() const
     {
         return m_clientId;
@@ -226,6 +228,7 @@ public:
         return m_data.getUsername();
     }
 
+    /// af_inet UDP.
     std::string getInetUDPServerAddress() const
     {
         return m_data.getInetUDPServerAddress();
@@ -236,6 +239,7 @@ public:
         return m_data.getInetUDPServerPort();
     }
 
+    /// af_inet TCP.
     std::string getInetTCPServerAddress() const
     {
         return m_data.getInetTCPServerAddress();
@@ -246,11 +250,24 @@ public:
         return m_data.getInetTCPServerPort();
     }
 
+    /// boost TCP
+    std::string getBoostTCPServerAddress() const
+    {
+        return m_data.getBoostTCPServerAddress();
+    }
+
+    uint16_t getBoostTCPServerPortNumber() const
+    {
+        return m_data.getBoostTCPServerPort();
+    }
+
+    /// af_unix DGRAM.
     std::string getUnixDgramPath() const
     {
         return m_data.getUnixDgramServerPath();
     }
 
+    /// af_unix STREAM.
     std::string getUnixStreamPath() const
     {
         return m_data.getUnixStreamServerPath();
