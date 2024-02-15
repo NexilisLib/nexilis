@@ -24,20 +24,26 @@ public:
     /// Move assignment operator.
     TCPServer& operator=(TCPServer&& other);
 
+    /// Deleted move constructor.
     TCPServer(const TCPServer&) = delete;
+
+    /// Deleted move assignment operator.
     TCPServer& operator=(const TCPServer&) = delete;
+
+    /// Protocol::start() implementation.
+    void start() override;
+
+    /// Protocol::stop() implementation.
+    void stop() override;
 
     bool startListening();
     bool acceptClients();
     bool sendToClient(const std::string& data);
-    bool receiveFromClient(std::string& buffer);
 
     Type getType() override
     {
         return Type::BOOST_TCP_SERVER;
     }
-
-    void start() override;
 
 private:
     std::unique_ptr<std::mutex> m_mutex;
@@ -47,6 +53,7 @@ private:
     ::boost::asio::ip::tcp::socket m_socket;
 
     std::thread m_listenThread;
+    std::thread m_ioContextThread;
 };
 
 } // namespace nexilis::boost

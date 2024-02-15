@@ -27,7 +27,6 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
     return *this;
 }
 
-/// Destructor.
 UDPServer::~UDPServer()
 {
     if (m_receiveThread.joinable())

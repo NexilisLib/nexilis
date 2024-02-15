@@ -22,7 +22,8 @@ TCPServer::TCPServer(TCPServer&& other) :
     m_ioContext(std::move(other.m_ioContext)),
     m_acceptor(std::move(other.m_acceptor)),
     m_socket(std::move(other.m_socket)),
-    m_listenThread(std::move(other.m_listenThread))
+    m_listenThread(std::move(other.m_listenThread)),
+    m_ioContextThread(std::move(other.m_ioContextThread))
 {
 }
 
@@ -36,6 +37,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
         m_acceptor = std::move(other.m_acceptor);
         m_socket = std::move(other.m_socket);
         m_listenThread = std::move(other.m_listenThread);
+        m_ioContextThread = std::move(other.m_ioContextThread);
     }
     return *this;
 }
@@ -43,7 +45,30 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 TCPServer::~TCPServer()
 {
     m_socket.close();
+    stop();
+}
+
+void TCPServer::start()
+{
+    m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
     
+    m_listenThread = std::thread([this]()
+    {
+        if (startListening())
+        {
+            acceptClients();
+        }
+    });
+}
+
+void TCPServer::stop()
+{
+    m_ioContext->stop();
+
+    if (m_ioContextThread.joinable())
+    {
+        m_ioContextThread.join();
+    }
     if (m_listenThread.joinable())
     {
         m_listenThread.join();
@@ -60,6 +85,8 @@ bool TCPServer::acceptClients()
 {
     while (true)
     {
+        std::lock_guard<std::mutex> lock(*m_mutex);
+
         // Create a new socket for each client connection
         ::boost::asio::ip::tcp::socket newSocket(*m_ioContext);
         m_acceptor.accept(newSocket);
@@ -150,56 +177,6 @@ bool TCPServer::sendToClient(const std::string& data)
         return true;
     }
     return false;
-}
-
-void TCPServer::start()
-{
-    // TODO
-    // Continue here by creating the iocontext thread.
-    
-    m_listenThread = std::thread([this]()
-    {
-        if (startListening())
-        {
-            acceptClients();
-        }
-    });
-}
-
-bool TCPServer::receiveFromClient(std::string& buffer)
-{
-    ::boost::asio::streambuf receiveBuffer;
-
-    try
-    {
-        // Attempt to read data from the socket
-        size_t bytesRead = ::boost::asio::read_until(m_socket, receiveBuffer, '\n');
-
-        // If bytesRead is 0, the client has closed the connection
-        if (bytesRead == 0)
-        {
-            Log::info("Connection closed by client");
-            return false;
-        }
-
-        // Convert the received data to a string
-        std::istream is(&receiveBuffer);
-        std::getline(is, buffer);
-
-        return true;
-    }
-    catch (const ::boost::system::system_error& e)
-    {
-        // Handle boost::asio errors
-        Log::error("Error receiving data: ", e.what());
-        return false;
-    }
-    catch (const std::exception& e)
-    {
-        // Handle other exceptions
-        Log::error("Exception: ", e.what());
-        return false;
-    }
 }
 
 } // namespace nexilis::boost

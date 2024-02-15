@@ -256,8 +256,8 @@ public:
         return m_data.getUnixStreamServerPath();
     }
 
-    /// Setters.
 private:
+    /// Setters.
     void setClientId(size_t id)
     {
         m_clientId = id;
@@ -265,7 +265,7 @@ private:
 
 private:
     ServerData m_data;
-    size_t m_clientId;
+    size_t m_clientId = 0;
 };
 
 }

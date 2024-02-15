@@ -30,16 +30,14 @@ int main()
     }
     */
 
-    auto id = nexilis::Packet::Get::clientId(api);
     /// UDP
     /*
     auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     inetUDP.start();
     inetUDP.sendMessage(serverData.getPassword());
     std::this_thread::sleep_for(std::chrono::seconds(1));
-
+    auto id = nexilis::Packet::Get::clientId(api);
     inetUDP.sendMessage(id);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
     */
 
     // Boost TCP
@@ -47,9 +45,10 @@ int main()
     boostTCP.start();
     boostTCP.sendMessage(serverData.getPassword());
     std::this_thread::sleep_for(std::chrono::seconds(1));
+    auto id = nexilis::Packet::Get::clientId(api);
     boostTCP.sendMessage(id);
-    
-    /*
+
+    /* 
     auto sockStream = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
     sockStream.start();
     */
