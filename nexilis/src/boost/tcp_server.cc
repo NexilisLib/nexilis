@@ -180,7 +180,6 @@ bool TCPServer::sendToClient(const std::string& data, ::boost::asio::ip::tcp::so
     Log::info("sendToClient called!");
     if (clientSocket.is_open())
     {
-        Log::info("m_socket is open");
         ::boost::asio::write(clientSocket, ::boost::asio::buffer(data));
         return true;
     }

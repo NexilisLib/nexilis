@@ -7,6 +7,7 @@ namespace nexilis::boost
 {
 
 TCPClient::TCPClient(ClientAPI& api) :
+    ClientProtocol(&api),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_socket(*m_ioContext),
     m_resolver(*m_ioContext),
@@ -14,13 +15,13 @@ TCPClient::TCPClient(ClientAPI& api) :
         api.getBoostTCPServerAddress(), 
         std::to_string(api.getBoostTCPServerPortNumber()) 
     })),
-    m_mutex(std::make_unique<std::mutex>()),
-    m_api(api)
+    m_mutex(std::make_unique<std::mutex>())
 {
 }
 
 TCPClient::TCPClient(TCPClient&& other) :
     Protocol(std::move(other)),
+    ClientProtocol(std::move(other)),
     m_ioContextThread(std::move(other.m_ioContextThread)),
     m_receiveThread(std::move(other.m_receiveThread)),
     m_stopped(std::move(other.m_stopped)),
@@ -28,8 +29,7 @@ TCPClient::TCPClient(TCPClient&& other) :
     m_socket(std::move(other.m_socket)),
     m_resolver(std::move(other.m_resolver)),
     m_iterator(std::move(other.m_iterator)),
-    m_mutex(std::move(other.m_mutex)),
-    m_api(std::move(other.m_api))
+    m_mutex(std::move(other.m_mutex))
 {
     other.m_ioContext = nullptr;
     other.m_mutex = nullptr;
@@ -40,6 +40,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
     if (this != &other)
     {
         Protocol::operator=(std::move(other));
+        ClientProtocol::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
         m_stopped = std::move(other.m_stopped);
@@ -48,7 +49,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_resolver = std::move(other.m_resolver);
         m_iterator = std::move(other.m_iterator);
         m_mutex = std::move(other.m_mutex);
-        m_api = std::move(other.m_api);
 
         other.m_mutex = nullptr;
         other.m_ioContext = nullptr;
@@ -94,10 +94,14 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const std::string& data)
 {
+    Log::info("SEND CALLED");
+
     std::lock_guard<std::mutex> lock(*m_mutex);
+    Log::info("AFTER LOCK");
 
     if (m_socket.is_open())
     {
+        Log::info("SOCKET IS OPEN");
         // Asynchronously send data to the server
         ::boost::asio::async_write(m_socket, ::boost::asio::buffer(data),
             [this](const ::boost::system::error_code& error, std::size_t /*bytes_transferred*/)
@@ -167,9 +171,8 @@ void TCPClient::receiveLoop()
         {
             if (!buffer.empty())
             {
-                Log::error("Reveived from server: ", buffer);
                 auto message = Util::convertToByteVector(buffer.c_str(), buffer.size());
-                m_api.readMessage(message);
+                ClientProtocol::getClientAPI()->readMessage(message);
             }
             else
             {

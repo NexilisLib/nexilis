@@ -9,11 +9,10 @@ namespace nexilis::af_unix
 
 UnixSocketClient::UnixSocketClient(ClientAPI& api) :
     Protocol(),
-    m_api(api),
-    m_serverSocketPath(m_api.getUnixDgramPath())
+    ClientProtocol(&api),
+    m_serverSocketPath(api.getUnixDgramPath())
 {
     createSocket();
-    sendMessage(api.getClientPassword());
 }
 
 UnixSocketClient::~UnixSocketClient()
@@ -64,7 +63,7 @@ void UnixSocketClient::start()
 
         auto message = Util::convertToByteVector(data.c_str(), data.size());
 
-        m_api.readMessage(message);
+        ClientProtocol::getClientAPI()->readMessage(message);
     }
 }
 

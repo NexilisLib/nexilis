@@ -3,7 +3,6 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/client_protocol.hh>
-#include <nexilis/client_api.hh>
 
 #include <boost/asio.hpp>
 
@@ -66,8 +65,6 @@ private:
     ::boost::asio::ip::tcp::resolver::iterator m_iterator;
 
     std::unique_ptr<std::mutex> m_mutex;
-
-    ClientAPI m_api;
 };
 
 } // namespace nexilis::boost

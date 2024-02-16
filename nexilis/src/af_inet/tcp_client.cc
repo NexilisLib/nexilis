@@ -11,7 +11,7 @@ namespace nexilis::af_inet
 
 TCPClient::TCPClient(ClientAPI& api) : 
     Protocol(api.getInetTCPPortNumber()),
-    m_api(api)
+    ClientProtocol(&api)
 {
     m_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -22,9 +22,9 @@ TCPClient::TCPClient(ClientAPI& api) :
 
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));
     m_serverAddr.sin_family = AF_INET;
-    m_serverAddr.sin_port = htons(m_api.getInetTCPPortNumber());
+    m_serverAddr.sin_port = htons(ClientProtocol::getClientAPI()->getInetTCPPortNumber());
 
-    if (inet_pton(AF_INET, m_api.getInetTCPServerAddress().c_str(), &m_serverAddr.sin_addr) <= 0)
+    if (inet_pton(AF_INET, ClientProtocol::getClientAPI()->getInetTCPServerAddress().c_str(), &m_serverAddr.sin_addr) <= 0)
     {
         Log::critical("TCPClient: Invalid server address!");
     }

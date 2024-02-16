@@ -41,8 +41,6 @@ public:
     }
 
 private:
-    ClientAPI& m_api;
-
     int m_clientSocket;
     sockaddr_in m_serverAddr;
 };

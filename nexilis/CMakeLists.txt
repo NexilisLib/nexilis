@@ -26,6 +26,7 @@ set(SOURCES
     src/vector3.cc
     src/ports.cc
     src/client_storage.cc
+    src/client_protocol.cc
     src/log.cc
     src/message_handler.cc
     src/server_manager.cc

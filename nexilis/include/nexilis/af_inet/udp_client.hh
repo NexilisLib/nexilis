@@ -65,8 +65,6 @@ private:
     sockaddr_in m_serverAddr;
 
     std::thread m_receiverThread;
-
-    ClientAPI& m_api;
 };
 
 } // namespace nexilis::af_inet

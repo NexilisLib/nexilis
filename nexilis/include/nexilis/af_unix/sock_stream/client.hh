@@ -56,9 +56,6 @@ private:
     void connectToServer();
 
 private:
-    ClientAPI m_api;
-
-private:
     std::string m_serverSocketPath;
     int m_clientSocket;
     sockaddr_un m_serverAddr;

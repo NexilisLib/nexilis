@@ -41,9 +41,6 @@ private:
     void createSocket();
 
 private:
-    ClientAPI& m_api;
-
-private:
     // TODO create unixSocket.hh
     std::string m_serverSocketPath;
     int m_clientSocket;

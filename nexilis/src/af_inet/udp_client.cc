@@ -8,7 +8,8 @@ namespace nexilis::af_inet
 {
 
 UDPClient::UDPClient(ClientAPI& api) :
-    Protocol(api.getInetUDPPortNumber()), m_api(api)
+    Protocol(api.getInetUDPPortNumber()),
+    ClientProtocol(&api)
 {
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));
     m_serverAddr.sin_family = AF_INET;
@@ -23,10 +24,11 @@ UDPClient::UDPClient(ClientAPI& api) :
 }
 
 UDPClient::UDPClient(UDPClient&& other) :
+    Protocol(std::move(other)),
+    ClientProtocol(std::move(other)),
     m_clientSocket(std::move(other.m_clientSocket)),
     m_serverAddr(std::move(other.m_serverAddr)),
-    m_receiverThread(std::move(other.m_receiverThread)),
-    m_api(other.m_api)
+    m_receiverThread(std::move(other.m_receiverThread))
 {
 }
 
@@ -34,10 +36,11 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 {
     if (this != &other)
     {
+        Protocol::operator=(std::move(other));
+        ClientProtocol::operator=(std::move(other));
         m_clientSocket = std::move(other.m_clientSocket);
         m_serverAddr = std::move(other.m_serverAddr);
         m_receiverThread = std::move(other.m_receiverThread);
-        m_api = std::move(other.m_api);
     }
     return *this;
 }
@@ -109,7 +112,7 @@ void UDPClient::receiveLoop()
         socklen_t srcAddrLen;
 
         auto data = receiveData(&srcAddr, &srcAddrLen);
-        m_api.readMessage(data);
+        ClientProtocol::getClientAPI()->readMessage(data);
     }
 }
 
