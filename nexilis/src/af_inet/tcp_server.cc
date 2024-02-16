@@ -10,6 +10,13 @@
 namespace nexilis::af_inet
 {
 
+TCPServer::Client::Client(std::string address, uint16_t port, int socket) :
+    m_address(address),
+    m_port(port),
+    m_socket(socket)
+{
+}
+
 TCPServer::TCPServer(int serverPort)
 {
     m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -76,19 +83,19 @@ void TCPServer::start()
         char buffer[1024];
         auto client = acceptClient();
 
-        ssize_t bytesRead = read(client.socket, buffer, sizeof(buffer));
+        ssize_t bytesRead = read(client.getSocket(), buffer, sizeof(buffer));
 
         buffer[bytesRead] = '\0';
         std::string receivedData(buffer);
 
         if (bytesRead > 0)
         {
-            auto message = getMessageHandler().readMessage(client.address, receivedData, client.port, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(client.getAddress(), receivedData, client.getPort(), Command::getAuthentication());
 
             auto sendMsg = [this, &client, &buffer](const std::vector<uint8_t> data)
             {
                 (void)data;
-                sendToClient(client.socket, buffer, sizeof(buffer));
+                sendToClient(client.getSocket(), buffer, sizeof(buffer));
             };
 
             if (message.getClient())

@@ -12,11 +12,34 @@ namespace nexilis::af_inet
 class TCPServer : public Protocol
 {
 public:
-    struct Client
+    class Client
     {
-        std::string address;
-        uint16_t port;
-        int socket;
+    public:
+        /// Constructor.
+        Client(std::string address, uint16_t port, int socket);
+
+        /// Default constructor.
+        Client() = default;
+
+        std::string getAddress()
+        {
+            return m_address;
+        }
+
+        uint16_t getPort()
+        {
+            return m_port;
+        }
+
+        int getSocket()
+        {
+            return m_socket;
+        }
+
+    private:
+        std::string m_address;
+        uint16_t m_port;
+        int m_socket;
     };
 
     /// Constructor.
@@ -37,7 +60,7 @@ public:
     }
 
     void start() override;
-
+private:
     int m_serverSocket;
 
     sockaddr_in m_serverAddr;

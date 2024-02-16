@@ -93,7 +93,6 @@ void UDPClient::start()
     m_receiverThread = std::thread(&UDPClient::receiveLoop, this);
 }
 
-/// Protocol::stop() implementation.
 void UDPClient::stop()
 {
     // Join the thread when stopping

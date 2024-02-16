@@ -32,12 +32,8 @@ public:
     /// \param message The string message that is sent.
     virtual void sendMessage(const std::string& message) = 0;
 
-    /// Send message from client to server.
-    /// TODO Pure virtualize.
-    virtual void sendMessage(const std::vector<uint8_t>& message)
-    {
-        (void)message;
-    }
+    /// Send nexilis message (std::vector<uint8_t>) to server.
+    virtual void sendMessage(const std::vector<uint8_t>& message) = 0;
 
     ClientAPI* getClientAPI()
     {

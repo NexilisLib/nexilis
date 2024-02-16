@@ -22,8 +22,6 @@ public:
     /// Send message to the server.
     void sendMessage(const std::string& message) override;
 
-    std::string receiveMessage();
-
     /// Protocol::start() implementation.
     void start() override;
 
@@ -39,7 +37,7 @@ public:
 private:
     // Initialize sockets and stuff, TODO rename
     void createSocket();
-
+    std::string receiveMessage();
 private:
     // TODO create unixSocket.hh
     std::string m_serverSocketPath;
