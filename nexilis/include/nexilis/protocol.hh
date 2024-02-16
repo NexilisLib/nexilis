@@ -31,12 +31,7 @@ public:
     };
 
     /// Default constructor.
-    /// \note m_port has been initialized to -1.
-    Protocol();
-
-    /// Constructor.
-    /// \param port The port number for the protocol.
-    Protocol(uint32_t port);
+    Protocol() = default;
 
     /// Move constructor.
     Protocol(Protocol&& other);
@@ -61,11 +56,6 @@ public:
 
     virtual Type getType() = 0;
 
-    uint32_t getPort() const
-    {
-        return m_port;
-    };
-
 protected:
     MessageHandler& getMessageHandler()
     {
@@ -73,8 +63,6 @@ protected:
     }
 
 private:
-    // Internally -1 if protocol does not need port.
-    uint32_t m_port;
     MessageHandler m_messageHandler;
 };
 

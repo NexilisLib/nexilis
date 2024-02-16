@@ -12,7 +12,6 @@ namespace nexilis::af_unix::sock_stream
 {
 
 Server::Server(const std::string& socketPath) :
-    Protocol(),
     m_socketPath(socketPath)
 {
     m_buffer = new char[NEXILIS_BUFFER];

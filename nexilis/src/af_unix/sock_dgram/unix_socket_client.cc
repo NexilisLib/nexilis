@@ -8,7 +8,6 @@ namespace nexilis::af_unix
 {
 
 UnixSocketClient::UnixSocketClient(ClientAPI& api) :
-    Protocol(),
     ClientProtocol(&api),
     m_serverSocketPath(api.getUnixDgramPath())
 {

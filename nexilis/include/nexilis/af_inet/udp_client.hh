@@ -63,7 +63,6 @@ private:
 private:
     int m_clientSocket;
     sockaddr_in m_serverAddr;
-
     std::thread m_receiverThread;
 };
 

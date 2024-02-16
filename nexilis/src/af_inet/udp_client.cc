@@ -8,7 +8,6 @@ namespace nexilis::af_inet
 {
 
 UDPClient::UDPClient(ClientAPI& api) :
-    Protocol(api.getInetUDPPortNumber()),
     ClientProtocol(&api)
 {
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));

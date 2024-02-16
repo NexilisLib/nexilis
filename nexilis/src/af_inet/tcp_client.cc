@@ -10,7 +10,6 @@ namespace nexilis::af_inet
 {
 
 TCPClient::TCPClient(ClientAPI& api) : 
-    Protocol(api.getInetTCPPortNumber()),
     ClientProtocol(&api)
 {
     m_clientSocket = socket(AF_INET, SOCK_STREAM, 0);

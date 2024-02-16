@@ -11,7 +11,6 @@ namespace nexilis::af_inet
 {
 
 BaseUDPServer::BaseUDPServer(unsigned port) :
-    Protocol(port),
     m_running(std::make_unique<std::atomic<bool>>(false)),
     m_mtx(std::make_unique<std::mutex>()),
     m_condition(std::make_unique<std::condition_variable>())

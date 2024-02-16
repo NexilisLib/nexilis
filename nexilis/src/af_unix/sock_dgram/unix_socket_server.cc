@@ -18,7 +18,6 @@ namespace nexilis::af_unix
 static std::string path;
 
 UnixSocketServer::UnixSocketServer(const std::string& socketPath)
-    : Protocol(-1)
 {
     path = socketPath;
 

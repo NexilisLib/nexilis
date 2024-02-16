@@ -94,15 +94,9 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const std::string& data)
 {
-    Log::info("SEND CALLED");
-
-    std::lock_guard<std::mutex> lock(*m_mutex);
-    Log::info("AFTER LOCK");
-
     if (m_socket.is_open())
     {
-        Log::info("SOCKET IS OPEN");
-        // Asynchronously send data to the server
+        // Asynchronously send data to the server.
         ::boost::asio::async_write(m_socket, ::boost::asio::buffer(data),
             [this](const ::boost::system::error_code& error, std::size_t /*bytes_transferred*/)
             {

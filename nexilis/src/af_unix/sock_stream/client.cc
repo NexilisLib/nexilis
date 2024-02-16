@@ -10,7 +10,6 @@ namespace nexilis::af_unix::sock_stream
 {
 
 Client::Client(ClientAPI& clientApi) :
-    Protocol(),
     ClientProtocol(&clientApi),
     m_serverSocketPath(clientApi.getUnixStreamPath())
 {
