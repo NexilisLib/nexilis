@@ -138,6 +138,28 @@ bool ClientAPI::isInetTCPReady()
             getInetTCPPortNumber() != 0xFFFF;
 }
 
+bool ClientAPI::isBoostTCPReady()
+{
+    return m_clientId &&
+           !getBoostTCPServerAddress().empty() &&
+           getBoostTCPServerPortNumber() != 0xFFFF;
+}
+
+void ClientAPI::waitUntilInetUDPReady()
+{
+    while (!IsInetUDPReady()) {}
+}
+
+void ClientAPI::waitUntilInetTCPReady()
+{
+    while (!isInetTCPReady()) {}
+}
+
+void ClientAPI::waitUntilBoostTCPReady()
+{
+    while (!isBoostTCPReady()) {}
+}
+
 bool ClientAPI::isUnixDgramReady()
 {
     return m_clientId &&

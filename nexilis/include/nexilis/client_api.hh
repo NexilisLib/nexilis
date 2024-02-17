@@ -200,11 +200,26 @@ public:
     /// Deleted copy assignment.
     ClientAPI& operator=(const ClientAPI& other);
 
+    /// If the client UDP af_inet connection is ready.
     bool IsInetUDPReady();
 
+    /// If the client TCP af_inet connection is ready.
     bool isInetTCPReady();
 
+    /// If the client boost TCP connection is ready.
+    bool isBoostTCPReady();
+
+    /// If the client af_unix DGRAM connection is ready.
     bool isUnixDgramReady();
+    
+    /// Steal the runtime until af_inet UDP connection is ready.
+    void waitUntilInetUDPReady();
+
+    /// Steal the runtime until af_inet TCP connection is ready.
+    void waitUntilInetTCPReady();
+
+    /// Steal the runtime until boost TCP connection is ready.
+    void waitUntilBoostTCPReady();
 
     /// Read incoming message to client.
     bool readMessage(std::vector<uint8_t> message);

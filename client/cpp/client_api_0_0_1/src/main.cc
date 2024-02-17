@@ -45,7 +45,7 @@ int main()
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>(api);
     boostTCP.start();
     boostTCP.sendMessage(serverData.getPassword());
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    api.waitUntilBoostTCPReady();
     auto id = nexilis::Packet::Get::clientId(api);
     boostTCP.sendMessage(id);
 
