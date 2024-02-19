@@ -44,6 +44,24 @@ TCPServer::~TCPServer()
     close(m_serverSocket);
 }
 
+TCPServer::TCPServer(TCPServer&& other) :
+    Protocol(std::move(other)),
+    m_serverSocket(std::move(other.m_serverSocket)),
+    m_serverAddr(std::move(other.m_serverAddr))
+{
+}
+
+TCPServer& TCPServer::operator=(TCPServer&& other)
+{
+    if (this != &other)
+    {
+        Protocol::operator=(std::move(other));
+        m_serverSocket = std::move(other.m_serverSocket);
+        m_serverAddr = std::move(other.m_serverAddr);
+    }
+    return *this;
+}
+
 bool TCPServer::startListening()
 {
     return listen(m_serverSocket, ServerManager::getMaxAmountOfClients()) != 1;

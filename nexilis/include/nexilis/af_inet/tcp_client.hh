@@ -19,15 +19,20 @@ public:
     /// Destructor.
     ~TCPClient();
 
-    bool connectToServer();
+    /// Move constructor.
+    TCPClient(TCPClient&& other);
 
-    bool send(const char* data, size_t dataSize);
+    /// Move assignment operator.
+    TCPClient& operator=(TCPClient&& other);
 
-    bool receive(char* buffer, size_t bufferSize);
+    /// Deleted copy constructor.
+    TCPClient(const TCPClient& other) = delete;
 
-    void start() override
-    {
-    }
+    /// Deleted copy assigment operator.
+    TCPClient& operator=(const TCPClient& other) = delete;
+
+    /// Protocol::start() implementation.
+    void start() override;
 
     /// Protocol::stop() implementation.
     void stop() override
@@ -40,6 +45,16 @@ public:
         return Type::AF_INET_TCP_CLIENT;
     }
 
+    /// ClientProtocol::sendMessage(const std::string&) implementation.
+    void sendMessage(const std::string& message);
+
+    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
+    void sendMessage(const std::vector<uint8_t>& message);
+
+private:
+    bool connectToServer();
+    bool send(const char* data, size_t dataSize);
+    bool receive(char* buffer, size_t bufferSize);
 private:
     int m_clientSocket;
     sockaddr_in m_serverAddr;

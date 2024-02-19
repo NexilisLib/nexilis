@@ -52,6 +52,9 @@ public:
         static_assert(std::is_base_of<Protocol, T>::value,
                       "Type must be derived class of nexilis::Protocol");
 
+        // This is little hacky. I'd much rather prefer if this was std::move call.
+        // However this would require that the parameters cannot be references.
+        // So this is technically always move call and it works and the api is nice.
         auto protocol = T(std::forward<Args>(args)...);
         m_items.emplace_back(ProtocolData(protocol.getType()));
 

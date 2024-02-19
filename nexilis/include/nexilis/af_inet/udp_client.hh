@@ -32,12 +32,6 @@ public:
     /// Deleted copy assignment operator.
     UDPClient& operator=(const UDPClient& other) = delete;
 
-    /// ClientProtocol::sendMessage(const std::string&) implementation.
-    void sendMessage(const std::string& message) override;
-
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message) override;
-
     /// Protocol::start() implementation.
     void start() override;
 
@@ -49,6 +43,12 @@ public:
     {
         return Type::AF_INET_UDP_CLIENT;
     }
+
+    /// ClientProtocol::sendMessage(const std::string&) implementation.
+    void sendMessage(const std::string& message) override;
+
+    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
+    void sendMessage(const std::vector<uint8_t>& message) override;
 
 private:
     int createSocket();

@@ -67,6 +67,7 @@ void UDPClient::sendMessage(const std::vector<uint8_t>& message)
 }
 
 // Send data using UDP
+// TODO make this return boolean indicating success.
 void UDPClient::sendData(const char* data, size_t dataSize)
 {
     auto serverAddr = (const struct sockaddr*)&m_serverAddr;

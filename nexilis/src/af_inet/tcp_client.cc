@@ -34,6 +34,51 @@ TCPClient::~TCPClient()
     close(m_clientSocket);
 }
 
+TCPClient::TCPClient(TCPClient&& other) :
+    Protocol(std::move(other)),
+    ClientProtocol(std::move(other)),
+    m_clientSocket(std::move(other.m_clientSocket)),
+    m_serverAddr(std::move(other.m_serverAddr))
+{
+}
+
+TCPClient& TCPClient::operator=(TCPClient&& other)
+{
+    if (this != &other)
+    {
+        Protocol::operator=(std::move(other));
+        ClientProtocol::operator=(std::move(other));
+        m_clientSocket = std::move(other.m_clientSocket);
+        m_serverAddr = std::move(other.m_serverAddr);
+    }
+    return *this;
+}
+
+void TCPClient::start()
+{
+}
+
+void TCPClient::sendMessage(const std::string& message)
+{
+    bool sentMessage = send(message.c_str(), message.size());
+
+    if (!sentMessage)
+    {
+        Log::error("TCPClient: Error sending message");
+    }
+}
+
+void TCPClient::sendMessage(const std::vector<uint8_t>& message)
+{
+    const char* data = reinterpret_cast<const char*>(message.data());
+    bool sentMessage = send(data, message.size());
+
+    if (!sentMessage)
+    {
+        Log::error("TCPClient: Error sending message");
+    }
+}
+
 bool TCPClient::connectToServer()
 {
     return connect(m_clientSocket, (sockaddr*)&m_serverAddr, sizeof(m_serverAddr)) == 0;

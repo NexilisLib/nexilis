@@ -48,21 +48,33 @@ public:
     /// Destructor.
     ~TCPServer();
 
-    bool startListening();
+    /// Move constructor.
+    TCPServer(TCPServer&& other);
 
-    Client acceptClient();
+    /// Move assignment operator.
+    TCPServer& operator=(TCPServer&& other);
 
-    bool sendToClient(int clientSocket, const char* data, size_t dataSize);
+    /// Deleted copy constructor.
+    TCPServer(const TCPServer& other) = delete;
 
+    /// Deleted copy assignment operator.
+    TCPServer& operator=(const TCPServer& other) = delete;
+
+    /// Protocol::start() implementation.
+    void start() override;
+
+    /// Protocol::getType() implementation.
     Type getType() override
     {
         return Type::AF_INET_TCP_SERVER;
     }
 
-    void start() override;
+private:
+    bool startListening();
+    Client acceptClient();
+    bool sendToClient(int clientSocket, const char* data, size_t dataSize);
 private:
     int m_serverSocket;
-
     sockaddr_in m_serverAddr;
 };
 

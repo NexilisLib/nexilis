@@ -128,7 +128,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                 // Message from verified client that has no access.
                 else
                 {
-                    Log::error("Internal error");
+                    Log::error("Message from verified client that has no access");
                     return errorMessage;
                 }
             }
@@ -164,7 +164,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                 }
                 else
                 {
-                    Log::error("UNWANTED MESSAGE");
+                    Log::error("Unidentified client sends message other than password");
                     return errorMessage;
                 }
             }

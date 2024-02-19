@@ -304,7 +304,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Classname X
                 case 0x10:
                 {
-                    Log::critical("Error in place x");
+                    Log::critical("Internal server error: x");
                     return true;
                 }
                 default: return false;
