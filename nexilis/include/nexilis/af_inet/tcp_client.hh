@@ -7,6 +7,8 @@
 
 #include <netinet/in.h>
 
+#include <thread>
+
 namespace nexilis::af_inet
 {
 
@@ -55,9 +57,11 @@ private:
     bool connectToServer();
     bool send(const char* data, size_t dataSize);
     bool receive(char* buffer, size_t bufferSize);
+    void receiveLoop();
 private:
     int m_clientSocket;
     sockaddr_in m_serverAddr;
+    std::thread m_listenThread;
 };
 
 } // namespace nexilis::af_inet

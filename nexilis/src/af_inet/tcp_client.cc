@@ -32,13 +32,19 @@ TCPClient::TCPClient(ClientAPI& api) :
 TCPClient::~TCPClient()
 {
     close(m_clientSocket);
+
+    if (m_listenThread.joinable())
+    {
+        m_listenThread.join();
+    }
 }
 
 TCPClient::TCPClient(TCPClient&& other) :
     Protocol(std::move(other)),
     ClientProtocol(std::move(other)),
     m_clientSocket(std::move(other.m_clientSocket)),
-    m_serverAddr(std::move(other.m_serverAddr))
+    m_serverAddr(std::move(other.m_serverAddr)),
+    m_listenThread(std::move(other.m_listenThread))
 {
 }
 
@@ -50,12 +56,21 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         ClientProtocol::operator=(std::move(other));
         m_clientSocket = std::move(other.m_clientSocket);
         m_serverAddr = std::move(other.m_serverAddr);
+        m_listenThread = std::move(other.m_listenThread);
     }
     return *this;
 }
 
 void TCPClient::start()
 {
+    bool connectedToServer = connectToServer();
+
+    if (!connectedToServer)
+    {
+        Log::error("TCPClient: Couldn't connect to server");
+    }
+
+    m_listenThread = std::thread(&TCPClient::receiveLoop, this);
 }
 
 void TCPClient::sendMessage(const std::string& message)
@@ -93,6 +108,21 @@ bool TCPClient::receive(char* buffer, size_t bufferSize)
 {
     ssize_t bytesRead = read(m_clientSocket, buffer, bufferSize);
     return bytesRead > 0;
+}
+
+void TCPClient::receiveLoop()
+{
+    while (true)
+    {
+        char buffer[NEXILIS_BUFFER];
+        bool receivedData = receive(buffer, sizeof(buffer));
+
+        if (receivedData)
+        {
+            auto dataVector = Util::convertToByteVector(buffer, sizeof(buffer));
+            ClientProtocol::getClientAPI()->readMessage(dataVector);
+        }
+    }
 }
 
 }

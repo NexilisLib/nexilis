@@ -21,6 +21,7 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     /// af_inet UDP
+    /*
     auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     inetUDP.start();
     inetUDP.sendMessage(serverData.getPassword());
@@ -33,14 +34,17 @@ int main()
     boostTCP.start();
     api.waitUntilBoostTCPReady();
     boostTCP.sendMessage(id);
+    */
 
     // af_inet TCP
-    /* 
     auto inetTCP = protocolManager.createProtocol<nexilis::af_inet::TCPClient>(api);
     inetTCP.start();
+    inetTCP.sendMessage(serverData.getPassword());
     api.waitUntilInetTCPReady();
+    auto id = nexilis::Packet::Get::clientId(api);
     inetTCP.sendMessage(id);
 
+    /*
     auto sockStream = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
     sockStream.start();
     */

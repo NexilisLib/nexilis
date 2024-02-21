@@ -20,18 +20,18 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     // af_inet UDP
+    /*
     auto inetUDPServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
     inetUDPServer.start();
 
     // Boost TCP
     auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>("12345");
     boostTCPServer.start();
+    */
 
     // af_inet TCP
-    /*
     auto inetTCPServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
     inetTCPServer.start();
-    */
 
     return 0;
 }

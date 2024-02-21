@@ -24,6 +24,17 @@ TCPServer::TCPServer(int serverPort)
     if (m_serverSocket == -1)
     {
         Log::critical("TCPServer: Error creating socket");
+        close(m_serverSocket);
+        return;
+    }
+
+    // Set SO_REUSEADDR option.
+    int opt = 1;
+    if (setsockopt(m_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+    {
+        Log::critical("TCPServer: Error setting SO_REUSEADDR option, reason: ", std::strerror(errno));
+        close(m_serverSocket);
+        return;
     }
 
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));
@@ -31,12 +42,19 @@ TCPServer::TCPServer(int serverPort)
     m_serverAddr.sin_addr.s_addr = INADDR_ANY;
     m_serverAddr.sin_port = htons(serverPort);
 
-    if (bind(m_serverSocket, (sockaddr*)&m_serverAddr, sizeof(m_serverAddr)) == -1)
+    if (bind(m_serverSocket, reinterpret_cast<sockaddr*>(&m_serverAddr), sizeof(m_serverAddr)) == -1)
     {
-        Log::critical("TCPServer: Error binding socket");
+        Log::critical("TCPServer: Error binding socket, reason: ", std::strerror(errno));
+        close(m_serverSocket);
+        return;
     }
 
-    startListening();
+    if (!startListening())
+    {
+        Log::critical("TCPServer: Error listening on socket, reason: ", std::strerror(errno));
+        close(m_serverSocket);
+        return;
+    }
 }
 
 TCPServer::~TCPServer()
@@ -71,7 +89,7 @@ TCPServer::Client TCPServer::acceptClient()
 {
     sockaddr_in clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
-    int clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
+    int clientSocket = accept(m_serverSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 
     if (clientSocket == -1)
     {
@@ -82,11 +100,11 @@ TCPServer::Client TCPServer::acceptClient()
     Log::info("Client connected: ", inet_ntoa(clientAddr.sin_addr), ":", ntohs(clientAddr.sin_port));
 
     return Client
-    {
+    (
         inet_ntoa(clientAddr.sin_addr),
         ntohs(clientAddr.sin_port),
         clientSocket
-    };
+    );
 }
 
 bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize) 
@@ -96,9 +114,10 @@ bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize
 
 void TCPServer::start()
 {
+    // TODO this is blocking so fix this.
     while (true)
     {
-        char buffer[1024];
+        char buffer[NEXILIS_BUFFER];
         auto client = acceptClient();
 
         ssize_t bytesRead = read(client.getSocket(), buffer, sizeof(buffer));
