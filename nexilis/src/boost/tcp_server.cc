@@ -7,11 +7,11 @@
 namespace nexilis::boost
 {
 
-TCPServer::TCPServer(const std::string& serverPort) :
+TCPServer::TCPServer(int serverPort) :
     m_mutex(std::make_unique<std::mutex>()),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_acceptor(*m_ioContext,
-    ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(serverPort))),
+    ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
     m_socket(*m_ioContext)
 {
 }
@@ -110,7 +110,7 @@ bool TCPServer::acceptClients()
                     }
                     catch (const std::exception& e)
                     {
-                        std::cerr << "Error: " << e.what() << std::endl;
+                        Log::error("TCPServer: Error getting info from remote, reason: ", e.what());
                     }
 
                     // Receive data from the client

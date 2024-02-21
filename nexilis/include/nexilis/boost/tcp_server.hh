@@ -13,7 +13,7 @@ class TCPServer : public Protocol
 {
 public:
     /// Constructor.
-    TCPServer(const std::string& serverPort);
+    TCPServer(int serverPort);
 
     /// Destructor.
     ~TCPServer();

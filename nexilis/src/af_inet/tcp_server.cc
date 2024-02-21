@@ -55,17 +55,25 @@ TCPServer::TCPServer(int serverPort)
         close(m_serverSocket);
         return;
     }
+    m_mutex = std::make_unique<std::mutex>();
 }
 
 TCPServer::~TCPServer()
 {
     close(m_serverSocket);
+
+    if (m_operatingThread.joinable())
+    {
+        m_operatingThread.join();
+    }
 }
 
 TCPServer::TCPServer(TCPServer&& other) :
     Protocol(std::move(other)),
     m_serverSocket(std::move(other.m_serverSocket)),
-    m_serverAddr(std::move(other.m_serverAddr))
+    m_serverAddr(std::move(other.m_serverAddr)),
+    m_operatingThread(std::move(other.m_operatingThread)),
+    m_mutex(std::move(other.m_mutex))
 {
 }
 
@@ -76,6 +84,8 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
         Protocol::operator=(std::move(other));
         m_serverSocket = std::move(other.m_serverSocket);
         m_serverAddr = std::move(other.m_serverAddr);
+        m_operatingThread = std::move(other.m_operatingThread);
+        m_mutex = std::move(other.m_mutex);
     }
     return *this;
 }
@@ -114,7 +124,12 @@ bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize
 
 void TCPServer::start()
 {
-    // TODO this is blocking so fix this.
+    std::lock_guard<std::mutex> lock(*m_mutex);
+    m_operatingThread = std::thread(&TCPServer::operatingLoop, this);
+}
+
+void TCPServer::operatingLoop()
+{
     while (true)
     {
         char buffer[NEXILIS_BUFFER];
@@ -124,15 +139,16 @@ void TCPServer::start()
 
         buffer[bytesRead] = '\0';
         std::string receivedData(buffer);
+        receivedData.resize(bytesRead);
 
         if (bytesRead > 0)
         {
             auto message = getMessageHandler().readMessage(client.getAddress(), receivedData, client.getPort(), Command::getAuthentication());
 
-            auto sendMsg = [this, &client, &buffer](const std::vector<uint8_t> data)
+            auto sendMsg = [this, &client](const std::vector<uint8_t> data)
             {
-                (void)data;
-                sendToClient(client.getSocket(), buffer, sizeof(buffer));
+                auto charData = reinterpret_cast<const char*>(data.data());
+                sendToClient(client.getSocket(), charData, sizeof(charData));
             };
 
             if (message.getClient())

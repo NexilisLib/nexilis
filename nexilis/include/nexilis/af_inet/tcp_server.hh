@@ -6,6 +6,9 @@
 
 #include <netinet/in.h>
 
+#include <thread>
+#include <mutex>
+
 namespace nexilis::af_inet
 {
 
@@ -73,9 +76,12 @@ private:
     bool startListening();
     Client acceptClient();
     bool sendToClient(int clientSocket, const char* data, size_t dataSize);
+    void operatingLoop();
 private:
     int m_serverSocket;
     sockaddr_in m_serverAddr;
+    std::thread m_operatingThread;
+    std::unique_ptr<std::mutex> m_mutex;
 };
 
 }
