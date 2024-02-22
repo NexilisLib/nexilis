@@ -31,9 +31,6 @@ public:
     /// Deleted copy assignment.
     Server& operator=(const Server& other) = delete;
 
-    /// Read messages from a specified path.
-    void receiveMessage();
-
     /// Protocol start() implementation.
     void start() override;
 
@@ -51,11 +48,12 @@ public:
 private:
     void createSocket();
     void bindSocket();
+    void handleMessages();
 
 private:
     std::string m_socketPath;
     int m_serverSocket;
-    char* m_buffer;
+    std::vector<char> m_buffer;
     std::thread m_receiveThread;
 };
 

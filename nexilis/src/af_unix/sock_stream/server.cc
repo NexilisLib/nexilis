@@ -12,9 +12,9 @@ namespace nexilis::af_unix::sock_stream
 {
 
 Server::Server(const std::string& socketPath) :
-    m_socketPath(socketPath)
+    m_socketPath(socketPath),
+    m_buffer(NEXILIS_BUFFER)
 {
-    m_buffer = new char[NEXILIS_BUFFER];
     createSocket();
     bindSocket();
 }
@@ -27,7 +27,6 @@ Server::~Server()
     }
 
     close(m_serverSocket);
-    delete[] m_buffer;
 }
 
 Server::Server(Server&& other) :
@@ -56,7 +55,7 @@ void Server::start()
     {
         while (true)
         {
-            receiveMessage();
+            handleMessages();
         }
     });
 }
@@ -104,9 +103,9 @@ void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
     }
 }
 
-void Server::receiveMessage()
+void Server::handleMessages()
 {
-    memset(m_buffer, '\0', NEXILIS_BUFFER);
+    memset(m_buffer.data(), '\0', m_buffer.size());
 
     int clientSocket = accept(m_serverSocket, nullptr, nullptr);
     if (clientSocket == -1)
@@ -115,7 +114,7 @@ void Server::receiveMessage()
         close(m_serverSocket);
     }
 
-    ssize_t bytesRead = recv(clientSocket, m_buffer, sizeof(m_buffer), 0);
+    ssize_t bytesRead = recv(clientSocket, m_buffer.data(), m_buffer.size(), 0);
 
     if (bytesRead == -1)
     {
@@ -123,10 +122,9 @@ void Server::receiveMessage()
     }
     else
     {
-        m_buffer[bytesRead] = '\0';
-        std::cout << "Received message from client: " << m_buffer << std::endl;
-
-        auto msg = getMessageHandler().readMessage("", std::string(m_buffer), -1, Command::getAuthentication());
+        std::string strMsg = std::string(m_buffer.begin(), m_buffer.end());
+        strMsg.resize(bytesRead);
+        auto msg = getMessageHandler().readMessage("localhost", strMsg, -1, Command::getAuthentication());
 
         if (msg.getClient())
         {
@@ -137,16 +135,16 @@ void Server::receiveMessage()
 
             if (readCommand)
             {
-                std::cout << "Command read succesfully!" << std::endl;
+                Log::debug("af_unix::sock_stream::Server: Command read succesfully!");
             }
             else
             {
-                std::cerr << "Server message reading error!" << std::endl;
+                Log::error("af_unix::sock_stream::Server: Message reading error!");
             }
         }
         else
         {
-            std::cerr << "Message from unauthorized client!" << std::endl;
+            Log::error("af_unix::sock_stream::Server: Message from unauthorized client!");
         }
     }
 }
