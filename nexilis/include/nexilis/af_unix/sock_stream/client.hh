@@ -7,6 +7,9 @@
 
 #include <sys/un.h>
 
+#include <thread>
+#include <mutex>
+
 namespace nexilis::af_unix::sock_stream
 {
 
@@ -31,13 +34,6 @@ public:
     /// Deleted copy assignment operator.
     Client& operator=(const Client& other) = delete;
 
-    /// Send message to the server.
-    /// ClientProtocol::sendMessage implementation.
-    void sendMessage(const std::string& message) override;
-
-    /// Receive messages from the server.
-    std::vector<uint8_t> receiveMessage();
-
     /// Protocol::start() implementation.
     void start() override;
 
@@ -50,15 +46,28 @@ public:
         return Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT;
     }
 
+    /// Send message to the server.
+    /// ClientProtocol::sendMessage(const std::string&) implementation.
+    void sendMessage(const std::string& message) override;
+
+    /// Send message to the server.
+    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
+    void sendMessage(const std::vector<uint8_t>& message) override;
+
 private:
     // Initialize sockets and stuff.
     void createSocket();
     void connectToServer();
 
+    /// Receive messages from the server.
+    std::vector<uint8_t> receiveMessage();
+
 private:
     std::string m_serverSocketPath;
     int m_clientSocket;
     sockaddr_un m_serverAddr;
+    std::thread m_receiveThread;
+    std::unique_ptr<std::mutex> m_mutex;
 };
 
 }

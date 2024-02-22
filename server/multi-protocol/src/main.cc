@@ -19,6 +19,11 @@ int main()
 
     nexilis::ProtocolManager protocolManager;
 
+    // af_unix STREAM
+    auto unixServer = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Server>("/tmp/nexilis");
+    unixServer.start();
+
+    /*
     // af_inet TCP
     auto inetTCPServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
     inetTCPServer.start();
@@ -30,6 +35,7 @@ int main()
     // Boost TCP
     auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12345);
     boostTCPServer.start();
+    */
 
     return 0;
 }

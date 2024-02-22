@@ -145,6 +145,18 @@ bool ClientAPI::isBoostTCPReady()
            getBoostTCPServerPortNumber() != 0xFFFF;
 }
 
+bool ClientAPI::isUnixDgramReady()
+{
+    return  m_clientId &&
+            !m_data.getUnixDgramServerPath().empty();
+}
+
+bool ClientAPI::isUnixStreamReady()
+{
+    return  m_clientId != 0 &&
+            !getUnixStreamPath().empty();
+}
+
 void ClientAPI::waitUntilInetUDPReady()
 {
     while (!IsInetUDPReady()) {}
@@ -160,10 +172,14 @@ void ClientAPI::waitUntilBoostTCPReady()
     while (!isBoostTCPReady()) {}
 }
 
-bool ClientAPI::isUnixDgramReady()
+void ClientAPI::waitUntilUnixDgramReady()
 {
-    return m_clientId &&
-            !m_data.getUnixDgramServerPath().empty();
+    while (!isUnixDgramReady()) {}
+}
+
+void ClientAPI::waitUntilUnixStreamReady()
+{
+    while (!isUnixStreamReady()) {}
 }
 
 bool ClientAPI::readMessage(std::vector<uint8_t> message)

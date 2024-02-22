@@ -211,6 +211,9 @@ public:
 
     /// If the client af_unix DGRAM connection is ready.
     bool isUnixDgramReady();
+
+    /// If the client af_unix STREAM connection is ready.
+    bool isUnixStreamReady();
     
     /// Steal the runtime until af_inet UDP connection is ready.
     void waitUntilInetUDPReady();
@@ -220,6 +223,12 @@ public:
 
     /// Steal the runtime until boost TCP connection is ready.
     void waitUntilBoostTCPReady();
+
+    /// Steal the runtime until af_unix DGRAM connection is ready.
+    void waitUntilUnixDgramReady();
+
+    /// Steal the runtime until af_unix STREAM connection is ready.
+    void waitUntilUnixStreamReady();
 
     /// Read incoming message to client.
     bool readMessage(std::vector<uint8_t> message);

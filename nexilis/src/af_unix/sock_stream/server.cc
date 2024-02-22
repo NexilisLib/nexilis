@@ -78,11 +78,8 @@ void Server::bindSocket()
     strcpy(serverAddr.sun_path, m_socketPath.c_str());
 
     // Remove old socket file.
-    if (unlink(m_socketPath.c_str()) != 0)
-    {
-        perror("unlink");
-        std::cout << "Failed to unlink the socket file from " << m_socketPath << std::endl;
-    }
+    // This operation will fail if this is the first usage and it's okay.
+    unlink(m_socketPath.c_str());
 
     if (bind(m_serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
@@ -134,8 +131,9 @@ void Server::receiveMessage()
         if (msg.getClient())
         {
             bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this,
-                    [this, &clientSocket](const std::vector<uint8_t>& message) { sendMessage(clientSocket, message); }
-                    );
+                    [this, &clientSocket](const std::vector<uint8_t>& message) 
+                    { sendMessage(clientSocket, message); }
+            );
 
             if (readCommand)
             {

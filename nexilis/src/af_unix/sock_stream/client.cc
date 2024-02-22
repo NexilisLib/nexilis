@@ -1,6 +1,6 @@
-#include <cstdint>
 #include <nexilis/af_unix/sock_stream/client.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/log.hh>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -11,7 +11,8 @@ namespace nexilis::af_unix::sock_stream
 
 Client::Client(ClientAPI& clientApi) :
     ClientProtocol(&clientApi),
-    m_serverSocketPath(clientApi.getUnixStreamPath())
+    m_serverSocketPath(clientApi.getUnixStreamPath()),
+    m_mutex(std::make_unique<std::mutex>())
 {
     createSocket();
     connectToServer();
@@ -23,6 +24,11 @@ Client::~Client()
     {
         close(m_clientSocket);
     }
+
+    if (m_receiveThread.joinable())
+    {
+        m_receiveThread.join();
+    }
 }
 
 Client::Client(Client&& other) :
@@ -30,7 +36,9 @@ Client::Client(Client&& other) :
     ClientProtocol(std::move(other)),
     m_serverSocketPath(std::move(other.m_serverSocketPath)),
     m_clientSocket(std::move(other.m_clientSocket)),
-    m_serverAddr(std::move(other.m_serverAddr))
+    m_serverAddr(std::move(other.m_serverAddr)),
+    m_receiveThread(std::move(other.m_receiveThread)),
+    m_mutex(std::move(other.m_mutex))
 {
 }
 
@@ -43,6 +51,8 @@ Client& Client::operator=(Client&& other)
         m_serverSocketPath = std::move(other.m_serverSocketPath);
         m_clientSocket = std::move(other.m_clientSocket);
         m_serverAddr = std::move(other.m_serverAddr);
+        m_receiveThread = std::move(other.m_receiveThread);
+        m_mutex = std::move(other.m_mutex);
     }
     return *this;
 }
@@ -60,6 +70,7 @@ void Client::createSocket()
 
 void Client::connectToServer()
 {
+    std::lock_guard<std::mutex> lock(*m_mutex);
     m_serverAddr.sun_family = AF_UNIX;
     strcpy(m_serverAddr.sun_path, m_serverSocketPath.c_str());
 
@@ -67,28 +78,48 @@ void Client::connectToServer()
     {
         perror("connect");
         close(m_clientSocket);
+        m_clientSocket = -1;
     }
 }
 
 void Client::sendMessage(const std::string& message)
 {
-    std::cout << "Sending message to : " << m_serverAddr.sun_path << std::endl;
+    std::lock_guard<std::mutex> lock(*m_mutex);
+    Log::debug("af_unix::sock_stream::Client: Sending message to : ", m_serverAddr.sun_path);
 
     ssize_t sentBytes = send(m_clientSocket, message.c_str(), message.size(), 0);
 
     if (sentBytes == -1)
     {
+        Log::error("af_unix::sock_stream::Client: Error sending message");
+        perror("send");
+    }
+}
+
+void Client::sendMessage(const std::vector<uint8_t>& message)
+{
+    std::lock_guard<std::mutex> lock(*m_mutex);
+    Log::debug("af_unix::sock_stream::Client: Sending message to : ", m_serverAddr.sun_path);
+
+    ssize_t sentBytes = send(m_clientSocket, message.data(), message.size(), 0);
+
+    if (sentBytes == -1)
+    {
+        Log::error("af_unix::sock_stream::Client: Error sending message");
         perror("send");
     }
 }
 
 void Client::start()
 {
-    while (true)
+    m_receiveThread = std::thread([this]()
     {
-        auto data = receiveMessage();
-        ClientProtocol::getClientAPI()->readMessage(data);
-    }
+        while (true)
+        {
+            auto data = receiveMessage();
+            ClientProtocol::getClientAPI()->readMessage(data);
+        }
+    });
 }
 
 void Client::stop()
@@ -98,6 +129,7 @@ void Client::stop()
 
 std::vector<uint8_t> Client::receiveMessage()
 {
+    std::lock_guard<std::mutex> lock(*m_mutex);
     // Receive buffer.
     std::vector<uint8_t> receivedData(NEXILIS_BUFFER);
 
@@ -108,6 +140,7 @@ std::vector<uint8_t> Client::receiveMessage()
     {
         perror("recv");
         close(m_clientSocket);
+        m_clientSocket = -1;
     }
 
     receivedData.resize(bytesRead);

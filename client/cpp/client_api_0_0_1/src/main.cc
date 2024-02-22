@@ -16,18 +16,32 @@ int main()
     serverData.setInetUDP("192.168.1.85", 54200);
     serverData.setInetTCP("192.168.1.85", 54300);
     serverData.setBoostTCP("192.168.1.85", 12345);
+    serverData.setUnixStreamServerPath("/tmp/nexilis");
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
 
     /// af_inet UDP
+    /*
     auto inetUDP = protocolManager.createProtocol<nexilis::af_inet::UDPClient>(api);
     inetUDP.start();
     inetUDP.sendMessage(serverData.getPassword());
     api.waitUntilInetUDPReady();
     auto id = nexilis::Packet::Get::clientId(api);
     inetUDP.sendMessage(id);
+    */
 
+    // af_unix STREAM
+    auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
+    unixClient.start();
+    unixClient.sendMessage(serverData.getPassword());
+    api.waitUntilUnixStreamReady();
+    auto id = nexilis::Packet::Get::clientId(api);
+    std::cout << "Ready for id command" << std::endl;
+    //unixClient.sendMessage(id);
+    unixClient.sendMessage("moika");
+
+    /*
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>(api);
     boostTCP.start();
@@ -40,11 +54,8 @@ int main()
     inetTCP.sendMessage(serverData.getPassword());
     api.waitUntilInetTCPReady();
     inetTCP.sendMessage(id);
-
-    /*
-    auto sockStream = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
-    sockStream.start();
     */
+
 
     while(true){}
     return 0;
