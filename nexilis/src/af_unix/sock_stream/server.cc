@@ -103,6 +103,49 @@ void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
     }
 }
 
+std::string Server::receiveMessage(int socket)
+{
+    std::string message;
+    char buffer[NEXILIS_BUFFER];
+    ssize_t bytesRead;
+
+    while (true)
+    {
+        bytesRead = recv(socket, buffer, sizeof(buffer), 0);
+
+        if (bytesRead > 0)
+        {
+            message.append(buffer, bytesRead);
+
+            // Check if the message contains the null terminator.
+            size_t nullPos = message.find('\0');
+
+            if (nullPos != std::string::npos)
+            {
+                return message.substr(0, nullPos);
+            }
+            else
+            {
+                Log::error("af_unix::sock_stream::Server: Received message that does" ,
+                " not contain the null-termination character");
+                break;
+            }
+        }
+
+        else if (bytesRead == 0)
+        {
+            Log::info("af_unix::sock_stream::Server: Connection closed by peer");
+            break;
+        }
+        else
+        {
+            Log::error("af_unix::sock_stream::Server: Error receiving message");
+            break;
+        }
+    }
+    return "";
+}
+
 void Server::handleMessages()
 {
     memset(m_buffer.data(), '\0', m_buffer.size());
@@ -114,37 +157,38 @@ void Server::handleMessages()
         close(m_serverSocket);
     }
 
-    ssize_t bytesRead = recv(clientSocket, m_buffer.data(), m_buffer.size(), 0);
-
-    if (bytesRead == -1)
+    while (true)
     {
-        perror("recv");
-    }
-    else
-    {
-        std::string strMsg = std::string(m_buffer.begin(), m_buffer.end());
-        strMsg.resize(bytesRead);
-        auto msg = getMessageHandler().readMessage("localhost", strMsg, -1, Command::getAuthentication());
+        std::string message = receiveMessage(clientSocket);
 
-        if (msg.getClient())
+        if (message == "")
         {
-            bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this,
-                    [this, &clientSocket](const std::vector<uint8_t>& message) 
-                    { sendMessage(clientSocket, message); }
-            );
-
-            if (readCommand)
-            {
-                Log::debug("af_unix::sock_stream::Server: Command read succesfully!");
-            }
-            else
-            {
-                Log::error("af_unix::sock_stream::Server: Message reading error!");
-            }
+            break;
         }
         else
         {
-            Log::error("af_unix::sock_stream::Server: Message from unauthorized client!");
+            auto msg = getMessageHandler().readMessage("localhost", message, -1, Command::getAuthentication());
+
+            if (msg.getClient())
+            {
+                bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this,
+                        [this, &clientSocket](const std::vector<uint8_t>& message) 
+                        { sendMessage(clientSocket, message); }
+                );
+
+                if (readCommand)
+                {
+                    Log::debug("af_unix::sock_stream::Server: Command read succesfully!");
+                }
+                else
+                {
+                    Log::error("af_unix::sock_stream::Server: Message reading error!");
+                }
+            }
+            else
+            {
+                Log::error("af_unix::sock_stream::Server: Message from unauthorized client!");
+            }
         }
     }
 }

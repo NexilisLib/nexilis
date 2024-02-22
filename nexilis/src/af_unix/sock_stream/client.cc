@@ -84,10 +84,11 @@ void Client::connectToServer()
 
 void Client::sendMessage(const std::string& message)
 {
-    std::lock_guard<std::mutex> lock(*m_mutex);
     Log::debug("af_unix::sock_stream::Client: Sending message to : ", m_serverAddr.sun_path);
 
-    ssize_t sentBytes = send(m_clientSocket, message.c_str(), message.size(), 0);
+    std::string realMsg = message + '\0';
+
+    ssize_t sentBytes = send(m_clientSocket, realMsg.c_str(), realMsg.size(), 0);
 
     if (sentBytes == -1)
     {
@@ -98,10 +99,12 @@ void Client::sendMessage(const std::string& message)
 
 void Client::sendMessage(const std::vector<uint8_t>& message)
 {
-    std::lock_guard<std::mutex> lock(*m_mutex);
     Log::debug("af_unix::sock_stream::Client: Sending message to : ", m_serverAddr.sun_path);
 
-    ssize_t sentBytes = send(m_clientSocket, message.data(), message.size(), 0);
+    std::vector<uint8_t> realMsg = message;
+    realMsg.push_back('\0');
+    
+    ssize_t sentBytes = send(m_clientSocket, realMsg.data(), realMsg.size(), 0);
 
     if (sentBytes == -1)
     {

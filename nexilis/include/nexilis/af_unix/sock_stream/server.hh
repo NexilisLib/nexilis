@@ -49,6 +49,7 @@ private:
     void createSocket();
     void bindSocket();
     void handleMessages();
+    std::string receiveMessage(int socket);
 
 private:
     std::string m_socketPath;

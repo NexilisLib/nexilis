@@ -35,16 +35,10 @@ int main()
     auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
     unixClient.start();
     unixClient.sendMessage(serverData.getPassword());
-    //api.waitUntilUnixStreamReady();
+    api.waitUntilUnixStreamReady();
     std::cout << "UNIX READY" << std::endl;
-    //auto id = nexilis::Packet::Get::clientId(api);
-    //unixClient.sendMessage(id);
-    /*
-    unixClient.sendMessage("nii");
-    unixClient.sendMessage("nii");
-    unixClient.sendMessage("nii");
-    unixClient.sendMessage("nii");
-    */
+    auto id = nexilis::Packet::Get::clientId(api);
+    unixClient.sendMessage(id);
 
     /*
     // Boost TCP
