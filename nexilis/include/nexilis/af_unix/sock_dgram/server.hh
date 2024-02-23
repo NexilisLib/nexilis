@@ -1,28 +1,23 @@
 #ifndef NEXILIS_UNIX_SOCKET_SERVER_HH
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
-#include <nexilis/message_handler.hh>
 #include <nexilis/protocol.hh>
-#include <string>
 
-namespace nexilis::af_unix
+namespace nexilis::af_unix::sock_dgram
 {
 
-class UnixSocketServer : public Protocol
+class Server : public Protocol
 {
 public:
     /// Constructor.
-    UnixSocketServer(const std::string& socketPath);
+    Server(const std::string& socketPath);
 
     /// Destructor.
-    ~UnixSocketServer();
-
-    // Read messages from the specified path.
-    void receiveMessage();
+    ~Server();
 
     void start() override
     {
-        while(true)
+        while (true)
         {
             receiveMessage();
         }
@@ -38,15 +33,16 @@ public:
     }
 
 private:
+    void createSocket();
+    void bindSocket();
+    void receiveMessage();
+    static void signalHandler(int signum);
+private:
     int m_serverSocket;
     int m_bufferSize;
     char* m_buffer;
-
-    void createSocket();
-    void bindSocket();
-    static void signalHandler(int signum);
 };
 
-} // namespace nexilis::af_unix
+} // namespace nexilis::af_unix::sock_dgram
 
 #endif

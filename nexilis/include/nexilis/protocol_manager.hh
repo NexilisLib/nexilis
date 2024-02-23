@@ -1,9 +1,6 @@
 #ifndef NEXILIS_CONNECTION_MANAGER_HH
 #define NEXILIS_CONNECTION_MANAGER_HH
 
-#include <nexilis/af_inet/udp_server.hh>
-#include <nexilis/af_inet/udp_client.hh>
-#include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
 #include <nexilis/protocol.hh>
 
 #include <unordered_map>

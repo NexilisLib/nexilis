@@ -5,6 +5,7 @@
 #include <nexilis/af_inet/tcp_server.hh>
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/af_unix/sock_stream/server.hh>
+#include <nexilis/af_unix/sock_dgram/server.hh>
 
 int main()
 {
@@ -20,8 +21,14 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     // af_unix STREAM
+    /*
     auto unixServer = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Server>("/tmp/nexilis");
     unixServer.start();
+    */
+
+    // af_unix DGRAM
+    //auto unixServer = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Server>("/tmp/nexilis/dgram");
+    //unixServer.start();
 
     /*
     // af_inet TCP

@@ -34,9 +34,8 @@ set(SOURCES
     src/protocol.cc
     src/protocol_manager.cc
 
-    src/af_unix/sock_dgram/unix_socket_server.cc
-    src/af_unix/sock_dgram/unix_socket_sender.cc
-    src/af_unix/sock_dgram/unix_socket_client.cc
+    src/af_unix/sock_dgram/server.cc
+    src/af_unix/sock_dgram/client.cc
 
     src/af_unix/sock_stream/server.cc
     src/af_unix/sock_stream/client.cc
@@ -51,7 +50,6 @@ set(SOURCES
     src/boost/tcp_server.cc
 
     src/client_api.cc
-    src/common/af_inet_udp_sender.cc
     src/common/util.cc
     )
 

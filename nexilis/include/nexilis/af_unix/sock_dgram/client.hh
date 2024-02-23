@@ -7,17 +7,17 @@
 
 #include <sys/un.h>
 
-namespace nexilis::af_unix
+namespace nexilis::af_unix::sock_dgram
 {
 
-class UnixSocketClient : public Protocol, public ClientProtocol
+class Client : public Protocol, public ClientProtocol
 {
 public:
     /// Constructor.
-    UnixSocketClient(ClientAPI& api);
+    Client(ClientAPI& api);
 
     /// Destructor.
-    ~UnixSocketClient();
+    ~Client();
 
     /// Send message to the server.
     void sendMessage(const std::string& message) override;
@@ -43,6 +43,6 @@ private:
     struct sockaddr_un m_serverAddr;
 };
 
-}
+} // nexilis::af_unix::sock_dgram
 
 #endif

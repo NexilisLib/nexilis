@@ -1,4 +1,4 @@
-#include <nexilis/af_unix/sock_dgram/unix_socket_server.hh>
+#include <nexilis/af_unix/sock_dgram/server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
 
@@ -11,13 +11,13 @@
 
 #include <csignal>
 
-namespace nexilis::af_unix
+namespace nexilis::af_unix::sock_dgram
 {
 
 /// The file path we are reading messages from.
 static std::string path;
 
-UnixSocketServer::UnixSocketServer(const std::string& socketPath)
+Server::Server(const std::string& socketPath)
 {
     path = socketPath;
 
@@ -30,14 +30,14 @@ UnixSocketServer::UnixSocketServer(const std::string& socketPath)
 }
 
 /// Destructor.
-UnixSocketServer::~UnixSocketServer()
+Server::~Server()
 {
     close(m_serverSocket);
     delete[] m_buffer;
 }
 
 // Read messages.
-void UnixSocketServer::receiveMessage()
+void Server::receiveMessage()
 {
     struct sockaddr_un clientAddress;
     socklen_t clientAddressLen = sizeof(clientAddress);
@@ -109,7 +109,7 @@ void UnixSocketServer::receiveMessage()
     }
 }
 
-void UnixSocketServer::createSocket()
+void Server::createSocket()
 {
     m_serverSocket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_serverSocket == -1)
@@ -119,7 +119,7 @@ void UnixSocketServer::createSocket()
     }
 }
 
-void UnixSocketServer::bindSocket()
+void Server::bindSocket()
 {
     struct sockaddr_un serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -142,7 +142,7 @@ void UnixSocketServer::bindSocket()
     }
 }
 
-void UnixSocketServer::signalHandler(int signum)
+void Server::signalHandler(int signum)
 {
     if (signum == SIGINT)
     {
@@ -159,4 +159,4 @@ void UnixSocketServer::signalHandler(int signum)
     }
 }
 
-} // namespace nexilis::af_unix
+} // namespace nexilis::af_unix::sock_dgram

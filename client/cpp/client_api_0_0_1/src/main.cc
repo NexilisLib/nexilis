@@ -4,6 +4,7 @@
 #include <nexilis/client_api.hh>
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/af_unix/sock_stream/client.hh>
+#include <nexilis/af_unix/sock_dgram/client.hh>
 #include <nexilis/log.hh>
 #include <nexilis/packet.hh>
 
@@ -17,6 +18,7 @@ int main()
     serverData.setInetTCP("192.168.1.85", 54300);
     serverData.setBoostTCP("192.168.1.85", 12345);
     serverData.setUnixStreamServerPath("/tmp/nexilis");
+    serverData.setUnixDgramServerPath("/tmp/nexilis/dgram");
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
@@ -32,6 +34,7 @@ int main()
     */
 
     // af_unix STREAM
+    /*
     auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_stream::Client>(api);
     unixClient.start();
     unixClient.sendMessage(serverData.getPassword());
@@ -39,6 +42,10 @@ int main()
     std::cout << "UNIX READY" << std::endl;
     auto id = nexilis::Packet::Get::clientId(api);
     unixClient.sendMessage(id);
+    */
+
+    // af_unix DGRAM
+    //auto unixClient = protocolManager.createProtocol<nexilis::af_unix::Client>();
 
     /*
     // Boost TCP

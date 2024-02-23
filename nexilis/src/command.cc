@@ -2,7 +2,6 @@
 #include <nexilis/command_type.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/command.hh>
-#include <nexilis/dispatcher.hh>
 #include <nexilis/log.hh>
 
 #include <nexilis/common/util.hh>

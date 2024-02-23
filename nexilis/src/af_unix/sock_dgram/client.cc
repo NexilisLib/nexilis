@@ -1,20 +1,20 @@
 #include <cstdlib>
-#include <nexilis/af_unix/sock_dgram/unix_socket_client.hh>
+#include <nexilis/af_unix/sock_dgram/client.hh>
 
 #include <sys/socket.h>
 #include <unistd.h>
 
-namespace nexilis::af_unix
+namespace nexilis::af_unix::sock_dgram
 {
 
-UnixSocketClient::UnixSocketClient(ClientAPI& api) :
+Client::Client(ClientAPI& api) :
     ClientProtocol(&api),
     m_serverSocketPath(api.getUnixDgramPath())
 {
     createSocket();
 }
 
-UnixSocketClient::~UnixSocketClient()
+Client::~Client()
 {
     if (m_clientSocket != -1)
     {
@@ -22,7 +22,7 @@ UnixSocketClient::~UnixSocketClient()
     }
 }
 
-void UnixSocketClient::sendMessage(const std::string& message)
+void Client::sendMessage(const std::string& message)
 {
     std::cout << "SENDING MESSAGE: " << m_serverAddr.sun_path << std::endl;
 
@@ -36,7 +36,7 @@ void UnixSocketClient::sendMessage(const std::string& message)
     }
 }
 
-std::string UnixSocketClient::receiveMessage()
+std::string Client::receiveMessage()
 {
     char buffer[1024];
     ssize_t bytesRead = recvfrom(m_clientSocket, buffer, sizeof(buffer), 0, nullptr, nullptr);
@@ -53,7 +53,7 @@ std::string UnixSocketClient::receiveMessage()
     return "";
 }
 
-void UnixSocketClient::start()
+void Client::start()
 {
     while (true)
     {
@@ -66,11 +66,11 @@ void UnixSocketClient::start()
     }
 }
 
-void UnixSocketClient::stop()
+void Client::stop()
 {
 }
 
-void UnixSocketClient::createSocket()
+void Client::createSocket()
 {
     m_clientSocket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_clientSocket == -1)
@@ -87,4 +87,4 @@ void UnixSocketClient::createSocket()
     std::cout << "address family: " << m_serverAddr.sun_family << std::endl;
 }
 
-}
+} // nexilis::af_unix::sock_dgram
