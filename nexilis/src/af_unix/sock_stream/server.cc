@@ -65,7 +65,7 @@ void Server::createSocket()
     m_serverSocket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (m_serverSocket == -1)
     {
-        perror("socket");
+        Log::error(logName(), "Couldn't create socket");
     }
 }
 
@@ -82,13 +82,13 @@ void Server::bindSocket()
 
     if (bind(m_serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
-        perror("bind");
+        Log::error(logName(), "Failed to bind socket");
         close(m_serverSocket);
     }
 
     if (listen(m_serverSocket, ServerManager::getMaxAmountOfClients()) == -1)
     {
-        perror("listen");
+        Log::error(logName(), "Failed to listen to socket");
         close(m_serverSocket);
     }
 }
@@ -99,7 +99,7 @@ void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
 
     if (sentBytes == -1)
     {
-        perror("send");
+        Log::error(logName(), "Failed to send message");
     }
 }
 
@@ -126,7 +126,7 @@ std::string Server::receiveMessage(int socket)
             }
             else
             {
-                Log::error("af_unix::sock_stream::Server: Received message that does" ,
+                Log::error(logName(), "Received message that does" ,
                 " not contain the null-termination character");
                 break;
             }
@@ -134,12 +134,12 @@ std::string Server::receiveMessage(int socket)
 
         else if (bytesRead == 0)
         {
-            Log::info("af_unix::sock_stream::Server: Connection closed by peer");
+            Log::info(logName(), "Connection closed by peer");
             break;
         }
         else
         {
-            Log::error("af_unix::sock_stream::Server: Error receiving message");
+            Log::error(logName(), "Error receiving message");
             break;
         }
     }
@@ -153,7 +153,7 @@ void Server::handleMessages()
     int clientSocket = accept(m_serverSocket, nullptr, nullptr);
     if (clientSocket == -1)
     {
-        perror("accept");
+        Log::error(logName(), "Failed to accept connection");
         close(m_serverSocket);
     }
 
@@ -178,16 +178,16 @@ void Server::handleMessages()
 
                 if (readCommand)
                 {
-                    Log::debug("af_unix::sock_stream::Server: Command read succesfully!");
+                    Log::debug(logName(), "Command read succesfully!");
                 }
                 else
                 {
-                    Log::error("af_unix::sock_stream::Server: Message reading error!");
+                    Log::error(logName(), "Message reading error!");
                 }
             }
             else
             {
-                Log::error("af_unix::sock_stream::Server: Message from unauthorized client!");
+                Log::error(logName(), "Message from unauthorized client!");
             }
         }
     }

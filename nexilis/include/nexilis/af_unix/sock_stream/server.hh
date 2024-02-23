@@ -43,13 +43,12 @@ public:
         return Type::AF_UNIX_SOCK_STREAM_SERVER;
     }
 
-    void sendMessage(int clientSocket, const std::vector<uint8_t>& message);
-
 private:
     void createSocket();
     void bindSocket();
     void handleMessages();
     std::string receiveMessage(int socket);
+    void sendMessage(int clientSocket, const std::vector<uint8_t>& message);
 
 private:
     std::string m_socketPath;

@@ -62,6 +62,13 @@ protected:
         return m_messageHandler;
     }
 
+    std::string logName()
+    {
+        return typeToString(getType()) + ": ";
+    }
+
+private:
+    std::string typeToString(Type type);
 private:
     MessageHandler m_messageHandler;
 };
