@@ -35,11 +35,9 @@ public:
     }
 
 private:
-    // Initialize sockets and stuff, TODO rename
     void createSocket();
     std::string receiveMessage();
 private:
-    // TODO create unixSocket.hh
     std::string m_serverSocketPath;
     int m_clientSocket;
     struct sockaddr_un m_serverAddr;

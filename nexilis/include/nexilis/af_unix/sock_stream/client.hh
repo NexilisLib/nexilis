@@ -59,6 +59,9 @@ private:
     void createSocket();
     void connectToServer();
 
+    /// Internal function for sending messages to the server.
+    void sendMsg(const std::string& message);
+
     /// Receive messages from the server.
     std::vector<uint8_t> receiveMessage();
 

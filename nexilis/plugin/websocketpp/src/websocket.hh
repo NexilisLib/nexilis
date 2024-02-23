@@ -40,7 +40,7 @@ public:
     // Protocol::getType() implementation.
     Type getType() override
     {
-        return Type::Websocket;
+        //return Type::Websocket;
     }
 
 private:
@@ -50,6 +50,8 @@ private:
     std::vector<unsigned char> convertToNexilisCommand(const wpp_message& msg);
 
     wpp_websocket m_websocket;
+
+    unsigned m_portNumber;
 };
 
 } // namespace nexilis

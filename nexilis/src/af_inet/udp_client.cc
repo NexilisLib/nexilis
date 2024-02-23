@@ -66,12 +66,13 @@ void UDPClient::sendMessage(const std::vector<uint8_t>& message)
     sendData(data, message.size());
 }
 
-// Send data using UDP
-// TODO make this return boolean indicating success.
 void UDPClient::sendData(const char* data, size_t dataSize)
 {
     auto serverAddr = (const struct sockaddr*)&m_serverAddr;
-    sendto(m_clientSocket, data, dataSize, 0, serverAddr, sizeof(m_serverAddr));
+    if (sendto(m_clientSocket, data, dataSize, 0, serverAddr, sizeof(m_serverAddr)) == -1)
+    {
+        Log::error(logName(), "Error sending message");
+    }
 }
 
 std::vector<uint8_t> UDPClient::receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen)

@@ -117,8 +117,6 @@ public:
         return m_username;
     }
 
-    // TODO implment validation for different protocols.
-
 private:
     std::string m_ip_address;
     std::string m_username;

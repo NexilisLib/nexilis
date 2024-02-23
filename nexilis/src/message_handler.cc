@@ -12,7 +12,6 @@
 namespace nexilis
 {
 
-// TODO need global setting for endian.
 size_t extractSizeFromVector(const std::vector<uint8_t>& data)
 {
     size_t result = 0;

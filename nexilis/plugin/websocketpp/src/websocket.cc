@@ -5,8 +5,8 @@
 namespace nexilis
 {
 
-Websocket::Websocket(unsigned port)
-    : Protocol(port)
+Websocket::Websocket(unsigned port) :
+    m_portNumber(port)
 {
     std::cout << "Debricated xd" << std::endl;
     assert(false);
@@ -85,7 +85,7 @@ void Websocket::setCloseHandler(const std::function<void()>& closeHandler)
 void Websocket::start()
 {
     m_websocket.set_reuse_addr(true);
-    m_websocket.listen(Protocol::getPort());
+    m_websocket.listen(m_portNumber);
     m_websocket.start_accept();
 
     m_websocket.run();
