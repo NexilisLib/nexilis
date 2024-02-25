@@ -15,6 +15,18 @@ public:
     /// Destructor.
     ~Server();
 
+    /// Move constructor.
+    Server(Server&& other);
+
+    /// Move assignment operator.
+    Server& operator=(Server&& other);
+
+    /// Deleted copy constructor.
+    Server(const Server& other) = delete;
+
+    /// Deleted copy assignment operator.
+    Server& operator=(const Server& other) = delete;
+
     void start() override
     {
         while (true)
@@ -39,8 +51,7 @@ private:
     static void signalHandler(int signum);
 private:
     int m_serverSocket;
-    int m_bufferSize;
-    char* m_buffer;
+    std::vector<char> m_buffer;
 };
 
 } // namespace nexilis::af_unix::sock_dgram

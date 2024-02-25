@@ -27,8 +27,8 @@ int main()
     */
 
     // af_unix DGRAM
-    //auto unixServer = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Server>("/tmp/nexilis/dgram");
-    //unixServer.start();
+    auto unixServer = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Server>("/tmp/nexilis_dgram");
+    unixServer.start();
 
     /*
     // af_inet TCP

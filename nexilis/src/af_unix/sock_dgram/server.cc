@@ -1,6 +1,7 @@
 #include <nexilis/af_unix/sock_dgram/server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -17,23 +18,36 @@ namespace nexilis::af_unix::sock_dgram
 /// The file path we are reading messages from.
 static std::string path;
 
-Server::Server(const std::string& socketPath)
+Server::Server(const std::string& socketPath) :
+    m_buffer(NEXILIS_BUFFER)
 {
     path = socketPath;
 
-    m_bufferSize = 1024;
-    m_buffer = new char[m_bufferSize];
     createSocket();
     bindSocket();
 
     std::signal(SIGINT, signalHandler);
 }
 
-/// Destructor.
+Server::Server(Server&& other) :
+    m_serverSocket(other.m_serverSocket),
+    m_buffer(other.m_buffer)
+{
+}
+
+Server& Server::operator=(Server&& other)
+{
+    if (this != &other)
+    {
+        m_serverSocket = std::move(other.m_serverSocket);
+        m_buffer = std::move(other.m_buffer);
+    }
+    return *this;
+}
+
 Server::~Server()
 {
     close(m_serverSocket);
-    delete[] m_buffer;
 }
 
 // Read messages.
@@ -43,17 +57,17 @@ void Server::receiveMessage()
     socklen_t clientAddressLen = sizeof(clientAddress);
 
     memset(&clientAddress, 0, sizeof(clientAddress));
-    memset(m_buffer, '\0', m_bufferSize);
+    memset(m_buffer.data(), '\0', m_buffer.size());
     clientAddress.sun_family = AF_UNIX;
     
     // Server is sending messages to itself with this.
     //strcpy(clientAddress.sun_path, "/tmp/nexilis");
 
-    ssize_t bytesRead = recvfrom(m_serverSocket, m_buffer, m_bufferSize, 0, (struct sockaddr*)&clientAddress, &clientAddressLen);
+    ssize_t bytesRead = recvfrom(m_serverSocket, m_buffer.data(), m_buffer.size(), 0, (struct sockaddr*)&clientAddress, &clientAddressLen);
 
     if (bytesRead > 0)
     {
-        std::cout << "Received data: " << m_buffer << std::endl;
+        std::cout << "Received data: " << m_buffer.data() << std::endl;
 
         std::cout << "Received address family: " << clientAddress.sun_family << std::endl;
         std::cout << "Received address path: " << clientAddress.sun_path << std::endl;
@@ -83,7 +97,7 @@ void Server::receiveMessage()
 
 
             //std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
-            auto message = getMessageHandler().readMessage("test", m_buffer, -1, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage("test", m_buffer.data(), -1, Command::getAuthentication());
 
             if (message.getClient())
             {
@@ -114,8 +128,7 @@ void Server::createSocket()
     m_serverSocket = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (m_serverSocket == -1)
     {
-        perror("socket");
-        Log::critical("Error creating socket");
+        Log::critical("Error creating socket, reason: ", strerror(errno));
     }
 }
 
@@ -126,17 +139,12 @@ void Server::bindSocket()
     serverAddr.sun_family = AF_UNIX;
     strcpy(serverAddr.sun_path, path.c_str());
 
-    // Remove old socket file.
-    if (unlink(path.c_str()) != 0)
-    {
-        perror("unlink");
-        std::cout << "Failed to unlink the socket file from " << path << std::endl;
-    }
+    // Remove old socket file. This operation will fail for first time usage.
+    unlink(path.c_str());
 
     if (bind(m_serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
-        perror("bind");
-        Log::critical("Error binding socket");
+        Log::critical(logName(), "Error binding socket, reason: ", strerror(errno));
         close(m_serverSocket);
         exit(1);
     }

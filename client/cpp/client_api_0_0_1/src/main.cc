@@ -18,7 +18,7 @@ int main()
     serverData.setInetTCP("192.168.1.85", 54300);
     serverData.setBoostTCP("192.168.1.85", 12345);
     serverData.setUnixStreamServerPath("/tmp/nexilis");
-    serverData.setUnixDgramServerPath("/tmp/nexilis/dgram");
+    serverData.setUnixDgramServerPath("/tmp/nexilis_dgram");
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
@@ -45,7 +45,7 @@ int main()
     */
 
     // af_unix DGRAM
-    //auto unixClient = protocolManager.createProtocol<nexilis::af_unix::Client>();
+    auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Client>();
 
     /*
     // Boost TCP
