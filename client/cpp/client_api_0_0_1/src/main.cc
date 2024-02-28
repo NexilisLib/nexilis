@@ -45,7 +45,10 @@ int main()
     */
 
     // af_unix DGRAM
-    auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Client>();
+    //auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Client>();
+    /*
+        Startup code for the DGRAM unix sockets
+    */
 
     /*
     // Boost TCP

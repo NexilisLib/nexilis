@@ -6,6 +6,7 @@
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/af_unix/sock_dgram/server.hh>
+#include <nexilis/boost/udp_server.hh>
 
 int main()
 {
@@ -27,22 +28,31 @@ int main()
     */
 
     // af_unix DGRAM
+    /*
     auto unixServer = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Server>("/tmp/nexilis_dgram");
     unixServer.start();
+    */
 
     /*
     // af_inet TCP
     auto inetTCPServer = protocolManager.createProtocol<nexilis::af_inet::TCPServer>(54300);
     inetTCPServer.start();
+    */
 
+    /*
     // af_inet UDP
     auto inetUDPServer = protocolManager.createProtocol<nexilis::af_inet::UDPServer>();
     inetUDPServer.start();
+    */
 
     // Boost TCP
-    auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12345);
-    boostTCPServer.start();
-    */
+    //auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12345);
+    //boostTCPServer.start();
+
+    // Boost UDP
+    auto boostUDPServer = protocolManager.createProtocol<nexilis::boost::UDPServer>(12346);
+    boostUDPServer.start();
+
 
     return 0;
 }

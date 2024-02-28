@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
+add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
@@ -41,17 +41,19 @@ set(SOURCES
     src/af_unix/sock_stream/client.cc
 
     src/af_inet/udp_client.cc
-    src/af_inet/udp_server.cc
     src/af_inet/base_udp_server.cc
+    src/af_inet/udp_server.cc
     src/af_inet/tcp_client.cc
     src/af_inet/tcp_server.cc
 
     src/boost/tcp_client.cc
     src/boost/tcp_server.cc
+    src/boost/udp_client.cc
+    src/boost/udp_server.cc
 
     src/client_api.cc
     src/common/util.cc
-    )
+)
 
 add_library(nexilis ${SOURCES})
 

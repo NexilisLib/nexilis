@@ -20,7 +20,7 @@ ProtocolManager::ProtocolData::ProtocolData(const ProtocolData& other) :
 ProtocolManager::ProtocolData::ProtocolData(ProtocolData&& other) :
     m_type(std::move(other.m_type)),
     m_status(std::move(other.m_status)),
-    m_id(std::move(m_id))
+    m_id(std::move(other.m_id))
 {
 }
 
