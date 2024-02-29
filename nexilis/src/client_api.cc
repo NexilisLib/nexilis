@@ -28,6 +28,8 @@ ClientAPI::ServerData::ServerData(ServerData&& other) :
     m_inetTCPPort(std::move(other.m_inetTCPPort)),
     m_boostTCPServerAddress(std::move(other.m_boostTCPServerAddress)),
     m_boostTCPServerPort(std::move(other.m_boostTCPServerPort)),
+    m_boostUDPServerAddress(std::move(other.m_boostUDPServerAddress)),
+    m_boostUDPServerPort(std::move(other.m_boostUDPServerPort)),
     m_unixDgramServerPath(std::move(other.m_unixDgramServerPath)),
     m_unixStreamServerPath(std::move(other.m_unixStreamServerPath))
 {
@@ -42,6 +44,8 @@ ClientAPI::ServerData::ServerData(const ServerData& other) :
     m_inetTCPPort(other.m_inetTCPPort),
     m_boostTCPServerAddress(other.m_boostTCPServerAddress),
     m_boostTCPServerPort(other.m_boostTCPServerPort),
+    m_boostUDPServerAddress(other.m_boostUDPServerAddress),
+    m_boostUDPServerPort(other.m_boostUDPServerPort),
     m_unixDgramServerPath(other.m_unixDgramServerPath),
     m_unixStreamServerPath(other.m_unixStreamServerPath)
 {
@@ -59,6 +63,8 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(ServerData&& other)
         m_inetTCPPort = std::move(other.m_inetTCPPort);
         m_boostTCPServerAddress = std::move(other.m_boostTCPServerAddress);
         m_boostTCPServerPort = std::move(other.m_boostTCPServerPort);
+        m_boostUDPServerAddress = std::move(other.m_boostUDPServerAddress);
+        m_boostUDPServerPort = std::move(other.m_boostUDPServerPort);
         m_unixDgramServerPath = std::move(other.m_unixDgramServerPath);
         m_unixStreamServerPath = std::move(other.m_unixStreamServerPath);
     }
@@ -77,6 +83,8 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
         m_inetTCPPort = other.m_inetTCPPort;
         m_boostTCPServerAddress = other.m_boostTCPServerAddress;
         m_boostTCPServerPort = other.m_boostTCPServerPort;
+        m_boostUDPServerAddress = other.m_boostUDPServerAddress;
+        m_boostUDPServerPort = other.m_boostUDPServerPort;
         m_unixDgramServerPath = other.m_unixDgramServerPath;
         m_unixStreamServerPath = other.m_unixStreamServerPath;
     }
@@ -143,6 +151,13 @@ bool ClientAPI::isBoostTCPReady()
     return m_clientId &&
            !getBoostTCPServerAddress().empty() &&
            getBoostTCPServerPortNumber() != 0xFFFF;
+}
+
+bool ClientAPI::isBoostUDPReady()
+{
+    return  m_clientId &&
+            !getBoostUDPServerAddress().empty() &&
+            getBoostUDPServerPortNumber() != 0xFFFF;
 }
 
 bool ClientAPI::isUnixDgramReady()

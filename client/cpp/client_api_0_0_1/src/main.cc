@@ -19,6 +19,7 @@ int main()
     serverData.setBoostTCP("192.168.1.85", 12345);
     serverData.setUnixStreamServerPath("/tmp/nexilis");
     serverData.setUnixDgramServerPath("/tmp/nexilis_dgram");
+    //serverData.setBoost
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;

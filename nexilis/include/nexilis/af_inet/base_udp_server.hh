@@ -28,6 +28,7 @@ public:
         socklen_t clientAddrLen;
     };
 
+    /// Constructor.
     BaseUDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
 
     /// Move constructor.
@@ -42,6 +43,7 @@ public:
     /// Deleted copy assignment operator.
     BaseUDPServer& operator=(const BaseUDPServer& other) = delete;
 
+    /// Virtual destructor
     virtual ~BaseUDPServer();
 
     /// Start listening to incoming messages.

@@ -135,7 +135,22 @@ public:
             m_boostTCPServerPort = port;
         }
 
-        /// TODO boost UDP.
+        /// boost UDP.
+        std::string getBoostUDPServerAddress() const
+        {
+            return m_boostUDPServerAddress;
+        }
+
+        uint16_t getBoostUDPServerPort() const
+        {
+            return m_boostUDPServerPort;
+        }
+
+        void setBoostUDP(const std::string& serverAddress, u_int16_t port)
+        {
+            m_boostUDPServerAddress = serverAddress;
+            m_boostUDPServerPort = port;
+        }
 
         /// af_unix DGRAM
         std::string getUnixDgramServerPath() const
@@ -176,7 +191,9 @@ public:
         std::string m_boostTCPServerAddress;
         uint16_t m_boostTCPServerPort = 0xFFFF;
 
-        /// boost UDP TODO.
+        /// boost UDP
+        std::string m_boostUDPServerAddress;
+        uint16_t m_boostUDPServerPort = 0xFFFF;
 
         /// af_unix DGRAM
         std::string m_unixDgramServerPath;
@@ -200,6 +217,7 @@ public:
     /// Deleted copy assignment.
     ClientAPI& operator=(const ClientAPI& other);
 
+public:
     /// If the client UDP af_inet connection is ready.
     bool IsInetUDPReady();
 
@@ -208,6 +226,9 @@ public:
 
     /// If the client boost TCP connection is ready.
     bool isBoostTCPReady();
+
+    /// If the client boost UDP connection is ready.
+    bool isBoostUDPReady();
 
     /// If the client af_unix DGRAM connection is ready.
     bool isUnixDgramReady();
@@ -223,6 +244,9 @@ public:
 
     /// Steal the runtime until boost TCP connection is ready.
     void waitUntilBoostTCPReady();
+
+    /// Steal the runtime until boost UDP connection is ready.
+    void waitUntilBoostUDPReady();
 
     /// Steal the runtime until af_unix DGRAM connection is ready.
     void waitUntilUnixDgramReady();
@@ -283,6 +307,17 @@ public:
     uint16_t getBoostTCPServerPortNumber() const
     {
         return m_data.getBoostTCPServerPort();
+    }
+
+    /// boost UDP
+    std::string getBoostUDPServerAddress() const
+    {
+        return m_data.getBoostUDPServerAddress();
+    }
+
+    uint16_t getBoostUDPServerPortNumber() const
+    {
+        return m_data.getBoostUDPServerPort();
     }
 
     /// af_unix DGRAM.
