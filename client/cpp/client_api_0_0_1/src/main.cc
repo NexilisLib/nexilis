@@ -1,25 +1,28 @@
+// nexilis libs
 #include <nexilis/protocol_manager.hh>
-#include <nexilis/af_inet/udp_client.hh>
-#include <nexilis/af_inet/tcp_client.hh>
 #include <nexilis/client_api.hh>
-#include <nexilis/boost/tcp_client.hh>
-#include <nexilis/af_unix/sock_stream/client.hh>
-#include <nexilis/af_unix/sock_dgram/client.hh>
 #include <nexilis/log.hh>
 #include <nexilis/packet.hh>
 
+// nexilis protocols
+#include <nexilis/boost/tcp_client.hh>
+#include <nexilis/boost/udp_client.hh>
+#include <nexilis/af_unix/sock_stream/client.hh>
+#include <nexilis/af_unix/sock_dgram/client.hh>
+#include <nexilis/af_inet/udp_client.hh>
+#include <nexilis/af_inet/tcp_client.hh>
+
 int main()
 {
-    nexilis::Log::startConsoleLogging();
-    nexilis::Log::setLevel(nexilis::logger::LogLevel::DEBUG);
+    nexilis::Log::startConsoleDebugging();
 
     nexilis::ClientAPI::ServerData serverData("salasana");
     serverData.setInetUDP("192.168.1.85", 54200);
     serverData.setInetTCP("192.168.1.85", 54300);
     serverData.setBoostTCP("192.168.1.85", 12345);
+    serverData.setBoostUDP("192.168.1.85", 12346);
     serverData.setUnixStreamServerPath("/tmp/nexilis");
     serverData.setUnixDgramServerPath("/tmp/nexilis_dgram");
-    //serverData.setBoost
 
     nexilis::ClientAPI api(serverData);
     nexilis::ProtocolManager protocolManager;
@@ -57,7 +60,13 @@ int main()
     boostTCP.start();
     api.waitUntilBoostTCPReady();
     boostTCP.sendMessage(id);
+    */
 
+    // Boost UDP
+    auto boostUDP = protocolManager.createProtocol<nexilis::boost::UDPClient>(api);
+    boostUDP.start();
+
+    /*
     // af_inet TCP
     auto inetTCP = protocolManager.createProtocol<nexilis::af_inet::TCPClient>(api);
     inetTCP.start();
@@ -65,7 +74,6 @@ int main()
     api.waitUntilInetTCPReady();
     inetTCP.sendMessage(id);
     */
-
 
     while(true){}
     return 0;
