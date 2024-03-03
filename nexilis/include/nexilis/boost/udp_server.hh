@@ -38,7 +38,7 @@ public:
     }
 
     /// Protocol::getType() implementation.
-    Type getType()
+    Type getType() override
     {
         return Type::BOOST_UDP_SERVER;
     }

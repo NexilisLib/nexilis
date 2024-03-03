@@ -36,16 +36,16 @@ public:
     }
 
     /// Protocol::getType() implementation.
-    Type getType()
+    Type getType() override
     {
         return Type::BOOST_UDP_CLIENT;
     }
 
     /// ClientProtocol::sendMessage(const std::string& message) implementation.
-    void sendMessage(const std::string& message);
+    void sendMessage(const std::string& message) override;
 
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>& message) implementation.
-    void sendMessage(const std::vector<uint8_t>& message);
+    void sendMessage(const std::vector<uint8_t>& message) override;
 
 private:
     std::unique_ptr<::boost::asio::io_context> m_ioContext;

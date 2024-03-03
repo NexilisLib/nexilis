@@ -142,7 +142,7 @@ void TCPClient::start()
 {
     if (connectToServer())
     {
-        Log::info("Connected to server!");
+        Log::info(logName(), "Connected to server!");
 
         m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
 
@@ -151,7 +151,7 @@ void TCPClient::start()
     }
     else
     {
-        Log::error("Failed to connect to the server");
+        Log::error(logName(), "Failed to connect to the server");
     }
 }
 
@@ -170,13 +170,13 @@ void TCPClient::receiveLoop()
             }
             else
             {
-                Log::info("Received empty message from server");
+                Log::info(logName(), "Received empty message from server");
                 break;
             }
         }
         else
         {
-            Log::info("Error receiving from server");
+            Log::info(logName(), "Error receiving from server");
             break;
         }
 

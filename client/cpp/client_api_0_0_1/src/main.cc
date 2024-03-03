@@ -12,15 +12,29 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_inet/tcp_client.hh>
 
+#define HOME_ADDRESS "192.168.1.85"
+#define LAPTOP "192.168.13.74"
+#define AT_HOME false
+
 int main()
 {
+    std::string localAddress;
+    if (AT_HOME)
+    {
+        localAddress = HOME_ADDRESS;
+    }
+    else
+    {
+        localAddress = LAPTOP;
+    }
+
     nexilis::Log::startConsoleDebugging();
 
     nexilis::ClientAPI::ServerData serverData("salasana");
-    serverData.setInetUDP("192.168.1.85", 54200);
-    serverData.setInetTCP("192.168.1.85", 54300);
-    serverData.setBoostTCP("192.168.1.85", 12345);
-    serverData.setBoostUDP("192.168.1.85", 12346);
+    serverData.setInetUDP(localAddress, 54200);
+    serverData.setInetTCP(localAddress, 54300);
+    serverData.setBoostTCP(localAddress, 12345);
+    serverData.setBoostUDP(localAddress, 12346);
     serverData.setUnixStreamServerPath("/tmp/nexilis");
     serverData.setUnixDgramServerPath("/tmp/nexilis_dgram");
 
@@ -54,17 +68,23 @@ int main()
         Startup code for the DGRAM unix sockets
     */
 
-    /*
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>(api);
     boostTCP.start();
     api.waitUntilBoostTCPReady();
+    std::cout << "Boost TCP connection ready" << std::endl;
+    boostTCP.sendMessage(serverData.getPassword());
+    auto id = nexilis::Packet::Get::clientId(api);
     boostTCP.sendMessage(id);
-    */
+
 
     // Boost UDP
+    std::cout << "Starting boost UDP" << std::endl;
     auto boostUDP = protocolManager.createProtocol<nexilis::boost::UDPClient>(api);
     boostUDP.start();
+    boostUDP.sendMessage(serverData.getPassword());
+    api.waitUntilInetUDPReady();
+
 
     /*
     // af_inet TCP
@@ -74,6 +94,8 @@ int main()
     api.waitUntilInetTCPReady();
     inetTCP.sendMessage(id);
     */
+
+    std::cout << "Client api completed!" << std::endl;
 
     while(true){}
     return 0;

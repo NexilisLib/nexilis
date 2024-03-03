@@ -1,3 +1,4 @@
+#include <boost/asio/ip/address.hpp>
 #include <nexilis/boost/udp_client.hh>
 #include <nexilis/log.hh>
 
@@ -7,7 +8,7 @@ namespace nexilis::boost
 UDPClient::UDPClient(ClientAPI& clientApi) :
     ClientProtocol(&clientApi),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
-    m_endPoint(::boost::asio::ip::udp::endpoint()),
+    m_endPoint(::boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
     m_remoteEndpoint(::boost::asio::ip::udp::endpoint()),
     m_socket(*m_ioContext)
 {

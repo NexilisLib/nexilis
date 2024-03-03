@@ -48,7 +48,7 @@ public:
         return Type::BOOST_TCP_CLIENT;
     }
 
-protected:    
+protected:
     std::thread m_ioContextThread;
     std::thread m_receiveThread;
 private:

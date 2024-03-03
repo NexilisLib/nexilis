@@ -1,11 +1,14 @@
-#include <nexilis/af_inet/udp_server.hh>
+// nexilis libs
 #include <nexilis/log.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/server_manager.hh>
+
+// nexilis protocols
+#include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/af_inet/tcp_server.hh>
-#include <nexilis/boost/tcp_server.hh>
 #include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/af_unix/sock_dgram/server.hh>
+#include <nexilis/boost/tcp_server.hh>
 #include <nexilis/boost/udp_server.hh>
 
 int main()
@@ -46,12 +49,16 @@ int main()
     */
 
     // Boost TCP
-    //auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12345);
-    //boostTCPServer.start();
+    auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12345);
+    boostTCPServer.start();
 
     // Boost UDP
     auto boostUDPServer = protocolManager.createProtocol<nexilis::boost::UDPServer>(12346);
     boostUDPServer.start();
+
+    std::cout << "nexilis server setup ready" << std::endl;
+
+    while (true) {}
 
 
     return 0;
