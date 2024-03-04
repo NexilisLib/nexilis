@@ -53,8 +53,8 @@ int main()
     boostTCPServer.start();
 
     // Boost UDP
-    auto boostUDPServer = protocolManager.createProtocol<nexilis::boost::UDPServer>(12346);
-    boostUDPServer.start();
+    //auto boostUDPServer = protocolManager.createProtocol<nexilis::boost::UDPServer>(12346);
+    //boostUDPServer.start();
 
     std::cout << "nexilis server setup ready" << std::endl;
 

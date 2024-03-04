@@ -14,7 +14,7 @@
 
 #define HOME_ADDRESS "192.168.1.85"
 #define LAPTOP "192.168.13.74"
-#define AT_HOME false
+#define AT_HOME true
 
 int main()
 {
@@ -71,19 +71,20 @@ int main()
     // Boost TCP
     auto boostTCP = protocolManager.createProtocol<nexilis::boost::TCPClient>(api);
     boostTCP.start();
+    boostTCP.sendMessage(serverData.getPassword());
     api.waitUntilBoostTCPReady();
     std::cout << "Boost TCP connection ready" << std::endl;
-    boostTCP.sendMessage(serverData.getPassword());
     auto id = nexilis::Packet::Get::clientId(api);
     boostTCP.sendMessage(id);
 
-
+    /*
     // Boost UDP
     std::cout << "Starting boost UDP" << std::endl;
     auto boostUDP = protocolManager.createProtocol<nexilis::boost::UDPClient>(api);
     boostUDP.start();
     boostUDP.sendMessage(serverData.getPassword());
     api.waitUntilInetUDPReady();
+    */
 
 
     /*

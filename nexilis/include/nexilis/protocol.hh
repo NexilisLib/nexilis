@@ -44,24 +44,30 @@ public:
 
     /// Deleted copy assignment operator.
     Protocol& operator=(const Protocol& other) = delete;
-    
+
+    /// Virtual destruction.
     virtual ~Protocol() = default;
 
+    /// Start running protocol instance.
     virtual void start() = 0;
 
-    // Should be made pure virtual.
-    virtual void stop()
-    {
-    }
+    /// Stop running protocol instance.
+    virtual void stop() = 0;
 
+    /// Get the associated Protocol::Type from the protocol.
+    /// \note New types to Protocol::Type.
     virtual Type getType() = 0;
 
 protected:
+    /// Use this to parse the message before sending to Command.
+    /// \note This function is only for the server API.
+    /// Consider ServerProtocol.hh :D
     MessageHandler& getMessageHandler()
     {
         return m_messageHandler;
     }
 
+    /// Helper function for logging.
     std::string logName()
     {
         return typeToString(getType()) + ": ";
