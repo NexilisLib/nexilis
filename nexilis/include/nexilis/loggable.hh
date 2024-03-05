@@ -35,27 +35,27 @@ private:
         result = ss.str(); \
     }
 
-    #define _LOGGABLE_LN_PREFERENCE(instance, logger, ...) \
+    #define _LOGGABLE_LN_PREFERENCE(logger, ...) \
     { \
         std::string result; \
-        result += this->getName(); \
-        if (instance->getAddColon()) \
+        result += getName(); \
+        if (getAddColon()) \
         { \
             result += ": "; \
         } \
         std::string lineNumbers; \
-        if (instance->getAddLineNumber()) \
+        if (getAddLineNumber()) \
         { \
             _LOGGABLE_LINE_NUMBERS(lineNumbers); \
         } \
         logger(result, ##__VA_ARGS__, lineNumbers); \
     }
 
-    #define _LOGGABLE_LN_ALWAYS(instance, logger, message, ...) \
+    #define _LOGGABLE_LN_ALWAYS(logger, ...) \
     { \
         std::string result; \
-        result += this->getName(); \
-        if (instance->getAddColon()) \
+        result += getName(); \
+        if (getAddColon()) \
         { \
             result += ": "; \
         } \
@@ -68,34 +68,34 @@ protected:
     /// Logging API.
 
     #define DEBUG(...) \
-        _LOGGABLE_LN_PREFERENCE(this, Log::debug, ##__VA_ARGS__);
+        _LOGGABLE_LN_PREFERENCE(Log::debug, ##__VA_ARGS__);
 
     #define DEBUG_LN(...) \
-        _LOGGABLE_LN_ALWAYS(this, Log::debug, ##__VA_ARGS__);
+        _LOGGABLE_LN_ALWAYS(Log::debug, ##__VA_ARGS__);
 
     #define INFO(...) \
-        _LOGGABLE_LN_PREFERENCE(this, Log::info, ##__VA_ARGS__);
+        _LOGGABLE_LN_PREFERENCE(Log::info, ##__VA_ARGS__);
 
     #define INFO_LN(...) \
-        _LOGGABLE_LN_ALWAYS(this, Log::info, ##__VA_ARGS__);
+        _LOGGABLE_LN_ALWAYS(Log::info, ##__VA_ARGS__);
 
     #define WARNING(...) \
-        _LOGGABLE_LN_PREFERENCE(this, Log::warning, ##__VA_ARGS__);
+        _LOGGABLE_LN_PREFERENCE(Log::warning, ##__VA_ARGS__);
 
     #define WARNING_LN(...) \
-        _LOGGABLE_LN_ALWAYS(this, Log::warning, ##__VA_ARGS__);
+        _LOGGABLE_LN_ALWAYS(Log::warning, ##__VA_ARGS__);
 
     #define ERROR(...) \
-        _LOGGABLE_LN_PREFERENCE(this, Log::error, ##__VA_ARGS__);
+        _LOGGABLE_LN_PREFERENCE(Log::error, ##__VA_ARGS__);
 
     #define ERROR_LN(...) \
-        _LOGGABLE_LN_ALWAYS(this, Log::error, ##__VA_ARGS__);
+        _LOGGABLE_LN_ALWAYS(Log::error, ##__VA_ARGS__);
 
     #define CRITICAL(...) \
-        _LOGGABLE_LN_PREFERENCE(this, Log::critical, ##__VA_ARGS__);
+        _LOGGABLE_LN_PREFERENCE(Log::critical, ##__VA_ARGS__);
 
     #define CRITICAL_LN(...) \
-        _LOGGABLE_LN_ALWAYS(this, Log::critical, ##__VA_ARGS__);
+        _LOGGABLE_LN_ALWAYS(Log::critical, ##__VA_ARGS__);
 
 protected:
     /// Getters.
