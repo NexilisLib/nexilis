@@ -1,7 +1,7 @@
 #ifndef NEXILIS_LOGGABLE_HH
 #define NEXILIS_LOGGABLE_HH
 
-#include <string>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -25,37 +25,100 @@ public:
     /// Deleted copy assignment operator.
     Loggable& operator=(const Loggable&) = delete;
 
-public:
-    /// Logging functionality.
+private:
+    /// Internal macro API
 
-    void debug(const std::string& message);
-    void info(const std::string& message);
-    void warning(const std::string& message);
-    void error(const std::string& message);
-    void critical(const std::string& message);
+    #define _LOGGABLE_LINE_NUMBERS(result) \
+    { \
+        std::stringstream ss; \
+        ss << "\n@: " << __FILE__ << ":" << std::dec << __LINE__ << std::endl; \
+        result = ss.str(); \
+    }
 
-public:
+    #define _LOGGABLE_LN_PREFERENCE(instance, logger, ...) \
+    { \
+        std::string result; \
+        result += this->getName(); \
+        if (instance->getAddColon()) \
+        { \
+            result += ": "; \
+        } \
+        std::string lineNumbers; \
+        if (instance->getAddLineNumber()) \
+        { \
+            _LOGGABLE_LINE_NUMBERS(lineNumbers); \
+        } \
+        logger(result, ##__VA_ARGS__, lineNumbers); \
+    }
+
+    #define _LOGGABLE_LN_ALWAYS(instance, logger, message, ...) \
+    { \
+        std::string result; \
+        result += this->getName(); \
+        if (instance->getAddColon()) \
+        { \
+            result += ": "; \
+        } \
+        std::string lineNumbers; \
+        _LOGGABLE_LINE_NUMBERS(lineNumbers); \
+        logger(result, ##__VA_ARGS__, lineNumbers); \
+    }
+
+protected:
+    /// Logging API.
+
+    #define DEBUG(...) \
+        _LOGGABLE_LN_PREFERENCE(this, Log::debug, ##__VA_ARGS__);
+
+    #define DEBUG_LN(...) \
+        _LOGGABLE_LN_ALWAYS(this, Log::debug, ##__VA_ARGS__);
+
+    #define INFO(...) \
+        _LOGGABLE_LN_PREFERENCE(this, Log::info, ##__VA_ARGS__);
+
+    #define INFO_LN(...) \
+        _LOGGABLE_LN_ALWAYS(this, Log::info, ##__VA_ARGS__);
+
+    #define WARNING(...) \
+        _LOGGABLE_LN_PREFERENCE(this, Log::warning, ##__VA_ARGS__);
+
+    #define WARNING_LN(...) \
+        _LOGGABLE_LN_ALWAYS(this, Log::warning, ##__VA_ARGS__);
+
+    #define ERROR(...) \
+        _LOGGABLE_LN_PREFERENCE(this, Log::error, ##__VA_ARGS__);
+
+    #define ERROR_LN(...) \
+        _LOGGABLE_LN_ALWAYS(this, Log::error, ##__VA_ARGS__);
+
+    #define CRITICAL(...) \
+        _LOGGABLE_LN_PREFERENCE(this, Log::critical, ##__VA_ARGS__);
+
+    #define CRITICAL_LN(...) \
+        _LOGGABLE_LN_ALWAYS(this, Log::critical, ##__VA_ARGS__);
+
+protected:
     /// Getters.
 
     /// Get the associated name.
-    std::string getName()
+    std::string getName() const
     {
         return m_name;
     }
 
     /// Get the option for adding line number.
-    bool getAddLineNumber()
+    bool getAddLineNumber() const
     {
         return m_addLineNumber;
     }
 
     /// Get the option for adding colon after the log.
-    bool getAddColon()
+    bool getAddColon() const
     {
         return m_addColon;
     }
 
-public:
+protected:
     /// Setters.
 
     /// Set the associated name.
@@ -69,16 +132,34 @@ public:
         m_addLineNumber = addLineNumber;
     }
 
+    void addLineNumbers()
+    {
+        m_addLineNumber = true;
+    }
+
+    void removeLineNumbers()
+    {
+        m_addLineNumber = false;
+    }
+
     void setAddColon(bool addColon)
     {
         m_addColon = addColon;
     }
+
+    void addColons()
+    {
+        m_addColon = true;
+    }
+
+    void removeColons()
+    {
+        m_addColon = false;
+    }
+
 private:
-
-    std::string createMessage(const std::string& text);
-
     std::string m_name;
-    bool m_addLineNumber = false;
+    bool m_addLineNumber = true;
     bool m_addColon = true;
 };
 

@@ -41,9 +41,7 @@ public:
     /// Protocol::stop() implementation.
     void stop() override;
 
-    bool startListening();
-    bool acceptClients();
-
+    /// Protocol::getType() implementation.
     Type getType() override
     {
         return Type::BOOST_TCP_SERVER;
@@ -51,6 +49,8 @@ public:
 
 private:
     bool sendToClient(const std::string& data, ::boost::asio::ip::tcp::socket& clientSocket);
+    bool startListening();
+    bool acceptClients();
 
 private:
     std::unique_ptr<std::mutex> m_mutex;

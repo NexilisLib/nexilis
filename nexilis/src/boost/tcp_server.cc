@@ -16,6 +16,7 @@ TCPServer::TCPServer(int serverPort) :
     ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
     m_socket(*m_ioContext)
 {
+    Loggable::addLineNumbers();
 }
 
 TCPServer::TCPServer(TCPServer&& other) :
@@ -121,11 +122,11 @@ bool TCPServer::acceptClients()
 
                     // Receive data from the client
                     ::boost::asio::streambuf receiveBuffer;
-                    ::boost::system::error_code error;
+                    ::boost::system::error_code error_code;
 
-                    size_t bytesRead = ::boost::asio::read(newSocket, receiveBuffer, ::boost::asio::transfer_at_least(1), error);
+                    size_t bytesRead = ::boost::asio::read(newSocket, receiveBuffer, ::boost::asio::transfer_at_least(1), error_code);
 
-                    if (error == ::boost::asio::error::eof)
+                    if (error_code == ::boost::asio::error::eof)
                     {
                         Log::debug("End receive ", clientAddress);
                         break;
@@ -136,16 +137,15 @@ bool TCPServer::acceptClients()
                         Log::error("TCPServer Error: boost::asio::read");
                         break;
                     }
-                    else if (error)
+                    else if (error_code)
                     {
                         // Handle other errors
-                        Log::error("TCPServer Error reading from client: ", error.message());
+                        Log::error("TCPServer Error reading from client: ", error_code.message());
                         break;
                     }
 
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-                    //Log::info(logName(true), "Received from client: ", message);
-                    debug("Received from client" + message);
+                    DEBUG("Received from client ", message);
 
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
@@ -154,11 +154,11 @@ bool TCPServer::acceptClients()
                         std::string toString = Util::convertToString(bytes);
                         if (sendToClient(toString, newSocket))
                         {
-                            Log::info("Sended message to client succesfully");
+                            INFO("Sended message to client succesfully");
                         }
                         else
                         {
-                            Log::error("Error sending message to client");
+                            ERROR("Error sending message to client");
                         }
                     };
 
