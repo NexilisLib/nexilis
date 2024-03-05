@@ -2,6 +2,8 @@
 #define NEXILIS_BOOST_TCP_SERVER_HH
 
 #include <nexilis/protocol.hh>
+#include <nexilis/server_protocol.hh>
+#include <nexilis/loggable.hh>
 #include <nexilis/message_handler.hh>
 
 #include <boost/asio.hpp>
@@ -9,7 +11,10 @@
 namespace nexilis::boost
 {
 
-class TCPServer : public Protocol
+class TCPServer :
+                public Protocol,
+                public ServerProtocol,
+                public Loggable
 {
 public:
     /// Constructor.

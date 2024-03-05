@@ -76,9 +76,10 @@ int main()
     std::cout << "Boost TCP connection ready" << std::endl;
     auto id = nexilis::Packet::Get::clientId(api);
     boostTCP.sendMessage(id);
+    std::cout << "BOOST TCP DONE!" << std::endl;
 
-    /*
     // Boost UDP
+    /*
     std::cout << "Starting boost UDP" << std::endl;
     auto boostUDP = protocolManager.createProtocol<nexilis::boost::UDPClient>(api);
     boostUDP.start();

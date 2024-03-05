@@ -1,6 +1,8 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
+#include <nexilis/loggable.hh>
+#include <nexilis/server_protocol.hh>
 #include <nexilis/protocol.hh>
 
 #include <cstdint>
@@ -10,7 +12,10 @@
 namespace nexilis::af_unix::sock_stream
 {
 
-class Server : public Protocol
+class Server :
+        public Protocol,
+        public ServerProtocol,
+        public Loggable
 {
 public:
     /// Constructor.

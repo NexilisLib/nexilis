@@ -4,6 +4,7 @@
 #include <nexilis/message_handler.hh>
 
 #include <cstdint>
+#include <sstream>
 
 namespace nexilis
 {
@@ -34,10 +35,10 @@ public:
     Protocol() = default;
 
     /// Move constructor.
-    Protocol(Protocol&& other);
+    Protocol(Protocol&& other) = default;
 
     /// Move assignment operator.
-    Protocol& operator=(Protocol&& other);
+    Protocol& operator=(Protocol&& other) = default;
 
     /// Deleted copy constructor.
     Protocol(const Protocol& other) = delete;
@@ -59,24 +60,20 @@ public:
     virtual Type getType() = 0;
 
 protected:
-    /// Use this to parse the message before sending to Command.
-    /// \note This function is only for the server API.
-    /// Consider ServerProtocol.hh :D
-    MessageHandler& getMessageHandler()
-    {
-        return m_messageHandler;
-    }
-
     /// Helper function for logging.
-    std::string logName()
+    std::string logName(bool extraConf = false)
     {
-        return typeToString(getType()) + ": ";
+        std::string result;
+        if (extraConf)
+        {
+            std::stringstream ss;
+            ss << __FILE__ << ":" << std::dec << __LINE__ << std::endl;
+            result += ss.str();
+        }
+        return result += typeToString(getType()) + ": ";
     }
 
-private:
     std::string typeToString(Type type);
-private:
-    MessageHandler m_messageHandler;
 };
 
 } // namespace nexilis

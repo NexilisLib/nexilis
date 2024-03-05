@@ -27,7 +27,9 @@ set(SOURCES
     src/ports.cc
     src/client_storage.cc
     src/client_protocol.cc
+    src/server_protocol.cc
     src/log.cc
+    src/loggable.cc
     src/message_handler.cc
     src/server_manager.cc
     src/packet.cc

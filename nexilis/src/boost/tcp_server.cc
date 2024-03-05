@@ -1,3 +1,4 @@
+#include "nexilis/loggable.hh"
 #include <nexilis/command.hh>
 #include <nexilis/common/util.hh>
 #include <nexilis/boost/tcp_server.hh>
@@ -8,6 +9,7 @@ namespace nexilis::boost
 {
 
 TCPServer::TCPServer(int serverPort) :
+    Loggable(typeToString(getType())),
     m_mutex(std::make_unique<std::mutex>()),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_acceptor(*m_ioContext,
@@ -18,6 +20,8 @@ TCPServer::TCPServer(int serverPort) :
 
 TCPServer::TCPServer(TCPServer&& other) :
     Protocol(std::move(other)),
+    ServerProtocol(std::move(other)),
+    Loggable(std::move(other)),
     m_mutex(std::move(other.m_mutex)),
     m_ioContext(std::move(other.m_ioContext)),
     m_acceptor(std::move(other.m_acceptor)),
@@ -32,6 +36,8 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     if (this != &other)
     {
         Protocol::operator=(std::move(other));
+        ServerProtocol::operator=(std::move(other));
+        Loggable::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
@@ -51,7 +57,7 @@ TCPServer::~TCPServer()
 void TCPServer::start()
 {
     m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
-    
+
     m_listenThread = std::thread([this]()
     {
         if (startListening())
@@ -138,7 +144,9 @@ bool TCPServer::acceptClients()
                     }
 
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-                    Log::info("TCPServer Received from client: ", message);
+                    //Log::info(logName(true), "Received from client: ", message);
+                    debug("Received from client" + message);
+
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
                     auto clientSender = [this, &newSocket](const std::vector<uint8_t>& bytes)

@@ -5,6 +5,7 @@ namespace nexilis::boost
 {
 
 UDPServer::UDPServer(int port) :
+    Loggable(typeToString(getType())),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_mutex(std::make_unique<std::mutex>()),
     m_socket(*m_ioContext, ::boost::asio::ip::udp::endpoint
@@ -26,6 +27,8 @@ UDPServer::~UDPServer()
 
 UDPServer::UDPServer(UDPServer&& other) :
     Protocol(std::move(other)),
+    ServerProtocol(std::move(other)),
+    Loggable(std::move(other)),
     m_ioContext(std::move(other.m_ioContext)),
     m_mutex(std::move(other.m_mutex)),
     m_socket(std::move(other.m_socket)),
@@ -40,6 +43,8 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
     if (this != &other)
     {
         Protocol::operator=(std::move(other));
+        ServerProtocol::operator=(std::move(other));
+        Loggable::operator=(std::move(other));
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
         m_socket = std::move(other.m_socket);

@@ -19,6 +19,7 @@ namespace nexilis::af_unix::sock_dgram
 static std::string path;
 
 Server::Server(const std::string& socketPath) :
+    Loggable(typeToString(getType())),
     m_buffer(NEXILIS_BUFFER)
 {
     path = socketPath;
@@ -30,6 +31,9 @@ Server::Server(const std::string& socketPath) :
 }
 
 Server::Server(Server&& other) :
+    Protocol(std::move(other)),
+    ServerProtocol(std::move(other)),
+    Loggable(std::move(other)),
     m_serverSocket(other.m_serverSocket),
     m_buffer(other.m_buffer)
 {
@@ -39,6 +43,9 @@ Server& Server::operator=(Server&& other)
 {
     if (this != &other)
     {
+        Protocol::operator=(std::move(other));
+        ServerProtocol::operator=(std::move(other));
+        Loggable::operator=(std::move(other));
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
     }

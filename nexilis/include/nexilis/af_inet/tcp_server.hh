@@ -2,7 +2,8 @@
 #define NEXILIS_AF_INET_TCP_SERVER_HH
 
 #include <nexilis/protocol.hh>
-#include <nexilis/message_handler.hh>
+#include <nexilis/server_protocol.hh>
+#include <nexilis/loggable.hh>
 
 #include <netinet/in.h>
 
@@ -12,7 +13,10 @@
 namespace nexilis::af_inet
 {
 
-class TCPServer : public Protocol
+class TCPServer :
+            public Protocol,
+            public ServerProtocol,
+            public Loggable
 {
 public:
     class Client

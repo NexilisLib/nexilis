@@ -1,13 +1,14 @@
 #ifndef NEXILIS_AF_INET_UDP_SERVER_HH
 #define NEXILIS_AF_INET_UDP_SERVER_HH
 
+#include "nexilis/server_protocol.hh"
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/message_handler.hh>
 
 namespace nexilis::af_inet
 {
 
-class UDPServer : public BaseUDPServer
+class UDPServer : public BaseUDPServer, public ServerProtocol
 {
 public:
     /// Constructor.
