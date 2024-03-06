@@ -1,6 +1,7 @@
 #ifndef NEXILIS_BOOST_TCP_CLIENT_HH
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
+#include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/client_protocol.hh>
 
@@ -9,7 +10,10 @@
 namespace nexilis::boost
 {
 
-class TCPClient : public Protocol, public ClientProtocol
+class TCPClient :
+                public Protocol,
+                public ClientProtocol,
+                public Loggable
 {
 public:
     /// Constructor.

@@ -11,6 +11,7 @@
 #include <nexilis/af_unix/sock_dgram/client.hh>
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/af_inet/tcp_client.hh>
+#include <thread>
 
 #define HOME_ADDRESS "192.168.1.85"
 #define LAPTOP "192.168.13.74"
@@ -98,8 +99,12 @@ int main()
     */
 
     std::cout << "Client api completed!" << std::endl;
+    std::cout << "Waiting 10 seconds" << std::endl;
 
-    while(true){}
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout << "Waited 10 seconds" << std::endl;
+    boostTCP.stop();
+
     return 0;
 }
 
