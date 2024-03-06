@@ -33,7 +33,7 @@ int main()
     nexilis::ClientAPI::ServerData serverData("salasana");
     serverData.setInetUDP(localAddress, 54200);
     serverData.setInetTCP(localAddress, 54300);
-    serverData.setBoostTCP(localAddress, 12345);
+    serverData.setBoostTCP(localAddress, 12348);
     serverData.setBoostUDP(localAddress, 12346);
     serverData.setUnixStreamServerPath("/tmp/nexilis");
     serverData.setUnixDgramServerPath("/tmp/nexilis_dgram");

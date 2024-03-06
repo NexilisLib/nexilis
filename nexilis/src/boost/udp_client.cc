@@ -7,6 +7,7 @@ namespace nexilis::boost
 
 UDPClient::UDPClient(ClientAPI& clientApi) :
     ClientProtocol(&clientApi),
+    Loggable(typeToString(getType())),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_endPoint(::boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
     m_remoteEndpoint(::boost::asio::ip::udp::endpoint()),
@@ -17,6 +18,7 @@ UDPClient::UDPClient(ClientAPI& clientApi) :
 UDPClient::UDPClient(UDPClient&& other) :
     Protocol(std::move(other)),
     ClientProtocol(std::move(other)),
+    Loggable(std::move(other)),
     m_ioContext(std::move(other.m_ioContext)),
     m_endPoint(std::move(other.m_endPoint)),
     m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
@@ -48,11 +50,11 @@ void UDPClient::start()
         if (!error)
         {
             std::string receivedMessage(m_receiveBuffer.data(), bytesTransferred);
-            Log::info(logName(), "Received from server: ", receivedMessage);
+            INFO("Received from server: ", receivedMessage);
         }
         else
         {
-            Log::error(logName(), "Error receiving message, reason: ", error.message());
+            ERROR("Error receiving message, reason: ", error.message());
         }
     });
 }

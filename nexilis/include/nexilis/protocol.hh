@@ -60,19 +60,7 @@ public:
     virtual Type getType() = 0;
 
 protected:
-    /// Helper function for logging.
-    std::string logName(bool extraConf = false)
-    {
-        std::string result;
-        if (extraConf)
-        {
-            std::stringstream ss;
-            ss << __FILE__ << ":" << std::dec << __LINE__ << std::endl;
-            result += ss.str();
-        }
-        return result += typeToString(getType()) + ": ";
-    }
-
+    /// Returns a string value of the Type.
     std::string typeToString(Type type);
 };
 

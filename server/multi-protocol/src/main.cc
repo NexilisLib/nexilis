@@ -49,7 +49,7 @@ int main()
     */
 
     // Boost TCP
-    auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12345);
+    auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12348);
     boostTCPServer.start();
     std::cout << "Boost TCP Done" << std::endl;
 

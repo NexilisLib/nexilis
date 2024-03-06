@@ -151,7 +151,7 @@ void Server::bindSocket()
 
     if (bind(m_serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
-        Log::critical(logName(), "Error binding socket, reason: ", strerror(errno));
+        Log::critical("Error binding socket, reason: ", strerror(errno));
         close(m_serverSocket);
         exit(1);
     }

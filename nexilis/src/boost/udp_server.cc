@@ -63,7 +63,7 @@ void UDPServer::start()
 
 void UDPServer::receiveFromClients()
 {
-    Log::debug(logName(), "Receive from clients called");
+    Log::debug("Receive from clients called");
 
     m_remoteEndpoint = ::boost::asio::ip::udp::endpoint();
 
@@ -71,7 +71,7 @@ void UDPServer::receiveFromClients()
     ::boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
         [this](const ::boost::system::error_code& error, std::size_t bytes_transferred)
         {
-            Log::debug(logName(), "Receiving stuff from client");
+            Log::debug("Receiving stuff from client");
             if (!error)
             {
                 std::cout << "Received from " << m_remoteEndpoint.address().to_string() << ": "

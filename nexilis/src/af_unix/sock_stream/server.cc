@@ -72,7 +72,7 @@ void Server::createSocket()
     m_serverSocket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (m_serverSocket == -1)
     {
-        Log::error(logName(), "Couldn't create socket");
+        Log::error("Couldn't create socket");
     }
 }
 
@@ -89,13 +89,13 @@ void Server::bindSocket()
 
     if (bind(m_serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
-        Log::error(logName(), "Failed to bind socket");
+        Log::error("Failed to bind socket");
         close(m_serverSocket);
     }
 
     if (listen(m_serverSocket, ServerManager::getMaxAmountOfClients()) == -1)
     {
-        Log::error(logName(), "Failed to listen to socket");
+        Log::error("Failed to listen to socket");
         close(m_serverSocket);
     }
 }
@@ -106,7 +106,7 @@ void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
 
     if (sentBytes == -1)
     {
-        Log::error(logName(), "Failed to send message");
+        Log::error("Failed to send message");
     }
 }
 
@@ -133,7 +133,7 @@ std::string Server::receiveMessage(int socket)
             }
             else
             {
-                Log::error(logName(), "Received message that does" ,
+                Log::error("Received message that does" ,
                 " not contain the null-termination character");
                 break;
             }
@@ -141,12 +141,12 @@ std::string Server::receiveMessage(int socket)
 
         else if (bytesRead == 0)
         {
-            Log::info(logName(), "Connection closed by peer");
+            Log::info("Connection closed by peer");
             break;
         }
         else
         {
-            Log::error(logName(), "Error receiving message");
+            Log::error("Error receiving message");
             break;
         }
     }
@@ -160,7 +160,7 @@ void Server::handleMessages()
     int clientSocket = accept(m_serverSocket, nullptr, nullptr);
     if (clientSocket == -1)
     {
-        Log::error(logName(), "Failed to accept connection");
+        Log::error("Failed to accept connection");
         close(m_serverSocket);
     }
 
@@ -185,16 +185,16 @@ void Server::handleMessages()
 
                 if (readCommand)
                 {
-                    Log::debug(logName(), "Command read succesfully!");
+                    Log::debug("Command read succesfully!");
                 }
                 else
                 {
-                    Log::error(logName(), "Message reading error!");
+                    Log::error("Message reading error!");
                 }
             }
             else
             {
-                Log::error(logName(), "Message from unauthorized client!");
+                Log::error("Message from unauthorized client!");
             }
         }
     }

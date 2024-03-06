@@ -1,3 +1,4 @@
+#include "nexilis/loggable.hh"
 #include <nexilis/message_handler.hh>
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/command.hh>

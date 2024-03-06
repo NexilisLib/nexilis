@@ -94,7 +94,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     }
     else
     {
-        Log::info("NO ID IN THE MESSAGE");
+        Log::debug("NO ID IN THE MESSAGE");
     }
 
     switch (authentication->getMode())

@@ -84,14 +84,14 @@ void Client::connectToServer()
 
 void Client::sendMsg(const std::string& message)
 {
-    Log::debug(logName(), "Sending message to: ", m_serverAddr.sun_path);
+    Log::debug("Sending message to: ", m_serverAddr.sun_path);
 
     std::string readyMessage = message + '\0';
     ssize_t sentBytes = send(m_clientSocket, readyMessage.c_str(), readyMessage.size(), 0);
 
     if (sentBytes == -1)
     {
-        Log::error(logName(), "Error sending message");
+        Log::error("Error sending message");
     }
 }
 

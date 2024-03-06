@@ -6,7 +6,7 @@
 namespace nexilis
 {
 
-/// Class that gives better logging by inheriting it.
+/// Class that gives logging macros by inheriting it.
 class Loggable
 {
 public:

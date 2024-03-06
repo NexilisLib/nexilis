@@ -71,7 +71,7 @@ void UDPClient::sendData(const char* data, size_t dataSize)
     auto serverAddr = (const struct sockaddr*)&m_serverAddr;
     if (sendto(m_clientSocket, data, dataSize, 0, serverAddr, sizeof(m_serverAddr)) == -1)
     {
-        Log::error(logName(), "Error sending message");
+        Log::error("Error sending message");
     }
 }
 
