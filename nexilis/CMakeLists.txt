@@ -35,6 +35,7 @@ set(SOURCES
     src/packet.cc
     src/protocol.cc
     src/protocol_manager.cc
+    src/json.cc
 
     src/af_unix/sock_dgram/server.cc
     src/af_unix/sock_dgram/client.cc

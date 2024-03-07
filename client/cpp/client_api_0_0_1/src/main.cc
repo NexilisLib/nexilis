@@ -1,4 +1,5 @@
 // nexilis libs
+#include "nexilis/loggable.hh"
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>

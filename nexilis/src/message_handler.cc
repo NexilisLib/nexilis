@@ -83,14 +83,35 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     Message errorMessage("", errordata, -1, nullptr);
 
     std::vector<uint8_t> convertedMessage = Util::convertToByteVector(message.c_str(), message.size());
-    bool normalMessage = containsFF(convertedMessage);
 
+    // If the message contains 0xFF byte we consider this message nexilis message.
+    bool normalMessage = containsFF(convertedMessage);
     Client* realClient = nullptr;
     if (normalMessage)
     {
         size_t id = extractSizeFromVector(convertedMessage);
-        Log::info("ClientID here: ", id);
-        realClient = ClientStorage::getClientById(id);
+
+        // Id extraction is successfull.
+        if (id)
+        {
+            Log::debug("Attempt to connect client: ", id);
+            auto existingClient = ClientStorage::getClientById(id);
+
+            if (existingClient)
+            {
+                Log::debug("Connecting client: ", id);
+                // Valid state to enter switch (authentication->getMode()).
+                realClient = existingClient;
+            }
+            else
+            {
+                Log::error("Undefined behaviour");
+            }
+        }
+        else
+        {
+            Log::error("Undefined behaviour");
+        }
     }
     else
     {

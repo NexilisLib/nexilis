@@ -235,7 +235,7 @@ public:
 
     /// If the client af_unix STREAM connection is ready.
     bool isUnixStreamReady();
-    
+
     /// Steal the runtime until af_inet UDP connection is ready.
     void waitUntilInetUDPReady();
 
