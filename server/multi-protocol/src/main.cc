@@ -2,6 +2,7 @@
 #include <nexilis/log.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/server_manager.hh>
+#include <nexilis/mysql/database.hh>
 
 // nexilis protocols
 #include <nexilis/af_inet/udp_server.hh>
@@ -23,6 +24,11 @@ int main()
     serverManager.setAuthentication(auth);
 
     nexilis::ProtocolManager protocolManager;
+
+    nexilis::mysql::Database::ConnectionData connectionData("0.0.0.0", "root", "my_password", "my_database");
+    nexilis::mysql::Database database(connectionData);
+
+    database.executeQuery("CREATE TABLE cpp (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))");
 
     // af_unix STREAM
     /*

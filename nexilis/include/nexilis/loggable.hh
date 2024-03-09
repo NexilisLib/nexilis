@@ -7,6 +7,7 @@ namespace nexilis
 {
 
 /// Class that gives logging macros by inheriting it.
+/// Works both client on client and serverside code.
 class Loggable
 {
 public:

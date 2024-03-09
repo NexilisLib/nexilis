@@ -14,6 +14,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+# MySQL C API
+find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
+
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
@@ -28,6 +31,7 @@ set(SOURCES
     src/client_storage.cc
     src/client_protocol.cc
     src/server_protocol.cc
+    src/client_api.cc
     src/log.cc
     src/loggable.cc
     src/message_handler.cc
@@ -36,6 +40,9 @@ set(SOURCES
     src/protocol.cc
     src/protocol_manager.cc
     src/json.cc
+
+    src/common/util.cc
+    src/mysql/database.cc
 
     src/af_unix/sock_dgram/server.cc
     src/af_unix/sock_dgram/client.cc
@@ -53,12 +60,9 @@ set(SOURCES
     src/boost/tcp_server.cc
     src/boost/udp_client.cc
     src/boost/udp_server.cc
-
-    src/client_api.cc
-    src/common/util.cc
 )
 
 add_library(nexilis ${SOURCES})
 
 target_include_directories(nexilis PUBLIC include)
-target_link_libraries(nexilis ${Boost_LIBRARIES})
+target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
