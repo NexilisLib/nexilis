@@ -15,6 +15,46 @@ Database::ConnectionData::ConnectionData(const std::string& host, const std::str
 {
 }
 
+Database::ConnectionData::ConnectionData(const ConnectionData& other) :
+    m_host(other.m_host),
+    m_user(other.m_user),
+    m_password(other.m_password),
+    m_database(other.m_database)
+{
+}
+
+Database::ConnectionData::ConnectionData(ConnectionData&& other) :
+    m_host(std::move(other.m_host)),
+    m_user(std::move(other.m_user)),
+    m_password(std::move(other.m_password)),
+    m_database(std::move(other.m_database))
+{
+}
+
+Database::ConnectionData& Database::ConnectionData::operator=(const ConnectionData& other)
+{
+    if (this != &other)
+    {
+        m_host = other.m_host;
+        m_user = other.m_user;
+        m_password = other.m_password;
+        m_database = other.m_database;
+    }
+    return *this;
+}
+
+Database::ConnectionData& Database::ConnectionData::operator=(ConnectionData&& other)
+{
+    if (this != &other)
+    {
+        m_host = std::move(other.m_host);
+        m_user = std::move(other.m_user);
+        m_password = std::move(other.m_password);
+        m_database = std::move(other.m_database);
+    }
+    return *this;
+}
+
 Database::ResultSet::ResultSet(MYSQL_RES* result) :
     m_result(result)
 {

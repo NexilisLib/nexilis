@@ -23,8 +23,18 @@ public:
         /// Constructor.
         ConnectionData(const std::string& host, const std::string& user, const std::string& password, const std::string& database);
 
-        /// TODO copy, move initialization.
+        /// Copy constructor.
+        ConnectionData(const ConnectionData& other);
 
+        /// Move constructor.
+        ConnectionData(ConnectionData&& other);
+
+        /// Copy assignment operator.
+        ConnectionData& operator=(const ConnectionData& other);
+
+        /// Move assignment operator.
+        ConnectionData& operator=(ConnectionData&& other);
+    public:
         /// Getters
         std::string getHost() { return m_host; }
         std::string getUser() { return m_user; }
@@ -41,9 +51,16 @@ public:
     class ResultSet
     {
     public:
+        /// Constructor.
         ResultSet(st_mysql_res* result);
+
+        /// Destructor.
         ~ResultSet();
+
+        /// Get data of the query.
         std::vector<std::string> getRow();
+
+        /// Helper function to print the contents of the query.
         void print();
     private:
         st_mysql_res* m_result;
