@@ -26,9 +26,18 @@ int main()
     nexilis::ProtocolManager protocolManager;
 
     nexilis::mysql::Database::ConnectionData connectionData("0.0.0.0", "root", "my_password", "my_database");
-    nexilis::mysql::Database database(connectionData);
+    nexilis::mysql::Database db(connectionData);
 
-    database.executeQuery("CREATE TABLE cpp (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))");
+    db.executeNonQuery("CREATE TABLE IF NOT EXISTS cpp (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))");
+
+    // Example usage: Execute a query that doesn't return results
+    if (db.executeNonQuery("INSERT INTO cpp (name) VALUES ('Moika')"))
+    {
+        std::cout << "Query executed successfully" << std::endl;
+    }
+
+    auto result = db.executeQuery("SELECT * FROM cpp;");
+    result.print();
 
     // af_unix STREAM
     /*

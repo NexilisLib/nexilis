@@ -1,12 +1,16 @@
 #ifndef NEXILIS_MYSQL_DATABASE_HH
 #define NEXILIS_MYSQL_DATABASE_HH
 
-#include <nexilis/log.hh>
+#include <string>
+#include <vector>
 
-#include <mysql/mysql.h>
+// Forward declarations.
+struct st_mysql;
+struct st_mysql_res;
 
 namespace nexilis::mysql
 {
+
 /// Database class holds context to mysql or mariadb database.
 /// Database is not copyable, is is movable.
 /// This class should be ideally used in context of a reference.
@@ -34,6 +38,17 @@ public:
         std::string m_database;
     };
 
+    class ResultSet
+    {
+    public:
+        ResultSet(st_mysql_res* result);
+        ~ResultSet();
+        std::vector<std::string> getRow();
+        void print();
+    private:
+        st_mysql_res* m_result;
+    };
+
     /// Constructor.
     Database(const ConnectionData& connectionData);
 
@@ -52,9 +67,14 @@ public:
     /// Move assignment operator.
     Database& operator=(Database&& other);
 
-    bool executeQuery(const std::string& query);
+    /// For query operations that don't return anything.
+    /// For example INSERT, UPDATE, DELETE, etc.
+    bool executeNonQuery(const std::string& query);
+
+    /// For queries that return results, like SELECT.
+    ResultSet executeQuery(const std::string& query);
 private:
-    MYSQL* m_connection;
+    st_mysql* m_connection;
     ConnectionData m_connectionData;
 };
 

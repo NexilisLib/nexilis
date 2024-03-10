@@ -1,4 +1,7 @@
 #include <nexilis/mysql/database.hh>
+#include <nexilis/log.hh>
+
+#include <mysql/mysql.h>
 
 namespace nexilis::mysql
 {
@@ -10,6 +13,54 @@ Database::ConnectionData::ConnectionData(const std::string& host, const std::str
         m_password(password),
         m_database(database)
 {
+}
+
+Database::ResultSet::ResultSet(MYSQL_RES* result) :
+    m_result(result)
+{
+}
+
+Database::ResultSet::~ResultSet()
+{
+    if (m_result)
+    {
+        mysql_free_result(m_result);
+    }
+}
+
+std::vector<std::string> Database::ResultSet::getRow()
+{
+    MYSQL_ROW row = mysql_fetch_row(m_result);
+    std::vector<std::string> rowData;
+
+    if (row)
+    {
+        unsigned int numFields = mysql_num_fields(m_result);
+        rowData.reserve(numFields);
+        for (unsigned int i = 0; i < numFields; ++i)
+        {
+            rowData.push_back(row[i] ? row[i] : "NULL");
+        }
+    }
+
+    return rowData;
+}
+
+void Database::ResultSet::print()
+{
+    while (true)
+    {
+        std::vector<std::string> row = getRow();
+        if (row.empty())
+        {
+            break;
+        }
+        for (const auto& value : row)
+        {
+            std::cout << value << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 Database::Database(const Database::ConnectionData& connectionData) :
@@ -57,7 +108,7 @@ Database& Database::operator=(Database&& other)
     return *this;
 }
 
-bool Database::executeQuery(const std::string& query)
+bool Database::executeNonQuery(const std::string& query)
 {
     if (!m_connection)
     {
@@ -71,6 +122,30 @@ bool Database::executeQuery(const std::string& query)
         return false;
     }
     return true;
+}
+
+Database::ResultSet Database::executeQuery(const std::string& query)
+{
+    if (!m_connection)
+    {
+        Log::error("Not connected to MySQL server");
+        return ResultSet(nullptr);
+    }
+
+    if (mysql_query(m_connection, query.c_str()))
+    {
+        Log::error("Error executing SQL query: ", mysql_error(m_connection));
+        return ResultSet(nullptr);
+    }
+
+    MYSQL_RES* result = mysql_store_result(m_connection);
+    if (!result)
+    {
+        Log::error("Error storing result set: ", mysql_error(m_connection));
+        return ResultSet(nullptr);
+    }
+
+    return ResultSet(result);
 }
 
 
