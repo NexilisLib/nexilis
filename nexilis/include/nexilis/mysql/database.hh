@@ -35,12 +35,11 @@ public:
         /// Move assignment operator.
         ConnectionData& operator=(ConnectionData&& other);
     public:
-        /// Getters
+        /// Getters.
         std::string getHost() { return m_host; }
         std::string getUser() { return m_user; }
         std::string getPassword() { return m_password; }
         std::string getDatabase() { return m_database; }
-
     private:
         std::string m_host;
         std::string m_user;
