@@ -2,6 +2,7 @@
 #define CHAT_CLIENT_PROGRAM_HH
 
 #include "window.hh"
+#include "menu.hh"
 
 class Program
 {
@@ -26,8 +27,14 @@ private:
     /// Window object.
     Window m_window;
 
+    /// Menu object.
+    Menu m_menu;
+
     /// Current input variable.
     int m_input;
+
+    /// Current menu choice.
+    int m_choice = 0;
 };
 
 #endif
