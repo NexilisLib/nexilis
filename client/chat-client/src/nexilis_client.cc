@@ -1,0 +1,29 @@
+#include "nexilis_client.hh"
+#include "nexilis/boost/tcp_client.hh"
+
+#include <nexilis/packet.hh>
+
+nexilis::ClientAPI::ServerData getServerData()
+{
+    nexilis::ClientAPI::ServerData serverData("salasana");
+    serverData.setBoostTCP("192.168.1.85", 12348);
+    return serverData;
+}
+
+NexilisClient::NexilisClient() :
+    m_serverData(getServerData()),
+    m_clientAPI(m_serverData),
+    m_tcpClient(m_protocolManager.createProtocol<nexilis::boost::TCPClient>(m_clientAPI))
+{
+}
+
+void NexilisClient::start()
+{
+    m_tcpClient.start();
+    m_tcpClient.sendMessage(m_serverData.getPassword());
+    m_clientAPI.waitUntilBoostTCPReady();
+    std::cout << "Boost TCP connection ready" << std::endl;
+    auto id = nexilis::Packet::Get::clientId(m_clientAPI);
+    m_tcpClient.sendMessage(id);
+    std::cout << "BOOST TCP DONE!" << std::endl;
+}

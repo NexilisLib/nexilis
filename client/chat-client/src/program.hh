@@ -10,12 +10,16 @@ public:
     /// Constructor.
     Program(int argc, char** argv);
 
+    /// Destructor.
+    ~Program();
+
     /// The update loop for the program.
     void update();
 
 private:
     void inputHandler();
     void updateScreenSize();
+    void end();
 
 private:
     /// Command line arguments argc.

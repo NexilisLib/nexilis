@@ -9,11 +9,13 @@ void Menu::update(WINDOW* window, int& highlight)
             showMenu(window, highlight);
             break;
         }
+        // The infopage shall be inside the menu.
         case State::infopage:
         {
             showInfo(window);
             break;
         }
+        // This does not concern menu, do nothing.
         case State::chat:
         {
             break;
@@ -53,13 +55,12 @@ void Menu::showInfo(WINDOW* window)
     /*
      * TODO
      */
-    int halfX = 2;
-    int y = 10;
+    int halfX = 10;
+    int y = 30;
 
     for (size_t i = 0; i < m_infoTexts.size(); i++)
     {
-        int textOffset = static_cast<int>(m_infoTexts[i].size() / 2);
-        mvwprintw(window, y, halfX - textOffset, "%s", m_infoTexts[i].c_str());
+        mvwprintw(window, y, halfX, "%s", m_infoTexts[i].c_str());
         y += 2;
     }
 }

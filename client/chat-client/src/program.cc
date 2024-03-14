@@ -1,7 +1,5 @@
 #include "program.hh"
-#include "menu.hh"
 #include "debug.hh"
-#include <string>
 
 Program::Program(int argc, char** argv) :
     m_argc(argc),
@@ -9,6 +7,11 @@ Program::Program(int argc, char** argv) :
     m_window(),
     m_menu()
 {
+}
+
+Program::~Program()
+{
+    end();
 }
 
 void Program::inputHandler()
@@ -56,13 +59,47 @@ void Program::inputHandler()
             }
         }
 
-        // Launch actions from menu.
+        // Press enter in menu to launch action.
+        if (m_input == 10)
+        {
+            switch (m_choice)
+            {
+                // Chat.
+                case 0:
+                {
+                    m_menu.changeState(Menu::State::chat);
+                    wclear(m_window.getWindow());
+                    break;
+                }
+
+                // Info.
+                case 1:
+                {
+                    m_menu.changeState(Menu::State::infopage);
+                    wclear(m_window.getWindow());
+                    break;
+                }
+
+                // Quit.
+                case 2:
+                {
+                    end();
+                    break;
+                }
+            }
+        }
     }
 }
 
 void Program::updateScreenSize()
 {
     // TODO
+}
+
+void Program::end()
+{
+    endwin();
+    exit(0);
 }
 
 void Program::update()
