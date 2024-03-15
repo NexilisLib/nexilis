@@ -201,13 +201,14 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
 {
     for (uint8_t commandByte : message)
     {
-        std::cout << "Commandbyte hex: " << std::hex << static_cast<int>(commandByte);
-        std::cout << std::endl;
-        std::cout << "Commandbyte char: " <<  static_cast<char>(commandByte);
-        std::cout << std::endl;
+        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
+        Log::debug("");
+        Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
+        Log::debug("");
     }
 
-    std::cout << std::endl << std::endl;
+    Log::debug("");
+    Log::debug("");
     std::cout << std::dec;
 
     switch (message.front())

@@ -92,7 +92,14 @@ void TCPClient::sendMessage(const std::vector<uint8_t>& message)
 
 bool TCPClient::connectToServer()
 {
-    ::boost::asio::connect(m_socket, m_iterator);
+    try
+    {
+        ::boost::asio::connect(m_socket, m_iterator);
+    }
+    catch(...)
+    {
+        ERROR("Could not connect to server!");
+    }
     return m_socket.is_open();
 }
 

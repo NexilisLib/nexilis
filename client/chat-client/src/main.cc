@@ -6,6 +6,8 @@ int main(int argc, char** argv)
     NexilisClient nexilisClient;
     nexilisClient.start();
 
+    std::cout << "nexilis client started" << std::endl;
+
     Program program(argc, argv);
 
     while (true)

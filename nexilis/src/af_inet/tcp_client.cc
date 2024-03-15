@@ -68,6 +68,7 @@ void TCPClient::start()
     if (!connectedToServer)
     {
         Log::error("TCPClient: Couldn't connect to server");
+        return;
     }
 
     m_listenThread = std::thread(&TCPClient::receiveLoop, this);
