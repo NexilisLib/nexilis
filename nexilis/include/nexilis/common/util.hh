@@ -1,6 +1,7 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
+#include <nexilis/logger/log_level.hh>
 #include <nexilis/config.hh>
 
 #include <string>
@@ -60,6 +61,9 @@ public:
     static std::vector<uint8_t> convertToByteVector(const char* command_data, size_t lenght);
     
     static std::vector<uint8_t> convertToByteVector(size_t value);
+
+    static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
+
 };
 
 }

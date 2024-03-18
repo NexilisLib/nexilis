@@ -1,5 +1,5 @@
-#ifndef NEXILIS_LOGGER_FILEHANDLER_HH
-#define NEXILIS_LOGGER_FILEHANDLER_HH
+#ifndef NEXILIS_LOGGER_FILE_HANDLER_HH
+#define NEXILIS_LOGGER_FILE_HANDLER_HH
 
 #include <nexilis/logger/base_handler.hh>
 
@@ -20,7 +20,7 @@ public:
 
     /// Write messages to the given file.
     /// \param data The data of the message.
-    void emit(const LogLevel& /*logLevel*/, const std::string& data) override
+    void emit(LogLevel /*logLevel*/, const std::string& data) override
     {
         ofs << data << std::endl;
     }

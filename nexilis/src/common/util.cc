@@ -88,4 +88,25 @@ std::vector<uint8_t> Util::convertToByteVector(size_t value)
     return result;
 }
 
+void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data)
+{
+    std::string color;
+    switch (logLevel)
+    {
+        case logger::LogLevel::DEBUG:
+        case logger::LogLevel::INFO:
+            color = "\033[37m";
+            break;
+        case logger::LogLevel::WARNING:
+            color = "\033[33m";
+            break;
+        case logger::LogLevel::ERROR:
+        case logger::LogLevel::CRITICAL:
+            color = "\033[31m";
+            break;
+    }
+
+    std::cout << color << data << "\033[0m" << std::endl;
+}
+
 }

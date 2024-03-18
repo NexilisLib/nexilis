@@ -1,4 +1,5 @@
 // nexilis libs
+#include "nexilis/logger/log_level.hh"
 #include <nexilis/log.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/server_manager.hh>

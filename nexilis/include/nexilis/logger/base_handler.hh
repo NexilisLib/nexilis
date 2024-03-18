@@ -1,5 +1,5 @@
-#ifndef NEXILIS_LOGGER_BASEHANDLER_HH
-#define NEXILIS_LOGGER_BASEHANDLER_HH
+#ifndef NEXILIS_LOGGER_BASE_HANDLER_HH
+#define NEXILIS_LOGGER_BASE_HANDLER_HH
 
 #include <nexilis/logger/log_level.hh>
 
@@ -22,7 +22,8 @@ public:
     // Handle logs.
     // \param logLevel The log level of the message.
     // \param data The data of the given message.
-    virtual void emit(const LogLevel& logLevel, const std::string& data) = 0;
+    virtual void emit(LogLevel logLevel, const std::string& data) = 0;
+
 };
 
 } // namespace nexilis::logger
