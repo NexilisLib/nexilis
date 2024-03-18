@@ -1,9 +1,9 @@
 #include <cstdint>
 #include <nexilis/authentication.hh>
-#include <nexilis/message_handler.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
 #include <nexilis/config.hh>
+#include <nexilis/message_handler.hh>
 
 #include <nexilis/common/util.hh>
 
@@ -67,7 +67,7 @@ bool containsFF(const std::vector<uint8_t>& data)
     }
     return false;
 }
-//NEXILIS_ERROR("myfilename", ErrorType::NOT_IMPLEMENTED);
+// NEXILIS_ERROR("myfilename", ErrorType::NOT_IMPLEMENTED);
 
 MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication)
 {
@@ -79,7 +79,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
 
     // TODO
     // Error Messages.
-    std::vector<uint8_t> errordata = { 0xa, 0x10, 0x10 };
+    std::vector<uint8_t> errordata = {0xa, 0x10, 0x10};
     Message errorMessage("", errordata, -1, nullptr);
 
     std::vector<uint8_t> convertedMessage = Util::convertToByteVector(message.c_str(), message.size());
@@ -142,8 +142,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                         address,
                         removeItemsUntilFF(convertedMessage),
                         port,
-                        realClient
-                    );
+                        realClient);
                 }
                 // Message from verified client that has no access.
                 else
@@ -167,7 +166,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     assert(realNewClient);
                     assert(client.getId() == realNewClient->getId());
 
-                    std::vector<uint8_t> message { 0x20, 0x10 };
+                    std::vector<uint8_t> message{0x20, 0x10};
 
                     std::vector<uint8_t> idBytes = Util::convertToByteVector(realNewClient->getId());
                     for (size_t i = 0; i < idBytes.size(); i++)
@@ -179,8 +178,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                         address,
                         message,
                         port,
-                        realNewClient
-                    );
+                        realNewClient);
                 }
                 else
                 {
@@ -197,4 +195,4 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
     }
 }
 
-}
+} // namespace nexilis

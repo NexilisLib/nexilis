@@ -1,8 +1,8 @@
 #ifndef NEXILIS_UNIX_SOCKET_CLIENT_HH
 #define NEXILIS_UNIX_SOCKET_CLIENT_HH
 
-#include <nexilis/client_protocol.hh>
 #include <nexilis/client_api.hh>
+#include <nexilis/client_protocol.hh>
 #include <nexilis/protocol.hh>
 
 #include <sys/un.h>
@@ -37,12 +37,13 @@ public:
 private:
     void createSocket();
     std::string receiveMessage();
+
 private:
     std::string m_serverSocketPath;
     int m_clientSocket;
     struct sockaddr_un m_serverAddr;
 };
 
-} // nexilis::af_unix::sock_dgram
+} // namespace nexilis::af_unix::sock_dgram
 
 #endif

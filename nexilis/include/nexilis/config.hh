@@ -26,6 +26,6 @@ private:
     static bool m_bigEndian;
 };
 
-}
+} // namespace nexilis
 
 #endif

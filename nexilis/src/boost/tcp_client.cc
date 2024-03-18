@@ -6,30 +6,28 @@
 namespace nexilis::boost
 {
 
-TCPClient::TCPClient(ClientAPI& api) :
-    ClientProtocol(&api),
-    m_ioContext(std::make_unique<::boost::asio::io_context>()),
-    m_socket(*m_ioContext),
-    m_resolver(*m_ioContext),
-    m_iterator(m_resolver.resolve({ 
-        api.getBoostTCPServerAddress(), 
-        std::to_string(api.getBoostTCPServerPortNumber()) 
-    })),
-    m_mutex(std::make_unique<std::mutex>())
+TCPClient::TCPClient(ClientAPI& api)
+    : ClientProtocol(&api),
+      m_ioContext(std::make_unique<::boost::asio::io_context>()),
+      m_socket(*m_ioContext),
+      m_resolver(*m_ioContext),
+      m_iterator(m_resolver.resolve({api.getBoostTCPServerAddress(),
+                                     std::to_string(api.getBoostTCPServerPortNumber())})),
+      m_mutex(std::make_unique<std::mutex>())
 {
 }
 
-TCPClient::TCPClient(TCPClient&& other) :
-    Protocol(std::move(other)),
-    ClientProtocol(std::move(other)),
-    m_ioContextThread(std::move(other.m_ioContextThread)),
-    m_receiveThread(std::move(other.m_receiveThread)),
-    m_stopped(std::move(other.m_stopped)),
-    m_ioContext(std::move(other.m_ioContext)),
-    m_socket(std::move(other.m_socket)),
-    m_resolver(std::move(other.m_resolver)),
-    m_iterator(std::move(other.m_iterator)),
-    m_mutex(std::move(other.m_mutex))
+TCPClient::TCPClient(TCPClient&& other)
+    : Protocol(std::move(other)),
+      ClientProtocol(std::move(other)),
+      m_ioContextThread(std::move(other.m_ioContextThread)),
+      m_receiveThread(std::move(other.m_receiveThread)),
+      m_stopped(std::move(other.m_stopped)),
+      m_ioContext(std::move(other.m_ioContext)),
+      m_socket(std::move(other.m_socket)),
+      m_resolver(std::move(other.m_resolver)),
+      m_iterator(std::move(other.m_iterator)),
+      m_mutex(std::move(other.m_mutex))
 {
     other.m_ioContext = nullptr;
     other.m_mutex = nullptr;
@@ -93,7 +91,7 @@ bool TCPClient::connectToServer()
     {
         ::boost::asio::connect(m_socket, m_iterator);
     }
-    catch(...)
+    catch (...)
     {
         Log::error("Could not connect to server!");
     }
@@ -106,19 +104,19 @@ bool TCPClient::send(const std::string& data)
     {
         // Asynchronously send data to the server.
         ::boost::asio::async_write(m_socket, ::boost::asio::buffer(data),
-            [this](const ::boost::system::error_code& error, std::size_t /*bytes_transferred*/)
-            {
-                if (!error)
-                {
-                    Log::info("Message sent successfully.");
-                    return true;
-                }
-                else
-                {
-                    Log::error("Send error: " + error.message());
-                    return false;
-                }
-            });
+                                   [this](const ::boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+                                   {
+                                       if (!error)
+                                       {
+                                           Log::info("Message sent successfully.");
+                                           return true;
+                                       }
+                                       else
+                                       {
+                                           Log::error("Send error: " + error.message());
+                                           return false;
+                                       }
+                                   });
         return false;
     }
     else
@@ -152,7 +150,8 @@ void TCPClient::start()
     {
         Log::info("Connected to server!");
 
-        m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
+        m_ioContextThread = std::thread([this]()
+                                        { m_ioContext->run(); });
 
         // Start a separate thread to continuously receive messages.
         m_receiveThread = std::thread(&TCPClient::receiveLoop, this);
@@ -192,4 +191,4 @@ void TCPClient::receiveLoop()
     }
 }
 
-}
+} // namespace nexilis::boost

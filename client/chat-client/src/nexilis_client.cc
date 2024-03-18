@@ -17,6 +17,29 @@ NexilisClient::NexilisClient() :
 {
 }
 
+NexilisClient::NexilisClient(NexilisClient&& other) :
+    m_serverData(std::move(other.m_serverData)),
+    m_clientAPI(std::move(other.m_clientAPI)),
+    m_protocolManager(std::move(other.m_protocolManager)),
+    m_tcpClient(std::move(other.m_tcpClient))
+{
+}
+
+NexilisClient& NexilisClient::operator=(NexilisClient&& other)
+{
+    if (this != &other)
+    {
+        m_serverData = std::move(other.m_serverData);
+        m_clientAPI = std::move(other.m_clientAPI);
+        m_protocolManager = std::move(other.m_protocolManager);
+        m_tcpClient = std::move(other.m_tcpClient);
+    }
+    return *this;
+}
+
+
+
+
 void NexilisClient::start()
 {
     m_tcpClient.start();

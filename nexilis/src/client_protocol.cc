@@ -3,13 +3,13 @@
 namespace nexilis
 {
 
-ClientProtocol::ClientProtocol(ClientAPI* api) :
-    m_api(api)
+ClientProtocol::ClientProtocol(ClientAPI* api)
+    : m_api(api)
 {
 }
 
-ClientProtocol::ClientProtocol(ClientProtocol&& other) :
-    m_api(other.m_api)
+ClientProtocol::ClientProtocol(ClientProtocol&& other)
+    : m_api(other.m_api)
 {
     other.m_api = nullptr;
 }
@@ -24,4 +24,4 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     return *this;
 }
 
-}
+} // namespace nexilis

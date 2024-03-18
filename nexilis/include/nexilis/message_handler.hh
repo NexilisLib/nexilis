@@ -4,8 +4,8 @@
 #include <nexilis/authentication.hh>
 #include <nexilis/client.hh>
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 namespace nexilis
 {
@@ -26,11 +26,11 @@ public:
     class Message
     {
     public:
-        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, Client* client) :
-            m_address(address),
-            m_data(data),
-            m_port(port),
-            m_client(client)
+        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, Client* client)
+            : m_address(address),
+              m_data(data),
+              m_port(port),
+              m_client(client)
         {
         }
 
@@ -69,6 +69,6 @@ public:
     Message readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication);
 };
 
-}
+} // namespace nexilis
 
 #endif

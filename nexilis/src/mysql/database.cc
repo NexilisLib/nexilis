@@ -1,5 +1,5 @@
-#include <nexilis/mysql/database.hh>
 #include <nexilis/log.hh>
+#include <nexilis/mysql/database.hh>
 
 #include <mysql/mysql.h>
 
@@ -7,27 +7,27 @@ namespace nexilis::mysql
 {
 
 Database::ConnectionData::ConnectionData(const std::string& host, const std::string& user,
-        const std::string& password, const std::string& database) :
-        m_host(host),
-        m_user(user),
-        m_password(password),
-        m_database(database)
+                                         const std::string& password, const std::string& database)
+    : m_host(host),
+      m_user(user),
+      m_password(password),
+      m_database(database)
 {
 }
 
-Database::ConnectionData::ConnectionData(const ConnectionData& other) :
-    m_host(other.m_host),
-    m_user(other.m_user),
-    m_password(other.m_password),
-    m_database(other.m_database)
+Database::ConnectionData::ConnectionData(const ConnectionData& other)
+    : m_host(other.m_host),
+      m_user(other.m_user),
+      m_password(other.m_password),
+      m_database(other.m_database)
 {
 }
 
-Database::ConnectionData::ConnectionData(ConnectionData&& other) :
-    m_host(std::move(other.m_host)),
-    m_user(std::move(other.m_user)),
-    m_password(std::move(other.m_password)),
-    m_database(std::move(other.m_database))
+Database::ConnectionData::ConnectionData(ConnectionData&& other)
+    : m_host(std::move(other.m_host)),
+      m_user(std::move(other.m_user)),
+      m_password(std::move(other.m_password)),
+      m_database(std::move(other.m_database))
 {
 }
 
@@ -55,8 +55,8 @@ Database::ConnectionData& Database::ConnectionData::operator=(ConnectionData&& o
     return *this;
 }
 
-Database::ResultSet::ResultSet(MYSQL_RES* result) :
-    m_result(result)
+Database::ResultSet::ResultSet(MYSQL_RES* result)
+    : m_result(result)
 {
 }
 
@@ -103,8 +103,8 @@ void Database::ResultSet::print()
     }
 }
 
-Database::Database(const Database::ConnectionData& connectionData) :
-    m_connectionData(connectionData)
+Database::Database(const Database::ConnectionData& connectionData)
+    : m_connectionData(connectionData)
 {
     m_connection = mysql_init(nullptr);
 
@@ -115,8 +115,8 @@ Database::Database(const Database::ConnectionData& connectionData) :
     }
 
     if (mysql_real_connect(m_connection, m_connectionData.getHost().c_str(),
-                m_connectionData.getUser().c_str(), m_connectionData.getPassword().c_str(),
-                m_connectionData.getDatabase().c_str(), 0, nullptr, 0) == nullptr)
+                           m_connectionData.getUser().c_str(), m_connectionData.getPassword().c_str(),
+                           m_connectionData.getDatabase().c_str(), 0, nullptr, 0) == nullptr)
     {
         Log::error("Error connecting to MySQL server: ", mysql_error(m_connection));
         mysql_close(m_connection);
@@ -124,9 +124,9 @@ Database::Database(const Database::ConnectionData& connectionData) :
     }
 }
 
-Database::Database(Database&& other) :
-    m_connection(std::move(other.m_connection)),
-    m_connectionData(std::move(other.m_connectionData))
+Database::Database(Database&& other)
+    : m_connection(std::move(other.m_connection)),
+      m_connectionData(std::move(other.m_connectionData))
 {
 }
 
@@ -188,5 +188,4 @@ Database::ResultSet Database::executeQuery(const std::string& query)
     return ResultSet(result);
 }
 
-
-}
+} // namespace nexilis::mysql

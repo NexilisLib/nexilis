@@ -12,8 +12,8 @@ class FunctionHandler : public BaseHandler
 {
 public:
     /// Constructor.
-    FunctionHandler(const std::function<void(LogLevel, const std::string&)>& function) :
-        m_function(function)
+    FunctionHandler(const std::function<void(LogLevel, const std::string&)>& function)
+        : m_function(function)
     {
     }
 
@@ -31,6 +31,6 @@ private:
     std::function<void(LogLevel, const std::string&)> m_function;
 };
 
-}
+} // namespace nexilis::logger
 
 #endif

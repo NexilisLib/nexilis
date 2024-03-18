@@ -1,18 +1,17 @@
 #ifndef NEXILIS_BOOST_TCP_CLIENT_HH
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
+#include <nexilis/client_protocol.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/client_protocol.hh>
 
 #include <boost/asio.hpp>
 
 namespace nexilis::boost
 {
 
-class TCPClient :
-                public Protocol,
-                public ClientProtocol
+class TCPClient : public Protocol,
+                  public ClientProtocol
 {
 public:
     /// Constructor.
@@ -54,6 +53,7 @@ public:
 protected:
     std::thread m_ioContextThread;
     std::thread m_receiveThread;
+
 private:
     void receiveLoop();
     bool connectToServer();
@@ -61,6 +61,7 @@ private:
     bool receive(std::string& buffer);
 
     bool m_stopped = false;
+
 private:
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
     ::boost::asio::ip::tcp::socket m_socket;

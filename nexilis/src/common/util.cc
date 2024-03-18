@@ -52,7 +52,7 @@ std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> or
         return {};
     }
 
-    return std::vector<uint8_t> (original.begin() + amount, original.end());
+    return std::vector<uint8_t>(original.begin() + amount, original.end());
 }
 
 std::vector<uint8_t> Util::convertToByteVector(const char* command_data, size_t lenght)
@@ -109,4 +109,4 @@ void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::strin
     std::cout << color << data << "\033[0m" << std::endl;
 }
 
-}
+} // namespace nexilis

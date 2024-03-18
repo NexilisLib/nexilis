@@ -1,7 +1,7 @@
 #ifndef CHAT_CLIENT_WINDOW_HH
 #define CHAT_CLIENT_WINDOW_HH
 
-#include <ncurses.h>
+struct _win_st;
 
 #include <utility>
 
@@ -15,10 +15,10 @@ public:
     ~Window();
 
     /// Get the ncurses window.
-    WINDOW* getWindow() const;
+    _win_st* getWindow() const;
 private:
     /// Underlying ncurses window.
-    WINDOW* m_window;
+    _win_st* m_window = nullptr;
 
     /// Size of the window.
     std::pair<int, int> m_size;

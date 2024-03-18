@@ -30,6 +30,6 @@ private:
     static size_t m_maxClients;
 };
 
-}
+} // namespace nexilis
 
 #endif

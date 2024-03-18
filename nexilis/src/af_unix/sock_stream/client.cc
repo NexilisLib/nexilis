@@ -1,18 +1,18 @@
 #include <nexilis/af_unix/sock_stream/client.hh>
-#include <nexilis/nexilis_macros.hh>
 #include <nexilis/log.hh>
+#include <nexilis/nexilis_macros.hh>
 
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 namespace nexilis::af_unix::sock_stream
 {
 
-Client::Client(ClientAPI& clientApi) :
-    ClientProtocol(&clientApi),
-    m_serverSocketPath(clientApi.getUnixStreamPath()),
-    m_mutex(std::make_unique<std::mutex>())
+Client::Client(ClientAPI& clientApi)
+    : ClientProtocol(&clientApi),
+      m_serverSocketPath(clientApi.getUnixStreamPath()),
+      m_mutex(std::make_unique<std::mutex>())
 {
     createSocket();
     connectToServer();
@@ -31,14 +31,14 @@ Client::~Client()
     }
 }
 
-Client::Client(Client&& other) :
-    Protocol(std::move(other)),
-    ClientProtocol(std::move(other)),
-    m_serverSocketPath(std::move(other.m_serverSocketPath)),
-    m_clientSocket(std::move(other.m_clientSocket)),
-    m_serverAddr(std::move(other.m_serverAddr)),
-    m_receiveThread(std::move(other.m_receiveThread)),
-    m_mutex(std::move(other.m_mutex))
+Client::Client(Client&& other)
+    : Protocol(std::move(other)),
+      ClientProtocol(std::move(other)),
+      m_serverSocketPath(std::move(other.m_serverSocketPath)),
+      m_clientSocket(std::move(other.m_clientSocket)),
+      m_serverAddr(std::move(other.m_serverAddr)),
+      m_receiveThread(std::move(other.m_receiveThread)),
+      m_mutex(std::move(other.m_mutex))
 {
 }
 
@@ -108,13 +108,12 @@ void Client::sendMessage(const std::vector<uint8_t>& message)
 void Client::start()
 {
     m_receiveThread = std::thread([this]()
-    {
+                                  {
         while (true)
         {
             auto data = receiveMessage();
             ClientProtocol::getClientAPI()->readMessage(data);
-        }
-    });
+        } });
 }
 
 void Client::stop()
@@ -142,4 +141,4 @@ std::vector<uint8_t> Client::receiveMessage()
     return receivedData;
 }
 
-}
+} // namespace nexilis::af_unix::sock_stream

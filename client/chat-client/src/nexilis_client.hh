@@ -11,6 +11,12 @@ class NexilisClient
 public:
     NexilisClient();
     void start();
+
+    /// Move constructor.
+    NexilisClient(NexilisClient&& other);
+
+    /// Move assignment operator.
+    NexilisClient& operator=(NexilisClient&& other);
 private:
     nexilis::ClientAPI::ServerData m_serverData;
     nexilis::ClientAPI m_clientAPI;

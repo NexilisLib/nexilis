@@ -9,8 +9,8 @@
 namespace nexilis::af_inet
 {
 
-TCPClient::TCPClient(ClientAPI& api) : 
-    ClientProtocol(&api)
+TCPClient::TCPClient(ClientAPI& api)
+    : ClientProtocol(&api)
 {
     m_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -39,12 +39,12 @@ TCPClient::~TCPClient()
     }
 }
 
-TCPClient::TCPClient(TCPClient&& other) :
-    Protocol(std::move(other)),
-    ClientProtocol(std::move(other)),
-    m_clientSocket(std::move(other.m_clientSocket)),
-    m_serverAddr(std::move(other.m_serverAddr)),
-    m_listenThread(std::move(other.m_listenThread))
+TCPClient::TCPClient(TCPClient&& other)
+    : Protocol(std::move(other)),
+      ClientProtocol(std::move(other)),
+      m_clientSocket(std::move(other.m_clientSocket)),
+      m_serverAddr(std::move(other.m_serverAddr)),
+      m_listenThread(std::move(other.m_listenThread))
 {
 }
 
@@ -126,4 +126,4 @@ void TCPClient::receiveLoop()
     }
 }
 
-}
+} // namespace nexilis::af_inet

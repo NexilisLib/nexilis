@@ -20,9 +20,9 @@ public:
     static Client* getClientById(size_t id);
 
     static std::vector<Client*> getClientsByIpAddress(const std::string& ip_address);
+
 private:
     static std::vector<Client> m_clients;
-
 };
 
 } // namespace nexilis

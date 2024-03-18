@@ -1,5 +1,7 @@
 #include "window.hh"
 
+#include <ncurses.h>
+
 #include <iostream>
 
 Window::Window()

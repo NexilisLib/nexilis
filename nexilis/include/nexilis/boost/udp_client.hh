@@ -1,18 +1,17 @@
 #ifndef NEXILIS_BOOST_UDP_CLIENT_HH
 #define NEXILIS_BOOST_UDP_CLIENT_HH
 
+#include <nexilis/client_protocol.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/client_protocol.hh>
 
 #include <boost/asio.hpp>
 
 namespace nexilis::boost
 {
 
-class UDPClient :
-                public Protocol,
-                public ClientProtocol
+class UDPClient : public Protocol,
+                  public ClientProtocol
 {
 public:
     /// Constructor.
@@ -59,6 +58,6 @@ private:
     std::vector<char> m_receiveBuffer;
 };
 
-}
+} // namespace nexilis::boost
 
 #endif

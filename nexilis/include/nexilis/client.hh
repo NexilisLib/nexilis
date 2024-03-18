@@ -6,7 +6,6 @@
 
 #include <string>
 
-
 namespace nexilis
 {
 
@@ -16,20 +15,20 @@ class Client
 {
 public:
     /// Constructor.
-    Client(std::string ip_address) noexcept : 
-        m_ip_address(ip_address),
-        m_id(Util::getRandomSizeT(0, NEXILIS_MAX))
+    Client(std::string ip_address) noexcept
+        : m_ip_address(ip_address),
+          m_id(Util::getRandomSizeT(0, NEXILIS_MAX))
     {
     }
 
     /// Move constructor.
-    Client(Client&& other) :
-        m_ip_address(other.m_ip_address),
-        m_username(other.m_username),
-        m_id(other.m_id),
-        m_upd_port(other.m_upd_port),
-        m_hasRootAccess(other.m_hasRootAccess),
-        m_hasCommonAccess(other.m_hasCommonAccess)
+    Client(Client&& other)
+        : m_ip_address(other.m_ip_address),
+          m_username(other.m_username),
+          m_id(other.m_id),
+          m_upd_port(other.m_upd_port),
+          m_hasRootAccess(other.m_hasRootAccess),
+          m_hasCommonAccess(other.m_hasCommonAccess)
     {
     }
 

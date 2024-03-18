@@ -38,8 +38,8 @@ public:
         std::lock_guard<std::mutex> lock(m_mtx);
 
         auto it = std::remove_if(m_handlers.begin(), m_handlers.end(),
-            [&](const std::unique_ptr<BaseHandler>& handler)
-            { return *handler == handlerToRemove; });
+                                 [&](const std::unique_ptr<BaseHandler>& handler)
+                                 { return *handler == handlerToRemove; });
 
         m_handlers.erase(it, m_handlers.end());
     }
@@ -204,6 +204,6 @@ private:
     std::mutex m_mtx;
 };
 
-} // namespace nexilis
+} // namespace nexilis::logger
 
 #endif

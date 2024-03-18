@@ -1,6 +1,6 @@
 #include <nexilis/af_unix/sock_dgram/server.hh>
-#include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
+#include <nexilis/command.hh>
 #include <nexilis/nexilis_macros.hh>
 
 #include <arpa/inet.h>
@@ -18,8 +18,8 @@ namespace nexilis::af_unix::sock_dgram
 /// The file path we are reading messages from.
 static std::string path;
 
-Server::Server(const std::string& socketPath) :
-    m_buffer(NEXILIS_BUFFER)
+Server::Server(const std::string& socketPath)
+    : m_buffer(NEXILIS_BUFFER)
 {
     path = socketPath;
 
@@ -29,11 +29,11 @@ Server::Server(const std::string& socketPath) :
     std::signal(SIGINT, signalHandler);
 }
 
-Server::Server(Server&& other) :
-    Protocol(std::move(other)),
-    ServerProtocol(std::move(other)),
-    m_serverSocket(other.m_serverSocket),
-    m_buffer(other.m_buffer)
+Server::Server(Server&& other)
+    : Protocol(std::move(other)),
+      ServerProtocol(std::move(other)),
+      m_serverSocket(other.m_serverSocket),
+      m_buffer(other.m_buffer)
 {
 }
 
@@ -63,9 +63,9 @@ void Server::receiveMessage()
     memset(&clientAddress, 0, sizeof(clientAddress));
     memset(m_buffer.data(), '\0', m_buffer.size());
     clientAddress.sun_family = AF_UNIX;
-    
+
     // Server is sending messages to itself with this.
-    //strcpy(clientAddress.sun_path, "/tmp/nexilis");
+    // strcpy(clientAddress.sun_path, "/tmp/nexilis");
 
     ssize_t bytesRead = recvfrom(m_serverSocket, m_buffer.data(), m_buffer.size(), 0, (struct sockaddr*)&clientAddress, &clientAddressLen);
 
@@ -99,14 +99,13 @@ void Server::receiveMessage()
                 std::cout << "Send reply to client" << std::endl;
             }
 
-
-            //std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
+            // std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
             auto message = getMessageHandler().readMessage("test", m_buffer.data(), -1, Command::getAuthentication());
 
             if (message.getClient())
             {
                 // TODO
-                if (!Command::read(message.getData(), *message.getClient(), *this, [](const std::vector<uint8_t>&){}))
+                if (!Command::read(message.getData(), *message.getClient(), *this, [](const std::vector<uint8_t>&) {}))
                 {
                     Log::error("Unix socket server message reading error from message: ");
                 }

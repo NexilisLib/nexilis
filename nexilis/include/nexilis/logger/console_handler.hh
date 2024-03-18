@@ -26,6 +26,6 @@ public:
     }
 };
 
-} // namespace nexilis
+} // namespace nexilis::logger
 
 #endif

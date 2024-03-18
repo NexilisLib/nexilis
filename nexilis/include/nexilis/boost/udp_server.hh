@@ -1,18 +1,17 @@
 #ifndef NEXILIS_BOOST_UDP_SERVER_HH
 #define NEXILIS_BOOST_UDP_SERVER_HH
 
+#include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
-#include <nexilis/loggable.hh>
 
 #include <boost/asio.hpp>
 
 namespace nexilis::boost
 {
 
-class UDPServer :
-                public Protocol,
-                public ServerProtocol
+class UDPServer : public Protocol,
+                  public ServerProtocol
 {
 public:
     /// Constructor.
@@ -59,6 +58,6 @@ private:
     std::thread m_ioContextThread;
 };
 
-}
+} // namespace nexilis::boost
 
 #endif

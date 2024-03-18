@@ -24,9 +24,8 @@ public:
 
     /// Read JSON data from file.
     static boost::json::value readJSONFromFile(const std::string& filename);
-
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -1,20 +1,20 @@
 #include "nexilis/loggable.hh"
-#include <nexilis/message_handler.hh>
 #include <nexilis/af_inet/udp_server.hh>
-#include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
+#include <nexilis/command.hh>
+#include <nexilis/message_handler.hh>
 
 namespace nexilis::af_inet
 {
 
-UDPServer::UDPServer(unsigned port) : 
-    BaseUDPServer(port)
+UDPServer::UDPServer(unsigned port)
+    : BaseUDPServer(port)
 {
 }
 
-UDPServer::UDPServer(UDPServer&& other) :
-    BaseUDPServer(std::move(other)),
-    m_receiveThread(std::move(other.m_receiveThread))
+UDPServer::UDPServer(UDPServer&& other)
+    : BaseUDPServer(std::move(other)),
+      m_receiveThread(std::move(other.m_receiveThread))
 {
 }
 
@@ -39,7 +39,7 @@ UDPServer::~UDPServer()
 void UDPServer::start()
 {
     m_receiveThread = std::thread([this]()
-    {
+                                  {
         BaseUDPServer::start();
 
         while (true)
@@ -67,8 +67,7 @@ void UDPServer::start()
                     Log::info("Message from unauthorized client!");
                 }
             }
-        }
-    });
+        } });
 }
 
 void UDPServer::sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen)
@@ -76,4 +75,4 @@ void UDPServer::sendDataToClient(const std::vector<uint8_t>& data, const sockadd
     sendto(BaseUDPServer::m_serverSocket, data.data(), data.size(), 0, clientAddr, clientAddrLen);
 }
 
-} // namespace nexilis
+} // namespace nexilis::af_inet

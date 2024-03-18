@@ -6,9 +6,9 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 namespace nexilis
 {
@@ -19,8 +19,8 @@ public:
     class Message
     {
     public:
-        Message(std::string address, std::vector<uint8_t> data) :
-            m_address(address), m_data(data)
+        Message(std::string address, std::vector<uint8_t> data)
+            : m_address(address), m_data(data)
         {
         }
 
@@ -33,6 +33,7 @@ public:
         {
             return m_data;
         }
+
     private:
         std::string m_address;
         std::vector<uint8_t> m_data;
@@ -344,6 +345,6 @@ private:
     size_t m_clientId = 0;
 };
 
-}
+} // namespace nexilis
 
 #endif

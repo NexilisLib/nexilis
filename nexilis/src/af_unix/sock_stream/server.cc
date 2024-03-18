@@ -1,19 +1,19 @@
 #include <nexilis/af_unix/sock_stream/server.hh>
-#include <nexilis/nexilis_macros.hh>
 #include <nexilis/command.hh>
+#include <nexilis/nexilis_macros.hh>
 #include <nexilis/server_manager.hh>
 
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
 namespace nexilis::af_unix::sock_stream
 {
 
-Server::Server(const std::string& socketPath) :
-    m_socketPath(socketPath),
-    m_buffer(NEXILIS_BUFFER)
+Server::Server(const std::string& socketPath)
+    : m_socketPath(socketPath),
+      m_buffer(NEXILIS_BUFFER)
 {
     createSocket();
     bindSocket();
@@ -29,13 +29,13 @@ Server::~Server()
     close(m_serverSocket);
 }
 
-Server::Server(Server&& other) :
-    Protocol(std::move(other)),
-    ServerProtocol(std::move(other)),
-    m_socketPath(std::move(other.m_socketPath)),
-    m_serverSocket(std::move(other.m_serverSocket)),
-    m_buffer(std::move(std::move(other.m_buffer))),
-    m_receiveThread(std::move(other.m_receiveThread))
+Server::Server(Server&& other)
+    : Protocol(std::move(other)),
+      ServerProtocol(std::move(other)),
+      m_socketPath(std::move(other.m_socketPath)),
+      m_serverSocket(std::move(other.m_serverSocket)),
+      m_buffer(std::move(std::move(other.m_buffer))),
+      m_receiveThread(std::move(other.m_receiveThread))
 {
 }
 
@@ -56,12 +56,11 @@ Server& Server::operator=(Server&& other)
 void Server::start()
 {
     m_receiveThread = std::thread([this]()
-    {
+                                  {
         while (true)
         {
             handleMessages();
-        }
-    });
+        } });
 }
 
 void Server::createSocket()
@@ -130,8 +129,8 @@ std::string Server::receiveMessage(int socket)
             }
             else
             {
-                Log::error("Received message that does" ,
-                " not contain the null-termination character");
+                Log::error("Received message that does",
+                           " not contain the null-termination character");
                 break;
             }
         }
@@ -176,9 +175,8 @@ void Server::handleMessages()
             if (msg.getClient())
             {
                 bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this,
-                        [this, &clientSocket](const std::vector<uint8_t>& message) 
-                        { sendMessage(clientSocket, message); }
-                );
+                                                 [this, &clientSocket](const std::vector<uint8_t>& message)
+                                                 { sendMessage(clientSocket, message); });
 
                 if (readCommand)
                 {
@@ -197,4 +195,4 @@ void Server::handleMessages()
     }
 }
 
-}
+} // namespace nexilis::af_unix::sock_stream

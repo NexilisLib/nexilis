@@ -35,6 +35,6 @@ private:
     MessageHandler m_messageHandler;
 };
 
-}
+} // namespace nexilis
 
 #endif

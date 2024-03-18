@@ -1,14 +1,14 @@
 #include <nexilis/af_inet/udp_client.hh>
-#include <nexilis/nexilis_macros.hh>
 #include <nexilis/log.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <arpa/inet.h>
 
 namespace nexilis::af_inet
 {
 
-UDPClient::UDPClient(ClientAPI& api) :
-    ClientProtocol(&api)
+UDPClient::UDPClient(ClientAPI& api)
+    : ClientProtocol(&api)
 {
     memset(&m_serverAddr, 0, sizeof(m_serverAddr));
     m_serverAddr.sin_family = AF_INET;
@@ -22,12 +22,12 @@ UDPClient::UDPClient(ClientAPI& api) :
     m_clientSocket = createSocket();
 }
 
-UDPClient::UDPClient(UDPClient&& other) :
-    Protocol(std::move(other)),
-    ClientProtocol(std::move(other)),
-    m_clientSocket(std::move(other.m_clientSocket)),
-    m_serverAddr(std::move(other.m_serverAddr)),
-    m_receiverThread(std::move(other.m_receiverThread))
+UDPClient::UDPClient(UDPClient&& other)
+    : Protocol(std::move(other)),
+      ClientProtocol(std::move(other)),
+      m_clientSocket(std::move(other.m_clientSocket)),
+      m_serverAddr(std::move(other.m_serverAddr)),
+      m_receiverThread(std::move(other.m_receiverThread))
 {
 }
 
@@ -116,4 +116,4 @@ void UDPClient::receiveLoop()
     }
 }
 
-}
+} // namespace nexilis::af_inet

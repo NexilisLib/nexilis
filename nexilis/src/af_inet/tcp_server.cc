@@ -1,20 +1,20 @@
 #include "nexilis/server_protocol.hh"
 #include <nexilis/af_inet/tcp_server.hh>
-#include <nexilis/server_manager.hh>
 #include <nexilis/log.hh>
+#include <nexilis/server_manager.hh>
 
-#include <unistd.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <cstring>
 
 namespace nexilis::af_inet
 {
 
-TCPServer::Client::Client(std::string address, uint16_t port, int socket) :
-    m_address(address),
-    m_port(port),
-    m_socket(socket)
+TCPServer::Client::Client(std::string address, uint16_t port, int socket)
+    : m_address(address),
+      m_port(port),
+      m_socket(socket)
 {
 }
 
@@ -69,13 +69,13 @@ TCPServer::~TCPServer()
     }
 }
 
-TCPServer::TCPServer(TCPServer&& other) :
-    Protocol(std::move(other)),
-    ServerProtocol(std::move(other)),
-    m_serverSocket(std::move(other.m_serverSocket)),
-    m_serverAddr(std::move(other.m_serverAddr)),
-    m_operatingThread(std::move(other.m_operatingThread)),
-    m_mutex(std::move(other.m_mutex))
+TCPServer::TCPServer(TCPServer&& other)
+    : Protocol(std::move(other)),
+      ServerProtocol(std::move(other)),
+      m_serverSocket(std::move(other.m_serverSocket)),
+      m_serverAddr(std::move(other.m_serverAddr)),
+      m_operatingThread(std::move(other.m_operatingThread)),
+      m_mutex(std::move(other.m_mutex))
 {
 }
 
@@ -112,15 +112,13 @@ TCPServer::Client TCPServer::acceptClient()
 
     Log::info("Client connected: ", inet_ntoa(clientAddr.sin_addr), ":", ntohs(clientAddr.sin_port));
 
-    return Client
-    (
+    return Client(
         inet_ntoa(clientAddr.sin_addr),
         ntohs(clientAddr.sin_port),
-        clientSocket
-    );
+        clientSocket);
 }
 
-bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize) 
+bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize)
 {
     return write(clientSocket, data, dataSize) == static_cast<long>(dataSize);
 }
@@ -169,4 +167,4 @@ void TCPServer::operatingLoop()
     }
 }
 
-}
+} // namespace nexilis::af_inet

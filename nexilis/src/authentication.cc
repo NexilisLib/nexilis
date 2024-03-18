@@ -27,4 +27,4 @@ bool Authentication::isCommonPassword(const std::string& password)
     return password == m_password;
 }
 
-}
+} // namespace nexilis

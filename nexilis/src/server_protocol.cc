@@ -3,8 +3,8 @@
 namespace nexilis
 {
 
-ServerProtocol::ServerProtocol(ServerProtocol&& other) :
-    m_messageHandler(std::move(other.m_messageHandler))
+ServerProtocol::ServerProtocol(ServerProtocol&& other)
+    : m_messageHandler(std::move(other.m_messageHandler))
 {
 }
 
@@ -17,4 +17,4 @@ ServerProtocol& ServerProtocol::operator=(ServerProtocol&& other)
     return *this;
 }
 
-}
+} // namespace nexilis

@@ -5,24 +5,24 @@
 namespace nexilis::boost
 {
 
-TCPServer::TCPServer(int serverPort) :
-    m_mutex(std::make_unique<std::mutex>()),
-    m_ioContext(std::make_unique<::boost::asio::io_context>()),
-    m_acceptor(*m_ioContext,
-    ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
-    m_socket(*m_ioContext)
+TCPServer::TCPServer(int serverPort)
+    : m_mutex(std::make_unique<std::mutex>()),
+      m_ioContext(std::make_unique<::boost::asio::io_context>()),
+      m_acceptor(*m_ioContext,
+                 ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
+      m_socket(*m_ioContext)
 {
 }
 
-TCPServer::TCPServer(TCPServer&& other) :
-    Protocol(std::move(other)),
-    ServerProtocol(std::move(other)),
-    m_mutex(std::move(other.m_mutex)),
-    m_ioContext(std::move(other.m_ioContext)),
-    m_acceptor(std::move(other.m_acceptor)),
-    m_socket(std::move(other.m_socket)),
-    m_listenThread(std::move(other.m_listenThread)),
-    m_ioContextThread(std::move(other.m_ioContextThread))
+TCPServer::TCPServer(TCPServer&& other)
+    : Protocol(std::move(other)),
+      ServerProtocol(std::move(other)),
+      m_mutex(std::move(other.m_mutex)),
+      m_ioContext(std::move(other.m_ioContext)),
+      m_acceptor(std::move(other.m_acceptor)),
+      m_socket(std::move(other.m_socket)),
+      m_listenThread(std::move(other.m_listenThread)),
+      m_ioContextThread(std::move(other.m_ioContextThread))
 {
 }
 
@@ -50,15 +50,15 @@ TCPServer::~TCPServer()
 
 void TCPServer::start()
 {
-    m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
+    m_ioContextThread = std::thread([this]()
+                                    { m_ioContext->run(); });
 
     m_listenThread = std::thread([this]()
-    {
+                                 {
         if (startListening())
         {
             acceptClients();
-        }
-    });
+        } });
 }
 
 void TCPServer::stop()
@@ -93,7 +93,7 @@ bool TCPServer::acceptClients()
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-        {
+                    {
             try
             {
                 while (true)

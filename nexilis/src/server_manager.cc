@@ -1,5 +1,5 @@
-#include <nexilis/server_manager.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/server_manager.hh>
 
 namespace nexilis
 {

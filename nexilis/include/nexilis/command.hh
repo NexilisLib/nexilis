@@ -1,14 +1,14 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
-#include <nexilis/command_type.hh>
-#include <nexilis/client.hh>
-#include <nexilis/log.hh>
 #include <nexilis/authentication.hh>
+#include <nexilis/client.hh>
+#include <nexilis/command_type.hh>
+#include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <vector>

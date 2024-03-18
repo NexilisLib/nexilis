@@ -40,7 +40,7 @@ public:
     // Protocol::getType() implementation.
     Type getType() override
     {
-        //return Type::Websocket;
+        // return Type::Websocket;
     }
 
 private:

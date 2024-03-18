@@ -5,5 +5,4 @@
 namespace nexilis::logger
 {
 
-
 }

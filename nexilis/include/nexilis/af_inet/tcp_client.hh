@@ -1,9 +1,9 @@
 #ifndef NEXILIS_AF_INET_TCP_CLIENT_HH
 #define NEXILIS_AF_INET_TCP_CLIENT_HH
 
+#include <nexilis/client_api.hh>
 #include <nexilis/client_protocol.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/client_api.hh>
 
 #include <netinet/in.h>
 
@@ -58,6 +58,7 @@ private:
     bool send(const char* data, size_t dataSize);
     bool receive(char* buffer, size_t bufferSize);
     void receiveLoop();
+
 private:
     int m_clientSocket;
     sockaddr_in m_serverAddr;

@@ -61,7 +61,6 @@ private:
     std::thread m_receiveThread;
 };
 
-
 } // namespace nexilis::af_inet
 
 #endif

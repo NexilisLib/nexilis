@@ -36,8 +36,7 @@ TEST_P(SetLevelTest, setLevel)
     EXPECT_FALSE(nexilis::Log::getLevel(level));
 }
 
-INSTANTIATE_TEST_CASE_P(setLevelTests, SetLevelTest, testing::Values(nexilis::logger::LogLevel::CRITICAL, nexilis::logger::LogLevel::ERROR, 
-nexilis::logger::LogLevel::WARNING, nexilis::logger::LogLevel::INFO, nexilis::logger::LogLevel::DEBUG));
+INSTANTIATE_TEST_CASE_P(setLevelTests, SetLevelTest, testing::Values(nexilis::logger::LogLevel::CRITICAL, nexilis::logger::LogLevel::ERROR, nexilis::logger::LogLevel::WARNING, nexilis::logger::LogLevel::INFO, nexilis::logger::LogLevel::DEBUG));
 
 TEST(LoggerTest, startStopLogging)
 {

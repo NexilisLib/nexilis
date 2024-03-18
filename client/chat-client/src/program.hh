@@ -3,12 +3,13 @@
 
 #include "window.hh"
 #include "menu.hh"
+#include "nexilis_client.hh"
 
 class Program
 {
 public:
     /// Constructor.
-    Program(int argc, char** argv);
+    Program(int argc, char** argv, NexilisClient&& nexilisClient);
 
     /// Destructor.
     ~Program();
@@ -33,6 +34,9 @@ private:
 
     /// Menu object.
     Menu m_menu;
+
+    /// Nexilis client.
+    NexilisClient&& m_nexilisClient;
 
     /// Current input variable.
     int m_input;

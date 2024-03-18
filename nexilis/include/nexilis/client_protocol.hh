@@ -3,9 +3,9 @@
 
 #include <nexilis/client_api.hh>
 
+#include <cstdint>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 namespace nexilis
 {
@@ -44,6 +44,6 @@ private:
     ClientAPI* m_api;
 };
 
-}
+} // namespace nexilis
 
 #endif

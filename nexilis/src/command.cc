@@ -1,8 +1,8 @@
 #include <nexilis/client_storage.hh>
-#include <nexilis/command_type.hh>
-#include <nexilis/protocol.hh>
 #include <nexilis/command.hh>
+#include <nexilis/command_type.hh>
 #include <nexilis/log.hh>
+#include <nexilis/protocol.hh>
 
 #include <nexilis/common/util.hh>
 
@@ -76,7 +76,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return true;
                 }
 
-                default: return false;
+                default:
+                    return false;
             }
             return false;
         }
@@ -89,7 +90,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 case 0x10:
                 {
                     /// Client package: 0x10, 0x10 = SET, ID.
-                    std::vector<uint8_t> data = { 0x10, 0x10 };
+                    std::vector<uint8_t> data = {0x10, 0x10};
 
                     auto idBytes = Util::convertToByteVector(client.getId());
 
@@ -103,7 +104,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     Log::info("sent message to client");
                     return true;
                 }
-                default: return false;
+                default:
+                    return false;
             }
         }
 
@@ -116,7 +118,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 {
                     Log::debug("PING Sending UDP port ", client.getUdpPort(), " back pong");
                     // TODO create pong message, I mean this is kinda stupid.
-                    std::vector<uint8_t> message = { 0x10, 0x10 };
+                    std::vector<uint8_t> message = {0x10, 0x10};
                     sendMessageToClient(message);
                     return true;
                 }
@@ -229,7 +231,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return false;
                 }
 
-                default: return false;
+                default:
+                    return false;
             }
         }
 
@@ -265,11 +268,13 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                             switch (protocol.getType())
                             {
-                                default: return false;
+                                default:
+                                    return false;
                             }
                         }
 
-                        default: return false;
+                        default:
+                            return false;
                     }
                 }
 
@@ -281,7 +286,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         // String message.
                         case 0x10:
                         {
-
                         }
                     }
                 }
@@ -289,7 +293,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Client sends a message in specific context.
                 case 0x30:
                 {
-
                 }
             }
             return false;
@@ -306,11 +309,13 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     Log::critical("Internal server error: x");
                     return true;
                 }
-                default: return false;
+                default:
+                    return false;
             }
         }
 
-        default: return false;
+        default:
+            return false;
     }
 
     return false;

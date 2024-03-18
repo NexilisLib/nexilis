@@ -1,17 +1,17 @@
 #ifndef NEXILIS_AF_INET_BASE_UDP_SERVER_HH
 #define NEXILIS_AF_INET_BASE_UDP_SERVER_HH
 
-#include <nexilis/protocol.hh>
 #include <nexilis/ports.hh>
+#include <nexilis/protocol.hh>
 
 #include <sys/socket.h>
 
 #include <atomic>
-#include <string>
-#include <thread>
+#include <condition_variable>
 #include <mutex>
 #include <queue>
-#include <condition_variable>
+#include <string>
+#include <thread>
 
 namespace nexilis::af_inet
 {
@@ -63,12 +63,12 @@ protected:
     std::unique_ptr<std::mutex> m_mtx;
     std::queue<Message> m_messageQueue;
     std::unique_ptr<std::condition_variable> m_condition;
-private:
 
+private:
     // Thread function to handle incoming messages.
     void receiverThread();
 };
 
-}
+} // namespace nexilis::af_inet
 
 #endif

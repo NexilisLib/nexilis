@@ -31,7 +31,10 @@ public:
     class FileLineInfo
     {
     public:
-        FileLineInfo(const std::string& file, int line) : file(file), line(line) {}
+        FileLineInfo(const std::string& file, int line)
+            : file(file), line(line)
+        {
+        }
 
         void printInfo() const
         {
@@ -57,9 +60,8 @@ public:
         a.print();
     }
 
-
     /// Constructor, the class name we are logging from.
-    //Loggable(const std::string& name) : m_name(name) {}
+    // Loggable(const std::string& name) : m_name(name) {}
 
     /// Move constructor.
     /*
@@ -90,77 +92,77 @@ public:
     Loggable& operator=(const Loggable&) = delete;
 
 private:
-    /// Underscore indicating detail.
-    #define _LOGGABLE_LINE_NUMBERS(result) \
-    { \
-        std::stringstream ss; \
+/// Underscore indicating detail.
+#define _LOGGABLE_LINE_NUMBERS(result)                                         \
+    {                                                                          \
+        std::stringstream ss;                                                  \
         ss << "\n@: " << __FILE__ << ":" << std::dec << __LINE__ << std::endl; \
-        result = ss.str(); \
+        result = ss.str();                                                     \
     }
 
-    /// Underscore indicating detail.
-    #define _LOGGABLE_LN_PREFERENCE(logger, ...) \
-    { \
-        std::string result; \
-        result += getName(); \
-        if (getAddColon()) \
-        { \
-            result += ": "; \
-        } \
-        std::string lineNumbers; \
-        if (getAddLineNumber()) \
-        { \
-            _LOGGABLE_LINE_NUMBERS(lineNumbers); \
-        } \
+/// Underscore indicating detail.
+#define _LOGGABLE_LN_PREFERENCE(logger, ...)        \
+    {                                               \
+        std::string result;                         \
+        result += getName();                        \
+        if (getAddColon())                          \
+        {                                           \
+            result += ": ";                         \
+        }                                           \
+        std::string lineNumbers;                    \
+        if (getAddLineNumber())                     \
+        {                                           \
+            _LOGGABLE_LINE_NUMBERS(lineNumbers);    \
+        }                                           \
         logger(result, ##__VA_ARGS__, lineNumbers); \
     }
 
-    /// Underscore indicating detail.
-    #define _LOGGABLE_LN_ALWAYS(logger, ...) \
-    { \
-        std::string result; \
-        result += getName(); \
-        if (getAddColon()) \
-        { \
-            result += ": "; \
-        } \
-        std::string lineNumbers; \
-        _LOGGABLE_LINE_NUMBERS(lineNumbers); \
+/// Underscore indicating detail.
+#define _LOGGABLE_LN_ALWAYS(logger, ...)            \
+    {                                               \
+        std::string result;                         \
+        result += getName();                        \
+        if (getAddColon())                          \
+        {                                           \
+            result += ": ";                         \
+        }                                           \
+        std::string lineNumbers;                    \
+        _LOGGABLE_LINE_NUMBERS(lineNumbers);        \
         logger(result, ##__VA_ARGS__, lineNumbers); \
     }
 
     // Inheriting Loggable.
     // Unmaintained insta legacy, but it should work.
 protected:
-    #define DEBUG(...) \
-        _LOGGABLE_LN_PREFERENCE(Log::debug, ##__VA_ARGS__);
+#define DEBUG(...) \
+    _LOGGABLE_LN_PREFERENCE(Log::debug, ##__VA_ARGS__);
 
-    #define DEBUG_LN(...) \
-        _LOGGABLE_LN_ALWAYS(Log::debug, ##__VA_ARGS__);
+#define DEBUG_LN(...) \
+    _LOGGABLE_LN_ALWAYS(Log::debug, ##__VA_ARGS__);
 
-    #define INFO(...) \
-        _LOGGABLE_LN_PREFERENCE(Log::info, ##__VA_ARGS__);
+#define INFO(...) \
+    _LOGGABLE_LN_PREFERENCE(Log::info, ##__VA_ARGS__);
 
-    #define INFO_LN(...) \
-        _LOGGABLE_LN_ALWAYS(Log::info, ##__VA_ARGS__);
+#define INFO_LN(...) \
+    _LOGGABLE_LN_ALWAYS(Log::info, ##__VA_ARGS__);
 
-    #define WARNING(...) \
-        _LOGGABLE_LN_PREFERENCE(Log::warning, ##__VA_ARGS__);
+#define WARNING(...) \
+    _LOGGABLE_LN_PREFERENCE(Log::warning, ##__VA_ARGS__);
 
-    #define WARNING_LN(...) \
-        _LOGGABLE_LN_ALWAYS(Log::warning, ##__VA_ARGS__);
+#define WARNING_LN(...) \
+    _LOGGABLE_LN_ALWAYS(Log::warning, ##__VA_ARGS__);
 
-    #define ERROR(...) \
-        _LOGGABLE_LN_PREFERENCE(Log::error, ##__VA_ARGS__);
+#define ERROR(...) \
+    _LOGGABLE_LN_PREFERENCE(Log::error, ##__VA_ARGS__);
 
-    #define ERROR_LN(...) \
-        _LOGGABLE_LN_ALWAYS(Log::error, ##__VA_ARGS__);
+#define ERROR_LN(...) \
+    _LOGGABLE_LN_ALWAYS(Log::error, ##__VA_ARGS__);
 
-    #define CRITICAL(...) \
-        _LOGGABLE_LN_PREFERENCE(Log::critical, ##__VA_ARGS__);
+#define CRITICAL(...) \
+    _LOGGABLE_LN_PREFERENCE(Log::critical, ##__VA_ARGS__);
 
-    #define CRITICAL_LN(...) \
-        _LOGGABLE_LN_ALWAYS(Log::critical, ##__VA_ARGS__);
+#define CRITICAL_LN(...) \
+    _LOGGABLE_LN_ALWAYS(Log::critical, ##__VA_ARGS__);
 
 protected:
     /// Getters.
@@ -228,7 +230,6 @@ private:
     bool m_addColon = true;
 };
 
-
-}
+} // namespace nexilis
 
 #endif

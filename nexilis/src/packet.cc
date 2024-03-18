@@ -1,5 +1,5 @@
-#include <nexilis/packet.hh>
 #include <nexilis/log.hh>
+#include <nexilis/packet.hh>
 
 namespace nexilis
 {
@@ -10,7 +10,7 @@ std::vector<uint8_t> Packet::Get::clientId(ClientAPI& api)
 
     if (clientId != 0)
     {
-        Log::debug("Client id when sending: ", clientId); 
+        Log::debug("Client id when sending: ", clientId);
         std::vector<uint8_t> clientIdVector = Util::convertToByteVector(clientId);
         clientIdVector.emplace_back(0xFF);
         clientIdVector.emplace_back(0x20);
@@ -24,5 +24,4 @@ std::vector<uint8_t> Packet::Get::clientId(ClientAPI& api)
     }
 }
 
-
-}
+} // namespace nexilis

@@ -7,9 +7,8 @@
 namespace nexilis::af_unix::sock_dgram
 {
 
-class Server :
-            public Protocol,
-            public ServerProtocol
+class Server : public Protocol,
+               public ServerProtocol
 {
 public:
     /// Constructor.
@@ -52,6 +51,7 @@ private:
     void bindSocket();
     void receiveMessage();
     static void signalHandler(int signum);
+
 private:
     int m_serverSocket;
     std::vector<char> m_buffer;

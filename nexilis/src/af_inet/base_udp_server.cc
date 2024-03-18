@@ -1,19 +1,19 @@
 #include <nexilis/af_inet/base_udp_server.hh>
 #include <nexilis/log.hh>
 
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
 #include <cstring>
 
 namespace nexilis::af_inet
 {
 
-BaseUDPServer::BaseUDPServer(unsigned port) :
-    m_running(std::make_unique<std::atomic<bool>>(false)),
-    m_mtx(std::make_unique<std::mutex>()),
-    m_condition(std::make_unique<std::condition_variable>())
+BaseUDPServer::BaseUDPServer(unsigned port)
+    : m_running(std::make_unique<std::atomic<bool>>(false)),
+      m_mtx(std::make_unique<std::mutex>()),
+      m_condition(std::make_unique<std::condition_variable>())
 {
     addrinfo hints, *res, *p;
 
@@ -55,14 +55,14 @@ BaseUDPServer::BaseUDPServer(unsigned port) :
     freeaddrinfo(res);
 }
 
-BaseUDPServer::BaseUDPServer(BaseUDPServer&& other) :
-    Protocol(std::move(other)),
-    m_serverSocket(std::move(other.m_serverSocket)),
-    m_running(std::move(other.m_running)),
-    m_recvThread(std::move(other.m_recvThread)),
-    m_mtx(std::move(other.m_mtx)),
-    m_messageQueue(std::move(other.m_messageQueue)),
-    m_condition(std::move(other.m_condition))
+BaseUDPServer::BaseUDPServer(BaseUDPServer&& other)
+    : Protocol(std::move(other)),
+      m_serverSocket(std::move(other.m_serverSocket)),
+      m_running(std::move(other.m_running)),
+      m_recvThread(std::move(other.m_recvThread)),
+      m_mtx(std::move(other.m_mtx)),
+      m_messageQueue(std::move(other.m_messageQueue)),
+      m_condition(std::move(other.m_condition))
 {
 }
 
@@ -164,14 +164,12 @@ void BaseUDPServer::receiverThread()
         buffer[bytesRead] = '\0';
         std::string receivedData(buffer);
 
-        Message msg
-        {
+        Message msg{
             address,
             receivedData,
             port,
             (const sockaddr*)&clientAddr,
-            sizeof(clientAddr)
-        };
+            sizeof(clientAddr)};
 
         {
             std::lock_guard<std::mutex> lock(*m_mtx);
@@ -184,4 +182,3 @@ void BaseUDPServer::receiverThread()
 }
 
 } // namespace nexilis::af_inet
-

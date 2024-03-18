@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
     std::cout << "nexilis client started" << std::endl;
 
-    Program program(argc, argv);
+    Program program(argc, argv, std::move(nexilisClient));
 
     while (true)
     {

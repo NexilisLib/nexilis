@@ -39,4 +39,4 @@ boost::json::value Json::readJSONFromFile(const std::string& filename)
     return json_value;
 }
 
-}
+} // namespace nexilis

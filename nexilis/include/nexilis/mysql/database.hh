@@ -34,12 +34,26 @@ public:
 
         /// Move assignment operator.
         ConnectionData& operator=(ConnectionData&& other);
+
     public:
         /// Getters.
-        std::string getHost() { return m_host; }
-        std::string getUser() { return m_user; }
-        std::string getPassword() { return m_password; }
-        std::string getDatabase() { return m_database; }
+        std::string getHost()
+        {
+            return m_host;
+        }
+        std::string getUser()
+        {
+            return m_user;
+        }
+        std::string getPassword()
+        {
+            return m_password;
+        }
+        std::string getDatabase()
+        {
+            return m_database;
+        }
+
     private:
         std::string m_host;
         std::string m_user;
@@ -61,6 +75,7 @@ public:
 
         /// Helper function to print the contents of the query.
         void print();
+
     private:
         st_mysql_res* m_result;
     };
@@ -89,13 +104,12 @@ public:
 
     /// For queries that return results, like SELECT.
     ResultSet executeQuery(const std::string& query);
+
 private:
     st_mysql* m_connection;
     ConnectionData m_connectionData;
 };
 
-
-}
+} // namespace nexilis::mysql
 
 #endif
-

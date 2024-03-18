@@ -30,10 +30,11 @@ public:
     {
         return this == &other;
     }
+
 private:
     std::ofstream ofs;
 };
 
-} // namespace nexilis
+} // namespace nexilis::logger
 
 #endif

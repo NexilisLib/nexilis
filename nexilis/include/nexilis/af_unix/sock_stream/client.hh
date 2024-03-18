@@ -1,14 +1,14 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 
-#include <nexilis/protocol.hh>
-#include <nexilis/client_protocol.hh>
 #include <nexilis/client_api.hh>
+#include <nexilis/client_protocol.hh>
+#include <nexilis/protocol.hh>
 
 #include <sys/un.h>
 
-#include <thread>
 #include <mutex>
+#include <thread>
 
 namespace nexilis::af_unix::sock_stream
 {
@@ -73,6 +73,6 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
 };
 
-}
+} // namespace nexilis::af_unix::sock_stream
 
 #endif

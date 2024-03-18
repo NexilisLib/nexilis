@@ -7,9 +7,9 @@
 namespace nexilis::af_unix::sock_dgram
 {
 
-Client::Client(ClientAPI& api) :
-    ClientProtocol(&api),
-    m_serverSocketPath(api.getUnixDgramPath())
+Client::Client(ClientAPI& api)
+    : ClientProtocol(&api),
+      m_serverSocketPath(api.getUnixDgramPath())
 {
     createSocket();
 }
@@ -27,7 +27,7 @@ void Client::sendMessage(const std::string& message)
     std::cout << "SENDING MESSAGE: " << m_serverAddr.sun_path << std::endl;
 
     ssize_t sentBytes = sendto(m_clientSocket, message.c_str(), message.size(), 0,
-                           (struct sockaddr*)&m_serverAddr, sizeof(m_serverAddr));
+                               (struct sockaddr*)&m_serverAddr, sizeof(m_serverAddr));
 
     if (sentBytes == -1)
     {
@@ -87,4 +87,4 @@ void Client::createSocket()
     std::cout << "address family: " << m_serverAddr.sun_family << std::endl;
 }
 
-} // nexilis::af_unix::sock_dgram
+} // namespace nexilis::af_unix::sock_dgram

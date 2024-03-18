@@ -1,13 +1,13 @@
 #ifndef NEXILIS_AF_INET_UDP_CLIENT_HH
 #define NEXILIS_AF_INET_UDP_CLIENT_HH
 
-#include <nexilis/protocol.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/client_protocol.hh>
+#include <nexilis/protocol.hh>
 
-#include <sys/un.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include <thread>
 

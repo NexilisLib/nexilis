@@ -1,5 +1,7 @@
 #include "menu.hh"
 
+#include <ncurses.h>
+
 void Menu::update(WINDOW* window, int& highlight)
 {
     switch (m_state)

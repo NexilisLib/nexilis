@@ -1,8 +1,8 @@
 #ifndef NEXILIS_AUTHENTICATION_HH
 #define NEXILIS_AUTHENTICATION_HH
 
-#include <string>
 #include <cassert>
+#include <string>
 
 namespace nexilis
 {
@@ -41,6 +41,6 @@ private:
     Mode m_mode = Mode::free;
 };
 
-}
+} // namespace nexilis
 
 #endif

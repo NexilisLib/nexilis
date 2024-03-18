@@ -23,7 +23,6 @@ public:
     // \param logLevel The log level of the message.
     // \param data The data of the given message.
     virtual void emit(LogLevel logLevel, const std::string& data) = 0;
-
 };
 
 } // namespace nexilis::logger

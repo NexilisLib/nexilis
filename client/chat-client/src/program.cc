@@ -1,11 +1,15 @@
 #include "program.hh"
 #include "debug.hh"
+#include "nexilis_client.hh"
 
-Program::Program(int argc, char** argv) :
+#include <ncurses.h>
+
+Program::Program(int argc, char** argv, NexilisClient&& nexilisClient) :
     m_argc(argc),
     m_argv(argv),
     m_window(),
-    m_menu()
+    m_menu(),
+    m_nexilisClient(std::move(nexilisClient))
 {
 }
 

@@ -1,21 +1,20 @@
 #ifndef NEXILIS_AF_INET_TCP_SERVER_HH
 #define NEXILIS_AF_INET_TCP_SERVER_HH
 
+#include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
-#include <nexilis/loggable.hh>
 
 #include <netinet/in.h>
 
-#include <thread>
 #include <mutex>
+#include <thread>
 
 namespace nexilis::af_inet
 {
 
-class TCPServer :
-            public Protocol,
-            public ServerProtocol
+class TCPServer : public Protocol,
+                  public ServerProtocol
 {
 public:
     class Client
@@ -80,6 +79,7 @@ private:
     Client acceptClient();
     bool sendToClient(int clientSocket, const char* data, size_t dataSize);
     void operatingLoop();
+
 private:
     int m_serverSocket;
     sockaddr_in m_serverAddr;
@@ -87,6 +87,6 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
 };
 
-}
+} // namespace nexilis::af_inet
 
 #endif

@@ -1,13 +1,13 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
-#include <nexilis/logger/log_level.hh>
 #include <nexilis/config.hh>
+#include <nexilis/logger/log_level.hh>
 
-#include <string>
-#include <vector>
 #include <cstdint>
 #include <iostream>
+#include <string>
+#include <vector>
 
 namespace nexilis
 {
@@ -59,13 +59,12 @@ public:
     static size_t getRandomSizeT();
 
     static std::vector<uint8_t> convertToByteVector(const char* command_data, size_t lenght);
-    
+
     static std::vector<uint8_t> convertToByteVector(size_t value);
 
     static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
-
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef CHAT_CLIENT_MENU_HH
 #define CHAT_CLIENT_MENU_HH
 
-#include <ncurses.h>
+struct _win_st;
 
 #include <map>
 #include <string>
@@ -26,7 +26,7 @@ public:
     Menu() = default;
 
     /// Update the menu view.
-    void update(WINDOW* window, int& highlight);
+    void update(_win_st* window, int& highlight);
 
     /// Get the state of the menu.
     State getState() { return m_state; }
@@ -34,8 +34,8 @@ public:
     /// Change the state.
     void changeState(State state) { m_state = state; }
 private:
-    void showMenu(WINDOW* window, int& highlight);
-    void showInfo(WINDOW* window);
+    void showMenu(_win_st* window, int& highlight);
+    void showInfo(_win_st* window);
 private:
     /// Choices in the menu.
     std::map<int, std::string> m_menuFields

@@ -30,7 +30,8 @@ bool ClientStorage::contains(size_t id)
 Client* ClientStorage::getClientById(size_t id)
 {
     auto it = std::find_if(m_clients.begin(), m_clients.end(),
-                           [id](const Client& client) {
+                           [id](const Client& client)
+                           {
                                return client.getId() == id;
                            });
 
@@ -50,7 +51,7 @@ std::vector<Client*> ClientStorage::getClientsByIpAddress(const std::string& ip_
 
     for (auto& client : m_clients)
     {
-        if (client.getIPAddress() == ip_address) 
+        if (client.getIPAddress() == ip_address)
         {
             result.push_back(&client);
         }
@@ -59,6 +60,4 @@ std::vector<Client*> ClientStorage::getClientsByIpAddress(const std::string& ip_
     return result;
 }
 
-
-
-}
+} // namespace nexilis

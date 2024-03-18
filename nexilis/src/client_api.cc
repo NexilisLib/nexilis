@@ -8,46 +8,46 @@ namespace nexilis
 /// ClientAPI::ServerData
 ///
 
-ClientAPI::ServerData::ServerData(const std::string& password) : 
-    m_password(password)
+ClientAPI::ServerData::ServerData(const std::string& password)
+    : m_password(password)
 {
 }
 
-ClientAPI::ServerData::ServerData(const std::string password, const std::string username) :
-    m_password(password),
-    m_username(username)
+ClientAPI::ServerData::ServerData(const std::string password, const std::string username)
+    : m_password(password),
+      m_username(username)
 {
 }
 
-ClientAPI::ServerData::ServerData(ServerData&& other) :
-    m_password(std::move(other.m_password)),
-    m_username(std::move(other.m_username)),
-    m_inetUDPServerAddress(std::move(other.m_inetUDPServerAddress)),
-    m_inetUDPPort(std::move(other.m_inetUDPPort)),
-    m_inetTCPServerAddress(std::move(other.m_inetTCPServerAddress)),
-    m_inetTCPPort(std::move(other.m_inetTCPPort)),
-    m_boostTCPServerAddress(std::move(other.m_boostTCPServerAddress)),
-    m_boostTCPServerPort(std::move(other.m_boostTCPServerPort)),
-    m_boostUDPServerAddress(std::move(other.m_boostUDPServerAddress)),
-    m_boostUDPServerPort(std::move(other.m_boostUDPServerPort)),
-    m_unixDgramServerPath(std::move(other.m_unixDgramServerPath)),
-    m_unixStreamServerPath(std::move(other.m_unixStreamServerPath))
+ClientAPI::ServerData::ServerData(ServerData&& other)
+    : m_password(std::move(other.m_password)),
+      m_username(std::move(other.m_username)),
+      m_inetUDPServerAddress(std::move(other.m_inetUDPServerAddress)),
+      m_inetUDPPort(std::move(other.m_inetUDPPort)),
+      m_inetTCPServerAddress(std::move(other.m_inetTCPServerAddress)),
+      m_inetTCPPort(std::move(other.m_inetTCPPort)),
+      m_boostTCPServerAddress(std::move(other.m_boostTCPServerAddress)),
+      m_boostTCPServerPort(std::move(other.m_boostTCPServerPort)),
+      m_boostUDPServerAddress(std::move(other.m_boostUDPServerAddress)),
+      m_boostUDPServerPort(std::move(other.m_boostUDPServerPort)),
+      m_unixDgramServerPath(std::move(other.m_unixDgramServerPath)),
+      m_unixStreamServerPath(std::move(other.m_unixStreamServerPath))
 {
 }
 
-ClientAPI::ServerData::ServerData(const ServerData& other) :
-    m_password(other.m_password),
-    m_username(other.m_username),
-    m_inetUDPServerAddress(other.m_inetUDPServerAddress),
-    m_inetUDPPort(other.m_inetUDPPort),
-    m_inetTCPServerAddress(other.m_inetTCPServerAddress),
-    m_inetTCPPort(other.m_inetTCPPort),
-    m_boostTCPServerAddress(other.m_boostTCPServerAddress),
-    m_boostTCPServerPort(other.m_boostTCPServerPort),
-    m_boostUDPServerAddress(other.m_boostUDPServerAddress),
-    m_boostUDPServerPort(other.m_boostUDPServerPort),
-    m_unixDgramServerPath(other.m_unixDgramServerPath),
-    m_unixStreamServerPath(other.m_unixStreamServerPath)
+ClientAPI::ServerData::ServerData(const ServerData& other)
+    : m_password(other.m_password),
+      m_username(other.m_username),
+      m_inetUDPServerAddress(other.m_inetUDPServerAddress),
+      m_inetUDPPort(other.m_inetUDPPort),
+      m_inetTCPServerAddress(other.m_inetTCPServerAddress),
+      m_inetTCPPort(other.m_inetTCPPort),
+      m_boostTCPServerAddress(other.m_boostTCPServerAddress),
+      m_boostTCPServerPort(other.m_boostTCPServerPort),
+      m_boostUDPServerAddress(other.m_boostUDPServerAddress),
+      m_boostUDPServerPort(other.m_boostUDPServerPort),
+      m_unixDgramServerPath(other.m_unixDgramServerPath),
+      m_unixStreamServerPath(other.m_unixStreamServerPath)
 {
 }
 
@@ -95,14 +95,14 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
 /// ClientAPI
 ///
 
-ClientAPI::ClientAPI(ServerData data) :
-    m_data(data)
+ClientAPI::ClientAPI(ServerData data)
+    : m_data(data)
 {
 }
 
-ClientAPI::ClientAPI(ClientAPI&& other) :
-    m_data(std::move(other.m_data)),
-    m_clientId(std::move(other.m_clientId))
+ClientAPI::ClientAPI(ClientAPI&& other)
+    : m_data(std::move(other.m_data)),
+      m_clientId(std::move(other.m_clientId))
 {
 }
 
@@ -116,9 +116,9 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
     return *this;
 }
 
-ClientAPI::ClientAPI(const ClientAPI& other) :
-    m_data(other.m_data),
-    m_clientId(other.m_clientId)
+ClientAPI::ClientAPI(const ClientAPI& other)
+    : m_data(other.m_data),
+      m_clientId(other.m_clientId)
 {
 }
 
@@ -134,16 +134,16 @@ ClientAPI& ClientAPI::operator=(const ClientAPI& other)
 
 bool ClientAPI::IsInetUDPReady()
 {
-    return  m_clientId &&
-            !m_data.getInetUDPServerAddress().empty() &&
-            m_data.getInetUDPServerPort() != 0xFFFF;
+    return m_clientId &&
+           !m_data.getInetUDPServerAddress().empty() &&
+           m_data.getInetUDPServerPort() != 0xFFFF;
 }
 
 bool ClientAPI::isInetTCPReady()
 {
     return m_clientId &&
-            !getInetTCPServerAddress().empty() &&
-            getInetTCPPortNumber() != 0xFFFF;
+           !getInetTCPServerAddress().empty() &&
+           getInetTCPPortNumber() != 0xFFFF;
 }
 
 bool ClientAPI::isBoostTCPReady()
@@ -155,46 +155,56 @@ bool ClientAPI::isBoostTCPReady()
 
 bool ClientAPI::isBoostUDPReady()
 {
-    return  m_clientId &&
-            !getBoostUDPServerAddress().empty() &&
-            getBoostUDPServerPortNumber() != 0xFFFF;
+    return m_clientId &&
+           !getBoostUDPServerAddress().empty() &&
+           getBoostUDPServerPortNumber() != 0xFFFF;
 }
 
 bool ClientAPI::isUnixDgramReady()
 {
-    return  m_clientId &&
-            !m_data.getUnixDgramServerPath().empty();
+    return m_clientId &&
+           !m_data.getUnixDgramServerPath().empty();
 }
 
 bool ClientAPI::isUnixStreamReady()
 {
-    return  m_clientId != 0 &&
-            !getUnixStreamPath().empty();
+    return m_clientId != 0 &&
+           !getUnixStreamPath().empty();
 }
 
 void ClientAPI::waitUntilInetUDPReady()
 {
-    while (!IsInetUDPReady()) {}
+    while (!IsInetUDPReady())
+    {
+    }
 }
 
 void ClientAPI::waitUntilInetTCPReady()
 {
-    while (!isInetTCPReady()) {}
+    while (!isInetTCPReady())
+    {
+    }
 }
 
 void ClientAPI::waitUntilBoostTCPReady()
 {
-    while (!isBoostTCPReady()) {}
+    while (!isBoostTCPReady())
+    {
+    }
 }
 
 void ClientAPI::waitUntilUnixDgramReady()
 {
-    while (!isUnixDgramReady()) {}
+    while (!isUnixDgramReady())
+    {
+    }
 }
 
 void ClientAPI::waitUntilUnixStreamReady()
 {
-    while (!isUnixStreamReady()) {}
+    while (!isUnixStreamReady())
+    {
+    }
 }
 
 bool ClientAPI::readMessage(std::vector<uint8_t> message)
@@ -234,9 +244,9 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                     return true;
                 }
 
-                default: return false;
+                default:
+                    return false;
             }
-
         }
 
         // Get.
@@ -244,10 +254,9 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         {
         }
 
-        default: return false;
+        default:
+            return false;
     }
-
 }
 
-}
-
+} // namespace nexilis

@@ -18,6 +18,6 @@ public:
     };
 };
 
-}
+} // namespace nexilis
 
 #endif

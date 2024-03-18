@@ -2,8 +2,8 @@
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
 #include <nexilis/loggable.hh>
-#include <nexilis/server_protocol.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/server_protocol.hh>
 
 #include <cstdint>
 #include <string>
@@ -12,9 +12,8 @@
 namespace nexilis::af_unix::sock_stream
 {
 
-class Server :
-        public Protocol,
-        public ServerProtocol
+class Server : public Protocol,
+               public ServerProtocol
 {
 public:
     /// Constructor.
@@ -61,6 +60,6 @@ private:
     std::thread m_receiveThread;
 };
 
-}
+} // namespace nexilis::af_unix::sock_stream
 
 #endif
