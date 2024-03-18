@@ -18,8 +18,7 @@ TCPServer::Client::Client(std::string address, uint16_t port, int socket) :
 {
 }
 
-TCPServer::TCPServer(int serverPort) :
-    Loggable(typeToString(getType()))
+TCPServer::TCPServer(int serverPort)
 {
     m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -73,7 +72,6 @@ TCPServer::~TCPServer()
 TCPServer::TCPServer(TCPServer&& other) :
     Protocol(std::move(other)),
     ServerProtocol(std::move(other)),
-    Loggable(std::move(other)),
     m_serverSocket(std::move(other.m_serverSocket)),
     m_serverAddr(std::move(other.m_serverAddr)),
     m_operatingThread(std::move(other.m_operatingThread)),
@@ -87,7 +85,6 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
-        Loggable::operator=(std::move(other));
         m_serverSocket = std::move(other.m_serverSocket);
         m_serverAddr = std::move(other.m_serverAddr);
         m_operatingThread = std::move(other.m_operatingThread);

@@ -12,8 +12,7 @@ namespace nexilis::boost
 
 class UDPClient :
                 public Protocol,
-                public ClientProtocol,
-                public Loggable
+                public ClientProtocol
 {
 public:
     /// Constructor.
@@ -37,7 +36,7 @@ public:
     /// Protocol::stop() implementation.
     void stop() override
     {
-        ERROR("Not implemented");
+        Log::error("Not implemented");
     }
 
     /// Protocol::getType() implementation.

@@ -12,8 +12,7 @@ namespace nexilis::boost
 
 class UDPServer :
                 public Protocol,
-                public ServerProtocol,
-                public Loggable
+                public ServerProtocol
 {
 public:
     /// Constructor.

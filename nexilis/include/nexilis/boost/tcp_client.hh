@@ -12,8 +12,7 @@ namespace nexilis::boost
 
 class TCPClient :
                 public Protocol,
-                public ClientProtocol,
-                public Loggable
+                public ClientProtocol
 {
 public:
     /// Constructor.

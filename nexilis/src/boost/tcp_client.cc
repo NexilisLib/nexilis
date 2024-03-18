@@ -8,7 +8,6 @@ namespace nexilis::boost
 
 TCPClient::TCPClient(ClientAPI& api) :
     ClientProtocol(&api),
-    Loggable(typeToString(getType())),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_socket(*m_ioContext),
     m_resolver(*m_ioContext),
@@ -23,7 +22,6 @@ TCPClient::TCPClient(ClientAPI& api) :
 TCPClient::TCPClient(TCPClient&& other) :
     Protocol(std::move(other)),
     ClientProtocol(std::move(other)),
-    Loggable(std::move(other)),
     m_ioContextThread(std::move(other.m_ioContextThread)),
     m_receiveThread(std::move(other.m_receiveThread)),
     m_stopped(std::move(other.m_stopped)),
@@ -43,7 +41,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
     {
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
-        Loggable::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
         m_stopped = std::move(other.m_stopped);
@@ -98,7 +95,7 @@ bool TCPClient::connectToServer()
     }
     catch(...)
     {
-        ERROR("Could not connect to server!");
+        Log::error("Could not connect to server!");
     }
     return m_socket.is_open();
 }
@@ -113,12 +110,12 @@ bool TCPClient::send(const std::string& data)
             {
                 if (!error)
                 {
-                    INFO("Message sent successfully.");
+                    Log::info("Message sent successfully.");
                     return true;
                 }
                 else
                 {
-                    ERROR("Send error: " + error.message());
+                    Log::error("Send error: " + error.message());
                     return false;
                 }
             });
@@ -126,7 +123,7 @@ bool TCPClient::send(const std::string& data)
     }
     else
     {
-        ERROR("TCPClient socket is not open SOCKET SEND");
+        Log::error("TCPClient socket is not open SOCKET SEND");
         return false;
     }
 }
@@ -153,7 +150,7 @@ void TCPClient::start()
 {
     if (connectToServer())
     {
-        INFO("Connected to server!");
+        Log::info("Connected to server!");
 
         m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
 
@@ -162,7 +159,7 @@ void TCPClient::start()
     }
     else
     {
-        ERROR("Failed to connect to the server");
+        Log::error("Failed to connect to the server");
     }
 }
 
@@ -181,13 +178,13 @@ void TCPClient::receiveLoop()
             }
             else
             {
-                INFO("Received empty message from server");
+                Log::info("Received empty message from server");
                 break;
             }
         }
         else
         {
-            INFO("Error receiving from server");
+            Log::info("Error receiving from server");
             break;
         }
 

@@ -6,19 +6,82 @@
 namespace nexilis
 {
 
+// Forward declarations.
+template <typename Derived>
+class Loggable;
+
+template <typename Derived>
+class LoggableClass : public Derived
+{
+public:
+    void print()
+    {
+        typename Loggable<Derived>::FileLineInfo a = Loggable<Derived>::createFileLineInfo(__FILE__, __LINE__);
+        a.printInfo();
+    }
+};
+
 /// Class that gives logging macros by inheriting it.
 /// Works both client on client and serverside code.
+/// CRTP moments.
+template <typename Derived>
 class Loggable
 {
 public:
+    class FileLineInfo
+    {
+    public:
+        FileLineInfo(const std::string& file, int line) : file(file), line(line) {}
+
+        void printInfo() const
+        {
+            std::cout << "@: " << file << ":" << line << std::endl;
+        }
+
+    private:
+        std::string file;
+        int line;
+    };
+
+    /// Helper function for creating FileLineInfo.
+    template <typename T>
+    FileLineInfo createFileLineInfo(const std::string& file, int line)
+    {
+        return FileLineInfo(file, line);
+    }
+
+    LoggableClass<Loggable> a;
+
+    void print()
+    {
+        a.print();
+    }
+
+
     /// Constructor, the class name we are logging from.
-    Loggable(const std::string& name);
+    //Loggable(const std::string& name) : m_name(name) {}
 
     /// Move constructor.
-    Loggable(Loggable&& other);
+    /*
+    Loggable(Loggable<Derived>&& other) :
+        m_name(std::move(other.m_name)),
+        m_addLineNumber(std::move(other.m_addLineNumber)),
+        m_addColon(std::move(other.m_addColon))
+    {
+    }
 
     /// Move assignment operator.
-    Loggable& operator=(Loggable&& other);
+    Loggable<Derived>& operator=(Loggable<Derived>&& other)
+    {
+        if (this != &other)
+        {
+            m_name = std::move(other.m_name);
+            m_addLineNumber = std::move(other.m_addLineNumber);
+            m_addColon = std::move(other.m_addColon);
+        }
+        return *this;
+    }
+    */
 
     /// Deleted copy constructor.
     Loggable(const Loggable&) = delete;
@@ -27,8 +90,7 @@ public:
     Loggable& operator=(const Loggable&) = delete;
 
 private:
-    /// Internal macro API
-
+    /// Underscore indicating detail.
     #define _LOGGABLE_LINE_NUMBERS(result) \
     { \
         std::stringstream ss; \
@@ -36,6 +98,7 @@ private:
         result = ss.str(); \
     }
 
+    /// Underscore indicating detail.
     #define _LOGGABLE_LN_PREFERENCE(logger, ...) \
     { \
         std::string result; \
@@ -52,6 +115,7 @@ private:
         logger(result, ##__VA_ARGS__, lineNumbers); \
     }
 
+    /// Underscore indicating detail.
     #define _LOGGABLE_LN_ALWAYS(logger, ...) \
     { \
         std::string result; \
@@ -65,9 +129,9 @@ private:
         logger(result, ##__VA_ARGS__, lineNumbers); \
     }
 
+    // Inheriting Loggable.
+    // Unmaintained insta legacy, but it should work.
 protected:
-    /// Logging API.
-
     #define DEBUG(...) \
         _LOGGABLE_LN_PREFERENCE(Log::debug, ##__VA_ARGS__);
 
@@ -163,6 +227,7 @@ private:
     bool m_addLineNumber = true;
     bool m_addColon = true;
 };
+
 
 }
 

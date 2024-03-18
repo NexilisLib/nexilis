@@ -6,20 +6,17 @@ namespace nexilis::boost
 {
 
 TCPServer::TCPServer(int serverPort) :
-    Loggable(typeToString(getType())),
     m_mutex(std::make_unique<std::mutex>()),
     m_ioContext(std::make_unique<::boost::asio::io_context>()),
     m_acceptor(*m_ioContext,
     ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
     m_socket(*m_ioContext)
 {
-    Loggable::addLineNumbers();
 }
 
 TCPServer::TCPServer(TCPServer&& other) :
     Protocol(std::move(other)),
     ServerProtocol(std::move(other)),
-    Loggable(std::move(other)),
     m_mutex(std::move(other.m_mutex)),
     m_ioContext(std::move(other.m_ioContext)),
     m_acceptor(std::move(other.m_acceptor)),
@@ -35,7 +32,6 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
-        Loggable::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
@@ -110,11 +106,11 @@ bool TCPServer::acceptClients()
                         ::boost::asio::ip::address remoteAddress = remoteEndpoint.address();
                         clientAddress = remoteAddress.to_string();
                         clientPort = remoteEndpoint.port();
-                        DEBUG("Remote IP address: ", clientAddress);
+                        Log::debug("Remote IP address: ", clientAddress);
                     }
                     catch (const std::exception& e)
                     {
-                        ERROR("Error getting info from remote, reason: ", e.what());
+                        Log::debug("Error getting info from remote, reason: ", e.what());
                     }
 
                     // Receive data from the client
@@ -125,24 +121,24 @@ bool TCPServer::acceptClients()
 
                     if (error_code == ::boost::asio::error::eof)
                     {
-                        DEBUG("End receive ", clientAddress);
+                        Log::debug("End receive ", clientAddress);
                         break;
                     }
                     else if (bytesRead <= 0)
                     {
                         // Other type of error.
-                        ERROR("TCPServer Error: boost::asio::read");
+                        Log::error("TCPServer Error: boost::asio::read");
                         break;
                     }
                     else if (error_code)
                     {
                         // Handle other errors
-                        ERROR("TCPServer Error reading from client: ", error_code.message());
+                        Log::error("TCPServer Error reading from client: ", error_code.message());
                         break;
                     }
 
                     std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-                    DEBUG("Received from client ", message);
+                    Log::debug("Received from client ", message);
 
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
@@ -151,11 +147,11 @@ bool TCPServer::acceptClients()
                         std::string toString = Util::convertToString(bytes);
                         if (sendToClient(toString, newSocket))
                         {
-                            INFO("Sended message to client succesfully");
+                            Log::info("Sended message to client succesfully");
                         }
                         else
                         {
-                            ERROR("Error sending message to client");
+                            Log::error("Error sending message to client");
                         }
                     };
 
@@ -163,18 +159,18 @@ bool TCPServer::acceptClients()
 
                     if (passCommand)
                     {
-                        INFO("Passed with command: ", message);
+                        Log::info("Passed with command: ", message);
                     }
                     else
                     {
-                        INFO("Failed with command", message);
+                        Log::info("Failed with command", message);
                     }
                 }
             }
             catch (const ::boost::system::system_error& e)
             {
                 // Handle errors or client disconnect here
-                ERROR("Error in client thread: ", e.what());
+                Log::error("Error in client thread: ", e.what());
             } })
             .detach();
     }
@@ -182,7 +178,7 @@ bool TCPServer::acceptClients()
 
 bool TCPServer::sendToClient(const std::string& data, ::boost::asio::ip::tcp::socket& clientSocket)
 {
-    INFO("sendToClient called!");
+    Log::info("sendToClient called!");
     if (clientSocket.is_open())
     {
         ::boost::asio::write(clientSocket, ::boost::asio::buffer(data));

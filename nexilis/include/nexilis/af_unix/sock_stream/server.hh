@@ -14,8 +14,7 @@ namespace nexilis::af_unix::sock_stream
 
 class Server :
         public Protocol,
-        public ServerProtocol,
-        public Loggable
+        public ServerProtocol
 {
 public:
     /// Constructor.

@@ -12,7 +12,6 @@ namespace nexilis::af_unix::sock_stream
 {
 
 Server::Server(const std::string& socketPath) :
-    Loggable(typeToString(getType())),
     m_socketPath(socketPath),
     m_buffer(NEXILIS_BUFFER)
 {
@@ -33,7 +32,6 @@ Server::~Server()
 Server::Server(Server&& other) :
     Protocol(std::move(other)),
     ServerProtocol(std::move(other)),
-    Loggable(std::move(other)),
     m_socketPath(std::move(other.m_socketPath)),
     m_serverSocket(std::move(other.m_serverSocket)),
     m_buffer(std::move(std::move(other.m_buffer))),
@@ -47,7 +45,6 @@ Server& Server::operator=(Server&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
-        Loggable::operator=(std::move(other));
         m_socketPath = std::move(other.m_socketPath);
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);

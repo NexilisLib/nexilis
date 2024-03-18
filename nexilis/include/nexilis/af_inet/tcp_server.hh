@@ -15,8 +15,7 @@ namespace nexilis::af_inet
 
 class TCPServer :
             public Protocol,
-            public ServerProtocol,
-            public Loggable
+            public ServerProtocol
 {
 public:
     class Client

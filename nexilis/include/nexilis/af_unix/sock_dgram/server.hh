@@ -3,15 +3,13 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
-#include <nexilis/loggable.hh>
 
 namespace nexilis::af_unix::sock_dgram
 {
 
 class Server :
             public Protocol,
-            public ServerProtocol,
-            public Loggable
+            public ServerProtocol
 {
 public:
     /// Constructor.

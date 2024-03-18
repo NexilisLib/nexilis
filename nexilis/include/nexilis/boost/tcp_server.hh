@@ -13,8 +13,7 @@ namespace nexilis::boost
 
 class TCPServer :
                 public Protocol,
-                public ServerProtocol,
-                public Loggable
+                public ServerProtocol
 {
 public:
     /// Constructor.

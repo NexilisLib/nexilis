@@ -7,6 +7,7 @@
 
 int main(int argc, char** argv)
 {
+    /*
     auto ncursesDebug = [](nexilis::logger::LogLevel logLevel, const std::string& data)
     {
         // End ncurses temporarily to print to the console.
@@ -25,6 +26,7 @@ int main(int argc, char** argv)
     nexilis::logger::FunctionHandler functionHandler(ncursesDebug);
     nexilis::Log::addHandler(std::move(functionHandler));
     nexilis::Log::setMinimumLevel(nexilis::logger::LogLevel::INFO);
+    */
 
     NexilisClient nexilisClient;
     nexilisClient.start();
