@@ -1,3 +1,4 @@
+#include <boost/json/object.hpp>
 #include <nexilis/json.hh>
 
 #include <fstream>
@@ -14,6 +15,13 @@ boost::json::object Json::createJSON(const std::map<std::string, boost::json::va
         json_obj[kv.first] = kv.second;
     }
     return json_obj;
+}
+
+boost::json::object Json::nexilisJSON()
+{
+    boost::json::object nexilis_json;
+    std::map<std::string, boost::json::value> nexilis_data;
+    nexilis_data["nexilis_command"] = boost::json::value(true);
 }
 
 /// Read JSON data from file.

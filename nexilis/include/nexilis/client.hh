@@ -23,12 +23,13 @@ public:
 
     /// Move constructor.
     Client(Client&& other)
-        : m_ip_address(other.m_ip_address),
-          m_username(other.m_username),
-          m_id(other.m_id),
-          m_upd_port(other.m_upd_port),
-          m_hasRootAccess(other.m_hasRootAccess),
-          m_hasCommonAccess(other.m_hasCommonAccess)
+        : m_ip_address(std::move(other.m_ip_address)),
+          m_username(std::move(other.m_username)),
+          m_id(std::move(other.m_id)),
+          m_roomId(std::move(other.m_roomId)),
+          m_upd_port(std::move(other.m_upd_port)),
+          m_hasRootAccess(std::move(other.m_hasRootAccess)),
+          m_hasCommonAccess(std::move(other.m_hasCommonAccess))
     {
     }
 
@@ -37,12 +38,13 @@ public:
     {
         if (this != &other)
         {
-            m_ip_address = other.m_ip_address;
-            m_username = other.m_username;
-            m_id = other.m_id;
-            m_upd_port = other.m_upd_port;
-            m_hasRootAccess = other.m_hasRootAccess;
-            m_hasCommonAccess = other.m_hasCommonAccess;
+            m_ip_address = std::move(other.m_ip_address);
+            m_username = std::move(other.m_username);
+            m_id = std::move(other.m_id);
+            m_roomId = std::move(other.m_roomId);
+            m_upd_port = std::move(other.m_upd_port);
+            m_hasRootAccess = std::move(other.m_hasRootAccess);
+            m_hasCommonAccess = std::move(other.m_hasCommonAccess);
         }
         return *this;
     }
@@ -106,6 +108,16 @@ public:
         return m_id;
     }
 
+    void setRoomId(size_t roomId)
+    {
+        m_roomId = roomId;
+    }
+
+    size_t getRoomId() const
+    {
+        return m_roomId;
+    }
+
     void setUsername(const std::string& username)
     {
         m_username = username;
@@ -120,6 +132,7 @@ private:
     std::string m_ip_address;
     std::string m_username;
     size_t m_id;
+    size_t m_roomId = 0;
 
 private:
     unsigned short m_upd_port;

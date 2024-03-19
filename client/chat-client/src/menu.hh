@@ -1,6 +1,7 @@
 #ifndef CHAT_CLIENT_MENU_HH
 #define CHAT_CLIENT_MENU_HH
 
+/// Forward declare ncurses window.
 struct _win_st;
 
 #include <map>

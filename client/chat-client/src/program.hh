@@ -9,13 +9,13 @@ class Program
 {
 public:
     /// Constructor.
-    Program(int argc, char** argv, NexilisClient&& nexilisClient);
+    Program(int argc, char** argv);
 
     /// Destructor.
     ~Program();
 
     /// The update loop for the program.
-    void update();
+    void update(NexilisClient& nexilisClient);
 
 private:
     void inputHandler();
@@ -34,9 +34,6 @@ private:
 
     /// Menu object.
     Menu m_menu;
-
-    /// Nexilis client.
-    NexilisClient&& m_nexilisClient;
 
     /// Current input variable.
     int m_input;

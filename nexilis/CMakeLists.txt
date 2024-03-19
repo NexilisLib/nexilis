@@ -43,6 +43,8 @@ set(SOURCES
     src/protocol.cc
     src/protocol_manager.cc
     src/json.cc
+    src/room.cc
+    src/room_storage.cc
 
     src/common/util.cc
     src/mysql/database.cc
