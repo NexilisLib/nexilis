@@ -17,6 +17,17 @@ public:
 
     /// Move assignment operator.
     NexilisClient& operator=(NexilisClient&& other);
+
+    nexilis::ClientAPI& getClientAPI()
+    {
+        return m_clientAPI;
+    }
+
+    nexilis::boost::TCPClient& getTCPClient()
+    {
+        return m_tcpClient;
+    }
+
 private:
     nexilis::ClientAPI::ServerData m_serverData;
     nexilis::ClientAPI m_clientAPI;

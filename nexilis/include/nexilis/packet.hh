@@ -16,6 +16,12 @@ public:
     public:
         static std::vector<uint8_t> clientId(ClientAPI& api);
     };
+
+    class Info
+    {
+    public:
+        static std::vector<uint8_t> generalInfo(ClientAPI& api);
+    };
 };
 
 } // namespace nexilis

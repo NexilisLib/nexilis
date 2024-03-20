@@ -4,6 +4,8 @@
 #include <nexilis/config.hh>
 #include <nexilis/logger/log_level.hh>
 
+#include <boost/json/object.hpp>
+
 #include <cstdint>
 #include <iostream>
 #include <string>
@@ -61,6 +63,8 @@ public:
     static std::vector<uint8_t> convertToByteVector(const char* command_data, size_t lenght);
 
     static std::vector<uint8_t> convertToByteVector(size_t value);
+
+    static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
 
     static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
 };

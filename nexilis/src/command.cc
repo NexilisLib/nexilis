@@ -159,7 +159,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
 
                     sendMessageToClient(data);
-                    break;
+                    return true;
                 }
 
                 // Option for help.

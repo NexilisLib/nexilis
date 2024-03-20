@@ -9,7 +9,7 @@ class Program
 {
 public:
     /// Constructor.
-    Program(int argc, char** argv, NexilisClient* nexilisClient);
+    Program(int argc, char** argv);
 
     /// Destructor.
     ~Program();
@@ -21,6 +21,7 @@ private:
     void inputHandler();
     void updateScreenSize();
     void end();
+    void sendTCPMessage(const std::vector<uint8_t>& message);
 
 private:
     /// Command line arguments argc.
@@ -35,8 +36,8 @@ private:
     /// Menu object.
     Menu m_menu;
 
-    // This is not library code so this can be a bit funny.
-    NexilisClient* m_nexilisClient = nullptr;
+    /// NexilisClient object.
+    NexilisClient m_nexilisClient;
 
     /// Current input variable.
     int m_input;

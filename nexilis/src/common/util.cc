@@ -1,3 +1,6 @@
+#include <boost/json/object.hpp>
+#include <boost/json/serialize.hpp>
+#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -86,6 +89,13 @@ std::vector<uint8_t> Util::convertToByteVector(size_t value)
         }
     }
     return result;
+}
+
+std::vector<uint8_t> Util::convertToByteVector(const boost::json::object& obj)
+{
+    std::string jsonString = boost::json::serialize(obj);
+    std::vector<uint8_t> byteStream(jsonString.begin(), jsonString.end());
+    return byteStream;
 }
 
 void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data)

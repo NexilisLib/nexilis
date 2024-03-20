@@ -1,6 +1,3 @@
-#include "nexilis/log.hh"
-#include "nexilis/logger/log_level.hh"
-#include "nexilis_client.hh"
 #include "program.hh"
 
 #include <nexilis/logger/function_handler.hh>
@@ -28,12 +25,7 @@ int main(int argc, char** argv)
     nexilis::Log::setMinimumLevel(nexilis::logger::LogLevel::INFO);
     */
 
-    NexilisClient nexilisClient;
-    nexilisClient.start();
-
-    std::cout << "nexilis client started" << std::endl;
-
-    Program program(argc, argv, &nexilisClient);
+    Program program(argc, argv);
 
     while (true)
     {

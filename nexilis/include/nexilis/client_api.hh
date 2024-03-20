@@ -255,6 +255,7 @@ public:
     /// Steal the runtime until af_unix STREAM connection is ready.
     void waitUntilUnixStreamReady();
 
+public:
     /// Read incoming message to client.
     bool readMessage(std::vector<uint8_t> message);
 

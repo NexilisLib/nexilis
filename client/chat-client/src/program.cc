@@ -2,15 +2,19 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
+#include <nexilis/packet.hh>
+
+#include <cstdint>
 #include <ncurses.h>
 
-Program::Program(int argc, char** argv, NexilisClient* nexilisClient) :
+Program::Program(int argc, char** argv) :
     m_argc(argc),
     m_argv(argv),
     m_window(),
     m_menu(),
-    m_nexilisClient(nexilisClient)
+    m_nexilisClient()
 {
+    m_nexilisClient.start();
 }
 
 Program::~Program()
@@ -31,6 +35,7 @@ void Program::inputHandler()
         }
     }
 
+    /// Menu update ritual.
     if (m_menu.getState() == Menu::State::menu)
     {
         switch (tolower(m_input))
@@ -93,11 +98,25 @@ void Program::inputHandler()
             }
         }
     }
+
+    else if (m_menu.getState() == Menu::State::chat)
+    {
+        if (m_input == 10)
+        {
+            debug("Sent message to the server asking for server data");
+            sendTCPMessage(nexilis::Packet::Info::generalInfo(m_nexilisClient.getClientAPI()));
+        }
+    }
 }
 
 void Program::updateScreenSize()
 {
     // TODO
+}
+
+void Program::sendTCPMessage(const std::vector<uint8_t>& message)
+{
+    m_nexilisClient.getTCPClient().sendMessage(message);
 }
 
 void Program::end()
