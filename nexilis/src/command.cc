@@ -1,9 +1,10 @@
-#include <nexilis/client_storage.hh>
+#include <boost/json/serialize.hpp>
 #include <nexilis/command.hh>
+#include <nexilis/client_storage.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
-
+#include <nexilis/json.hh>
 #include <nexilis/common/util.hh>
 
 namespace nexilis
@@ -150,9 +151,14 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
-                // Option for general info.
+                // Get all public information from a server.
                 case 0x10:
                 {
+                    boost::json::object serverData = Json::getServerData();
+                    std::string stringData = boost::json::serialize(serverData);
+                    auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
+
+                    sendMessageToClient(data);
                     break;
                 }
 

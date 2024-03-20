@@ -16,8 +16,7 @@ class Client
 public:
     /// Constructor.
     Client(std::string ip_address) noexcept
-        : m_ip_address(ip_address),
-          m_id(Util::getRandomSizeT(0, NEXILIS_MAX))
+        : m_ip_address(ip_address)
     {
     }
 
@@ -131,7 +130,7 @@ public:
 private:
     std::string m_ip_address;
     std::string m_username;
-    size_t m_id;
+    size_t m_id = Util::getRandomSizeT();
     size_t m_roomId = 0;
 
 private:

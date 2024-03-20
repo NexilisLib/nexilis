@@ -1,15 +1,17 @@
 #ifndef NEXILIS_ROOM_HH
 #define NEXILIS_ROOM_HH
 
-#include <string>
-#include <cstdint>
+#include <nexilis/common/util.hh>
+#include <nexilis/nexilis_macros.hh>
 
 namespace nexilis
 {
 
+/// Room objects to be stored in the RoomStorage.
 class Room
 {
 public:
+    /// The settings for the associated room.
     class Settings
     {
     public:
@@ -48,8 +50,8 @@ public:
 
     private:
         std::string m_name;
-        uint32_t m_maxSize;
-        size_t m_roomId;
+        uint32_t m_maxSize = NEXILIS_ROOM_CLIENT_AMOUNT;
+        size_t m_roomId = Util::getRandomSizeT();
     };
 
     /// Constructor.
@@ -60,6 +62,12 @@ public:
 
     /// Move assignment operator.
     Room& operator=(Room&& other);
+
+    /// Deleted copy constructor.
+    Room(const Room&) = delete;
+
+    /// Deleted copy assignment operator.
+    Room& operator=(const Room&) = delete;
 
     /// Get the given name for the room.
     std::string getName() const

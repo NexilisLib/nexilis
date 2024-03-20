@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_COMPILER "clang++")
 
 # Boost
-find_package(Boost COMPONENTS system REQUIRED)
+find_package(Boost COMPONENTS system json REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # MySQL C API

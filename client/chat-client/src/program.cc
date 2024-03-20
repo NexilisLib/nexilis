@@ -4,11 +4,12 @@
 
 #include <ncurses.h>
 
-Program::Program(int argc, char** argv) :
+Program::Program(int argc, char** argv, NexilisClient* nexilisClient) :
     m_argc(argc),
     m_argv(argv),
     m_window(),
-    m_menu()
+    m_menu(),
+    m_nexilisClient(nexilisClient)
 {
 }
 
@@ -105,7 +106,7 @@ void Program::end()
     exit(0);
 }
 
-void Program::update(NexilisClient& nexilisClient)
+void Program::update()
 {
     inputHandler();
     m_menu.update(m_window.getWindow(), m_choice);

@@ -6,8 +6,7 @@ namespace nexilis
 
 Room::Settings::Settings(const std::string& name, uint32_t maxSize) :
     m_name(name),
-    m_maxSize(maxSize),
-    m_roomId(Util::getRandomSizeT())
+    m_maxSize(maxSize)
 {
 }
 
