@@ -1,8 +1,13 @@
+#include <boost/json/serialize.hpp>
+#include <fstream>
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>
 
 #include <nexilis/common/util.hh>
 #include <nexilis/json.hh>
+#include <nexilis/packet.hh>
+
+#include <ostream>
 
 namespace nexilis
 {
@@ -219,6 +224,16 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
         Log::debug("");
     }
+    try
+    {
+        auto json = Json::convertToJSON(message);
+        Json::print(json);
+        return true;
+    }
+    catch (...)
+    {
+        Log::debug("Data is not convertible to JSON");
+    }
 
     Log::debug("");
     Log::debug("");
@@ -241,6 +256,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                     Log::info("CLIENT ID WHEN SETTING: ", id);
 
                     setClientId(id);
+                    Packet::_initialize(id);
 
                     // Maybe there should be some sort of verification here,
                     // to check that the id here is actually the same id than in the server.
@@ -253,8 +269,6 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
 
         default:
         {
-            auto json = Json::convertToJSON(message);
-            Json::print(json);
             return true;
         }
     }

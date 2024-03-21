@@ -43,7 +43,4 @@ void NexilisClient::start()
     m_tcpClient.sendMessage(m_serverData.getPassword());
     m_clientAPI.waitUntilBoostTCPReady();
     std::cout << "Boost TCP connection ready" << std::endl;
-    auto id = nexilis::Packet::Set::clientId(m_clientAPI.getClientId());
-    m_tcpClient.sendMessage(id);
-    std::cout << "BOOST TCP DONE!" << std::endl;
 }

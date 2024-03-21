@@ -50,7 +50,7 @@ boost::json::object Json::getServerData()
     }
     else
     {
-        serverDataObj["room_amount"] = clients.size();
+        serverDataObj["room_amount"] = rooms.size();
         auto roomData = roomsToJSON(rooms);
         serverDataObj["rooms"] = std::move(roomData);
     }
@@ -82,8 +82,25 @@ void Json::print(const boost::json::object& obj)
             // If the value is another object, recursively print it
             print(value.as_object());
         }
+        // Very dirty hacks
+        else if (value.is_array())
+        {
+            for (const auto& item : value.as_array())
+            {
+                if (item.is_string())
+                {
+                    std::cout << item.as_string();
+                }
+                else if (item.is_number())
+                {
+                    std::cout << item.as_int64();
+                }
+            }
+        }
         else
         {
+            Log::info("key: ", key);
+            Log::info("value: ", value);
             Log::error("Unsupported value type");
         }
         std::cout << std::endl;

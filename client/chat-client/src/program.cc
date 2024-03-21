@@ -2,10 +2,12 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
+#include <ncurses.h>
+
 #include <nexilis/packet.hh>
+#include <nexilis/logger/file_handler.hh>
 
 #include <cstdint>
-#include <ncurses.h>
 
 Program::Program(int argc, char** argv) :
     m_argc(argc),
@@ -104,7 +106,7 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Sent message to the server asking for server data");
-            sendTCPMessage(nexilis::Packet::Info::generalInfo(m_nexilisClient.getClientAPI().getClientId()));
+            sendTCPMessage(nexilis::Packet::Info::generalInfo());
         }
     }
 }

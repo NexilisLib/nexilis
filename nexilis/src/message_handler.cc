@@ -4,6 +4,7 @@
 #include <nexilis/command.hh>
 #include <nexilis/config.hh>
 #include <nexilis/message_handler.hh>
+#include <nexilis/packet.hh>
 
 #include <nexilis/common/util.hh>
 
@@ -167,7 +168,6 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     assert(client.getId() == realNewClient->getId());
 
                     std::vector<uint8_t> message{0x20, 0x10};
-
                     std::vector<uint8_t> idBytes = Util::convertToByteVector(realNewClient->getId());
                     for (size_t i = 0; i < idBytes.size(); i++)
                     {
