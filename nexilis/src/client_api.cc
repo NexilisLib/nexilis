@@ -1,6 +1,9 @@
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>
 
+#include <nexilis/common/util.hh>
+#include <nexilis/json.hh>
+
 namespace nexilis
 {
 
@@ -234,6 +237,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
                     auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
                     size_t id = Util::convertToType<size_t>(sizeVector);
 
+                    Log::info("Previous client id ", m_clientId);
                     Log::info("CLIENT ID WHEN SETTING: ", id);
 
                     setClientId(id);
@@ -243,19 +247,16 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
 
                     return true;
                 }
-
-                default:
-                    return false;
             }
-        }
-
-        // Get.
-        case 0x20:
-        {
+            return false;
         }
 
         default:
-            return false;
+        {
+            auto json = Json::convertToJSON(message);
+            Json::print(json);
+            return true;
+        }
     }
 }
 

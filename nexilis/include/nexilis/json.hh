@@ -31,6 +31,12 @@ public:
     /// Return some data from the server.
     static boost::json::object getServerData();
 
+    /// Convert std::vector<uint8_t> to boost::json::object.
+    static boost::json::object convertToJSON(const std::vector<uint8_t>& bytes);
+
+    /// Print the contents of boost::json::object.
+    static void print(const boost::json::object& obj);
+
 private:
     // Get json data from room vector.
     static boost::json::array roomsToJSON(const std::vector<Room>& rooms);

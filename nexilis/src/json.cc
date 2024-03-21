@@ -57,6 +57,39 @@ boost::json::object Json::getServerData()
     return serverDataObj;
 }
 
+boost::json::object Json::convertToJSON(const std::vector<uint8_t>& bytes)
+{
+    std::string jsonString(bytes.begin(), bytes.end());
+    return boost::json::parse(jsonString).as_object();
+}
+
+void Json::print(const boost::json::object& obj)
+{
+    for (const auto& [key, value] : obj)
+    {
+        std::cout << key << ": ";
+
+        if (value.is_string())
+        {
+            std::cout << value.as_string();
+        }
+        else if (value.is_number())
+        {
+            std::cout << value.as_int64();
+        }
+        else if (value.is_object())
+        {
+            // If the value is another object, recursively print it
+            print(value.as_object());
+        }
+        else
+        {
+            Log::error("Unsupported value type");
+        }
+        std::cout << std::endl;
+    }
+}
+
 boost::json::array Json::clientsToJSON(const std::vector<Client>& clients)
 {
     boost::json::array resultingArray;

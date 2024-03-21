@@ -104,7 +104,7 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Sent message to the server asking for server data");
-            sendTCPMessage(nexilis::Packet::Info::generalInfo(m_nexilisClient.getClientAPI()));
+            sendTCPMessage(nexilis::Packet::Info::generalInfo(m_nexilisClient.getClientAPI().getClientId()));
         }
     }
 }
