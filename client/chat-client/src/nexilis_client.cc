@@ -1,6 +1,7 @@
 #include "nexilis_client.hh"
-#include "nexilis/boost/tcp_client.hh"
+#include "debug.hh"
 
+#include <nexilis/common/util.hh>
 #include <nexilis/packet.hh>
 
 nexilis::ClientAPI::ServerData getServerData()
@@ -42,5 +43,6 @@ void NexilisClient::start()
     m_tcpClient.start();
     m_tcpClient.sendMessage(m_serverData.getPassword());
     m_clientAPI.waitUntilBoostTCPReady();
-    std::cout << "Boost TCP connection ready" << std::endl;
+    debug("Boost TCP connection ready");
+    debug(nexilis::Util::getDateAndTime());
 }

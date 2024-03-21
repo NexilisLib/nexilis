@@ -5,6 +5,7 @@
 #include <nexilis/nexilis_macros.hh>
 
 #include <random>
+#include <iomanip>
 
 namespace nexilis
 {
@@ -117,6 +118,23 @@ void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::strin
     }
 
     std::cout << color << data << "\033[0m" << std::endl;
+}
+
+std::string Util::getDateAndTime()
+{
+    // Get the current time.
+    auto now = std::chrono::system_clock::now();
+
+    // Convert to time_t.
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+    // Convert to local time struct.
+    std::tm* localTime = std::localtime(&currentTime);
+
+    // Format the time.
+    std::stringstream ss;
+    ss << std::put_time(localTime, "%Y-%m-%d %H:%M:%S");
+    return ss.str();
 }
 
 } // namespace nexilis

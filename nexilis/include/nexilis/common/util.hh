@@ -67,6 +67,8 @@ public:
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
 
     static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
+
+    static std::string getDateAndTime();
 };
 
 } // namespace nexilis
