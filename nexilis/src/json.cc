@@ -178,4 +178,16 @@ boost::json::value Json::readJSONFromFile(const std::string& filename)
     return json_value;
 }
 
+
+void Json::saveToFile(const boost::json::object& obj, const std::string& filePath)
+{
+    std::ofstream file(filePath.c_str());
+    if (!file.is_open())
+    {
+        Log::error("Failed to create a file at path: ", filePath);
+    }
+    file << boost::json::serialize(obj);
+    file.close();
+}
+
 } // namespace nexilis

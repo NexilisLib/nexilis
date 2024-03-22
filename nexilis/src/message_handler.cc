@@ -5,6 +5,7 @@
 #include <nexilis/config.hh>
 #include <nexilis/message_handler.hh>
 #include <nexilis/packet.hh>
+#include <nexilis/json.hh>
 
 #include <nexilis/common/util.hh>
 

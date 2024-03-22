@@ -1,5 +1,7 @@
+#include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
 #include <fstream>
+#include <iterator>
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>
 
@@ -217,61 +219,28 @@ void ClientAPI::waitUntilUnixStreamReady()
 
 bool ClientAPI::readMessage(std::vector<uint8_t> message)
 {
-    for (uint8_t commandByte : message)
-    {
-        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
-        Log::debug("");
-        Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
-        Log::debug("");
-    }
+    boost::json::object json;
     try
     {
-        auto json = Json::convertToJSON(message);
-        Json::print(json);
-        return true;
+        json = Json::convertToJSON(message);
     }
     catch (...)
     {
-        Log::debug("Data is not convertible to JSON");
+        Log::error("Cannot convert message to json");
+        return false;
     }
 
-    Log::debug("");
-    Log::debug("");
-    std::cout << std::dec;
-
-    switch (message.front())
+    if (json.contains("nexilis_status") && json["nexilis_status"] == 1)
     {
-        // Set
-        case 0x10:
+        if (json.contains("set_client_id"))
         {
-            switch (message[1])
-            {
-                // Client ID.
-                case 0x10:
-                {
-                    auto sizeVector = Util::removeAmountOfBytesFromVector(message, 2);
-                    size_t id = Util::convertToType<size_t>(sizeVector);
-
-                    Log::info("Previous client id ", m_clientId);
-                    Log::info("CLIENT ID WHEN SETTING: ", id);
-
-                    setClientId(id);
-                    Packet::_initialize(id);
-
-                    // Maybe there should be some sort of verification here,
-                    // to check that the id here is actually the same id than in the server.
-
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        default:
-        {
+            int id = json["set_client_id"].as_uint64();
+            setClientId(id);
+            Packet::_initialize(id);
             return true;
         }
     }
+    return false;
 }
 
 } // namespace nexilis

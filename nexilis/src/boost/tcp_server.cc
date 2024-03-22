@@ -163,7 +163,7 @@ bool TCPServer::acceptClients()
                     }
                     else
                     {
-                        Log::info("Failed with command", message);
+                        Log::info("Failed with command: ", message);
                     }
                 }
             }

@@ -90,18 +90,14 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get client id.
                 case 0x10:
                 {
-                    /// Client package: 0x10, 0x10 = SET, ID.
-                    std::vector<uint8_t> data = {0x10, 0x10};
-
-                    auto idBytes = Util::convertToByteVector(client.getId());
-
-                    for (uint8_t i = 0; i < idBytes.size(); i++)
+                    std::map<std::string, boost::json::value> data
                     {
-                        data.push_back(idBytes[i]);
-                    }
-
-                    Log::info("sending to client");
-                    sendMessageToClient(data);
+                        { "nexilis_status", boost::json::value(1) },
+                        { "set_client_id", boost::json::value(static_cast<uint64_t>(client.getId())) }
+                    };
+                    auto json = Json::createJSON(data);
+                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+                    sendMessageToClient(message);
                     Log::info("sent message to client");
                     return true;
                 }

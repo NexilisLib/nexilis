@@ -6,10 +6,10 @@
 #include <nexilis/protocol.hh>
 
 #include <boost/asio.hpp>
+#include <boost/json.hpp>
 
 namespace nexilis::boost
 {
-
 class TCPClient : public Protocol,
                   public ClientProtocol
 {

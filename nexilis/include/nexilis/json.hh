@@ -37,6 +37,10 @@ public:
     /// Print the contents of boost::json::object.
     static void print(const boost::json::object& obj);
 
+    /// Write json object to a file.
+    /// TODO This does not seem to work in the library context, because of the path.
+    static void saveToFile(const boost::json::object& obj, const std::string& filePath);
+
 private:
     // Get json data from room vector.
     static boost::json::array roomsToJSON(const std::vector<Room>& rooms);

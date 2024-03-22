@@ -130,6 +130,7 @@ public:
 private:
     std::string m_ip_address;
     std::string m_username;
+    // TODO change to uint64_t
     size_t m_id = Util::getRandomSizeT();
     size_t m_roomId = 0;
 
