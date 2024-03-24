@@ -218,28 +218,8 @@ void ClientAPI::waitUntilUnixStreamReady()
     }
 }
 
-bool ClientAPI::readMessage(std::vector<uint8_t> message)
+bool ClientAPI::parse(boost::json::object json)
 {
-    boost::json::object json;
-    try
-    {
-        json = Json::convertToJSON(message);
-    }
-    catch (...)
-    {
-        Log::error("Cannot convert message to json");
-        Log::debug("Trying to debug json");
-
-        try
-        {
-            Json::print(json);
-        }
-        catch (...)
-        {
-        }
-        return false;
-    }
-
     // Parsing message.
     if (!json.contains("nexilis_status") || json["nexilis_status"] != 1)
     {
@@ -275,23 +255,42 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
             return false;
         }
     }
-
-    if (json.contains("client_amount"))
-    {
-        auto clientAmount = json.find("client_amount");
-
-        if (clientAmount != json.end())
-        {
-            Log::info("client amount: ", clientAmount->value());
-            return true;
-        }
-        else
-        {
-            Log::error("No value for client amount");
-            return false;
-        }
-    }
     return true;
+}
+
+bool ClientAPI::readMessage(std::vector<uint8_t> message)
+{
+    boost::json::object json;
+    try
+    {
+        json = Json::convertToJSON(message);
+    }
+    catch (...)
+    {
+        Log::error("Cannot convert message to json");
+        Log::debug("Trying to debug json");
+
+        try
+        {
+            Json::print(json);
+        }
+        catch (...)
+        {
+        }
+        return false;
+    }
+
+    m_currentMessage = json;
+
+    if (parse(m_currentMessage))
+    {
+        return true;
+    }
+    else
+    {
+        Log::error("Nexilis side parsing failed!");
+        return false;
+    }
 }
 
 } // namespace nexilis

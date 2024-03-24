@@ -2,6 +2,9 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
+#include <boost/json/serialize.hpp>
+#include <cctype>
+#include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/packet.hh>
@@ -108,6 +111,24 @@ void Program::inputHandler()
             debug("Sent message to the server asking for server data");
             sendTCPMessage(nexilis::Packet::Info::generalInfo());
         }
+
+        switch (tolower(m_input))
+        {
+            case 'j':
+            case KEY_DOWN:
+            {
+                debug("Pressed key down");
+                break;
+            }
+
+            case 'k':
+            case KEY_UP:
+            {
+                debug("Pressed key up");
+                debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
+                break;
+            }
+        }
     }
 }
 
@@ -119,6 +140,12 @@ void Program::updateScreenSize()
 void Program::sendTCPMessage(const std::vector<uint8_t>& message)
 {
     m_nexilisClient.getTCPClient().sendMessage(message);
+}
+
+void Program::debugObject(boost::json::object object)
+{
+    std::string stringObject = boost::json::serialize(object);
+    debug(stringObject);
 }
 
 void Program::end()

@@ -4,6 +4,7 @@
 #include "window.hh"
 #include "menu.hh"
 #include "nexilis_client.hh"
+#include <boost/json/object.hpp>
 
 class Program
 {
@@ -22,6 +23,7 @@ private:
     void updateScreenSize();
     void end();
     void sendTCPMessage(const std::vector<uint8_t>& message);
+    void debugObject(boost::json::object object);
 
 private:
     /// Command line arguments argc.

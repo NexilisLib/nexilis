@@ -1,6 +1,7 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
+#include <boost/json/object.hpp>
 #include <nexilis/common/util.hh>
 
 #include <cassert>
@@ -263,7 +264,7 @@ public:
     /// Getters.
 
     /// General.
-    size_t getClientId() const
+    uint64_t getClientId() const
     {
         return m_clientId;
     }
@@ -334,6 +335,12 @@ public:
         return m_data.getUnixStreamServerPath();
     }
 
+    /// Get the currently read received message.
+    boost::json::object getCurrentMessage() const
+    {
+        return m_currentMessage;
+    }
+
 private:
     /// Setters.
     void setClientId(size_t id)
@@ -341,9 +348,13 @@ private:
         m_clientId = id;
     }
 
+    /// Parse clientside data.
+    bool parse(boost::json::object json);
+
 private:
     ServerData m_data;
-    size_t m_clientId = 0;
+    uint64_t m_clientId = 0;
+    boost::json::object m_currentMessage;
 };
 
 } // namespace nexilis
