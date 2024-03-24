@@ -15,11 +15,11 @@ class ClientStorage
 public:
     static void add(Client&& client);
 
-    static bool contains(size_t id);
+    static bool contains(uint64_t id);
 
     static std::vector<Client>& getAllClients();
 
-    static Client* getClientById(size_t id);
+    static Client* getClientById(uint64_t id);
 
     static std::vector<Client*> getClientsByIpAddress(const std::string& ip_address);
 

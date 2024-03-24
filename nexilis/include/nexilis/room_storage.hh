@@ -18,11 +18,11 @@ public:
 
     static void add(Room&& room);
 
-    static bool contains(size_t id);
+    static bool contains(uint64_t id);
 
     static std::vector<Room>& getAllRooms();
 
-    static Room* getRoomById(size_t id);
+    static Room* getRoomById(uint64_t id);
 
 private:
     static std::vector<Room> m_rooms;

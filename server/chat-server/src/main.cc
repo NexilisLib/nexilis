@@ -1,6 +1,7 @@
 // nexilis libs
-#include "nexilis/logger/log_level.hh"
+#include <nexilis/room_storage.hh>
 #include <nexilis/log.hh>
+#include <nexilis/room.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/server_manager.hh>
 #include <nexilis/mysql/database.hh>
@@ -26,6 +27,15 @@ int main()
     auto boostTCPServer = protocolManager.createProtocol<nexilis::boost::TCPServer>(12348);
     boostTCPServer.start();
     std::cout << "nexilis server setup ready" << std::endl;
+
+    // Add some rooms.
+    auto room1 = nexilis::Room(nexilis::Room::Settings("first room", 30));
+    auto room2 = nexilis::Room(nexilis::Room::Settings("second room", 60));
+    auto room3 = nexilis::Room(nexilis::Room::Settings("third room", 60));
+
+    nexilis::RoomStorage::add(std::move(room1));
+    nexilis::RoomStorage::add(std::move(room2));
+    nexilis::RoomStorage::add(std::move(room3));
 
     return 0;
 }

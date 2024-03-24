@@ -9,6 +9,7 @@
 
 namespace nexilis::boost
 {
+namespace boost = ::boost;
 
 class UDPClient : public Protocol,
                   public ClientProtocol
@@ -52,9 +53,9 @@ public:
 
 private:
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
-    ::boost::asio::ip::udp::endpoint m_endPoint;
-    ::boost::asio::ip::udp::endpoint m_remoteEndpoint;
-    ::boost::asio::ip::udp::socket m_socket;
+    boost::asio::ip::udp::endpoint m_endPoint;
+    boost::asio::ip::udp::endpoint m_remoteEndpoint;
+    boost::asio::ip::udp::socket m_socket;
     std::vector<char> m_receiveBuffer;
 };
 

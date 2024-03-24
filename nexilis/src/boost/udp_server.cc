@@ -5,9 +5,9 @@ namespace nexilis::boost
 {
 
 UDPServer::UDPServer(int port)
-    : m_ioContext(std::make_unique<::boost::asio::io_context>()),
+    : m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_socket(*m_ioContext, ::boost::asio::ip::udp::endpoint(::boost::asio::ip::udp::v4(), port)),
+      m_socket(*m_ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
 }
@@ -62,11 +62,11 @@ void UDPServer::receiveFromClients()
 {
     Log::debug("Receive from clients called");
 
-    m_remoteEndpoint = ::boost::asio::ip::udp::endpoint();
+    m_remoteEndpoint = boost::asio::ip::udp::endpoint();
 
     m_socket.async_receive_from(
-        ::boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
-        [this](const ::boost::system::error_code& error, std::size_t bytes_transferred)
+        boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
+        [this](const boost::system::error_code& error, std::size_t bytes_transferred)
         {
             Log::debug("Receiving stuff from client");
             if (!error)

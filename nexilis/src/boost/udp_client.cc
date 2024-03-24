@@ -7,9 +7,9 @@ namespace nexilis::boost
 
 UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
-      m_ioContext(std::make_unique<::boost::asio::io_context>()),
-      m_endPoint(::boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
-      m_remoteEndpoint(::boost::asio::ip::udp::endpoint()),
+      m_ioContext(std::make_unique<boost::asio::io_context>()),
+      m_endPoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
+      m_remoteEndpoint(boost::asio::ip::udp::endpoint()),
       m_socket(*m_ioContext)
 {
 }
@@ -42,8 +42,8 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 
 void UDPClient::start()
 {
-    m_socket.async_receive_from(::boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
-                                [this](const ::boost::system::error_code& error, std::size_t bytesTransferred)
+    m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
+                                [this](const boost::system::error_code& error, std::size_t bytesTransferred)
                                 {
                                     if (!error)
                                     {
@@ -59,13 +59,13 @@ void UDPClient::start()
 
 void UDPClient::sendMessage(const std::string& message)
 {
-    m_socket.send_to(::boost::asio::buffer(message), m_endPoint);
+    m_socket.send_to(boost::asio::buffer(message), m_endPoint);
 }
 
 void UDPClient::sendMessage(const std::vector<uint8_t>& message)
 {
     std::string msg = reinterpret_cast<const char*>(message.data());
-    m_socket.send_to(::boost::asio::buffer(msg), m_endPoint);
+    m_socket.send_to(boost::asio::buffer(msg), m_endPoint);
 }
 
 } // namespace nexilis::boost

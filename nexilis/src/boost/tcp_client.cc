@@ -8,7 +8,7 @@ namespace nexilis::boost
 
 TCPClient::TCPClient(ClientAPI& api)
     : ClientProtocol(&api),
-      m_ioContext(std::make_unique<::boost::asio::io_context>()),
+      m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_socket(*m_ioContext),
       m_resolver(*m_ioContext),
       m_iterator(m_resolver.resolve({api.getBoostTCPServerAddress(),
@@ -103,8 +103,8 @@ bool TCPClient::send(const std::string& data)
     if (m_socket.is_open())
     {
         // Asynchronously send data to the server.
-        ::boost::asio::async_write(m_socket, ::boost::asio::buffer(data),
-                                   [this](const ::boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+        boost::asio::async_write(m_socket, boost::asio::buffer(data),
+                                   [this](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
                                    {
                                        if (!error)
                                        {
@@ -130,17 +130,17 @@ bool TCPClient::receive(std::string& buffer)
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
 
-    ::boost::asio::streambuf receiveBuffer;
-    ::boost::system::error_code error;
+    boost::asio::streambuf receiveBuffer;
+    boost::system::error_code error;
 
-    ::boost::asio::read(m_socket, receiveBuffer, ::boost::asio::transfer_at_least(1), error);
+    boost::asio::read(m_socket, receiveBuffer, boost::asio::transfer_at_least(1), error);
 
     if (receiveBuffer.data().size() <= 0)
     {
         return false;
     }
 
-    buffer = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
+    buffer = boost::asio::buffer_cast<const char*>(receiveBuffer.data());
     return true;
 }
 

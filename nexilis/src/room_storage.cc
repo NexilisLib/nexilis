@@ -13,11 +13,12 @@ std::vector<Room>& RoomStorage::getAllRooms()
 
 void RoomStorage::add(Room&& room)
 {
+    Log::info("New room: ", room.getName());
     m_rooms.emplace_back(std::move(room));
-    Log::info("New room, total amount = ", m_rooms.size());
+    Log::info("Total amount = ", m_rooms.size());
 }
 
-bool RoomStorage::contains(size_t id)
+bool RoomStorage::contains(uint64_t id)
 {
     return std::find_if(m_rooms.begin(), m_rooms.end(),
                         [id](const Room& room)
@@ -26,7 +27,7 @@ bool RoomStorage::contains(size_t id)
                         }) != m_rooms.end();
 }
 
-Room* RoomStorage::getRoomById(size_t id)
+Room* RoomStorage::getRoomById(uint64_t id)
 {
     auto it = std::find_if(m_rooms.begin(), m_rooms.end(),
                            [id](const Room& room)

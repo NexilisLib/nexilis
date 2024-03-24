@@ -10,6 +10,7 @@
 
 namespace nexilis::boost
 {
+namespace boost = ::boost;
 
 class TCPServer : public Protocol,
                   public ServerProtocol
@@ -46,7 +47,7 @@ public:
     }
 
 private:
-    bool sendToClient(const std::string& data, ::boost::asio::ip::tcp::socket& clientSocket);
+    bool sendToClient(const std::string& data, boost::asio::ip::tcp::socket& clientSocket);
     bool startListening();
     bool acceptClients();
 
@@ -54,8 +55,8 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
 
-    ::boost::asio::ip::tcp::acceptor m_acceptor;
-    ::boost::asio::ip::tcp::socket m_socket;
+    boost::asio::ip::tcp::acceptor m_acceptor;
+    boost::asio::ip::tcp::socket m_socket;
 
     std::thread m_listenThread;
     std::thread m_ioContextThread;

@@ -7,9 +7,9 @@ namespace nexilis::boost
 
 TCPServer::TCPServer(int serverPort)
     : m_mutex(std::make_unique<std::mutex>()),
-      m_ioContext(std::make_unique<::boost::asio::io_context>()),
+      m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
-                 ::boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
+                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
       m_socket(*m_ioContext)
 {
 }
@@ -88,7 +88,7 @@ bool TCPServer::acceptClients()
         std::lock_guard<std::mutex> lock(*m_mutex);
 
         // Create a new socket for each client connection
-        ::boost::asio::ip::tcp::socket newSocket(*m_ioContext);
+        boost::asio::ip::tcp::socket newSocket(*m_ioContext);
         m_acceptor.accept(newSocket);
 
         // Handle each client in a separate thread
@@ -102,8 +102,8 @@ bool TCPServer::acceptClients()
                     uint16_t clientPort;
                     try
                     {
-                        ::boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
-                        ::boost::asio::ip::address remoteAddress = remoteEndpoint.address();
+                        boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
+                        boost::asio::ip::address remoteAddress = remoteEndpoint.address();
                         clientAddress = remoteAddress.to_string();
                         clientPort = remoteEndpoint.port();
                         Log::debug("Remote IP address: ", clientAddress);
@@ -114,12 +114,12 @@ bool TCPServer::acceptClients()
                     }
 
                     // Receive data from the client
-                    ::boost::asio::streambuf receiveBuffer;
-                    ::boost::system::error_code error_code;
+                    boost::asio::streambuf receiveBuffer;
+                    boost::system::error_code error_code;
 
-                    size_t bytesRead = ::boost::asio::read(newSocket, receiveBuffer, ::boost::asio::transfer_at_least(1), error_code);
+                    size_t bytesRead = boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
 
-                    if (error_code == ::boost::asio::error::eof)
+                    if (error_code == boost::asio::error::eof)
                     {
                         Log::debug("End receive ", clientAddress);
                         break;
@@ -137,7 +137,7 @@ bool TCPServer::acceptClients()
                         break;
                     }
 
-                    std::string message = ::boost::asio::buffer_cast<const char*>(receiveBuffer.data());
+                    std::string message = boost::asio::buffer_cast<const char*>(receiveBuffer.data());
                     Log::debug("Received from client ", message);
 
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
@@ -167,7 +167,7 @@ bool TCPServer::acceptClients()
                     }
                 }
             }
-            catch (const ::boost::system::system_error& e)
+            catch (const boost::system::system_error& e)
             {
                 // Handle errors or client disconnect here
                 Log::error("Error in client thread: ", e.what());
@@ -176,12 +176,12 @@ bool TCPServer::acceptClients()
     }
 }
 
-bool TCPServer::sendToClient(const std::string& data, ::boost::asio::ip::tcp::socket& clientSocket)
+bool TCPServer::sendToClient(const std::string& data, boost::asio::ip::tcp::socket& clientSocket)
 {
     Log::info("sendToClient called!");
     if (clientSocket.is_open())
     {
-        ::boost::asio::write(clientSocket, ::boost::asio::buffer(data));
+        boost::asio::write(clientSocket, boost::asio::buffer(data));
         return true;
     }
     return false;

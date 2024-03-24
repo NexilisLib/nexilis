@@ -27,7 +27,7 @@ bool ClientStorage::contains(size_t id)
                         }) != m_clients.end();
 }
 
-Client* ClientStorage::getClientById(size_t id)
+Client* ClientStorage::getClientById(uint64_t id)
 {
     auto it = std::find_if(m_clients.begin(), m_clients.end(),
                            [id](const Client& client)

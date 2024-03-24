@@ -4,7 +4,6 @@
 #include "window.hh"
 #include "menu.hh"
 #include "nexilis_client.hh"
-#include <boost/json/object.hpp>
 
 class Program
 {
