@@ -2,16 +2,14 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
-#include <boost/json/serialize.hpp>
-#include <cctype>
+#include <cstdint>
 #include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/packet.hh>
 #include <nexilis/json.hh>
+#include <nexilis/log.hh>
 #include <nexilis/logger/file_handler.hh>
-
-#include <cstdint>
 
 Program::Program(int argc, char** argv) :
     m_argc(argc),
@@ -119,7 +117,11 @@ void Program::inputHandler()
             case KEY_DOWN:
             {
                 debug("Pressed key down");
-                nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), "../../../logs/log.json");
+                uint64_t copiedClientId = m_nexilisClient.getClientAPI().getClientId();
+                std::string date = nexilis::Util::getDateAndTime();
+                std::stringstream ss;
+                ss << "../../../logs/" << copiedClientId << ":"<< date << "log.json";
+                nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
                 break;
             }
 

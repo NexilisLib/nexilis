@@ -30,14 +30,14 @@ public:
 
         if (Config::getBigEndian())
         {
-            for (size_t i = 0; i < sizeof(T); ++i)
+            for (uint64_t i = 0; i < sizeof(T); ++i)
             {
                 result |= static_cast<T>(bytes[i]) << (8 * (sizeof(T) - 1 - i));
             }
         }
         else
         {
-            for (size_t i = 0; i < sizeof(T); ++i)
+            for (uint64_t i = 0; i < sizeof(T); ++i)
             {
                 result |= static_cast<T>(bytes[i]) << (8 * i);
             }

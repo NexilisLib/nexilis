@@ -137,7 +137,7 @@ std::string Util::getDateAndTime()
 
     // Format the time.
     std::stringstream ss;
-    ss << std::put_time(localTime, "%Y-%m-%d %H:%M:%S");
+    ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
     return ss.str();
 }
 
