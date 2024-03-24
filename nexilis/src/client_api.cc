@@ -229,7 +229,14 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
     {
         Log::error("Cannot convert message to json");
         Log::debug("Trying to debug json");
-        Json::print(json);
+
+        try
+        {
+            Json::print(json);
+        }
+        catch (...)
+        {
+        }
         return false;
     }
 
@@ -244,20 +251,45 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
     {
         if (json["set_client_id"].if_uint64())
         {
-            auto id = json["set_client_id"].as_uint64();
+            uint64_t id = json["set_client_id"].as_uint64();
+            setClientId(id);
+            Packet::_initialize(id);
+            return true;
+        }
+        // boost::json::value is so bad.
+        else if (json["set_client_id"].if_int64())
+        {
+            int64_t id = json["set_client_id"].as_int64();
+            uint64_t u_id = id;
+
+            assert(sizeof(id) == sizeof(u_id));
+            assert(static_cast<uint64_t>(id) == u_id);
+
             setClientId(id);
             Packet::_initialize(id);
             return true;
         }
         else
         {
-            Log::error("set_client_id is not convertible to as_uint64");
+            Log::error("The value of set_client_id is not convertible to as_uint64");
             return false;
         }
     }
-    else
+
+    if (json.contains("client_amount"))
     {
-        Log::info("GOOD");
+        auto clientAmount = json.find("client_amount");
+
+        if (clientAmount != json.end())
+        {
+            Log::info("client amount: ", clientAmount->value());
+            return true;
+        }
+        else
+        {
+            Log::error("No value for client amount");
+            return false;
+        }
     }
     return true;
 }

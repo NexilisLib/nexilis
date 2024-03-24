@@ -170,8 +170,10 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     assert(realNewClient);
                     assert(client.getId() == realNewClient->getId());
 
+                    // This message is equal to Packet::Get.
+                    // We want do this automatically.
                     std::vector<uint8_t> message{0x20, 0x10};
-                    std::vector<uint8_t> idBytes = Util::convertToByteVector(realNewClient->getId());
+                    std::vector<uint8_t> idBytes = Util::convertToByteVector(client.getId());
                     for (size_t i = 0; i < idBytes.size(); i++)
                     {
                         message.push_back(idBytes[i]);
