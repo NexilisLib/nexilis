@@ -1,2 +1,4 @@
 **build
 **.cache
+logs/*.json
+logs/*.txt
