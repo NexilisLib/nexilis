@@ -107,12 +107,14 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
             }
             else
             {
-                Log::error("Undefined behaviour");
+                Log::error("Trying to send messages without id");
+                Log::error("TODO send error message");
             }
         }
         else
         {
-            Log::error("Undefined behaviour");
+            Log::error("Trying to send messages without id");
+            Log::error("TODO send error message");
         }
     }
     else

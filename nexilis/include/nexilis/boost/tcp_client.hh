@@ -60,9 +60,8 @@ private:
     bool send(const std::string& data);
     bool receive(std::string& buffer);
 
-    bool m_stopped = false;
-
 private:
+    bool m_stopped = false;
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
     ::boost::asio::ip::tcp::socket m_socket;
     ::boost::asio::ip::tcp::resolver m_resolver;

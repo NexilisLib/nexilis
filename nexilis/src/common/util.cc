@@ -39,12 +39,16 @@ size_t Util::getRandomSizeT(size_t from, size_t to)
     return dist(generator);
 }
 
-size_t Util::getRandomSizeT()
+uint64_t Util::getRandomUint64()
 {
     std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
-    std::uniform_int_distribution<size_t> dist(0, NEXILIS_MAX);
-    return dist(generator);
+    std::uniform_int_distribution<uint64_t> dist(0, NEXILIS_MAX);
+    uint64_t randomValue = dist(generator);
+
+    assert(typeid(randomValue) == typeid(uint64_t));
+
+    return randomValue;
 }
 
 std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount)

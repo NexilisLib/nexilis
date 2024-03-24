@@ -1,5 +1,6 @@
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
+#include <cstdint>
 #include <fstream>
 #include <iterator>
 #include <nexilis/client_api.hh>
@@ -227,20 +228,38 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
     catch (...)
     {
         Log::error("Cannot convert message to json");
+        Log::debug("Trying to debug json");
+        Json::print(json);
         return false;
     }
 
-    if (json.contains("nexilis_status") && json["nexilis_status"] == 1)
+    // Parsing message.
+    if (!json.contains("nexilis_status") || json["nexilis_status"] != 1)
     {
-        if (json.contains("set_client_id"))
+        Log::error("Running code without nexilis status");
+        return false;
+    }
+
+    if (json.contains("set_client_id"))
+    {
+        if (json["set_client_id"].if_uint64())
         {
-            int id = json["set_client_id"].as_uint64();
+            auto id = json["set_client_id"].as_uint64();
             setClientId(id);
             Packet::_initialize(id);
             return true;
         }
+        else
+        {
+            Log::error("set_client_id is not convertible to as_uint64");
+            return false;
+        }
     }
-    return false;
+    else
+    {
+        Log::info("GOOD");
+    }
+    return true;
 }
 
 } // namespace nexilis

@@ -18,8 +18,6 @@ namespace nexilis
 ///
 /// `MessageHandler::Message.message` is nexilis bytevector containing pure command data.
 
-class Client;
-
 class MessageHandler
 {
 public:

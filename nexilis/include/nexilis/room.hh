@@ -1,6 +1,7 @@
 #ifndef NEXILIS_ROOM_HH
 #define NEXILIS_ROOM_HH
 
+#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -43,7 +44,7 @@ public:
         }
 
         /// Get the identifier of the room.
-        size_t getId() const
+        uint64_t getId() const
         {
             return m_roomId;
         }
@@ -51,7 +52,7 @@ public:
     private:
         std::string m_name;
         uint32_t m_maxSize = NEXILIS_ROOM_CLIENT_AMOUNT;
-        size_t m_roomId = Util::getRandomSizeT();
+        uint64_t m_roomId = Util::getRandomUint64();
     };
 
     /// Constructor.
@@ -82,7 +83,7 @@ public:
     }
 
     /// Get the identifier of the room.
-    size_t getId() const
+    uint64_t getId() const
     {
         return m_settings.getId();
     }

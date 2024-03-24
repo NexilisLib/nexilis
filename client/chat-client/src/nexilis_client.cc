@@ -45,4 +45,5 @@ void NexilisClient::start()
     m_clientAPI.waitUntilBoostTCPReady();
     debug("Boost TCP connection ready");
     debug(nexilis::Util::getDateAndTime());
+    m_tcpClient.sendMessage(nexilis::Packet::Get::clientId());
 }

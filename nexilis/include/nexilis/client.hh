@@ -1,6 +1,7 @@
 #ifndef NEXILIS_CLIENT_HH
 #define NEXILIS_CLIENT_HH
 
+#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -102,17 +103,17 @@ public:
         return m_hasCommonAccess;
     }
 
-    size_t getId() const
+    uint64_t getId() const
     {
         return m_id;
     }
 
-    void setRoomId(size_t roomId)
+    void setRoomId(uint64_t roomId)
     {
         m_roomId = roomId;
     }
 
-    size_t getRoomId() const
+    uint64_t getRoomId() const
     {
         return m_roomId;
     }
@@ -130,9 +131,8 @@ public:
 private:
     std::string m_ip_address;
     std::string m_username;
-    // TODO change to uint64_t
-    size_t m_id = Util::getRandomSizeT();
-    size_t m_roomId = 0;
+    uint64_t m_id = Util::getRandomUint64();
+    uint64_t m_roomId = 0;
 
 private:
     unsigned short m_upd_port;

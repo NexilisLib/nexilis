@@ -31,10 +31,10 @@ std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_dat
 
 bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient)
 {
+    Log::debug("Command: Nexilis command sequence");
     for (uint8_t commandByte : command)
     {
         Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
-        Log::debug("");
         Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
     }
 
@@ -90,10 +90,11 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get client id.
                 case 0x10:
                 {
+                    std::cout << "Client id before send" << client.getId() << std::endl;
                     std::map<std::string, boost::json::value> data
                     {
                         { "nexilis_status", boost::json::value(1) },
-                        { "set_client_id", boost::json::value(static_cast<uint64_t>(client.getId())) }
+                        { "set_client_id", boost::json::value(client.getId()) }
                     };
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
