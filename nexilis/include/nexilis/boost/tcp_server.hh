@@ -7,6 +7,7 @@
 #include <nexilis/server_protocol.hh>
 
 #include <boost/asio.hpp>
+#include <boost/json.hpp>
 
 namespace nexilis::boost
 {
@@ -53,7 +54,7 @@ private:
 
 private:
     std::unique_ptr<std::mutex> m_mutex;
-    std::unique_ptr<::boost::asio::io_context> m_ioContext;
+    std::unique_ptr<boost::asio::io_context> m_ioContext;
 
     boost::asio::ip::tcp::acceptor m_acceptor;
     boost::asio::ip::tcp::socket m_socket;

@@ -8,6 +8,7 @@
 #include <ncurses.h>
 
 #include <nexilis/packet.hh>
+#include <nexilis/json.hh>
 #include <nexilis/logger/file_handler.hh>
 
 #include <cstdint>
@@ -118,6 +119,7 @@ void Program::inputHandler()
             case KEY_DOWN:
             {
                 debug("Pressed key down");
+                nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), "../../../logs/log.json");
                 break;
             }
 
