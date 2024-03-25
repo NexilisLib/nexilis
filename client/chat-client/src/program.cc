@@ -2,8 +2,6 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
-#include <cstdint>
-#include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/packet.hh>
@@ -158,8 +156,26 @@ void Program::end()
     exit(0);
 }
 
+void Program::readMessage(boost::json::object object)
+{
+    if (object != m_currentMessage)
+    {
+        m_currentMessage = object;
+        parseMessage(m_currentMessage);
+    }
+    else
+    {
+
+    }
+}
+
+void Program::parseMessage(boost::json::object object)
+{
+}
+
 void Program::update()
 {
     inputHandler();
     m_menu.update(m_window.getWindow(), m_choice);
+    readMessage(m_nexilisClient.getClientAPI().getCurrentMessage());
 }

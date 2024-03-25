@@ -50,15 +50,15 @@ TCPServer::~TCPServer()
 
 void TCPServer::start()
 {
-    m_ioContextThread = std::thread([this]()
-                                    { m_ioContext->run(); });
+    m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
 
     m_listenThread = std::thread([this]()
-                                 {
+    {
         if (startListening())
         {
             acceptClients();
-        } });
+        }
+    });
 }
 
 void TCPServer::stop()

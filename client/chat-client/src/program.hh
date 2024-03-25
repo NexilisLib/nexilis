@@ -18,11 +18,15 @@ public:
     void update();
 
 private:
+    /// Stop running the program. Called in the destructor.
+    void end();
+
     void inputHandler();
     void updateScreenSize();
-    void end();
     void sendTCPMessage(const std::vector<uint8_t>& message);
     void debugObject(boost::json::object object);
+    void readMessage(boost::json::object object);
+    void parseMessage(boost::json::object object);
 
 private:
     /// Command line arguments argc.
@@ -45,6 +49,9 @@ private:
 
     /// Current menu choice.
     int m_choice = 0;
+
+    /// The newest message from the server.
+    boost::json::object m_currentMessage;
 };
 
 #endif

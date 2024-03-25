@@ -1,11 +1,8 @@
 #ifndef NEXILIS_CLIENT_HH
 #define NEXILIS_CLIENT_HH
 
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
-
-#include <string>
 
 namespace nexilis
 {
@@ -135,6 +132,7 @@ private:
     uint64_t m_roomId = 0;
 
 private:
+    // I
     unsigned short m_upd_port;
 
     bool m_hasRootAccess = false;

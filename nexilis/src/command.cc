@@ -44,6 +44,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
+                // This makes no sense so let's put something else here.
+                /*
                 case 0x10:
                 {
                     auto port = Util::uint8PairToUint16(command[3], command[4]);
@@ -58,6 +60,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     }
                     return true;
                 }
+                */
 
                 // Give username to the client.
                 case 0x20:
@@ -264,17 +267,6 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         {
                             auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             std::string chat = Util::convertToString(payload);
-
-                            Log::debug("Chat: ", chat);
-
-                            auto& allClients = ClientStorage::getAllClients();
-                            Log::info("New client amount: ", allClients.size());
-
-                            switch (protocol.getType())
-                            {
-                                default:
-                                    return false;
-                            }
                         }
 
                         default:

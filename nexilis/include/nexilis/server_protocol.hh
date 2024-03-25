@@ -2,6 +2,7 @@
 #define NEXILIS_SERVER_PROTOCOL_HH
 
 #include <nexilis/message_handler.hh>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -23,6 +24,12 @@ public:
 
     /// Deleted copy assignment operator.
     ServerProtocol& operator=(const ServerProtocol&) = delete;
+
+    virtual bool sendMessageToAll()
+    {
+        Log::error("Send message to all not implemented error");
+        return false;
+    }
 
 protected:
     /// Use this to parse the message before sending to Command.
