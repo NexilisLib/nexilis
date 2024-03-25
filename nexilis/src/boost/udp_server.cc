@@ -65,24 +65,24 @@ void UDPServer::receiveFromClients()
     m_remoteEndpoint = boost::asio::ip::udp::endpoint();
 
     m_socket.async_receive_from(
-        boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
-        [this](const boost::system::error_code& error, std::size_t bytes_transferred)
-        {
-            Log::debug("Receiving stuff from client");
-            if (!error)
+            boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
+            [this](const boost::system::error_code& error, std::size_t bytes_transferred)
             {
-                std::cout << "Received from " << m_remoteEndpoint.address().to_string() << ": "
-                          << std::string(m_receiveBuffer.data(), bytes_transferred) << std::endl;
-                // Continue listening for incoming messages from any endpoint
-                receiveFromClients();
-            }
-            else
-            {
-                std::cerr << "Error receiving message: " << error.message() << std::endl;
-                // Continue listening for incoming messages from any endpoint even after an error
-                receiveFromClients();
-            }
-        });
+                Log::debug("Receiving stuff from client");
+                if (!error)
+                {
+                    std::cout << "Received from " << m_remoteEndpoint.address().to_string() << ": "
+                              << std::string(m_receiveBuffer.data(), bytes_transferred) << std::endl;
+                    // Continue listening for incoming messages from any endpoint
+                    receiveFromClients();
+                }
+                else
+                {
+                    std::cerr << "Error receiving message: " << error.message() << std::endl;
+                    // Continue listening for incoming messages from any endpoint even after an error
+                    receiveFromClients();
+                }
+            });
 }
 
 } // namespace nexilis::boost

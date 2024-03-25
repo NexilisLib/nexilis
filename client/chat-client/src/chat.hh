@@ -1,13 +1,12 @@
 #ifndef CHAT_CLIENT_CHAT_HH
 #define CHAT_CLIENT_CHAT_HH
 
-#include <vector>
 #include <string>
+#include <vector>
 
 class Chat
 {
 public:
-
 private:
 };
 

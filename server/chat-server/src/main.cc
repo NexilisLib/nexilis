@@ -1,10 +1,10 @@
 // nexilis libs
-#include <nexilis/room_storage.hh>
 #include <nexilis/log.hh>
-#include <nexilis/room.hh>
-#include <nexilis/protocol_manager.hh>
-#include <nexilis/server_manager.hh>
 #include <nexilis/mysql/database.hh>
+#include <nexilis/protocol_manager.hh>
+#include <nexilis/room.hh>
+#include <nexilis/room_storage.hh>
+#include <nexilis/server_manager.hh>
 
 // nexilis protocols
 #include <nexilis/boost/tcp_server.hh>

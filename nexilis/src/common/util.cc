@@ -4,8 +4,8 @@
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
-#include <random>
 #include <iomanip>
+#include <random>
 
 namespace nexilis
 {

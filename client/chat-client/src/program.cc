@@ -4,17 +4,17 @@
 
 #include <ncurses.h>
 
-#include <nexilis/packet.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
 #include <nexilis/logger/file_handler.hh>
+#include <nexilis/packet.hh>
 
-Program::Program(int argc, char** argv) :
-    m_argc(argc),
-    m_argv(argv),
-    m_window(),
-    m_menu(),
-    m_nexilisClient()
+Program::Program(int argc, char** argv)
+    : m_argc(argc),
+      m_argv(argv),
+      m_window(),
+      m_menu(),
+      m_nexilisClient()
 {
     m_nexilisClient.start();
 }
@@ -118,7 +118,7 @@ void Program::inputHandler()
                 uint64_t copiedClientId = m_nexilisClient.getClientAPI().getClientId();
                 std::string date = nexilis::Util::getDateAndTime();
                 std::stringstream ss;
-                ss << "../../../logs/" << copiedClientId << ":"<< date << "log.json";
+                ss << "../../../logs/" << copiedClientId << ":" << date << "log.json";
                 nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
                 break;
             }
@@ -165,7 +165,6 @@ void Program::readMessage(boost::json::object object)
     }
     else
     {
-
     }
 }
 

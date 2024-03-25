@@ -1,17 +1,17 @@
 // nexilis libs
 #include "nexilis/loggable.hh"
-#include <nexilis/protocol_manager.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>
 #include <nexilis/packet.hh>
+#include <nexilis/protocol_manager.hh>
 
 // nexilis protocols
+#include <nexilis/af_inet/tcp_client.hh>
+#include <nexilis/af_inet/udp_client.hh>
+#include <nexilis/af_unix/sock_dgram/client.hh>
+#include <nexilis/af_unix/sock_stream/client.hh>
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/boost/udp_client.hh>
-#include <nexilis/af_unix/sock_stream/client.hh>
-#include <nexilis/af_unix/sock_dgram/client.hh>
-#include <nexilis/af_inet/udp_client.hh>
-#include <nexilis/af_inet/tcp_client.hh>
 #include <thread>
 
 #define HOME_ADDRESS "192.168.1.85"
@@ -65,7 +65,7 @@ int main()
     */
 
     // af_unix DGRAM
-    //auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Client>();
+    // auto unixClient = protocolManager.createProtocol<nexilis::af_unix::sock_dgram::Client>();
     /*
         Startup code for the DGRAM unix sockets
     */
@@ -89,7 +89,6 @@ int main()
     api.waitUntilInetUDPReady();
     */
 
-
     /*
     // af_inet TCP
     auto inetTCP = protocolManager.createProtocol<nexilis::af_inet::TCPClient>(api);
@@ -108,4 +107,3 @@ int main()
 
     return 0;
 }
-

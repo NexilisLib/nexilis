@@ -6,7 +6,7 @@
 
 void debug(const std::string& message)
 {
-    #ifndef NEXILIS_DEBUG
+#ifndef NEXILIS_DEBUG
     // End ncurses temporarily to print to the console.
     endwin();
 
@@ -18,6 +18,5 @@ void debug(const std::string& message)
 
     // Refresh the window to display changes.
     refresh();
-    #endif
+#endif
 }
-

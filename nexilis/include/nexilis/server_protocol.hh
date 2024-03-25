@@ -1,8 +1,8 @@
 #ifndef NEXILIS_SERVER_PROTOCOL_HH
 #define NEXILIS_SERVER_PROTOCOL_HH
 
-#include <nexilis/message_handler.hh>
 #include <nexilis/log.hh>
+#include <nexilis/message_handler.hh>
 
 namespace nexilis
 {

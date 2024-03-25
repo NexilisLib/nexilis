@@ -1,6 +1,6 @@
+#include <nexilis/client_storage.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
-#include <nexilis/client_storage.hh>
 #include <nexilis/room_storage.hh>
 
 #include <boost/json/object.hpp>
@@ -177,7 +177,6 @@ boost::json::value Json::readJSONFromFile(const std::string& filename)
     }
     return json_value;
 }
-
 
 void Json::saveToFile(const boost::json::object& obj, const std::string& filePath)
 {

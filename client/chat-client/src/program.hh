@@ -1,9 +1,9 @@
 #ifndef CHAT_CLIENT_PROGRAM_HH
 #define CHAT_CLIENT_PROGRAM_HH
 
-#include "window.hh"
 #include "menu.hh"
 #include "nexilis_client.hh"
+#include "window.hh"
 
 class Program
 {

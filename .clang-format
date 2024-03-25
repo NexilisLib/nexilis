@@ -11,3 +11,5 @@ ColumnLimit: 0
 IndentCaseLabels: true
 PointerAlignment: Left
 SpaceAfterCStyleCast: false
+ContinuationIndentWidth: 8
+SpacesInSquareBrackets: false

@@ -1,14 +1,14 @@
 // nexilis libs
 #include <nexilis/log.hh>
+#include <nexilis/mysql/database.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/server_manager.hh>
-#include <nexilis/mysql/database.hh>
 
 // nexilis protocols
-#include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/af_inet/tcp_server.hh>
-#include <nexilis/af_unix/sock_stream/server.hh>
+#include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/af_unix/sock_dgram/server.hh>
+#include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/boost/udp_server.hh>
 
@@ -79,8 +79,9 @@ int main()
     std::cout << std::endl;
     std::cout << "nexilis server setup ready" << std::endl;
 
-    while (true) {}
-
+    while (true)
+    {
+    }
 
     return 0;
 }

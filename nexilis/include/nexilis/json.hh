@@ -1,11 +1,11 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
-#include <nexilis/room.hh>
 #include <nexilis/client.hh>
+#include <nexilis/room.hh>
 
-#include <boost/json/object.hpp>
 #include <boost/json.hpp>
+#include <boost/json/object.hpp>
 
 #include <map>
 #include <vector>
@@ -46,7 +46,6 @@ private:
     /// Get json data from client vector.
     static ::boost::json::array clientsToJSON(const std::vector<Client>& clients);
 };
-
 
 } // namespace nexilis
 

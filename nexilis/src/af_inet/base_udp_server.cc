@@ -165,11 +165,11 @@ void BaseUDPServer::receiverThread()
         std::string receivedData(buffer);
 
         Message msg{
-            address,
-            receivedData,
-            port,
-            (const sockaddr*)&clientAddr,
-            sizeof(clientAddr)};
+                address,
+                receivedData,
+                port,
+                (const sockaddr*)&clientAddr,
+                sizeof(clientAddr)};
 
         {
             std::lock_guard<std::mutex> lock(*m_mtx);

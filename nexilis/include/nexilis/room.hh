@@ -92,6 +92,6 @@ private:
     Settings m_settings;
 };
 
-}
+} // namespace nexilis
 
 #endif

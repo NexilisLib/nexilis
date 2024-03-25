@@ -3,9 +3,9 @@
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
 #include <nexilis/config.hh>
+#include <nexilis/json.hh>
 #include <nexilis/message_handler.hh>
 #include <nexilis/packet.hh>
-#include <nexilis/json.hh>
 
 #include <nexilis/common/util.hh>
 
@@ -143,10 +143,10 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     Log::info("Known client sends a message!");
 
                     return Message(
-                        address,
-                        removeItemsUntilFF(convertedMessage),
-                        port,
-                        realClient);
+                            address,
+                            removeItemsUntilFF(convertedMessage),
+                            port,
+                            realClient);
                 }
                 // Message from verified client that has no access.
                 else
@@ -180,10 +180,10 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     }
 
                     return Message(
-                        address,
-                        message,
-                        port,
-                        realNewClient);
+                            address,
+                            message,
+                            port,
+                            realNewClient);
                 }
                 else
                 {

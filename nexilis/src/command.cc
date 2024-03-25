@@ -1,11 +1,11 @@
 #include <boost/json/serialize.hpp>
-#include <nexilis/command.hh>
 #include <nexilis/client_storage.hh>
+#include <nexilis/command.hh>
 #include <nexilis/command_type.hh>
+#include <nexilis/common/util.hh>
+#include <nexilis/json.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/json.hh>
-#include <nexilis/common/util.hh>
 
 namespace nexilis
 {
@@ -94,11 +94,9 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 case 0x10:
                 {
                     std::cout << "Client id before send" << client.getId() << std::endl;
-                    std::map<std::string, boost::json::value> data
-                    {
-                        { "nexilis_status", boost::json::value(1) },
-                        { "set_client_id", boost::json::value(client.getId()) }
-                    };
+                    std::map<std::string, boost::json::value> data{
+                            {"nexilis_status", boost::json::value(1)},
+                            {"set_client_id", boost::json::value(client.getId())}};
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
                     sendMessageToClient(message);

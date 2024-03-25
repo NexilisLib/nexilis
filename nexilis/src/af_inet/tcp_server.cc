@@ -113,9 +113,9 @@ TCPServer::Client TCPServer::acceptClient()
     Log::info("Client connected: ", inet_ntoa(clientAddr.sin_addr), ":", ntohs(clientAddr.sin_port));
 
     return Client(
-        inet_ntoa(clientAddr.sin_addr),
-        ntohs(clientAddr.sin_port),
-        clientSocket);
+            inet_ntoa(clientAddr.sin_addr),
+            ntohs(clientAddr.sin_port),
+            clientSocket);
 }
 
 bool TCPServer::sendToClient(int clientSocket, const char* data, size_t dataSize)

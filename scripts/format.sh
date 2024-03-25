@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the directories to run Clang-Format recursively.
-directories=("../nexilis" "../tests" "../examples")
+directories=("../nexilis" "../client" "../server" "../tests")
 
 # Run Clang-Format recursively in the specified directories.
 for directory in "${directories[@]}"; do

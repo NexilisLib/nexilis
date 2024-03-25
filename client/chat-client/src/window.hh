@@ -16,6 +16,7 @@ public:
 
     /// Get the ncurses window.
     _win_st* getWindow() const;
+
 private:
     /// Underlying ncurses window.
     _win_st* m_window = nullptr;

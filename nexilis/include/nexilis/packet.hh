@@ -1,8 +1,8 @@
 #ifndef NEXILIS_PACKET_HH
 #define NEXILIS_PACKET_HH
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace nexilis

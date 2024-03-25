@@ -1,6 +1,6 @@
-#include <nexilis/packet.hh>
-#include <nexilis/log.hh>
 #include <nexilis/common/util.hh>
+#include <nexilis/log.hh>
+#include <nexilis/packet.hh>
 
 namespace nexilis
 {
@@ -39,6 +39,5 @@ void Packet::_initialize(size_t clientId)
 {
     m_clientId = clientId;
 }
-
 
 } // namespace nexilis

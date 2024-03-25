@@ -30,28 +30,32 @@ public:
     void update(_win_st* window, int& highlight);
 
     /// Get the state of the menu.
-    State getState() { return m_state; }
+    State getState()
+    {
+        return m_state;
+    }
 
     /// Change the state.
-    void changeState(State state) { m_state = state; }
+    void changeState(State state)
+    {
+        m_state = state;
+    }
+
 private:
     void showMenu(_win_st* window, int& highlight);
     void showInfo(_win_st* window);
+
 private:
     /// Choices in the menu.
-    std::map<int, std::string> m_menuFields
-    {
-        { 0, "Chat" },
-        { 1, "Info" },
-        { 2, "Quit" }
-    };
+    std::map<int, std::string> m_menuFields{
+            {0, "Chat"},
+            {1, "Info"},
+            {2, "Quit"}};
 
     /// Stuff displayed in the infopage.
-    std::vector<std::string> m_infoTexts
-    {
-        "Here we have information regarding this program",
-        "Here is another line displaying information"
-    };
+    std::vector<std::string> m_infoTexts{
+            "Here we have information regarding this program",
+            "Here is another line displaying information"};
 
     /// The state of the menu.
     State m_state = State::menu;

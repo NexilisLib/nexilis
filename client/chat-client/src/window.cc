@@ -44,4 +44,7 @@ Window::~Window()
     endwin();
 }
 
-WINDOW* Window::getWindow() const { return m_window; }
+WINDOW* Window::getWindow() const
+{
+    return m_window;
+}
