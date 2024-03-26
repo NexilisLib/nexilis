@@ -105,7 +105,7 @@ void Server::receiveMessage()
             if (message.getClient())
             {
                 // TODO
-                if (!Command::read(message.getData(), *message.getClient(), *this, [](const std::vector<uint8_t>&) {}))
+                if (!Command::read(message.getData(), *message.getClient(), *this))
                 {
                     Log::error("Unix socket server message reading error from message: ");
                 }

@@ -24,18 +24,16 @@ public:
     /// \param command The vector of bytes that is the command.
     /// \param client The client that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
-    /// \param sendMessageToClient Callback function to send message back to the client.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient);
+    static bool read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
     /// \param client The client that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
-    /// \param sendMessageToClient Callback function to send message back to the client.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient);
+    static bool read(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
 
     /// Give server authentication details via Authentication object.
     /// /// \param authentication The object than contains authentication rules.
@@ -58,6 +56,10 @@ public:
     std::string createIPv4Address(const std::vector<uint8_t>& address);
 
     static std::vector<uint8_t> createVectorFromCommandPtr(const char* command_data, size_t lenght);
+
+private:
+    /// Send message to every protocol that is avainable for a client;
+    static void sendMessageToClient(std::vector<uint8_t> data, Client& client, Protocol& protocol);
 
 private:
     static Authentication* m_authentication;

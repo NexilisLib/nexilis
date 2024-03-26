@@ -1,6 +1,5 @@
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 

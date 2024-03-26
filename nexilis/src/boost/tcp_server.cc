@@ -1,3 +1,4 @@
+#include <functional>
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/common/util.hh>
@@ -155,7 +156,9 @@ bool TCPServer::acceptClients()
                         }
                     };
 
-                    bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, clientSender);
+                    handledMessage.getClient()->setBoostTCPSend(std::make_shared<std::function<void(std::vector<uint8_t>)>>(clientSender));
+
+                    bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
 
                     if (passCommand)
                     {

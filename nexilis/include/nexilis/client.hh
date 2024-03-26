@@ -1,6 +1,10 @@
 #ifndef NEXILIS_CLIENT_HH
 #define NEXILIS_CLIENT_HH
 
+#include <boost/asio.hpp>
+
+#include <cstdint>
+#include <memory>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -12,39 +16,16 @@ namespace nexilis
 class Client
 {
 public:
+    using sendFunctionType = std::shared_ptr<std::function<void(std::vector<uint8_t>)>>;
+
     /// Constructor.
-    Client(std::string ip_address) noexcept
-        : m_ip_address(ip_address)
-    {
-    }
+    Client(std::string ip_address) noexcept;
 
     /// Move constructor.
-    Client(Client&& other)
-        : m_ip_address(std::move(other.m_ip_address)),
-          m_username(std::move(other.m_username)),
-          m_id(std::move(other.m_id)),
-          m_roomId(std::move(other.m_roomId)),
-          m_upd_port(std::move(other.m_upd_port)),
-          m_hasRootAccess(std::move(other.m_hasRootAccess)),
-          m_hasCommonAccess(std::move(other.m_hasCommonAccess))
-    {
-    }
+    Client(Client&& other);
 
     /// Move assignment operator.
-    Client& operator=(Client&& other)
-    {
-        if (this != &other)
-        {
-            m_ip_address = std::move(other.m_ip_address);
-            m_username = std::move(other.m_username);
-            m_id = std::move(other.m_id);
-            m_roomId = std::move(other.m_roomId);
-            m_upd_port = std::move(other.m_upd_port);
-            m_hasRootAccess = std::move(other.m_hasRootAccess);
-            m_hasCommonAccess = std::move(other.m_hasCommonAccess);
-        }
-        return *this;
-    }
+    Client& operator=(Client&& other);
 
     /// Deleted copy constructor.
     Client(const Client& other) = delete;
@@ -68,16 +49,6 @@ public:
     std::string getIPAddress() const
     {
         return m_ip_address;
-    }
-
-    void setUdpPort(unsigned short udpPort)
-    {
-        m_upd_port = udpPort;
-    }
-
-    unsigned short getUdpPort() const
-    {
-        return m_upd_port;
     }
 
     void setRootAccess(bool hasAccess)
@@ -125,16 +96,27 @@ public:
         return m_username;
     }
 
+    // Protocol specific stuff.
+    void setBoostTCPSend(sendFunctionType sendFunction)
+    {
+        m_boostTCPSendToClient = sendFunction;
+    }
+
+    // Send data using boost TCP.
+    bool boostTCPSend(std::vector<uint8_t> data);
+
 private:
+    // General
     std::string m_ip_address;
     std::string m_username;
     uint64_t m_id = Util::getRandomUint64();
     uint64_t m_roomId = 0;
 
 private:
-    // I
-    unsigned short m_upd_port;
+    sendFunctionType m_boostTCPSendToClient = nullptr;
 
+private:
+    /// Access area.
     bool m_hasRootAccess = false;
     bool m_hasCommonAccess = false;
 };

@@ -12,9 +12,9 @@ namespace nexilis
 
 Authentication* Command::m_authentication = nullptr;
 
-bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient)
+bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
 {
-    return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol, sendMessageToClient);
+    return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol);
 }
 
 std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_data, size_t lenght)
@@ -29,7 +29,7 @@ std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_dat
     return result;
 }
 
-bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol, const std::function<void(const std::vector<uint8_t>&)> sendMessageToClient)
+bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
 {
     Log::debug("Command: Nexilis command sequence");
     for (uint8_t commandByte : command)
@@ -99,7 +99,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                             {"set_client_id", boost::json::value(client.getId())}};
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
-                    sendMessageToClient(message);
+                    sendMessageToClient(message, client, protocol);
                     Log::info("sent message to client");
                     return true;
                 }
@@ -115,11 +115,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             {
                 case 0x10:
                 {
-                    Log::debug("PING Sending UDP port ", client.getUdpPort(), " back pong");
                     // TODO create pong message, I mean this is kinda stupid.
-                    std::vector<uint8_t> message = {0x10, 0x10};
-                    sendMessageToClient(message);
-                    return true;
+                    return false;
                 }
 
                 case 0x20:
@@ -156,7 +153,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     std::string stringData = boost::json::serialize(serverData);
                     auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
 
-                    sendMessageToClient(data);
+                    sendMessageToClient(data, client, protocol);
                     Log::info("Used mainCommand info!");
                     return true;
                 }
@@ -260,13 +257,18 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 {
                     switch (command[2])
                     {
-                        // String message.
+                        // Default state.
                         case 0x10:
                         {
                             auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            std::string chat = Util::convertToString(payload);
-                        }
 
+                            auto& clients = ClientStorage::getAllClients();
+                            for (auto& c : clients)
+                            {
+                                sendMessageToClient(payload, c, protocol);
+                            }
+                            return true;
+                        }
                         default:
                             return false;
                     }
@@ -277,14 +279,27 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 {
                     switch (command[2])
                     {
-                        // String message.
+                        // Default state.
                         case 0x10:
                         {
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                            auto& clients = ClientStorage::getAllClients();
+
+                            for (auto& c : clients)
+                            {
+                                if (c.getId() != client.getId())
+                                {
+                                    sendMessageToClient(payload, c, protocol);
+                                }
+                            }
+                            return true;
                         }
+                        default:
+                            return false;
                     }
                 }
 
-                // Client sends a message in specific context.
+                // Client sends a message in a room context.
                 case 0x30:
                 {
                 }
@@ -330,6 +345,35 @@ std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)
                  std::to_string(characters[3]);
 
     return ipAddress;
+}
+
+void Command::sendMessageToClient(std::vector<uint8_t> data, Client& client, Protocol& protocol)
+{
+    switch (protocol.getType())
+    {
+        case Protocol::Type::BOOST_TCP_SERVER:
+        {
+            if (!client.boostTCPSend(data))
+            {
+                Log::error("Cannot send messages using this protocol");
+            }
+            return;
+        }
+        case Protocol::Type::BOOST_TCP_CLIENT:
+        case Protocol::Type::BOOST_UDP_CLIENT:
+        case Protocol::Type::AF_INET_TCP_CLIENT:
+        case Protocol::Type::AF_INET_UDP_CLIENT:
+        case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
+        case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
+            Log::error("This function cannot be called with client protocol");
+            return;
+
+        default:
+        {
+            Log::error("Unknown protocol");
+            return;
+        }
+    }
 }
 
 } // namespace nexilis

@@ -174,9 +174,12 @@ void Server::handleMessages()
 
             if (msg.getClient())
             {
-                bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this,
-                                                 [this, &clientSocket](const std::vector<uint8_t>& message)
-                                                 { sendMessage(clientSocket, message); });
+                auto sendMsg = [this, &clientSocket](const std::vector<uint8_t>& message)
+                                                 { sendMessage(clientSocket, message); };
+
+                // Set msg to client.
+
+                bool readCommand = Command::read(msg.getData(), *msg.getClient(), *this);
 
                 if (readCommand)
                 {
