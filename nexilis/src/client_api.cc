@@ -204,6 +204,13 @@ void ClientAPI::waitUntilBoostTCPReady()
     }
 }
 
+void ClientAPI::waitUntilBoostUDPReady()
+{
+    while (!isBoostUDPReady())
+    {
+    }
+}
+
 void ClientAPI::waitUntilUnixDgramReady()
 {
     while (!isUnixDgramReady())

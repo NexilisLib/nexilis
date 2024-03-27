@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <memory>
 #include <vector>
 
 namespace nexilis

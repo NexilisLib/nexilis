@@ -7,6 +7,7 @@
 #include <memory>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <sys/types.h>
 
 namespace nexilis
 {
@@ -16,8 +17,6 @@ namespace nexilis
 class Client
 {
 public:
-    using sendFunctionType = std::shared_ptr<std::function<void(std::vector<uint8_t>)>>;
-
     /// Constructor.
     Client(std::string ip_address) noexcept;
 
@@ -96,14 +95,41 @@ public:
         return m_username;
     }
 
-    // Protocol specific stuff.
-    void setBoostTCPSend(sendFunctionType sendFunction)
+    /// Protocol specific stuff.
+
+    // Boost TCP
+
+    /// Is boost TCP send function set?
+    bool isBoostTCPSet()
+    {
+        return m_boostTCPSendToClient != nullptr;
+    }
+
+    /// Set the boost TCP send function.
+    void setBoostTCPSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
     {
         m_boostTCPSendToClient = sendFunction;
     }
 
-    // Send data using boost TCP.
+    /// Send data using boost TCP.
     bool boostTCPSend(std::vector<uint8_t> data);
+
+    // Boost UDP
+
+    /// Is boost UDP send function set?
+    bool isBoostUDPSet()
+    {
+        return m_boostUDPSendToClient != nullptr;
+    }
+
+    /// Set the boost UDP send function.
+    void setBoostUDPSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
+    {
+        m_boostUDPSendToClient = sendFunction;
+    }
+
+    /// Send data using boost UDP.
+    bool boostUDPSend(std::vector<uint8_t> data);
 
 private:
     // General
@@ -113,7 +139,8 @@ private:
     uint64_t m_roomId = 0;
 
 private:
-    sendFunctionType m_boostTCPSendToClient = nullptr;
+    std::function<void(std::vector<uint8_t>)> m_boostTCPSendToClient = nullptr;
+    std::function<void(std::vector<uint8_t>)> m_boostUDPSendToClient = nullptr;
 
 private:
     /// Access area.

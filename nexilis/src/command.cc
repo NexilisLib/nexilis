@@ -355,10 +355,20 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, Client& client, Pro
         {
             if (!client.boostTCPSend(data))
             {
-                Log::error("Cannot send messages using this protocol");
+                Log::error("Cannot send messages using this protocol (BOOST_TCP)");
             }
             return;
         }
+
+        case Protocol::Type::BOOST_UDP_SERVER:
+        {
+            if (!client.boostUDPSend(data))
+            {
+                Log::error("Cannot send messages using this protocol (BOOST_UDP)");
+            }
+            return;
+        }
+
         case Protocol::Type::BOOST_TCP_CLIENT:
         case Protocol::Type::BOOST_UDP_CLIENT:
         case Protocol::Type::AF_INET_TCP_CLIENT:

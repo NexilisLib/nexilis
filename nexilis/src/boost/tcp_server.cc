@@ -143,20 +143,21 @@ bool TCPServer::acceptClients()
 
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
 
-                    auto clientSender = [this, &newSocket](const std::vector<uint8_t>& bytes)
+                    if (!handledMessage.getClient()->isBoostTCPSet())
                     {
-                        std::string toString = Util::convertToString(bytes);
-                        if (sendToClient(toString, newSocket))
+                        handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const std::vector<uint8_t>& bytes)
                         {
-                            Log::info("Sended message to client succesfully");
-                        }
-                        else
-                        {
-                            Log::error("Error sending message to client");
-                        }
-                    };
-
-                    handledMessage.getClient()->setBoostTCPSend(std::make_shared<std::function<void(std::vector<uint8_t>)>>(clientSender));
+                            std::string toString = Util::convertToString(bytes);
+                            if (sendToClient(toString, newSocket))
+                            {
+                                Log::info("Sended message to client succesfully");
+                            }
+                            else
+                            {
+                                Log::error("Error sending message to client");
+                            }
+                        });
+                    }
 
                     bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
 

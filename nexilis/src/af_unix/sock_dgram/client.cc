@@ -7,9 +7,9 @@
 namespace nexilis::af_unix::sock_dgram
 {
 
-Client::Client(ClientAPI& api)
-    : ClientProtocol(&api),
-      m_serverSocketPath(api.getUnixDgramPath())
+Client::Client(ClientAPI& clientApi)
+    : ClientProtocol(&clientApi),
+      m_serverSocketPath(clientApi.getUnixDgramPath())
 {
     createSocket();
 }

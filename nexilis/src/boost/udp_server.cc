@@ -1,5 +1,6 @@
 #include <nexilis/boost/udp_server.hh>
 #include <nexilis/log.hh>
+#include <nexilis/command.hh>
 
 namespace nexilis::boost
 {
@@ -71,14 +72,39 @@ void UDPServer::receiveFromClients()
                 Log::debug("Receiving stuff from client");
                 if (!error)
                 {
-                    std::cout << "Received from " << m_remoteEndpoint.address().to_string() << ": "
-                              << std::string(m_receiveBuffer.data(), bytes_transferred) << std::endl;
+                    std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
+                    std::string address = m_remoteEndpoint.address().to_string();
+                    uint16_t port = m_remoteEndpoint.port();
+                    Log::info("Received from ", address, " port", port, " data: ", data);
+
+                    auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
+
+                    if (handledMessage.getClient()->isBoostUDPSet())
+                    {
+                        handledMessage.getClient()->setBoostUDPSend([this, data](const std::vector<uint8_t>& bytes)
+                        {
+                            std::string byteString = Util::convertToString(bytes);
+                            m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint);
+                        });
+                    }
+
+                    bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+
+                    if (passCommand)
+                    {
+                        Log::info("UDPServer: Passed with command: ", data);
+                    }
+                    else
+                    {
+                        Log::error("UDPServer: Failed with command: ", data);
+                    }
+
                     // Continue listening for incoming messages from any endpoint
                     receiveFromClients();
                 }
                 else
                 {
-                    std::cerr << "Error receiving message: " << error.message() << std::endl;
+                    Log::error("Error receiving message: ", error.message());
                     // Continue listening for incoming messages from any endpoint even after an error
                     receiveFromClients();
                 }

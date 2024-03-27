@@ -5,6 +5,7 @@
 #include <nexilis/protocol_manager.hh>
 
 #include <nexilis/boost/tcp_client.hh>
+#include <nexilis/boost/udp_client.hh>
 
 class NexilisClient
 {
@@ -28,11 +29,19 @@ public:
         return m_tcpClient;
     }
 
+    /*
+    nexilis::boost::UDPClient& getUDPClient()
+    {
+        return m_udpClient;
+    }
+    */
+
 private:
     nexilis::ClientAPI::ServerData m_serverData;
     nexilis::ClientAPI m_clientAPI;
     nexilis::ProtocolManager m_protocolManager;
     nexilis::boost::TCPClient m_tcpClient;
+    //nexilis::boost::UDPClient m_udpClient;
 };
 
 #endif

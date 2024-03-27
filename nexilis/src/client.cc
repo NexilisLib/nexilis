@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/client.hh>
 
 namespace nexilis
@@ -39,7 +40,17 @@ bool Client::boostTCPSend(std::vector<uint8_t> data)
 {
     if (m_boostTCPSendToClient)
     {
-        (*m_boostTCPSendToClient)(std::move(data));
+        (m_boostTCPSendToClient)(std::move(data));
+        return true;
+    }
+    return false;
+}
+
+bool Client::boostUDPSend(std::vector<uint8_t> data)
+{
+    if (m_boostUDPSendToClient)
+    {
+        (m_boostUDPSendToClient)(std::move(data));
         return true;
     }
     return false;

@@ -5,8 +5,6 @@
 #include <nexilis/client_protocol.hh>
 #include <nexilis/protocol.hh>
 
-#include <sys/un.h>
-
 namespace nexilis::af_unix::sock_dgram
 {
 
@@ -14,7 +12,7 @@ class Client : public Protocol, public ClientProtocol
 {
 public:
     /// Constructor.
-    Client(ClientAPI& api);
+    Client(ClientAPI& clientApi);
 
     /// Destructor.
     ~Client();
