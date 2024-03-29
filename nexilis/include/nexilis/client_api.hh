@@ -148,7 +148,7 @@ public:
             return m_boostUDPServerPort;
         }
 
-        void setBoostUDP(const std::string& serverAddress, u_int16_t port)
+        void setBoostUDP(const std::string& serverAddress, uint16_t port)
         {
             m_boostUDPServerAddress = serverAddress;
             m_boostUDPServerPort = port;

@@ -62,6 +62,7 @@ void UDPServer::start()
 void UDPServer::receiveFromClients()
 {
     Log::debug("Receive from clients called");
+    std::lock_guard<std::mutex> lock(*m_mutex);
 
     m_remoteEndpoint = boost::asio::ip::udp::endpoint();
 

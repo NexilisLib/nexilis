@@ -52,6 +52,10 @@ public:
     void sendMessage(const std::vector<uint8_t>& message) override;
 
 private:
+    /// Internal sendMessage function.
+    void send(const std::string& message);
+
+private:
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
     boost::asio::ip::udp::endpoint m_endPoint;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;

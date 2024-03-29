@@ -16,8 +16,8 @@ nexilis::ClientAPI::ServerData getServerData()
 NexilisClient::NexilisClient()
     : m_serverData(getServerData()),
       m_clientAPI(m_serverData),
-      m_tcpClient(m_protocolManager.createProtocol<nexilis::boost::TCPClient>(m_clientAPI))
-      //m_udpClient(m_protocolManager.createProtocol<nexilis::boost::UDPClient>(m_clientAPI))
+      m_tcpClient(m_protocolManager.createProtocol<nexilis::boost::TCPClient>(m_clientAPI)),
+      m_udpClient(m_protocolManager.createProtocol<nexilis::boost::UDPClient>(m_clientAPI))
 {
 }
 
@@ -25,8 +25,8 @@ NexilisClient::NexilisClient(NexilisClient&& other)
     : m_serverData(std::move(other.m_serverData)),
       m_clientAPI(std::move(other.m_clientAPI)),
       m_protocolManager(std::move(other.m_protocolManager)),
-      m_tcpClient(std::move(other.m_tcpClient))
-      //m_udpClient(std::move(other.m_udpClient))
+      m_tcpClient(std::move(other.m_tcpClient)),
+      m_udpClient(std::move(other.m_udpClient))
 {
 }
 
@@ -38,7 +38,7 @@ NexilisClient& NexilisClient::operator=(NexilisClient&& other)
         m_clientAPI = std::move(other.m_clientAPI);
         m_protocolManager = std::move(other.m_protocolManager);
         m_tcpClient = std::move(other.m_tcpClient);
-        //m_udpClient = std::move(other.m_udpClient);
+        m_udpClient = std::move(other.m_udpClient);
     }
     return *this;
 }
@@ -54,6 +54,7 @@ void NexilisClient::start()
     m_udpClient.sendMessage(m_serverData.getPassword());
     m_clientAPI.waitUntilBoostUDPReady();
     */
+
     debug("Boost TCP connection ready");
     debug(nexilis::Util::getDateAndTime());
 }

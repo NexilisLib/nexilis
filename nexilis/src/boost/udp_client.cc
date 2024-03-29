@@ -23,6 +23,7 @@ UDPClient::UDPClient(UDPClient&& other)
       m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer))
 {
+    other.m_ioContext = nullptr;
 }
 
 UDPClient& UDPClient::operator=(UDPClient&& other)
@@ -36,36 +37,57 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
+
+        other.m_ioContext = nullptr;
     }
     return *this;
 }
 
 void UDPClient::start()
 {
-    m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
-                                [this](const boost::system::error_code& error, std::size_t bytesTransferred)
-                                {
-                                    if (!error)
+    if (m_socket.is_open())
+    {
+        m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
+                                    [this](const boost::system::error_code& error, std::size_t bytesTransferred)
                                     {
-                                        std::string receivedMessage(m_receiveBuffer.data(), bytesTransferred);
-                                        Log::info("Received from server: ", receivedMessage);
-                                    }
-                                    else
-                                    {
-                                        Log::error("Error receiving message, reason: ", error.message());
-                                    }
-                                });
+                                        if (!error)
+                                        {
+                                            std::string receivedMessage(m_receiveBuffer.data(), bytesTransferred);
+                                            Log::info("Received from server: ", receivedMessage);
+                                        }
+                                        else
+                                        {
+                                            Log::error("Error receiving message, reason: ", error.message());
+                                        }
+                                    });
+    }
+    else
+    {
+        Log::error("boost::UDPClient socket is not open");
+    }
 }
 
 void UDPClient::sendMessage(const std::string& message)
 {
-    m_socket.send_to(boost::asio::buffer(message), m_endPoint);
+    send(message);
 }
 
 void UDPClient::sendMessage(const std::vector<uint8_t>& message)
 {
     std::string msg = reinterpret_cast<const char*>(message.data());
-    m_socket.send_to(boost::asio::buffer(msg), m_endPoint);
+    send(msg);
+}
+
+void UDPClient::send(const std::string& message)
+{
+    if (m_socket.is_open())
+    {
+        m_socket.send_to(boost::asio::buffer(message), m_endPoint);
+    }
+    else
+    {
+        Log::error("boost::UDPClient socket is not open");
+    }
 }
 
 } // namespace nexilis::boost
