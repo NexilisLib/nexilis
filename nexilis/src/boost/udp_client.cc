@@ -1,3 +1,4 @@
+#include "nexilis/loggable.hh"
 #include <boost/asio/ip/address.hpp>
 #include <memory>
 #include <mutex>
@@ -9,6 +10,7 @@ namespace nexilis::boost
 
 UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
+      Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_endPoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
@@ -31,6 +33,7 @@ UDPClient::~UDPClient()
 UDPClient::UDPClient(UDPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
+      Loggable(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
@@ -48,6 +51,7 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
     {
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
+        Loggable::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
@@ -68,6 +72,9 @@ void UDPClient::start()
     m_ioContextThread = std::thread([this](){ m_ioContext->run(); });
 
     Log::info("io context ready");
+
+    info("io_context ready");
+    infoExtra("io context is really ready");
 
     if (m_socket.is_open())
     {

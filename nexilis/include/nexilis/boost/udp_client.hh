@@ -12,7 +12,8 @@ namespace nexilis::boost
 namespace boost = ::boost;
 
 class UDPClient : public Protocol,
-                  public ClientProtocol
+                  public ClientProtocol,
+                  public Loggable
 {
 public:
     /// Constructor.
