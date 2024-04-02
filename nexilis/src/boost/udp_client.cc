@@ -1,4 +1,6 @@
 #include <boost/asio/ip/address.hpp>
+#include <memory>
+#include <mutex>
 #include <nexilis/boost/udp_client.hh>
 #include <nexilis/log.hh>
 
@@ -8,16 +10,30 @@ namespace nexilis::boost
 UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
+      m_mutex(std::make_unique<std::mutex>()),
       m_endPoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
       m_remoteEndpoint(boost::asio::ip::udp::endpoint()),
       m_socket(*m_ioContext)
 {
 }
 
+UDPClient::~UDPClient()
+{
+    m_socket.close();
+    m_ioContext->stop();
+
+    if (m_ioContextThread.joinable())
+    {
+        m_ioContextThread.join();
+    }
+}
+
 UDPClient::UDPClient(UDPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
+      m_ioContextThread(std::move(other.m_ioContextThread)),
       m_ioContext(std::move(other.m_ioContext)),
+      m_mutex(std::move(other.m_mutex)),
       m_endPoint(std::move(other.m_endPoint)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
       m_socket(std::move(other.m_socket)),
@@ -32,7 +48,9 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
     {
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
+        m_ioContextThread = std::move(other.m_ioContextThread);
         m_ioContext = std::move(other.m_ioContext);
+        m_mutex = std::move(other.m_mutex);
         m_endPoint = std::move(other.m_endPoint);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_socket = std::move(other.m_socket);
@@ -45,8 +63,16 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 
 void UDPClient::start()
 {
+    m_socket.open(boost::asio::ip::udp::v4());
+
+    m_ioContextThread = std::thread([this](){ m_ioContext->run(); });
+
+    Log::info("io context ready");
+
     if (m_socket.is_open())
     {
+        std::lock_guard<std::mutex> lock(*m_mutex);
+
         m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
                                     [this](const boost::system::error_code& error, std::size_t bytesTransferred)
                                     {
@@ -57,13 +83,13 @@ void UDPClient::start()
                                         }
                                         else
                                         {
-                                            Log::error("Error receiving message, reason: ", error.message());
+                                            Log::error("boost::UDPClient::start(): Error receiving message, reason: ", error.message());
                                         }
                                     });
     }
     else
     {
-        Log::error("boost::UDPClient socket is not open");
+        Log::error("boost::UDPClient::start(): socket is not open");
     }
 }
 
@@ -86,7 +112,7 @@ void UDPClient::send(const std::string& message)
     }
     else
     {
-        Log::error("boost::UDPClient socket is not open");
+        Log::error("UDPClient::send(): boost::UDPClient socket is not open");
     }
 }
 

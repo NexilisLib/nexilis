@@ -18,6 +18,9 @@ public:
     /// Constructor.
     UDPClient(ClientAPI& api);
 
+    /// Destructor.
+    ~UDPClient();
+
     /// Move constructor.
     UDPClient(UDPClient&& other);
 
@@ -56,7 +59,11 @@ private:
     void send(const std::string& message);
 
 private:
+    std::thread m_ioContextThread;
+
+private:
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
+    std::unique_ptr<std::mutex> m_mutex;
     boost::asio::ip::udp::endpoint m_endPoint;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
     boost::asio::ip::udp::socket m_socket;

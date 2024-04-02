@@ -23,7 +23,7 @@ private:
 
     void inputHandler();
     void updateScreenSize();
-    void sendTCPMessage(const std::vector<uint8_t>& message);
+    //void sendTCPMessage(const std::vector<uint8_t>& message);
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
     void parseMessage(boost::json::object object);

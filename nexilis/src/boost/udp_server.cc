@@ -22,6 +22,11 @@ UDPServer::~UDPServer()
     {
         m_ioContextThread.join();
     }
+
+    if (m_receiveThread.joinable())
+    {
+        m_receiveThread.join();
+    }
 }
 
 UDPServer::UDPServer(UDPServer&& other)
@@ -32,7 +37,8 @@ UDPServer::UDPServer(UDPServer&& other)
       m_socket(std::move(other.m_socket)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
       m_receiveBuffer(std::move(other.m_receiveBuffer)),
-      m_ioContextThread(std::move(other.m_ioContextThread))
+      m_ioContextThread(std::move(other.m_ioContextThread)),
+      m_receiveThread(std::move(other.m_ioContextThread))
 {
 }
 
@@ -48,6 +54,7 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_ioContextThread = std::move(other.m_ioContextThread);
+        m_receiveThread = std::move(other.m_receiveThread);
     }
     return *this;
 }
@@ -56,7 +63,8 @@ void UDPServer::start()
 {
     m_ioContextThread = std::thread([this]()
                                     { m_ioContext->run(); });
-    receiveFromClients();
+
+    m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
 }
 
 void UDPServer::receiveFromClients()
@@ -66,50 +74,57 @@ void UDPServer::receiveFromClients()
 
     m_remoteEndpoint = boost::asio::ip::udp::endpoint();
 
-    m_socket.async_receive_from(
-            boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
-            [this](const boost::system::error_code& error, std::size_t bytes_transferred)
-            {
-                Log::debug("Receiving stuff from client");
-                if (!error)
+    if (m_socket.is_open())
+    {
+        m_socket.async_receive_from(
+                boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
+                [this](const boost::system::error_code& error, std::size_t bytes_transferred)
                 {
-                    std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
-                    std::string address = m_remoteEndpoint.address().to_string();
-                    uint16_t port = m_remoteEndpoint.port();
-                    Log::info("Received from ", address, " port", port, " data: ", data);
-
-                    auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
-
-                    if (handledMessage.getClient()->isBoostUDPSet())
+                    Log::debug("Receiving stuff from client");
+                    if (!error)
                     {
-                        handledMessage.getClient()->setBoostUDPSend([this, data](const std::vector<uint8_t>& bytes)
+                        std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
+                        std::string address = m_remoteEndpoint.address().to_string();
+                        uint16_t port = m_remoteEndpoint.port();
+                        Log::info("Received from ", address, " port", port, " data: ", data);
+
+                        auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
+
+                        if (handledMessage.getClient()->isBoostUDPSet())
                         {
-                            std::string byteString = Util::convertToString(bytes);
-                            m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint);
-                        });
-                    }
+                            handledMessage.getClient()->setBoostUDPSend([this, data](const std::vector<uint8_t>& bytes)
+                            {
+                                std::string byteString = Util::convertToString(bytes);
+                                m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint);
+                            });
+                        }
 
-                    bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+                        bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
 
-                    if (passCommand)
-                    {
-                        Log::info("UDPServer: Passed with command: ", data);
+                        if (passCommand)
+                        {
+                            Log::info("UDPServer: Passed with command: ", data);
+                        }
+                        else
+                        {
+                            Log::error("UDPServer: Failed with command: ", data);
+                        }
+
+                        // Continue listening for incoming messages from any endpoint
+                        receiveFromClients();
                     }
                     else
                     {
-                        Log::error("UDPServer: Failed with command: ", data);
+                        Log::error("Error receiving message: ", error.message());
+                        // Continue listening for incoming messages from any endpoint even after an error
+                        receiveFromClients();
                     }
-
-                    // Continue listening for incoming messages from any endpoint
-                    receiveFromClients();
-                }
-                else
-                {
-                    Log::error("Error receiving message: ", error.message());
-                    // Continue listening for incoming messages from any endpoint even after an error
-                    receiveFromClients();
-                }
-            });
+                });
+    }
+    else
+    {
+        Log::error("Socket is not open!");
+    }
 }
 
 } // namespace nexilis::boost

@@ -57,6 +57,7 @@ private:
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
     std::vector<char> m_receiveBuffer;
     std::thread m_ioContextThread;
+    std::thread m_receiveThread;
 };
 
 } // namespace nexilis::boost

@@ -106,7 +106,7 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Sent message to the server asking for server data");
-            sendTCPMessage(nexilis::Packet::Info::generalInfo());
+            //sendTCPMessage(nexilis::Packet::Info::generalInfo());
         }
 
         switch (tolower(m_input))
@@ -139,10 +139,12 @@ void Program::updateScreenSize()
     // TODO
 }
 
+/*
 void Program::sendTCPMessage(const std::vector<uint8_t>& message)
 {
     m_nexilisClient.getTCPClient().sendMessage(message);
 }
+*/
 
 void Program::debugObject(boost::json::object object)
 {
