@@ -74,7 +74,7 @@ void UDPClient::start()
     Log::info("io context ready");
 
     info("io_context ready");
-    infoExtra("io context is really ready");
+    infoExtra("io context is really ready", __LINE__);
 
     if (m_socket.is_open())
     {

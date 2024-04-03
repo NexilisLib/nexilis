@@ -25,10 +25,21 @@ public:
     Loggable& operator=(const Loggable&) = delete;
 
     /// Logging functionality.
-    void debug(const std::string& message){}
+
+    void debug(const std::string& message);
+    void debugExtra(const std::string& message, const int line);
 
     void info(const std::string& message);
-    void infoExtra(const std::string& message, const int line = __LINE__);
+    void infoExtra(const std::string& message, const int line);
+
+    void warning(const std::string& message);
+    void warningExtra(const std::string& message, const int line);
+
+    void error(const std::string& message);
+    void errorExtra(const std::string& message, const int line);
+
+    void critical(const std::string& message);
+    void criticalExtra(const std::string& message, const int line);
 
     /// Getters.
 
