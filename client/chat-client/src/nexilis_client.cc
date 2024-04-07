@@ -53,12 +53,14 @@ void NexilisClient::start()
 
     std::cout << "send message to server "<< std::endl;
 
+    /*
     m_tcpClient.start();
     m_tcpClient.sendMessage(m_serverData.getPassword());
 
     m_clientAPI.waitUntilBoostTCPReady();
 
     std::cout << "TCP READY" << std::endl;
+    */
 
     m_clientAPI.waitUntilBoostUDPReady();
 

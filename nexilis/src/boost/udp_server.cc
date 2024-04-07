@@ -8,13 +8,18 @@ namespace nexilis::boost
 UDPServer::UDPServer(int port)
     : m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_socket(*m_ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)),
+      m_remoteEndpoint(boost::asio::ip::udp::v4(), port),
+      m_socket(*m_ioContext, m_remoteEndpoint),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
+    Log::debug("Address: ", m_socket.local_endpoint().address());
+    Log::debug("Port: ", m_socket.local_endpoint().port());
 }
 
 UDPServer::~UDPServer()
 {
+    Log::debug("Destructing UDPServer");
+
     m_socket.close();
     m_ioContext->stop();
 
@@ -34,8 +39,8 @@ UDPServer::UDPServer(UDPServer&& other)
       ServerProtocol(std::move(other)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
-      m_socket(std::move(other.m_socket)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
+      m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveThread(std::move(other.m_ioContextThread))
@@ -50,8 +55,8 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
         ServerProtocol::operator=(std::move(other));
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
-        m_socket = std::move(other.m_socket);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
+        m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
@@ -72,10 +77,9 @@ void UDPServer::receiveFromClients()
     Log::debug("Receive from clients called");
     std::lock_guard<std::mutex> lock(*m_mutex);
 
-    m_remoteEndpoint = boost::asio::ip::udp::endpoint();
-
     if (m_socket.is_open())
     {
+        Log::debug("Socket is open");
         m_socket.async_receive_from(
                 boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
                 [this](const boost::system::error_code& error, std::size_t bytes_transferred)

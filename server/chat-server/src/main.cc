@@ -42,5 +42,7 @@ int main()
     nexilis::RoomStorage::add(std::move(room2));
     nexilis::RoomStorage::add(std::move(room3));
 
+    while( true ) {}
+
     return 0;
 }

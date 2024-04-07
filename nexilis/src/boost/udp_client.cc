@@ -13,8 +13,8 @@ UDPClient::UDPClient(ClientAPI& clientApi)
       Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_endPoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
-      m_remoteEndpoint(boost::asio::ip::udp::endpoint()),
+      m_endpoint(boost::asio::ip::udp::v4(), 12334),
+      m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
       m_socket(*m_ioContext)
 {
 }
@@ -37,7 +37,7 @@ UDPClient::UDPClient(UDPClient&& other)
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
-      m_endPoint(std::move(other.m_endPoint)),
+      m_endpoint(std::move(other.m_endpoint)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
       m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer))
@@ -55,7 +55,7 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
-        m_endPoint = std::move(other.m_endPoint);
+        m_endpoint = std::move(other.m_endpoint);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
@@ -115,7 +115,7 @@ void UDPClient::send(const std::string& message)
 {
     if (m_socket.is_open())
     {
-        m_socket.send_to(boost::asio::buffer(message), m_endPoint);
+        m_socket.send_to(boost::asio::buffer(message), m_endpoint);
     }
     else
     {

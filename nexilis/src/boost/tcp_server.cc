@@ -45,6 +45,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 
 TCPServer::~TCPServer()
 {
+    Log::debug("Closing TCPServer");
     m_socket.close();
     stop();
 }
