@@ -1,6 +1,5 @@
 #include "nexilis_client.hh"
 #include "debug.hh"
-#include "nexilis/client_api.hh"
 
 #include <nexilis/common/util.hh>
 #include <nexilis/packet.hh>

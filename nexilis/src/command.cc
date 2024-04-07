@@ -93,7 +93,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get client id.
                 case 0x10:
                 {
-                    Log::error("Client id before send", client.getId());
+                    Log::info("Client id before send: ", client.getId());
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
                             {"set_client_id", boost::json::value(client.getId())}};

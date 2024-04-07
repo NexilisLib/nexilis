@@ -13,7 +13,7 @@ UDPClient::UDPClient(ClientAPI& clientApi)
       Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_endpoint(boost::asio::ip::udp::v4(), 12334),
+      m_endpoint(boost::asio::ip::udp::v4(), clientApi.getBoostUDPServerPortNumber()),
       m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
       m_socket(*m_ioContext)
 {
@@ -43,6 +43,7 @@ UDPClient::UDPClient(UDPClient&& other)
       m_receiveBuffer(std::move(other.m_receiveBuffer))
 {
     other.m_ioContext = nullptr;
+    other.m_mutex = nullptr;
 }
 
 UDPClient& UDPClient::operator=(UDPClient&& other)
@@ -61,15 +62,15 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_receiveBuffer = std::move(other.m_receiveBuffer);
 
         other.m_ioContext = nullptr;
+        other.m_mutex = nullptr;
     }
     return *this;
 }
 
 void UDPClient::start()
 {
-    m_socket.open(boost::asio::ip::udp::v4());
-
     m_ioContextThread = std::thread([this](){ m_ioContext->run(); });
+    m_socket.open(boost::asio::ip::udp::v4());
 
     Log::info("io context ready");
 
@@ -78,9 +79,7 @@ void UDPClient::start()
 
     if (m_socket.is_open())
     {
-        std::lock_guard<std::mutex> lock(*m_mutex);
-
-        m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
+        m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_endpoint,
                                     [this](const boost::system::error_code& error, std::size_t bytesTransferred)
                                     {
                                         if (!error)
@@ -98,24 +97,28 @@ void UDPClient::start()
     {
         Log::error("boost::UDPClient::start(): socket is not open");
     }
+
+    info("start() done");
 }
 
 void UDPClient::sendMessage(const std::string& message)
 {
+    std::lock_guard<std::mutex> lock(*m_mutex);
     send(message);
 }
 
 void UDPClient::sendMessage(const std::vector<uint8_t>& message)
 {
     std::string msg = reinterpret_cast<const char*>(message.data());
-    send(msg);
+    sendMessage(msg);
 }
 
 void UDPClient::send(const std::string& message)
 {
     if (m_socket.is_open())
     {
-        m_socket.send_to(boost::asio::buffer(message), m_endpoint);
+        m_socket.send_to(boost::asio::buffer(message), m_remoteEndpoint);
+        Log::debug("sent message to server");
     }
     else
     {

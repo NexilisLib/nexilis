@@ -42,7 +42,8 @@ int main()
     nexilis::RoomStorage::add(std::move(room2));
     nexilis::RoomStorage::add(std::move(room3));
 
-    while( true ) {}
+    std::cout << "SERVER READY, looping main thread" << std::endl;
+    while (true) {}
 
     return 0;
 }

@@ -12,14 +12,10 @@ UDPServer::UDPServer(int port)
       m_socket(*m_ioContext, m_remoteEndpoint),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
-    Log::debug("Address: ", m_socket.local_endpoint().address());
-    Log::debug("Port: ", m_socket.local_endpoint().port());
 }
 
 UDPServer::~UDPServer()
 {
-    Log::debug("Destructing UDPServer");
-
     m_socket.close();
     m_ioContext->stop();
 
@@ -74,56 +70,39 @@ void UDPServer::start()
 
 void UDPServer::receiveFromClients()
 {
-    Log::debug("Receive from clients called");
-    std::lock_guard<std::mutex> lock(*m_mutex);
-
     if (m_socket.is_open())
     {
-        Log::debug("Socket is open");
-        m_socket.async_receive_from(
-                boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint,
-                [this](const boost::system::error_code& error, std::size_t bytes_transferred)
-                {
-                    Log::debug("Receiving stuff from client");
-                    if (!error)
-                    {
-                        std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
-                        std::string address = m_remoteEndpoint.address().to_string();
-                        uint16_t port = m_remoteEndpoint.port();
-                        Log::info("Received from ", address, " port", port, " data: ", data);
+        std::size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
 
-                        auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
+        std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
+        std::string address = m_remoteEndpoint.address().to_string();
+        uint16_t port = m_remoteEndpoint.port();
+        Log::info("Received from ", address, " port", port, " data: ", data);
 
-                        if (handledMessage.getClient()->isBoostUDPSet())
-                        {
-                            handledMessage.getClient()->setBoostUDPSend([this, data](const std::vector<uint8_t>& bytes)
-                            {
-                                std::string byteString = Util::convertToString(bytes);
-                                m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint);
-                            });
-                        }
+        auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
 
-                        bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+        if (!handledMessage.getClient()->isBoostUDPSet())
+        {
+            handledMessage.getClient()->setBoostUDPSend([this, data](const std::vector<uint8_t>& bytes)
+            {
+                std::string byteString = Util::convertToString(bytes);
+                m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint);
+            });
+        }
 
-                        if (passCommand)
-                        {
-                            Log::info("UDPServer: Passed with command: ", data);
-                        }
-                        else
-                        {
-                            Log::error("UDPServer: Failed with command: ", data);
-                        }
+        bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
 
-                        // Continue listening for incoming messages from any endpoint
-                        receiveFromClients();
-                    }
-                    else
-                    {
-                        Log::error("Error receiving message: ", error.message());
-                        // Continue listening for incoming messages from any endpoint even after an error
-                        receiveFromClients();
-                    }
-                });
+        if (passCommand)
+        {
+            Log::info("UDPServer: Passed with command: ", data);
+        }
+        else
+        {
+            Log::error("UDPServer: Failed with command: ", data);
+        }
+
+        // Continue listening for incoming messages from any endpoint
+        receiveFromClients();
     }
     else
     {
