@@ -2,6 +2,7 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
+#include <cstdint>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -139,12 +140,15 @@ void Program::updateScreenSize()
     // TODO
 }
 
-/*
 void Program::sendTCPMessage(const std::vector<uint8_t>& message)
 {
     m_nexilisClient.getTCPClient().sendMessage(message);
 }
-*/
+
+void Program::sendUDPMessage(const std::vector<uint8_t>& message)
+{
+    m_nexilisClient.getUDPClient().sendMessage(message);
+}
 
 void Program::debugObject(boost::json::object object)
 {

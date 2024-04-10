@@ -95,7 +95,7 @@ bool TCPServer::acceptClients()
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-                    {
+        {
             try
             {
                 while (true)

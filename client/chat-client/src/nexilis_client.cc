@@ -8,7 +8,7 @@ nexilis::ClientAPI::ServerData getServerData()
 {
     nexilis::ClientAPI::ServerData serverData("salasana");
     serverData.setBoostTCP("192.168.1.85", 12348);
-    serverData.setBoostUDP("192.168.1.85", 12346);
+    serverData.setBoostUDP("192.168.1.85", 12347);
     return serverData;
 }
 
@@ -45,24 +45,15 @@ NexilisClient& NexilisClient::operator=(NexilisClient&& other)
 void NexilisClient::start()
 {
     m_udpClient.start();
-
-    std::cout << "UDPClient started!" << std::endl;
-
     m_udpClient.sendMessage(m_serverData.getPassword());
-
-    std::cout << "send message to server "<< std::endl;
+    m_clientAPI.waitUntilBoostUDPReady();
 
     /*
     m_tcpClient.start();
     m_tcpClient.sendMessage(m_serverData.getPassword());
-
     m_clientAPI.waitUntilBoostTCPReady();
-
-    std::cout << "TCP READY" << std::endl;
     */
 
-    m_clientAPI.waitUntilBoostUDPReady();
 
-    debug("Boost TCP connection ready");
     debug(nexilis::Util::getDateAndTime());
 }

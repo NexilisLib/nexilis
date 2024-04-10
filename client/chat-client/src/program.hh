@@ -4,6 +4,7 @@
 #include "menu.hh"
 #include "nexilis_client.hh"
 #include "window.hh"
+#include <cstdint>
 
 class Program
 {
@@ -23,10 +24,13 @@ private:
 
     void inputHandler();
     void updateScreenSize();
-    //void sendTCPMessage(const std::vector<uint8_t>& message);
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
     void parseMessage(boost::json::object object);
+
+    // Message sending functions.
+    void sendTCPMessage(const std::vector<uint8_t>& message);
+    void sendUDPMessage(const std::vector<uint8_t>& message);
 
 private:
     /// Command line arguments argc.

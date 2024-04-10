@@ -1,4 +1,6 @@
 #include "nexilis/loggable.hh"
+#include "nexilis/nexilis_macros.hh"
+#include "nexilis/packet.hh"
 #include <boost/asio/ip/address.hpp>
 #include <memory>
 #include <mutex>
@@ -13,9 +15,9 @@ UDPClient::UDPClient(ClientAPI& clientApi)
       Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_endpoint(boost::asio::ip::udp::v4(), clientApi.getBoostUDPServerPortNumber()),
       m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
-      m_socket(*m_ioContext)
+      m_socket(*m_ioContext),
+      m_receiveBuffer(NEXILIS_BUFFER)
 {
 }
 
@@ -28,6 +30,11 @@ UDPClient::~UDPClient()
     {
         m_ioContextThread.join();
     }
+
+    if (m_receiveMessageThread.joinable())
+    {
+        m_receiveMessageThread.join();
+    }
 }
 
 UDPClient::UDPClient(UDPClient&& other)
@@ -35,9 +42,9 @@ UDPClient::UDPClient(UDPClient&& other)
       ClientProtocol(std::move(other)),
       Loggable(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
+      m_receiveMessageThread(std::move(other.m_receiveMessageThread)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
-      m_endpoint(std::move(other.m_endpoint)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
       m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer))
@@ -54,9 +61,9 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         ClientProtocol::operator=(std::move(other));
         Loggable::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
+        m_receiveMessageThread = std::move(other.m_receiveMessageThread);
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
-        m_endpoint = std::move(other.m_endpoint);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
@@ -71,34 +78,19 @@ void UDPClient::start()
 {
     m_ioContextThread = std::thread([this](){ m_ioContext->run(); });
     m_socket.open(boost::asio::ip::udp::v4());
+    m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
+}
 
-    Log::info("io context ready");
-
-    info("io_context ready");
-    infoExtra("io context is really ready", __LINE__);
-
-    if (m_socket.is_open())
+void UDPClient::receiveLoop()
+{
+    while (m_socket.is_open())
     {
-        m_socket.async_receive_from(boost::asio::buffer(m_receiveBuffer), m_endpoint,
-                                    [this](const boost::system::error_code& error, std::size_t bytesTransferred)
-                                    {
-                                        if (!error)
-                                        {
-                                            std::string receivedMessage(m_receiveBuffer.data(), bytesTransferred);
-                                            Log::info("Received from server: ", receivedMessage);
-                                        }
-                                        else
-                                        {
-                                            Log::error("boost::UDPClient::start(): Error receiving message, reason: ", error.message());
-                                        }
-                                    });
-    }
-    else
-    {
-        Log::error("boost::UDPClient::start(): socket is not open");
-    }
+        std::size_t receivedBytes = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+        Log::info("Received bytes: ", receivedBytes);
 
-    info("start() done");
+        auto byteVector = Util::convertToByteVector(m_receiveBuffer.data(), receivedBytes);
+        ClientProtocol::getClientAPI()->readMessage(byteVector);
+    }
 }
 
 void UDPClient::sendMessage(const std::string& message)

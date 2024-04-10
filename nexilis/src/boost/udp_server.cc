@@ -1,3 +1,5 @@
+#include <boost/asio/ip/address.hpp>
+#include <boost/system/system_error.hpp>
 #include <nexilis/boost/udp_server.hh>
 #include <nexilis/log.hh>
 #include <nexilis/command.hh>
@@ -12,6 +14,9 @@ UDPServer::UDPServer(int port)
       m_socket(*m_ioContext, m_remoteEndpoint),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
+    // Set socket option to allow address reuse
+    boost::asio::ip::udp::socket::reuse_address reuse(true);
+    m_socket.set_option(reuse);
 }
 
 UDPServer::~UDPServer()
@@ -70,44 +75,51 @@ void UDPServer::start()
 
 void UDPServer::receiveFromClients()
 {
-    if (m_socket.is_open())
+    std::lock_guard<std::mutex> lock(*m_mutex);
+
+    while (m_socket.is_open())
     {
-        std::size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
-
-        std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
-        std::string address = m_remoteEndpoint.address().to_string();
-        uint16_t port = m_remoteEndpoint.port();
-        Log::info("Received from ", address, " port", port, " data: ", data);
-
-        auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
-
-        if (!handledMessage.getClient()->isBoostUDPSet())
+        try
         {
-            handledMessage.getClient()->setBoostUDPSend([this, data](const std::vector<uint8_t>& bytes)
+            std::size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+
+            std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
+            std::string address = m_remoteEndpoint.address().to_string();
+            uint16_t port = m_remoteEndpoint.port();
+            Log::info("Received from ", address, " port ", port, " data: ", data);
+
+            auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
+
+            if (!handledMessage.getClient()->isBoostUDPSet())
             {
-                std::string byteString = Util::convertToString(bytes);
-                m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint);
-            });
+                handledMessage.getClient()->setBoostUDPSend([this](const std::vector<uint8_t>& bytes)
+                {
+                    std::string byteString = Util::convertToString(bytes);
+                    if (m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint) == 0)
+                    {
+                        Log::error("Failed to send message to client");
+                    }
+                });
+            }
+
+            bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+
+            if (passCommand)
+            {
+                Log::info("UDPServer: Passed with command: ", data);
+            }
+            else
+            {
+                Log::error("UDPServer: Failed with command: ", data);
+            }
         }
-
-        bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
-
-        if (passCommand)
+        catch (const boost::system::system_error& e)
         {
-            Log::info("UDPServer: Passed with command: ", data);
+            Log::error("Error receiving message: ", e.what());
         }
-        else
-        {
-            Log::error("UDPServer: Failed with command: ", data);
-        }
+    }
 
-        // Continue listening for incoming messages from any endpoint
-        receiveFromClients();
-    }
-    else
-    {
-        Log::error("Socket is not open!");
-    }
+    Log::error("Socket is not open!");
 }
 
 } // namespace nexilis::boost

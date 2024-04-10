@@ -59,13 +59,15 @@ private:
     /// Internal sendMessage function.
     void send(const std::string& message);
 
+    void receiveLoop();
+
 private:
     std::thread m_ioContextThread;
+    std::thread m_receiveMessageThread;
 
 private:
     std::unique_ptr<::boost::asio::io_context> m_ioContext;
     std::unique_ptr<std::mutex> m_mutex;
-    boost::asio::ip::udp::endpoint m_endpoint;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
     boost::asio::ip::udp::socket m_socket;
     std::vector<char> m_receiveBuffer;

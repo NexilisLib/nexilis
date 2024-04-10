@@ -24,12 +24,10 @@ public:
         return m_clientAPI;
     }
 
-    /*
     nexilis::boost::TCPClient& getTCPClient()
     {
         return m_tcpClient;
     }
-    */
 
     nexilis::boost::UDPClient& getUDPClient()
     {
