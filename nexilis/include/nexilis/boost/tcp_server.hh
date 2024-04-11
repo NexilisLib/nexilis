@@ -57,7 +57,6 @@ private:
     std::unique_ptr<boost::asio::io_context> m_ioContext;
 
     boost::asio::ip::tcp::acceptor m_acceptor;
-    boost::asio::ip::tcp::socket m_socket;
 
     std::thread m_listenThread;
     std::thread m_ioContextThread;

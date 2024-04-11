@@ -10,8 +10,7 @@ TCPServer::TCPServer(int serverPort)
     : m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
-                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort)))),
-      m_socket(*m_ioContext)
+                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
 {
 }
 
@@ -21,7 +20,6 @@ TCPServer::TCPServer(TCPServer&& other)
       m_mutex(std::move(other.m_mutex)),
       m_ioContext(std::move(other.m_ioContext)),
       m_acceptor(std::move(other.m_acceptor)),
-      m_socket(std::move(other.m_socket)),
       m_listenThread(std::move(other.m_listenThread)),
       m_ioContextThread(std::move(other.m_ioContextThread))
 {
@@ -36,7 +34,6 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
-        m_socket = std::move(other.m_socket);
         m_listenThread = std::move(other.m_listenThread);
         m_ioContextThread = std::move(other.m_ioContextThread);
     }
@@ -45,22 +42,20 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 
 TCPServer::~TCPServer()
 {
-    Log::debug("Closing TCPServer");
-    m_socket.close();
     stop();
 }
 
 void TCPServer::start()
 {
-    m_ioContextThread = std::thread([this]()
-                                    { m_ioContext->run(); });
+    m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
 
     m_listenThread = std::thread([this]()
-                                 {
+    {
         if (startListening())
         {
             acceptClients();
-        } });
+        }
+    });
 }
 
 void TCPServer::stop()

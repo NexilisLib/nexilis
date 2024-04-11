@@ -48,12 +48,9 @@ void NexilisClient::start()
     m_udpClient.sendMessage(m_serverData.getPassword());
     m_clientAPI.waitUntilBoostUDPReady();
 
-    /*
     m_tcpClient.start();
     m_tcpClient.sendMessage(m_serverData.getPassword());
     m_clientAPI.waitUntilBoostTCPReady();
-    */
-
 
     debug(nexilis::Util::getDateAndTime());
 }

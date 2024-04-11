@@ -39,6 +39,7 @@ public:
     /// Protocol::stop() implementation.
     void stop() override
     {
+        Log::error("Not implemented");
     }
 
     /// Protocol::getType() implementation.
