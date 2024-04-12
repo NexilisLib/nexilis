@@ -22,39 +22,63 @@ boost::json::object Json::createJSON(const std::map<std::string, boost::json::va
     return json_obj;
 }
 
-boost::json::object Json::getServerData()
+boost::json::object Json::getRoomData()
 {
-    boost::json::object serverDataObj;
-    serverDataObj["nexilis_status"] = 1;
-
-    auto& clients = ClientStorage::getAllClients();
-
-    if (clients.empty())
-    {
-        Log::info("Empty client data");
-        serverDataObj["client_amount"] = 0;
-    }
-    else
-    {
-        serverDataObj["client_amount"] = clients.size();
-        auto clientData = clientsToJSON(clients);
-        serverDataObj["clients"] = std::move(clientData);
-    }
+    boost::json::object roomDataObj;
 
     auto& rooms = RoomStorage::getAllRooms();
 
     if (rooms.empty())
     {
         Log::info("Empty room data");
-        serverDataObj["room_amount"] = 0;
+        roomDataObj["room_amount"] = 0;
     }
     else
     {
-        serverDataObj["room_amount"] = rooms.size();
+        roomDataObj["room_amount"] = rooms.size();
         auto roomData = roomsToJSON(rooms);
-        serverDataObj["rooms"] = std::move(roomData);
+        roomDataObj["rooms"] = std::move(roomData);
     }
+    return roomDataObj;
+}
+
+boost::json::object Json::getClientData()
+{
+    boost::json::object clientDataObj;
+
+    auto& clients = ClientStorage::getAllClients();
+
+    if (clients.empty())
+    {
+        Log::info("Empty client data");
+        clientDataObj["client_amount"] = 0;
+    }
+    else
+    {
+        clientDataObj["client_amount"] = clients.size();
+        auto clientData = clientsToJSON(clients);
+        clientDataObj["clients"] = std::move(clientData);
+    }
+    return clientDataObj;
+}
+
+boost::json::object Json::getServerData()
+{
+    boost::json::object serverDataObj;
+    serverDataObj["nexilis_status"] = 1;
+
+    emplace(serverDataObj, getClientData());
+    emplace(serverDataObj, getRoomData());
+
     return serverDataObj;
+}
+
+void Json::emplace(::boost::json::object& first, const ::boost::json::object& second)
+{
+    for (const auto& [key, value] : second)
+    {
+        first.emplace(key, value);
+    }
 }
 
 boost::json::object Json::convertToJSON(const std::vector<uint8_t>& bytes)

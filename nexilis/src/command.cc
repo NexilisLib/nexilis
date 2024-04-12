@@ -158,13 +158,20 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return true;
                 }
 
-                // Option for help.
+                // Get data from the rooms existing on the server.
                 case 0x20:
                 {
                     break;
                 }
+
+                // Get data from the clients existing on the server.
+                case 0x30:
+                {
+                    break;
+                }
+                default: return false;
             }
-            break;
+            return false;
         }
 
         case MainCommand::authentication:

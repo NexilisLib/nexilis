@@ -103,10 +103,19 @@ void Program::inputHandler()
 
     else if (m_menu.getState() == Menu::State::chat)
     {
-        if (m_input == 10)
+        // Get information about the chat.
+        if (updateRooms)
         {
             debug("Sent message to the server asking for server data");
             sendTCPMessage(nexilis::Packet::Info::generalInfo());
+
+            // This will work for now, but this needs to be retriggered from somewhere.
+            updateRooms = false;
+        }
+
+        if (m_input == 10)
+        {
+            debug("Pressed enter in chat mode");
         }
 
         switch (tolower(m_input))

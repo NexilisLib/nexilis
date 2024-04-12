@@ -56,6 +56,9 @@ private:
 
     /// The newest message from the server.
     boost::json::object m_currentMessage;
+
+    /// Should the room data to be updated?
+    bool updateRooms = true;
 };
 
 #endif

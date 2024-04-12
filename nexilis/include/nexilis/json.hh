@@ -1,6 +1,7 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
+#include <boost/json/kind.hpp>
 #include <nexilis/client.hh>
 #include <nexilis/room.hh>
 
@@ -27,7 +28,13 @@ public:
     /// Read JSON data from file.
     static ::boost::json::value readJSONFromFile(const std::string& filename);
 
-    /// Return some data from the server.
+    /// Get data about the rooms in the server.
+    static ::boost::json::object getRoomData();
+
+    /// Get data about the clients in the server.
+    static ::boost::json::object getClientData();
+
+    /// Return all data from the server.
     static ::boost::json::object getServerData();
 
     /// Convert std::vector<uint8_t> to boost::json::object.
@@ -38,6 +45,9 @@ public:
 
     /// Write json object to a file.
     static void saveToFile(const ::boost::json::object& obj, const std::string& filePath);
+
+    /// Merge second object to the first one.
+    static void emplace(::boost::json::object& first, const ::boost::json::object& second);
 
 private:
     // Get json data from room vector.
