@@ -6,6 +6,7 @@
 #include <nexilis/command_type.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/json.hh>
 
 #include <cstddef>
 #include <cstdint>
@@ -63,6 +64,9 @@ private:
 
 private:
     static Authentication* m_authentication;
+
+    /// Nexilis_status is 1, indicating internal nexilis command.
+    static ::boost::json::object m_nexilisStatus;
 };
 
 } // namespace nexilis

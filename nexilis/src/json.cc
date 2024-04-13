@@ -65,12 +65,18 @@ boost::json::object Json::getClientData()
 boost::json::object Json::getServerData()
 {
     boost::json::object serverDataObj;
-    serverDataObj["nexilis_status"] = 1;
 
     emplace(serverDataObj, getClientData());
     emplace(serverDataObj, getRoomData());
 
     return serverDataObj;
+}
+
+boost::json::object Json::getNexilisStatus(int status)
+{
+    boost::json::object nexilisStatusObj;
+    nexilisStatusObj["nexilis_status"] = status;
+    return nexilisStatusObj;
 }
 
 void Json::emplace(::boost::json::object& first, const ::boost::json::object& second)

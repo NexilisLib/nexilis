@@ -12,6 +12,8 @@ namespace nexilis
 
 Authentication* Command::m_authentication = nullptr;
 
+boost::json::object Command::m_nexilisStatus = Json::getNexilisStatus(1);
+
 bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
 {
     return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol);
@@ -94,6 +96,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 case 0x10:
                 {
                     Log::info("Client id before send: ", client.getId());
+                    // Fix this
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
                             {"set_client_id", boost::json::value(client.getId())}};
@@ -149,25 +152,40 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get all public information from a server.
                 case 0x10:
                 {
-                    boost::json::object serverData = Json::getServerData();
-                    std::string stringData = boost::json::serialize(serverData);
+                    auto message = m_nexilisStatus;
+                    Json::emplace(message, Json::getServerData());
+                    std::string stringData = boost::json::serialize(message);
                     auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
 
                     sendMessageToClient(data, client, protocol);
-                    Log::info("Used mainCommand info!");
+                    Log::info("Used Info::generalInfo");
+                    return true;
+                }
+
+                // Get data from the clients existing on the server.
+                case 0x20:
+                {
+                    auto message = m_nexilisStatus;
+                    Json::emplace(message, Json::getClientData());
+                    std::string stringData = boost::json::serialize(message);
+                    auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
+
+                    sendMessageToClient(data, client, protocol);
+                    Log::info("Used Info::clientInfo");
                     return true;
                 }
 
                 // Get data from the rooms existing on the server.
-                case 0x20:
-                {
-                    break;
-                }
-
-                // Get data from the clients existing on the server.
                 case 0x30:
                 {
-                    break;
+                    auto message = m_nexilisStatus;
+                    Json::emplace(message, Json::getRoomData());
+                    std::string stringData = boost::json::serialize(message);
+                    auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
+
+                    sendMessageToClient(data, client, protocol);
+                    Log::info("Used Info::roomInfo");
+                    return true;
                 }
                 default: return false;
             }
