@@ -21,7 +21,7 @@ std::vector<uint8_t> Packet::Get::clientId()
     return cliendIdVector;
 }
 
-std::vector<uint8_t> Packet::Info::generalInfo()
+std::vector<uint8_t> Packet::Info::general()
 {
     if (m_clientId == 0)
     {
@@ -32,6 +32,34 @@ std::vector<uint8_t> Packet::Info::generalInfo()
     cliendIdVector.emplace_back(0xFF);
     cliendIdVector.emplace_back(0x40);
     cliendIdVector.emplace_back(0x10);
+    return cliendIdVector;
+}
+
+std::vector<uint8_t> Packet::Info::clients()
+{
+    if (m_clientId == 0)
+    {
+        Log::error("Client has not been intialized");
+        return {};
+    }
+    std::vector<uint8_t> cliendIdVector = Util::convertToByteVector(m_clientId);
+    cliendIdVector.emplace_back(0xFF);
+    cliendIdVector.emplace_back(0x40);
+    cliendIdVector.emplace_back(0x20);
+    return cliendIdVector;
+}
+
+std::vector<uint8_t> Packet::Info::rooms()
+{
+    if (m_clientId == 0)
+    {
+        Log::error("Client has not been intialized");
+        return {};
+    }
+    std::vector<uint8_t> cliendIdVector = Util::convertToByteVector(m_clientId);
+    cliendIdVector.emplace_back(0xFF);
+    cliendIdVector.emplace_back(0x40);
+    cliendIdVector.emplace_back(0x30);
     return cliendIdVector;
 }
 

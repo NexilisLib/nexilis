@@ -107,7 +107,7 @@ void Program::inputHandler()
         if (updateRooms)
         {
             debug("Sent message to the server asking for server data");
-            sendTCPMessage(nexilis::Packet::Info::generalInfo());
+            sendTCPMessage(nexilis::Packet::Info::rooms());
 
             // This will work for now, but this needs to be retriggered from somewhere.
             updateRooms = false;

@@ -25,7 +25,9 @@ public:
     class Info
     {
     public:
-        static std::vector<uint8_t> generalInfo();
+        static std::vector<uint8_t> general();
+        static std::vector<uint8_t> clients();
+        static std::vector<uint8_t> rooms();
     };
 
     static size_t m_clientId;
