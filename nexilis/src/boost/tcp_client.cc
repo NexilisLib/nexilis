@@ -104,7 +104,7 @@ bool TCPClient::send(const std::string& data)
     {
         // Asynchronously send data to the server.
         boost::asio::async_write(m_socket, boost::asio::buffer(data),
-                                 [this](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+                                 [](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
                                  {
                                      if (!error)
                                      {

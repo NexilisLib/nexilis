@@ -177,13 +177,26 @@ void Program::readMessage(boost::json::object object)
         m_currentMessage = object;
         parseMessage(m_currentMessage);
     }
-    else
-    {
-    }
 }
 
 void Program::parseMessage(boost::json::object object)
 {
+    // Parsing message.
+    if (object.contains("nexilis_status"))
+    {
+        if (object["nexilis_status"] != 2)
+        {
+            debug("Nexilis status other than 2 in the client code!");
+        }
+    }
+
+    if (object.contains("type"))
+    {
+        if (object["type"] == "roomData")
+        {
+            debug("Found the room data message");
+        }
+    }
 }
 
 void Program::update()

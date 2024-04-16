@@ -42,6 +42,14 @@ boost::json::object Json::getRoomData()
     return roomDataObj;
 }
 
+boost::json::object Json::getRoomDataMessage()
+{
+    boost::json::object roomDataMessage;
+    emplace(roomDataMessage, getType("roomData"));
+    emplace(roomDataMessage, getRoomData());
+    return roomDataMessage;
+}
+
 boost::json::object Json::getClientData()
 {
     boost::json::object clientDataObj;
@@ -62,10 +70,19 @@ boost::json::object Json::getClientData()
     return clientDataObj;
 }
 
+boost::json::object Json::getClientDataMessage()
+{
+    boost::json::object clientDataMessage;
+    emplace(clientDataMessage, getType("clientData"));
+    emplace(clientDataMessage, getClientData());
+    return clientDataMessage;
+}
+
 boost::json::object Json::getServerData()
 {
     boost::json::object serverDataObj;
 
+    emplace(serverDataObj, getType("serverData"));
     emplace(serverDataObj, getClientData());
     emplace(serverDataObj, getRoomData());
 
@@ -77,6 +94,13 @@ boost::json::object Json::getNexilisStatus(int status)
     boost::json::object nexilisStatusObj;
     nexilisStatusObj["nexilis_status"] = status;
     return nexilisStatusObj;
+}
+
+boost::json::object Json::getType(const std::string& typeName)
+{
+    boost::json::object typeObj;
+    typeObj["type"] = typeName;
+    return typeObj;
 }
 
 void Json::emplace(::boost::json::object& first, const ::boost::json::object& second)

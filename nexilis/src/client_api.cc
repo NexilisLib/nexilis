@@ -228,9 +228,14 @@ void ClientAPI::waitUntilUnixStreamReady()
 bool ClientAPI::parse(boost::json::object json)
 {
     // Parsing message.
-    if (!json.contains("nexilis_status") || json["nexilis_status"] != 1)
+    if (!json.contains("nexilis_status"))
     {
-        Log::error("Running code without nexilis status");
+        Log::info("Running code without nexilis status");
+        return false;
+    }
+    else if (json["nexilis_status"] == 2)
+    {
+        Log::info("Message with nexilis_status == 2");
         return false;
     }
 
@@ -262,6 +267,7 @@ bool ClientAPI::parse(boost::json::object json)
             return false;
         }
     }
+    // TODO continue parsing.
     return true;
 }
 
@@ -287,15 +293,15 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         return false;
     }
 
-    m_currentMessage = json;
 
-    if (parse(m_currentMessage))
+    if (parse(json))
     {
         return true;
     }
     else
     {
-        Log::error("Nexilis side parsing failed!");
+        m_currentMessage = json;
+        Log::info("Received message that is not read by the server");
         return false;
     }
 }

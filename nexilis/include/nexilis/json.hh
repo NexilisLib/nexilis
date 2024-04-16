@@ -31,17 +31,24 @@ public:
     /// Get data about the rooms in the server.
     static ::boost::json::object getRoomData();
 
+    /// Get the room data with added message data parameters.
+    static ::boost::json::object getRoomDataMessage();
+
     /// Get data about the clients in the server.
     static ::boost::json::object getClientData();
+
+    /// Get the client data with added message data parameters.
+    static ::boost::json::object getClientDataMessage();
 
     /// Return all data from the server.
     static ::boost::json::object getServerData();
 
     /// Get the nexilis_status.
-    /// \note Nexilis status is set to 1 for internal nexilis commands.
-    /// A json object without nexilis_status or status being anything else than 1,
-    /// indicates that the message is part of the server API.
+    /// \note Nexilis status is set to 1 for internal nexilis commands read by the server.
+    /// \note Nexilis status is set to 2 for internal nexilis commands not read by the server.
     static ::boost::json::object getNexilisStatus(int status);
+
+    static ::boost::json::object getType(const std::string& typeName);
 
     /// Convert std::vector<uint8_t> to boost::json::object.
     static ::boost::json::object convertToJSON(const std::vector<uint8_t>& bytes);

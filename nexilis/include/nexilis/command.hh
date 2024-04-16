@@ -64,9 +64,6 @@ private:
 
 private:
     static Authentication* m_authentication;
-
-    /// Nexilis_status is 1, indicating internal nexilis command.
-    static ::boost::json::object m_nexilisStatus;
 };
 
 } // namespace nexilis
