@@ -116,6 +116,9 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Pressed enter in chat mode");
+            std::stringstream ss;
+            ss << "Room amount: " << m_chat.getRoomAmount();
+            debug(ss.str());
         }
 
         switch (tolower(m_input))
@@ -195,6 +198,27 @@ void Program::parseMessage(boost::json::object object)
         if (object["type"] == "roomData")
         {
             debug("Found the room data message");
+            auto rooms = object.at("rooms").as_array();
+            for (const auto& room : rooms)
+            {
+                std::string name = room.at("name").as_string().c_str();
+                int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+                uint64_t id;
+
+                if (room.at("id").if_uint64())
+                {
+                    id = room.at("id").as_uint64();
+                }
+                else if (room.at("id").if_int64())
+                {
+                    id = static_cast<uint64_t>(room.at("id").as_int64());
+                }
+                else
+                {
+                    id = 0;
+                }
+                m_chat.addRoom(Chat::Room(name, maxSize, id));
+            }
         }
     }
 }

@@ -4,7 +4,7 @@
 #include "menu.hh"
 #include "nexilis_client.hh"
 #include "window.hh"
-#include <cstdint>
+#include "chat.hh"
 
 class Program
 {
@@ -44,6 +44,9 @@ private:
 
     /// Menu object.
     Menu m_menu;
+
+    /// Chat object.
+    Chat m_chat;
 
     /// NexilisClient object.
     NexilisClient m_nexilisClient;
