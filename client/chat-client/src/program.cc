@@ -14,6 +14,7 @@ Program::Program(int argc, char** argv)
       m_argv(argv),
       m_window(),
       m_menu(),
+      m_chat(&m_menu.getState()),
       m_nexilisClient()
 {
     m_nexilisClient.start();
@@ -45,26 +46,26 @@ void Program::inputHandler()
             case 'j':
             case KEY_DOWN:
             {
-                if (m_choice < MENU_ITEM_COUNT)
+                if (m_menuChoice < MENU_ITEM_COUNT)
                 {
-                    ++m_choice;
+                    ++m_menuChoice;
                 }
-                else if (m_choice == MENU_ITEM_COUNT)
+                else if (m_menuChoice == MENU_ITEM_COUNT)
                 {
-                    m_choice = 0;
+                    m_menuChoice = 0;
                 }
                 break;
             }
             case 'k':
             case KEY_UP:
             {
-                if (m_choice > 0)
+                if (m_menuChoice > 0)
                 {
-                    --m_choice;
+                    --m_menuChoice;
                 }
-                else if (m_choice == 0)
+                else if (m_menuChoice == 0)
                 {
-                    m_choice = MENU_ITEM_COUNT;
+                    m_menuChoice = MENU_ITEM_COUNT;
                 }
                 break;
             }
@@ -73,7 +74,7 @@ void Program::inputHandler()
         // Press enter in menu to launch action.
         if (m_input == 10)
         {
-            switch (m_choice)
+            switch (m_menuChoice)
             {
                 // Chat.
                 case 0:
@@ -111,6 +112,36 @@ void Program::inputHandler()
 
             // This will work for now, but this needs to be retriggered from somewhere.
             updateRooms = false;
+        }
+
+        switch (tolower(m_input))
+        {
+            case 'j':
+            case KEY_DOWN:
+            {
+                if (m_roomChoice < m_chat.getRoomAmount())
+                {
+                    ++m_roomChoice;
+                }
+                else if (m_roomChoice == m_chat.getRoomAmount())
+                {
+                    m_roomChoice = 0;
+                }
+                break;
+            }
+            case 'k':
+            case KEY_UP:
+            {
+                if (m_roomChoice > 0)
+                {
+                    --m_roomChoice;
+                }
+                else if (m_roomChoice == 0)
+                {
+                    m_roomChoice = m_chat.getRoomAmount();
+                }
+                break;
+            }
         }
 
         if (m_input == 10)
@@ -226,6 +257,7 @@ void Program::parseMessage(boost::json::object object)
 void Program::update()
 {
     inputHandler();
-    m_menu.update(m_window.getWindow(), m_choice);
+    m_menu.update(m_window.getWindow(), m_menuChoice);
+    m_chat.update(m_window.getWindow(), m_roomChoice);
     readMessage(m_nexilisClient.getClientAPI().getCurrentMessage());
 }

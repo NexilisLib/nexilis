@@ -9,6 +9,14 @@
 class Program
 {
 public:
+    /// Different menu states.
+    enum class State
+    {
+        menu,
+        infopage,
+        chat
+    };
+
     /// Constructor.
     Program(int argc, char** argv);
 
@@ -55,7 +63,10 @@ private:
     int m_input;
 
     /// Current menu choice.
-    int m_choice = 0;
+    int m_menuChoice = 0;
+
+    /// Chat room choice.
+    int m_roomChoice = 0;
 
     /// The newest message from the server.
     boost::json::object m_currentMessage;

@@ -30,7 +30,7 @@ public:
     void update(_win_st* window, int& highlight);
 
     /// Get the state of the menu.
-    State getState()
+    State& getState()
     {
         return m_state;
     }
