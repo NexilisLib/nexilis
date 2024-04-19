@@ -1,4 +1,6 @@
+#include "nexilis/room_storage.hh"
 #include <boost/json/serialize.hpp>
+#include <cstdint>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
 #include <nexilis/command_type.hh>
@@ -6,6 +8,7 @@
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/room_storage.hh>
 
 namespace nexilis
 {
@@ -344,6 +347,35 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
                 default:
                     return false;
+            }
+        }
+
+        case MainCommand::room:
+        {
+            switch (command[1])
+            {
+                // Join room x.
+                case 0x10:
+                {
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    uint64_t roomId = Util::convertToType<uint64_t>(payload);
+
+                    auto room = RoomStorage::getRoomById(roomId);
+
+                    if (!room)
+                    {
+                        Log::error("Cannot find room with specified id!");
+                        return false;
+                    }
+                    room->joinRoom(client.getId());
+                    return true;
+                }
+                // Leave current room.
+                case 0x20:
+                {
+                    return false;
+                }
+                default: return false;
             }
         }
 

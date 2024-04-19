@@ -1,3 +1,4 @@
+#include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
 #include <cstdint>

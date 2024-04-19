@@ -1,8 +1,9 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
-#include <boost/json/object.hpp>
 #include <nexilis/common/util.hh>
+
+#include <boost/json/object.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -213,10 +214,10 @@ public:
     /// Move assignment operator.
     ClientAPI& operator=(ClientAPI&& other);
 
-    /// Deleted copy constructor.
+    /// Copy constructor.
     ClientAPI(const ClientAPI& other);
 
-    /// Deleted copy assignment.
+    /// Copy assignment operator.
     ClientAPI& operator=(const ClientAPI& other);
 
 public:

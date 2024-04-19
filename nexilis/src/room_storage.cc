@@ -13,7 +13,7 @@ std::vector<Room>& RoomStorage::getAllRooms()
 
 void RoomStorage::add(Room&& room)
 {
-    Log::info("New room: ", room.getName());
+    Log::info("New room: ", room.getName(), " id: ", room.getId());
     m_rooms.emplace_back(std::move(room));
     Log::info("Total amount = ", m_rooms.size());
 }

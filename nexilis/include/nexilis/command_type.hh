@@ -51,7 +51,9 @@ enum class MainCommand : uint8_t
 
     update = 0x90,
 
-    error = 0xa
+    error = 0xa,
+
+    room = 0xb
 };
 
 }

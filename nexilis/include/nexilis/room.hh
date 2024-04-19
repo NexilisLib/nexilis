@@ -88,8 +88,16 @@ public:
         return m_settings.getId();
     }
 
+    void joinRoom(uint64_t playerId)
+    {
+        m_players.push_back(playerId);
+    }
+
 private:
     Settings m_settings;
+
+    /// Players inside the room.
+    std::vector<uint64_t> m_players;
 };
 
 } // namespace nexilis

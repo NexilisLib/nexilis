@@ -5,9 +5,11 @@
 struct _win_st;
 
 #include "menu.hh"
+#include "debug.hh"
 
 #include <string>
 #include <cstdint>
+#include <sstream>
 #include <vector>
 
 class Chat
@@ -41,6 +43,15 @@ public:
     {
         return static_cast<int>(m_rooms.size());
     }
+
+    uint64_t getRoomIdByPosition(int position)
+    {
+        std::stringstream ss;
+        ss << "Position: " << position;
+        debug(ss.str());
+        return m_rooms[static_cast<size_t>(position)].getId();
+    }
+
 private:
     void showRooms(_win_st* window, int& hightlight);
 

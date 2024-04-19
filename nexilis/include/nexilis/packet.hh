@@ -30,6 +30,12 @@ public:
         static std::vector<uint8_t> rooms();
     };
 
+    class Room
+    {
+    public:
+        static std::vector<uint8_t> join(uint64_t roomId);
+    };
+
     static size_t m_clientId;
 };
 

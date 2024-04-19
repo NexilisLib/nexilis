@@ -16,12 +16,18 @@ public:
     /// Constructor.
     RoomStorage() = default;
 
+    /// Add new room to the server.
     static void add(Room&& room);
 
+    /// Check if room exists.
+    /// \param id The id of the room.
     static bool contains(uint64_t id);
 
+    /// Get all the rooms in the server.
     static std::vector<Room>& getAllRooms();
 
+    /// Get pointer of the room.
+    /// \param id The id of the room.
     static Room* getRoomById(uint64_t id);
 
 private:

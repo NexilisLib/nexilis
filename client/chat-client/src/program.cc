@@ -2,6 +2,7 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
+#include <cstdint>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -34,7 +35,7 @@ void Program::inputHandler()
         case KEY_RESIZE:
         {
             updateScreenSize();
-            return;
+            break;
         }
     }
 
@@ -111,6 +112,7 @@ void Program::inputHandler()
             sendTCPMessage(nexilis::Packet::Info::rooms());
 
             // This will work for now, but this needs to be retriggered from somewhere.
+            // TODO Add autoupdate
             updateRooms = false;
         }
 
@@ -147,9 +149,9 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Pressed enter in chat mode");
-            std::stringstream ss;
-            ss << "Room amount: " << m_chat.getRoomAmount();
-            debug(ss.str());
+
+            size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
+            sendTCPMessage(nexilis::Packet::Room::join(roomId));
         }
 
         switch (tolower(m_input))
