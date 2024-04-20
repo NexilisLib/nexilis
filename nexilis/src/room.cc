@@ -1,5 +1,6 @@
 #include <nexilis/common/util.hh>
 #include <nexilis/room.hh>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -52,7 +53,8 @@ Room::Room(const Settings& settings)
 }
 
 Room::Room(Room&& other)
-    : m_settings(std::move(other.m_settings))
+    : m_settings(std::move(other.m_settings)),
+      m_users(std::move(other.m_users))
 {
 }
 
@@ -61,8 +63,24 @@ Room& Room::operator=(Room&& other)
     if (this != &other)
     {
         m_settings = std::move(other.m_settings);
+        m_users = std::move(other.m_users);
     }
     return *this;
+}
+
+void Room::joinRoom(uint64_t userId)
+{
+    auto it = std::find(m_users.begin(), m_users.end(), userId);
+
+    if (it != m_users.end())
+    {
+        Log::warning("User already in this room!");
+    }
+    else
+    {
+        m_users.push_back(userId);
+        Log::info("New user in room: ", getId(), " user: ", userId);
+    }
 }
 
 } // namespace nexilis

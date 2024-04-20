@@ -289,10 +289,18 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         {
                             auto payload = Util::removeAmountOfBytesFromVector(command, 3);
 
+                            std::map<std::string, boost::json::value> data{
+                                    {"nexilis_status", boost::json::value(1)},
+                                    {"type", boost::json::value("broadcast")},
+                                    {"message", boost::json::value(Util::convertToString(payload))}};
+
+                            auto json = Json::createJSON(data);
+                            std::vector<uint8_t> message = Util::convertToByteVector(json);
+
                             auto& clients = ClientStorage::getAllClients();
                             for (auto& c : clients)
                             {
-                                sendMessageToClient(payload, c, protocol);
+                                sendMessageToClient(message, c, protocol);
                             }
                             return true;
                         }

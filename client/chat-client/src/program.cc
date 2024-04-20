@@ -2,7 +2,6 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
-#include <cstdint>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>

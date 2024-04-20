@@ -1,7 +1,6 @@
 #ifndef NEXILIS_ROOM_HH
 #define NEXILIS_ROOM_HH
 
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -88,16 +87,15 @@ public:
         return m_settings.getId();
     }
 
-    void joinRoom(uint64_t playerId)
-    {
-        m_players.push_back(playerId);
-    }
+    /// User joins the room context.
+    /// \param userId The identifier of the user.
+    void joinRoom(uint64_t userId);
 
 private:
     Settings m_settings;
 
-    /// Players inside the room.
-    std::vector<uint64_t> m_players;
+    /// Users inside the room.
+    std::vector<uint64_t> m_users;
 };
 
 } // namespace nexilis
