@@ -81,7 +81,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
 
     // TODO
     // Error Messages.
-    std::vector<uint8_t> errordata = {0xa, 0x10, 0x10};
+    std::vector<uint8_t> errordata = {9, 0, 0};
     Message errorMessage("", errordata, -1, nullptr);
 
     std::vector<uint8_t> convertedMessage = Util::convertToByteVector(message.c_str(), message.size());
@@ -167,12 +167,13 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     ClientStorage::add(std::move(client));
                     auto realNewClient = ClientStorage::getClientById(newClientId);
 
+                    // Checking successfull client creation.
                     assert(realNewClient);
                     assert(client.getId() == realNewClient->getId());
 
-                    // This message is equal to Packet::Get.
+                    // This message is equal to Packet::getId (without client id).
                     // We want do this automatically.
-                    std::vector<uint8_t> message{0x20, 0x10};
+                    std::vector<uint8_t> message{1, 0};
                     std::vector<uint8_t> idBytes = Util::convertToByteVector(client.getId());
                     for (size_t i = 0; i < idBytes.size(); i++)
                     {

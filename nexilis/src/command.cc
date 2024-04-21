@@ -1,14 +1,12 @@
-#include "nexilis/room_storage.hh"
-#include <boost/json/serialize.hpp>
-#include <cstdint>
-#include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/common/util.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/client_storage.hh>
 #include <nexilis/room_storage.hh>
+#include <boost/json/serialize.hpp>
 
 namespace nexilis
 {
@@ -94,7 +92,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             switch (command[1])
             {
                 // Get client id.
-                case 0x10:
+                case 0:
                 {
                     Log::info("Client id before send: ", client.getId());
                     // Fix this, nexilis_status = 1 is correct tho.
@@ -118,25 +116,25 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
-                case 0x10:
+                case 0:
                 {
                     // TODO create pong message, I mean this is kinda stupid.
                     return false;
                 }
 
-                case 0x20:
+                case 1:
                 {
                     return false;
                 }
 
                 // Start listening
-                case 0x30:
+                case 2:
                 {
                     return false;
                 }
 
                 // Stop listening
-                case 0x40:
+                case 3:
                 {
                     return false;
                 }
@@ -152,7 +150,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             switch (command[1])
             {
                 // Get all public information from a server.
-                case 0x10:
+                case 0:
                 {
                     auto message = Json::getNexilisStatus(2);
                     Json::emplace(message, Json::getServerData());
@@ -165,7 +163,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
 
                 // Get data from the clients existing on the server.
-                case 0x20:
+                case 1:
                 {
                     auto message = Json::getNexilisStatus(2);
                     Json::emplace(message, Json::getClientDataMessage());
@@ -178,7 +176,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
 
                 // Get data from the rooms existing on the server.
-                case 0x30:
+                case 2:
                 {
                     auto message = Json::getNexilisStatus(2);
                     Json::emplace(message, Json::getRoomDataMessage());
@@ -199,14 +197,14 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             switch (command[1])
             {
                 // Setup authentication.
-                case 0x10:
+                case 0:
                 {
                     Log::info("New client wants to authenticate, not implemented");
                     return false;
                 }
 
                 // Check authentication for root access.
-                case 0x20:
+                case 1:
                 {
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string password = Util::convertToString(payload);
@@ -232,7 +230,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
 
                 // Set authentication for valid client.
-                case 0x30:
+                case 2:
                 {
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string password = Util::convertToString(payload);
@@ -280,12 +278,12 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             switch (command[1])
             {
                 // Client sends message to everyone.
-                case 0x10:
+                case 0:
                 {
                     switch (command[2])
                     {
                         // Default state.
-                        case 0x10:
+                        case 0:
                         {
                             auto payload = Util::removeAmountOfBytesFromVector(command, 3);
 
@@ -310,12 +308,12 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
 
                 // Client sends a message to everyone except itself.
-                case 0x20:
+                case 1:
                 {
                     switch (command[2])
                     {
                         // Default state.
-                        case 0x10:
+                        case 0:
                         {
                             auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto& clients = ClientStorage::getAllClients();
@@ -335,7 +333,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
 
                 // Client sends a message in a room context.
-                case 0x30:
+                case 2:
                 {
                 }
             }
@@ -348,7 +346,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             switch (command[1])
             {
                 // Classname X
-                case 0x10:
+                case 0:
                 {
                     Log::critical("Internal server error: x");
                     return true;
@@ -363,7 +361,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             switch (command[1])
             {
                 // Join room x.
-                case 0x10:
+                case 0:
                 {
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     uint64_t roomId = Util::convertToType<uint64_t>(payload);
@@ -379,7 +377,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return true;
                 }
                 // Leave current room.
-                case 0x20:
+                case 1:
                 {
                     return false;
                 }

@@ -6,7 +6,7 @@ First bytes are id of the client, it is a static size_t in the server code.
 
 # Extra features here.
 What could be needed? It's a little uncomfortable to add stuff later here,
-but should be totally possible.
+but should be totally possible, this should be done by MessageHandler.
 
 # The NULL byte (0xFF)
 The NUll byte comes always before the command byte.

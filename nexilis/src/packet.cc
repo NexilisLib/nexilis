@@ -17,8 +17,8 @@ std::vector<uint8_t> Packet::Get::clientId()
     }
     std::vector<uint8_t> cliendIdVector = Util::convertToByteVector(m_clientId);
     cliendIdVector.emplace_back(0xFF);
-    cliendIdVector.emplace_back(0x20);
-    cliendIdVector.emplace_back(0x10);
+    cliendIdVector.emplace_back(1);
+    cliendIdVector.emplace_back(0);
     return cliendIdVector;
 }
 
@@ -31,8 +31,8 @@ std::vector<uint8_t> Packet::Info::general()
     }
     std::vector<uint8_t> cliendIdVector = Util::convertToByteVector(m_clientId);
     cliendIdVector.emplace_back(0xFF);
-    cliendIdVector.emplace_back(0x40);
-    cliendIdVector.emplace_back(0x10);
+    cliendIdVector.emplace_back(3);
+    cliendIdVector.emplace_back(0);
     return cliendIdVector;
 }
 
@@ -45,8 +45,8 @@ std::vector<uint8_t> Packet::Info::clients()
     }
     std::vector<uint8_t> cliendIdVector = Util::convertToByteVector(m_clientId);
     cliendIdVector.emplace_back(0xFF);
-    cliendIdVector.emplace_back(0x40);
-    cliendIdVector.emplace_back(0x20);
+    cliendIdVector.emplace_back(3);
+    cliendIdVector.emplace_back(1);
     return cliendIdVector;
 }
 
@@ -59,8 +59,8 @@ std::vector<uint8_t> Packet::Info::rooms()
     }
     std::vector<uint8_t> cliendIdVector = Util::convertToByteVector(m_clientId);
     cliendIdVector.emplace_back(0xFF);
-    cliendIdVector.emplace_back(0x40);
-    cliendIdVector.emplace_back(0x30);
+    cliendIdVector.emplace_back(3);
+    cliendIdVector.emplace_back(2);
     return cliendIdVector;
 }
 
@@ -73,8 +73,8 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
     }
     std::vector<uint8_t> clientIdVector = Util::convertToByteVector(m_clientId);
     clientIdVector.emplace_back(0xFF);
-    clientIdVector.emplace_back(0xb);
-    clientIdVector.emplace_back(0x10);
+    clientIdVector.emplace_back(10);
+    clientIdVector.emplace_back(0);
     auto roomIdVector = Util::convertToByteVector(roomId);
 
     for (const auto& elem : roomIdVector)
