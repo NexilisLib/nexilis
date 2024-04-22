@@ -149,8 +149,10 @@ void Program::inputHandler()
         {
             debug("Pressed enter in chat mode");
 
+            /*
             size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
             sendTCPMessage(nexilis::Packet::Room::join(roomId));
+            */
         }
 
         switch (tolower(m_input))
@@ -227,6 +229,7 @@ void Program::parseMessage(boost::json::object object)
 
     if (object.contains("type"))
     {
+        /*
         if (object["type"] == "roomData")
         {
             debug("Found the room data message");
@@ -252,6 +255,7 @@ void Program::parseMessage(boost::json::object object)
                 m_chat.addRoom(Chat::Room(name, maxSize, id));
             }
         }
+        */
     }
 }
 

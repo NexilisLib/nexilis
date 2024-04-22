@@ -16,7 +16,8 @@ int main()
 
     nexilis::Authentication auth;
     auth.setMode(nexilis::Authentication::Mode::passwordProtected);
-    auth.setCommonPassword("salasana");
+    auth.setPassphrase("salasana");
+    auth.setRootPassword("root");
 
     nexilis::ServerManager serverManager;
     serverManager.setAuthentication(auth);
@@ -34,6 +35,7 @@ int main()
     std::cout << "nexilis boost UDP ready" << std::endl;
 
     // Add some rooms.
+    /*
     auto room1 = nexilis::Room(nexilis::Room::Settings("first room", 30));
     auto room2 = nexilis::Room(nexilis::Room::Settings("second room", 60));
     auto room3 = nexilis::Room(nexilis::Room::Settings("third room", 60));
@@ -41,6 +43,7 @@ int main()
     nexilis::RoomStorage::add(std::move(room1));
     nexilis::RoomStorage::add(std::move(room2));
     nexilis::RoomStorage::add(std::move(room3));
+    */
 
     std::cout << "SERVER READY, looping main thread" << std::endl;
     while (true) {}

@@ -1,12 +1,14 @@
 #ifndef NEXILIS_ROOM_HH
 #define NEXILIS_ROOM_HH
 
+#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
 namespace nexilis
 {
 
+/// Nexilis Server-side API.
 /// Room objects to be stored in the RoomStorage.
 class Room
 {
@@ -16,7 +18,10 @@ public:
     {
     public:
         /// Constructor.
-        Settings(const std::string& name, uint32_t maxSize);
+        /// \param creatorId The identifier of the creator.
+        /// \param name 1-15 characters of text for the name of the room.
+        /// \param maxSize The maximum size of the room.
+        Settings(uint64_t creatorId, const std::string& name, uint32_t maxSize = NEXILIS_ROOM_CLIENT_AMOUNT);
 
         /// Copy constructor.
         Settings(const Settings& other);
@@ -48,9 +53,15 @@ public:
             return m_roomId;
         }
 
+        uint64_t getCreatorId() const
+        {
+            return m_creatorId;
+        }
+
     private:
+        uint64_t m_creatorId;
         std::string m_name;
-        uint32_t m_maxSize = NEXILIS_ROOM_CLIENT_AMOUNT;
+        uint32_t m_maxSize;
         uint64_t m_roomId = Util::getRandomUint64();
     };
 
@@ -87,9 +98,25 @@ public:
         return m_settings.getId();
     }
 
+    /// Get the identifier of the creator that created the room.
+    uint64_t getCreatorId() const
+    {
+        return m_settings.getCreatorId();
+    }
+
+    //std::string getCreatorName() const;
+
     /// User joins the room context.
     /// \param userId The identifier of the user.
     void joinRoom(uint64_t userId);
+
+    /// User leaves the room.
+    /// \param userId The identifier of the user.
+    void leaveRoom(uint64_t userId);
+
+    /// If the room contains certiain client.
+    /// \param userId The identifier of the user.
+    bool contains(uint64_t userId);
 
 private:
     Settings m_settings;

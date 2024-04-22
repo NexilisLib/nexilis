@@ -17,7 +17,9 @@
 namespace nexilis
 {
 
-/// This class is internal server side client command reader.
+/// Nexilis Server-side API.
+/// Command contains static reading functions for the nexilis byte sequence.
+/// These bytes have been cleared from MessageHandler and contains vector<uint8>& which triggers all the actions of nexilis.
 class Command
 {
 public:

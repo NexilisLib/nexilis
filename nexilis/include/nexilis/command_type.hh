@@ -8,9 +8,9 @@ namespace nexilis
 
 enum class MainCommand : uint8_t
 {
-    set = 0,
+    setting = 0,
 
-    get = 1,
+    getting = 1,
     ping = 2,
 
     // Get information from the server

@@ -7,6 +7,7 @@
 namespace nexilis
 {
 
+/// Nexilis Server-side API.
 class Authentication
 {
 public:
@@ -21,9 +22,9 @@ public:
 
     bool isRootPassword(const std::string& password);
 
-    void setCommonPassword(const std::string& password);
+    void setPassphrase(const std::string& password);
 
-    bool isCommonPassword(const std::string& password);
+    bool isPassphrase(const std::string& password);
 
     void setMode(Mode mode)
     {

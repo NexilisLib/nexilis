@@ -8,8 +8,8 @@
 namespace nexilis
 {
 
+/// Nexilis-Server side API.
 /// Creating static lifetime for the rooms in the server context.
-
 class RoomStorage
 {
 public:

@@ -8,8 +8,8 @@
 namespace nexilis
 {
 
+/// Nexilis Server-side API.
 /// Creating static lifetime for the clients in the server context.
-
 class ClientStorage
 {
 public:

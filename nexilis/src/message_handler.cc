@@ -158,7 +158,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
             else
             {
                 // Only accept the password as a message from unidentied clients.
-                if (authentication->isCommonPassword(std::string(message)))
+                if (authentication->isPassphrase(std::string(message)))
                 {
                     Log::info("Correct password by user ", client.getId());
                     client.setCommonAccess(true);

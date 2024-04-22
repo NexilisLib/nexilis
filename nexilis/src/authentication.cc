@@ -15,13 +15,13 @@ bool Authentication::isRootPassword(const std::string& password)
     return m_rootPassword == password;
 }
 
-void Authentication::setCommonPassword(const std::string& password)
+void Authentication::setPassphrase(const std::string& password)
 {
     assert(!password.empty());
     m_password = password;
 }
 
-bool Authentication::isCommonPassword(const std::string& password)
+bool Authentication::isPassphrase(const std::string& password)
 {
     assert(!m_password.empty());
     return password == m_password;

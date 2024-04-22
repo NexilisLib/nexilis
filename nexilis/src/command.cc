@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/command.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/common/util.hh>
@@ -41,32 +42,49 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
     switch (static_cast<MainCommand>(command.front()))
     {
-        case MainCommand::set:
+        case MainCommand::setting:
         {
             switch (command[1])
             {
-                // This makes no sense so let's put something else here.
-                /*
-                case 0x10:
+                /// Reset your client id.
+                /// requires privileges.
+                case 0:
                 {
-                    auto port = Util::uint8PairToUint16(command[3], command[4]);
+                    if (!client.hasRootAccess())
+                    {
+                        Log::error("Client needs root access for changing id");
+                        /// TODO return errormessage.
+                        /// Usually errormessages in servermessages is in "error" byte.
+                        /// However we cannot run code, that does not exist.
+                        /// There is a case that this could be done with "goto" but it's very cursed.
+                        /// This should be done with common interface for this class and the "error" byte.
+                        return false;
+                    }
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    uint64_t id = Util::convertToType<uint64_t>(payload);
+
                     auto& clients = ClientStorage::getAllClients();
 
                     for (auto c = clients.begin(); c != clients.end(); c++)
                     {
                         if (*c == client)
                         {
-                            c->setUdpPort(port);
+                            assert(c->hasRootAccess());
+                            assert(client.hasRootAccess());
+                            c->setId(id);
+                            return true;
                         }
                     }
-                    return true;
-                }
-                */
 
-                // Give username to the client.
-                case 0x20:
+                    Log::error("Error in MainCommand::set::clientID");
+                    return false;
+
+                }
+
+                // Set username to the client.
+                case 1:
                 {
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string username = Util::convertToString(payload);
                     auto& clients = ClientStorage::getAllClients();
 
@@ -75,10 +93,9 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         if (*c == client)
                         {
                             c->setUsername(username);
+                            return true;
                         }
                     }
-
-                    return true;
                 }
 
                 default:
@@ -87,7 +104,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
             return false;
         }
 
-        case MainCommand::get:
+        case MainCommand::getting:
         {
             switch (command[1])
             {
@@ -103,6 +120,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
                     sendMessageToClient(message, client, protocol);
+
                     Log::info("sent message to client");
                     return true;
                 }
@@ -116,12 +134,14 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
+                // Send ping.
                 case 0:
                 {
                     // TODO create pong message, I mean this is kinda stupid.
                     return false;
                 }
 
+                // Receive ping.
                 case 1:
                 {
                     return false;
@@ -229,7 +249,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return false;
                 }
 
-                // Set authentication for valid client.
+                // Passphrase autentication.
+                // (Access to join nexilis session)
                 case 2:
                 {
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
@@ -237,7 +258,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     if (m_authentication)
                     {
-                        if (m_authentication->isCommonPassword(password))
+                        if (m_authentication->isPassphrase(password))
                         {
                             client.setCommonAccess(true);
                             Log::info("Client ", client.getIPAddress(), " has common access!");
@@ -373,14 +394,41 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         Log::error("Cannot find room with specified id!");
                         return false;
                     }
+
                     room->joinRoom(client.getId());
                     return true;
                 }
+
                 // Leave current room.
                 case 1:
                 {
-                    return false;
+                    auto currentRoom = RoomStorage::getRoomById(client.getRoomId());
+
+                    if (!currentRoom)
+                    {
+                        Log::warning("Client not currently in room so cannot leave current room.");
+                        // Intentionally not return anything.
+                    }
+
+                    currentRoom->leaveRoom(client.getId());
+                    return true;
                 }
+
+                /// Create room.
+                {
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    std::string roomName = Util::convertToString(payload);
+
+                    if (roomName.length() > 15)
+                    {
+                        Log::error("Too long room name");
+                        return false;
+                    }
+
+                    auto newRoom = Room(Room::Settings(client.getId(), roomName));
+                    RoomStorage::add(std::move(newRoom));
+                }
+
                 default: return false;
             }
         }

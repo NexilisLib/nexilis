@@ -12,8 +12,8 @@
 namespace nexilis
 {
 
-// This class acts as an abstraction for different clients.
-
+/// Nexilis Server-side API.
+/// Abstraction layer for client interfaces such as sending messages with different protocols.
 class Client
 {
 public:
@@ -60,14 +60,22 @@ public:
         return m_hasRootAccess;
     }
 
+    /// Access redeemed by the passphrase.
     void setCommonAccess(bool hasAccess)
     {
         m_hasCommonAccess = hasAccess;
     }
 
+    /// Passphrase has been initialized correctly for server.
     bool hasCommonAccess() const
     {
         return m_hasCommonAccess;
+    }
+
+    void setId(uint64_t id)
+    {
+        assert(hasRootAccess());
+        m_id = id;
     }
 
     uint64_t getId() const
