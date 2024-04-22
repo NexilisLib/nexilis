@@ -36,6 +36,9 @@ public:
         static std::vector<uint8_t> join(uint64_t roomId);
     };
 
+private:
+    static std::vector<uint8_t> clientIdentification();
+
     static size_t m_clientId;
 };
 
