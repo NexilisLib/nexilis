@@ -17,6 +17,7 @@ namespace nexilis
 class Util
 {
 public:
+    /// Convert std::vector<uint8_t> to numeral type.
     template <typename T>
     static T convertToType(std::vector<uint8_t> bytes)
     {
@@ -46,28 +47,38 @@ public:
         return result;
     }
 
+    /// Convert std::vector<uint8_t> to string.
     static std::string convertToString(std::vector<uint8_t> bytes);
 
+    /// Return uint16_t from two bytes.
     static uint16_t uint8PairToUint16(uint8_t lowByte, uint8_t highByte);
 
+    /// Separate two bytes.
+    /// \param value The two bytes that are separate.
+    /// \param lowByte The created low byte.
+    /// \param hightByte The created high byte.
     static void uint16ToUint8Pair(uint16_t value, uint8_t& lowByte, uint8_t& highByte);
 
+    /// Design issue function.
     static std::vector<uint8_t> removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount);
 
-    /// Get random size_t between two values.
-    static size_t getRandomSizeT(size_t from, size_t to);
+    /// Get random uint64_t between two values.
+    static size_t getRandomSizeUint16(uint64_t from, uint64_t to);
 
     /// Get random size_t value between 0 and max uint64.
     static size_t getRandomUint64();
 
-    static std::vector<uint8_t> convertToByteVector(const char* command_data, size_t lenght);
+    /// Get random characters from 'A' to 'Z'.
+    /// \param charAmount The amount of characters in the string.
+    static std::string getRandomString(uint64_t charAmount);
 
-    static std::vector<uint8_t> convertToByteVector(size_t value);
-
+    /// Byte vector conversions.
+    static std::vector<uint8_t> convertToByteVector(const char* command_data, uint64_t lenght);
+    static std::vector<uint8_t> convertToByteVector(uint64_t value);
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
 
+    /// Other random static interface
     static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
-
     static std::string getDateAndTime();
 };
 

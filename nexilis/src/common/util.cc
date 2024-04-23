@@ -1,5 +1,6 @@
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
+#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -30,7 +31,28 @@ void Util::uint16ToUint8Pair(uint16_t value, uint8_t& lowByte, uint8_t& highByte
     highByte = static_cast<uint8_t>((value >> 8) & 0xFF);
 }
 
-size_t Util::getRandomSizeT(size_t from, size_t to)
+std::vector<uint8_t> Util::convertToByteVector(uint64_t value)
+{
+    std::vector<uint8_t> result(sizeof(uint64_t));
+
+    if (Config::getBigEndian())
+    {
+        for (uint64_t i = 0; i < sizeof(uint64_t); ++i)
+        {
+            result[sizeof(uint64_t) - 1 - i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
+        }
+    }
+    else
+    {
+        for (uint64_t i = 0; i < sizeof(uint64_t); ++i)
+        {
+            result[i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
+        }
+    }
+    return result;
+}
+
+uint64_t Util::getRandomSizeUint16(uint64_t from, uint64_t to)
 {
     std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
@@ -50,6 +72,20 @@ uint64_t Util::getRandomUint64()
     return randomValue;
 }
 
+std::string Util::getRandomString(uint64_t charAmount)
+{
+    std::random_device rand_dev;
+    std::mt19937 eng(rand_dev());
+    std::uniform_int_distribution<int> distribution('A', 'Z');
+
+    std::string randomString;
+    for (uint64_t i = 0; i < charAmount; ++i)
+    {
+        randomString += static_cast<char>(distribution(eng));
+    }
+    return randomString;
+}
+
 std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount)
 {
     // Return empty vector if the original vector has less elements than we want to remove.
@@ -62,7 +98,7 @@ std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> or
     return std::vector<uint8_t>(original.begin() + amount, original.end());
 }
 
-std::vector<uint8_t> Util::convertToByteVector(const char* command_data, size_t lenght)
+std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_t lenght)
 {
     std::vector<uint8_t> result;
     result.reserve(lenght);
@@ -70,27 +106,6 @@ std::vector<uint8_t> Util::convertToByteVector(const char* command_data, size_t 
     for (size_t i = 0; i < lenght; i++)
     {
         result.emplace_back(static_cast<uint8_t>(command_data[i]));
-    }
-    return result;
-}
-
-std::vector<uint8_t> Util::convertToByteVector(size_t value)
-{
-    std::vector<uint8_t> result(sizeof(size_t));
-
-    if (Config::getBigEndian())
-    {
-        for (size_t i = 0; i < sizeof(size_t); ++i)
-        {
-            result[sizeof(size_t) - 1 - i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
-        }
-    }
-    else
-    {
-        for (size_t i = 0; i < sizeof(size_t); ++i)
-        {
-            result[i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
-        }
     }
     return result;
 }

@@ -149,16 +149,19 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Pressed enter in chat mode");
-            sendTCPMessage(nexilis::Packet::Room::create("ncurses"));
-
-            /*
             size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
             sendTCPMessage(nexilis::Packet::Room::join(roomId));
-            */
         }
 
         switch (tolower(m_input))
         {
+            case KEY_F(1):
+            {
+                std::string newRoomName = nexilis::Util::getRandomString(5);
+                sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
+                break;
+            }
+
             case KEY_F(5):
             {
                 debug("Pressed refresh");

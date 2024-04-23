@@ -6,7 +6,7 @@ namespace nexilis
 ProtocolManager::ProtocolData::ProtocolData(Protocol::Type type)
     : m_type(type),
       m_status(Status::connecting),
-      m_id(Util::getRandomSizeT(0, NEXILIS_MAX))
+      m_id(Util::getRandomUint64())
 {
 }
 

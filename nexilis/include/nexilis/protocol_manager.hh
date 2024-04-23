@@ -53,7 +53,7 @@ public:
         // However this would require that the parameters cannot be references.
         // So this is technically always move call and it works and the api is nice.
         //
-        // It's also import to note that this gives compile-time error
+        // It's also important to note that this gives compile-time error
         // if the construction fails.
         auto protocol = T(std::forward<Args>(args)...);
         m_items.emplace_back(ProtocolData(protocol.getType()));
