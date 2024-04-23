@@ -96,6 +96,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                             return true;
                         }
                     }
+                    Log::error("Cannot find client");
+                    return false;
                 }
 
                 default:
@@ -415,11 +417,32 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 }
 
                 /// Create room.
+                case 2:
                 {
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    std::string roomName = Util::convertToString(payload);
+                    std::string roomName;
+                    try
+                    {
+                        roomName = Util::convertToString(payload);
+                    }
+                    catch(...)
+                    {
+                        Log::error("Cannot create string from input");
+                        return false;
+                    }
 
-                    if (roomName.length() > 15)
+                    if (roomName == "")
+                    {
+                        Log::error("Room name cannot be an empty string");
+                        return false;
+                    }
+                    if (roomName == " ")
+                    {
+                        Log::error("Room name cannot equal \" \" ");
+                        return false;
+                    }
+
+                    if (roomName.length() > 20)
                     {
                         Log::error("Too long room name");
                         return false;
@@ -427,6 +450,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     auto newRoom = Room(Room::Settings(client.getId(), roomName));
                     RoomStorage::add(std::move(newRoom));
+                    return true;
                 }
 
                 default: return false;

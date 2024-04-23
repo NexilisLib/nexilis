@@ -54,6 +54,27 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
     return id;
 }
 
+std::vector<uint8_t> Packet::Room::leave()
+{
+    auto id = clientIdentification();
+    id.emplace_back(10);
+    id.emplace_back(1);
+    return id;
+}
+
+std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
+{
+    auto id = clientIdentification();
+    id.emplace_back(10);
+    id.emplace_back(2);
+
+    for (const char r : roomName)
+    {
+        id.emplace_back(static_cast<uint8_t>(r));
+    }
+    return id;
+}
+
 void Packet::_initialize(size_t clientId)
 {
     m_clientId = clientId;

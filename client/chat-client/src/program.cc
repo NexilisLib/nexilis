@@ -2,6 +2,7 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
+#include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -148,6 +149,7 @@ void Program::inputHandler()
         if (m_input == 10)
         {
             debug("Pressed enter in chat mode");
+            sendTCPMessage(nexilis::Packet::Room::create("ncurses"));
 
             /*
             size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
@@ -157,8 +159,14 @@ void Program::inputHandler()
 
         switch (tolower(m_input))
         {
-            case 'j':
-            case KEY_DOWN:
+            case KEY_F(5):
+            {
+                debug("Pressed refresh");
+                sendTCPMessage(nexilis::Packet::Info::rooms());
+                break;
+            }
+
+            case KEY_F(6):
             {
                 debug("Pressed key down");
                 uint64_t copiedClientId = m_nexilisClient.getClientAPI().getClientId();
@@ -169,8 +177,7 @@ void Program::inputHandler()
                 break;
             }
 
-            case 'k':
-            case KEY_UP:
+            case KEY_F(7):
             {
                 debug("Pressed key up");
                 debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
@@ -229,33 +236,38 @@ void Program::parseMessage(boost::json::object object)
 
     if (object.contains("type"))
     {
-        /*
         if (object["type"] == "roomData")
         {
             debug("Found the room data message");
-            auto rooms = object.at("rooms").as_array();
-            for (const auto& room : rooms)
+            try
             {
-                std::string name = room.at("name").as_string().c_str();
-                int maxSize = static_cast<int>(room.at("maxSize").as_int64());
-                uint64_t id;
+                auto rooms = object.at("rooms").as_array();
+                for (const auto& room : rooms)
+                {
+                    std::string name = room.at("name").as_string().c_str();
+                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+                    uint64_t id;
 
-                if (room.at("id").if_uint64())
-                {
-                    id = room.at("id").as_uint64();
+                    if (room.at("id").if_uint64())
+                    {
+                        id = room.at("id").as_uint64();
+                    }
+                    else if (room.at("id").if_int64())
+                    {
+                        id = static_cast<uint64_t>(room.at("id").as_int64());
+                    }
+                    else
+                    {
+                        id = 0;
+                    }
+                    m_chat.addRoom(Chat::Room(name, maxSize, id));
                 }
-                else if (room.at("id").if_int64())
-                {
-                    id = static_cast<uint64_t>(room.at("id").as_int64());
-                }
-                else
-                {
-                    id = 0;
-                }
-                m_chat.addRoom(Chat::Room(name, maxSize, id));
+            }
+            catch(...)
+            {
+                debug("Cannot parse roomData");
             }
         }
-        */
     }
 }
 

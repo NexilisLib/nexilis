@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace nexilis
@@ -34,6 +35,8 @@ public:
     {
     public:
         static std::vector<uint8_t> join(uint64_t roomId);
+        static std::vector<uint8_t> leave();
+        static std::vector<uint8_t> create(const std::string& roomName);
     };
 
 private:
