@@ -1,9 +1,7 @@
+#include <cstdint>
 #include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
-#include <cstdint>
-#include <fstream>
-#include <iterator>
 #include <nexilis/client_api.hh>
 #include <nexilis/log.hh>
 
@@ -12,6 +10,7 @@
 #include <nexilis/packet.hh>
 
 #include <ostream>
+#include <fstream>
 
 namespace nexilis
 {
@@ -101,6 +100,14 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
         m_unixStreamServerPath = other.m_unixStreamServerPath;
     }
     return *this;
+}
+
+ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize)
+    : m_name(name),
+      m_creatorId(creatorId),
+      m_roomId(roomId),
+      m_maxSize(maxSize)
+{
 }
 
 ///
@@ -234,38 +241,85 @@ bool ClientAPI::parse(boost::json::object json)
         Log::info("Running code without nexilis status");
         return false;
     }
-    else if (json["nexilis_status"] == 2)
+
+    if (json.contains("type"))
     {
-        Log::info("Message with nexilis_status == 2");
-        return false;
-    }
-
-    if (json.contains("set_client_id"))
-    {
-        if (json["set_client_id"].if_uint64())
+        if (json["type"] == "roomData")
         {
-            uint64_t id = json["set_client_id"].as_uint64();
-            setClientId(id);
-            Packet::_initialize(id);
-            return true;
+            try
+            {
+                auto rooms = json.at("rooms").as_array();
+                std::vector<Room> newRooms;
+                for (const auto& room : rooms)
+                {
+                    std::string name = room.at("name").as_string().c_str();
+                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+
+                    uint64_t creatorId;
+                    if (room.at("creatorId").if_uint64())
+                    {
+                        creatorId = room.at("creatorId").as_uint64();
+                    }
+                    else if (room.at("creatorId").if_int64())
+                    {
+                        creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
+                    }
+                    else
+                    {
+                        creatorId = 0;
+                    }
+
+                    uint64_t id;
+                    if (room.at("id").if_uint64())
+                    {
+                        id = room.at("id").as_uint64();
+                    }
+                    else if (room.at("id").if_int64())
+                    {
+                        id = static_cast<uint64_t>(room.at("id").as_int64());
+                    }
+                    else
+                    {
+                        id = 0;
+                    }
+
+                    newRooms.emplace_back(Room(name, creatorId, id, maxSize));
+                }
+                m_currentlyActiveRooms = newRooms;
+            }
+            catch(...)
+            {
+                Log::error("Cannot parse roomData");
+            }
         }
-        // boost::json::value is so bad.
-        else if (json["set_client_id"].if_int64())
-        {
-            int64_t id = json["set_client_id"].as_int64();
-            uint64_t u_id = id;
 
-            assert(sizeof(id) == sizeof(u_id));
-            assert(static_cast<uint64_t>(id) == u_id);
-
-            setClientId(id);
-            Packet::_initialize(id);
-            return true;
-        }
-        else
+        else if (json["type"] == "set_client_id")
         {
-            Log::error("The value of set_client_id is not convertible to as_uint64");
-            return false;
+            if (json["set_client_id"].if_uint64())
+            {
+                uint64_t id = json["set_client_id"].as_uint64();
+                setClientId(id);
+                Packet::_initialize(id);
+                return true;
+            }
+            // boost::json::value is so bad.
+            else if (json["set_client_id"].if_int64())
+            {
+                int64_t id = json["set_client_id"].as_int64();
+                uint64_t u_id = id;
+
+                assert(sizeof(id) == sizeof(u_id));
+                assert(static_cast<uint64_t>(id) == u_id);
+
+                setClientId(id);
+                Packet::_initialize(id);
+                return true;
+            }
+            else
+            {
+                Log::error("The value of set_client_id is not convertible to as_uint64");
+                return false;
+            }
         }
     }
     // TODO continue parsing.

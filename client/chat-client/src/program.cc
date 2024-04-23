@@ -2,7 +2,6 @@
 #include "debug.hh"
 #include "nexilis_client.hh"
 
-#include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -231,47 +230,10 @@ void Program::parseMessage(boost::json::object object)
     // Parsing message.
     if (object.contains("nexilis_status"))
     {
-        if (object["nexilis_status"] != 2)
-        {
-            debug("Nexilis status other than 2 in the client code!");
-        }
+        debug("There should not be any nexilis status messages in the client so something is wrong");
     }
 
-    if (object.contains("type"))
-    {
-        if (object["type"] == "roomData")
-        {
-            debug("Found the room data message");
-            try
-            {
-                auto rooms = object.at("rooms").as_array();
-                for (const auto& room : rooms)
-                {
-                    std::string name = room.at("name").as_string().c_str();
-                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
-                    uint64_t id;
-
-                    if (room.at("id").if_uint64())
-                    {
-                        id = room.at("id").as_uint64();
-                    }
-                    else if (room.at("id").if_int64())
-                    {
-                        id = static_cast<uint64_t>(room.at("id").as_int64());
-                    }
-                    else
-                    {
-                        id = 0;
-                    }
-                    m_chat.addRoom(Chat::Room(name, maxSize, id));
-                }
-            }
-            catch(...)
-            {
-                debug("Cannot parse roomData");
-            }
-        }
-    }
+    /// Here parse client specific messages.
 }
 
 void Program::update()

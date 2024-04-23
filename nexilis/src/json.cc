@@ -178,7 +178,6 @@ boost::json::array Json::clientsToJSON(const std::vector<Client>& clients)
         }
         clientObj["id"] = client.getId();
         clientObj["roomId"] = client.getRoomId();
-        // ip address, port data. Add stuff if needed.
         resultingArray.emplace_back(std::move(clientObj));
     }
     return resultingArray;
@@ -203,7 +202,7 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
 
         roomObj["maxSize"] = room.getMaxSize();
         roomObj["id"] = room.getId();
-        // Other room data.
+        roomObj["creatorId"] = room.getCreatorId();
         resultingArray.emplace_back(std::move(roomObj));
     }
     return resultingArray;

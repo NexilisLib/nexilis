@@ -205,6 +205,43 @@ public:
         std::string m_unixStreamServerPath;
     };
 
+    class Room
+    {
+    public:
+        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize);
+
+        Room(const Room& other) = default;
+        Room(Room&& other) = default;
+        Room& operator=(const Room& other) = default;
+        Room& operator=(Room&& other) = default;
+
+        std::string getName()
+        {
+            return m_name;
+        }
+
+        uint64_t getCreatorId()
+        {
+            return m_creatorId;
+        }
+
+        uint64_t getRoomId()
+        {
+            return m_roomId;
+        }
+
+        int getMaxSize()
+        {
+            return m_maxSize;
+        }
+
+    private:
+        std::string m_name;
+        uint64_t m_creatorId;
+        uint64_t m_roomId;
+        int m_maxSize;
+    };
+
     /// Constructor.
     ClientAPI(ServerData data);
 
@@ -342,6 +379,14 @@ public:
         return m_currentMessage;
     }
 
+public:
+    /// Room stuff.
+    /// Return a copy of the currently active rooms.
+    std::vector<Room> getActiveRooms()
+    {
+        return m_currentlyActiveRooms;
+    }
+
 private:
     /// Setters.
     void setClientId(size_t id)
@@ -356,6 +401,7 @@ private:
     ServerData m_data;
     uint64_t m_clientId = 0;
     boost::json::object m_currentMessage;
+    std::vector<Room> m_currentlyActiveRooms;
 };
 
 } // namespace nexilis
