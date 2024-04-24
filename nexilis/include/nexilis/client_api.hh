@@ -208,29 +208,52 @@ public:
     class Room
     {
     public:
+        /// Constructor.
         explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize);
 
-        Room(const Room& other) = default;
-        Room(Room&& other) = default;
-        Room& operator=(const Room& other) = default;
-        Room& operator=(Room&& other) = default;
+        /// Copy constructor.
+        Room(const Room& other);
 
-        std::string getName()
+        /// Move constructor.
+        Room(Room&& other);
+
+        /// Copy assignment operator.
+        Room& operator=(const Room& other);
+
+        /// Move assignment operator.
+        Room& operator=(Room&& other);
+
+        /// Comparison operator overload.
+        friend bool operator==(const Room& lhs, const Room& rhs)
+        {
+            return lhs.getName() == rhs.getName() &&
+               lhs.getCreatorId() == rhs.getCreatorId() &&
+               lhs.getRoomId() == rhs.getRoomId() &&
+               lhs.getMaxSize() == rhs.getMaxSize();
+        }
+
+        /// Non-comparison operator overload.
+        friend bool operator!=(const Room& lhs, const Room& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        std::string getName() const
         {
             return m_name;
         }
 
-        uint64_t getCreatorId()
+        uint64_t getCreatorId() const
         {
             return m_creatorId;
         }
 
-        uint64_t getRoomId()
+        uint64_t getRoomId() const
         {
             return m_roomId;
         }
 
-        int getMaxSize()
+        int getMaxSize() const
         {
             return m_maxSize;
         }

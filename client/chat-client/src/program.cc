@@ -14,8 +14,8 @@ Program::Program(int argc, char** argv)
       m_argv(argv),
       m_window(),
       m_menu(),
-      m_chat(&m_menu.getState()),
-      m_nexilisClient()
+      m_nexilisClient(),
+      m_chat(&m_menu.getState(), &m_nexilisClient.getClientAPI())
 {
     m_nexilisClient.start();
 }
@@ -110,8 +110,6 @@ void Program::inputHandler()
             debug("Sent message to the server asking for server data");
             sendTCPMessage(nexilis::Packet::Info::rooms());
 
-            // This will work for now, but this needs to be retriggered from somewhere.
-            // TODO Add autoupdate
             updateRooms = false;
         }
 
@@ -163,8 +161,7 @@ void Program::inputHandler()
 
             case KEY_F(5):
             {
-                debug("Pressed refresh");
-                sendTCPMessage(nexilis::Packet::Info::rooms());
+                updateRooms = true;
                 break;
             }
 

@@ -1,4 +1,5 @@
-#include <cstdint>
+#include "nexilis/room.hh"
+#include <algorithm>
 #include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
@@ -98,6 +99,46 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
         m_boostUDPServerPort = other.m_boostUDPServerPort;
         m_unixDgramServerPath = other.m_unixDgramServerPath;
         m_unixStreamServerPath = other.m_unixStreamServerPath;
+    }
+    return *this;
+}
+
+ClientAPI::Room::Room(const Room& other) :
+    m_name(other.m_name),
+    m_creatorId(other.m_creatorId),
+    m_roomId(other.m_roomId),
+    m_maxSize(other.m_maxSize)
+{
+}
+
+ClientAPI::Room::Room(Room&& other) :
+    m_name(std::move(other.m_name)),
+    m_creatorId(std::move(other.m_creatorId)),
+    m_roomId(std::move(other.m_roomId)),
+    m_maxSize(std::move(other.m_maxSize))
+{
+}
+
+ClientAPI::Room& ClientAPI::Room::operator=(const Room& other)
+{
+    if (this != &other)
+    {
+        m_name = other.m_name;
+        m_creatorId = other.m_creatorId;
+        m_roomId = other.m_roomId;
+        m_maxSize = other.m_maxSize;
+    }
+    return *this;
+}
+
+ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
+{
+    if (this != &other)
+    {
+        m_name = std::move(other.m_name);
+        m_creatorId = std::move(other.m_creatorId);
+        m_roomId = std::move(other.m_roomId);
+        m_maxSize = std::move(other.m_maxSize);
     }
     return *this;
 }
@@ -344,6 +385,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         }
         catch (...)
         {
+            Log::debug("Something wrong with message: ", boost::json::serialize(json));
         }
         return false;
     }

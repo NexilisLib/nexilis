@@ -2,16 +2,10 @@
 
 #include <ncurses.h>
 
-Chat::Room::Room(const std::string& name, int maxSize, uint64_t id) :
-    m_name(name),
-    m_maxSize(maxSize),
-    m_id(id)
+Chat::Chat(Menu::State* state, nexilis::ClientAPI* clientApi) :
+    m_state(state),
+    m_clientApi(clientApi)
 {
-}
-
-void Chat::addRoom(Room&& room)
-{
-    m_rooms.emplace_back(room);
 }
 
 void Chat::update(WINDOW* window, int& hightlight)
@@ -33,6 +27,12 @@ void Chat::update(WINDOW* window, int& hightlight)
 
 void Chat::showRooms(WINDOW* window, int& highlight)
 {
+    auto newRooms = m_clientApi->getActiveRooms();
+
+    if (newRooms != m_rooms)
+    {
+        m_rooms = newRooms;
+    }
     int halfY = 10;
     int halfX = 40;
 

@@ -53,11 +53,11 @@ private:
     /// Menu object.
     Menu m_menu;
 
-    /// Chat object.
-    Chat m_chat;
-
     /// NexilisClient object.
     NexilisClient m_nexilisClient;
+
+    /// Chat object.
+    Chat m_chat;
 
     /// Current input variable.
     int m_input;
