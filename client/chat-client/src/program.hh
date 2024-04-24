@@ -30,8 +30,9 @@ private:
     /// Stop running the program. Called in the destructor.
     void end();
 
-    void inputHandler();
-    void updateScreenSize();
+    void inputHandler(Window& window);
+    void updateScreenSize(Window& window);
+
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
     void parseMessage(boost::json::object object);

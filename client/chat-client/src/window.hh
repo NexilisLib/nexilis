@@ -21,6 +21,9 @@ public:
     /// \return X, Y pair of the window size.
     std::pair<int, int> getWinSize() const;
 
+    /// Change size of the screen.
+    void updateScreenSize(const std::pair<int, int>& newSize);
+
 private:
     /// Underlying ncurses window.
     _win_st* m_window = nullptr;

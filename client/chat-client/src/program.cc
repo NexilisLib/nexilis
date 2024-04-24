@@ -25,7 +25,7 @@ Program::~Program()
     end();
 }
 
-void Program::inputHandler()
+void Program::inputHandler(Window& window)
 {
     m_input = wgetch(m_window.getWindow());
 
@@ -33,7 +33,7 @@ void Program::inputHandler()
     {
         case KEY_RESIZE:
         {
-            updateScreenSize();
+            updateScreenSize(window);
             break;
         }
     }
@@ -147,6 +147,9 @@ void Program::inputHandler()
         {
             debug("Pressed enter in chat mode");
             size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
+            std::stringstream ss;
+            ss << "Joining room: " << roomId;
+            debug(ss.str());
             sendTCPMessage(nexilis::Packet::Room::join(roomId));
         }
 
@@ -186,9 +189,12 @@ void Program::inputHandler()
     }
 }
 
-void Program::updateScreenSize()
+void Program::updateScreenSize(Window& window)
 {
-    // TODO
+    int maxY, maxX;
+    getmaxyx(window.getWindow(), maxY, maxX);
+    auto newSize = std::make_pair(maxX, maxY);
+    window.updateScreenSize(newSize);
 }
 
 void Program::sendTCPMessage(const std::vector<uint8_t>& message)
@@ -235,7 +241,7 @@ void Program::parseMessage(boost::json::object object)
 
 void Program::update()
 {
-    inputHandler();
+    inputHandler(m_window);
     m_menu.update(m_window.getWindow(), m_menuChoice);
     m_chat.update(m_window, m_roomChoice);
     readMessage(m_nexilisClient.getClientAPI().getCurrentMessage());

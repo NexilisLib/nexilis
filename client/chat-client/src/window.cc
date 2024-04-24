@@ -53,3 +53,8 @@ std::pair<int, int> Window::getWinSize() const
 {
     return m_size;
 }
+
+void Window::updateScreenSize(const std::pair<int, int>& newSize)
+{
+    m_size = newSize;
+}
