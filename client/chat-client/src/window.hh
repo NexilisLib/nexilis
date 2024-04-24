@@ -17,6 +17,10 @@ public:
     /// Get the ncurses window.
     _win_st* getWindow() const;
 
+    /// Get the window size.
+    /// \return X, Y pair of the window size.
+    std::pair<int, int> getWinSize() const;
+
 private:
     /// Underlying ncurses window.
     _win_st* m_window = nullptr;

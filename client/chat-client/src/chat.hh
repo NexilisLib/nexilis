@@ -1,10 +1,8 @@
 #ifndef CHAT_CLIENT_CHAT_HH
 #define CHAT_CLIENT_CHAT_HH
 
-/// Forward declare ncurses window.
-struct _win_st;
-
 #include "menu.hh"
+#include "window.hh"
 #include "debug.hh"
 
 #include <nexilis/client_api.hh>
@@ -17,15 +15,14 @@ public:
     /// Constructor.
     Chat(Menu::State* state, nexilis::ClientAPI* clientApi);
 
-    //void addRoom(Room&& room);
-
-    void update(_win_st* window, int& hightlight);
+    void update(Window& window, int& hightlight);
 
     int getRoomAmount()
     {
         return static_cast<int>(m_rooms.size());
     }
 
+    /// This is pretty bad.
     uint64_t getRoomIdByPosition(int position)
     {
         std::stringstream ss;
@@ -35,7 +32,7 @@ public:
     }
 
 private:
-    void showRooms(_win_st* window, int& hightlight);
+    void showRooms(Window& window, int& hightlight);
 
 private:
     Menu::State* m_state = nullptr;

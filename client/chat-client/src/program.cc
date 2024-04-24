@@ -237,6 +237,6 @@ void Program::update()
 {
     inputHandler();
     m_menu.update(m_window.getWindow(), m_menuChoice);
-    m_chat.update(m_window.getWindow(), m_roomChoice);
+    m_chat.update(m_window, m_roomChoice);
     readMessage(m_nexilisClient.getClientAPI().getCurrentMessage());
 }

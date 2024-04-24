@@ -48,3 +48,8 @@ WINDOW* Window::getWindow() const
 {
     return m_window;
 }
+
+std::pair<int, int> Window::getWinSize() const
+{
+    return m_size;
+}

@@ -1,13 +1,7 @@
-#include <cstdint>
 #include <nexilis/command.hh>
 #include <nexilis/command_type.hh>
-#include <nexilis/common/util.hh>
-#include <nexilis/json.hh>
-#include <nexilis/log.hh>
-#include <nexilis/protocol.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/room_storage.hh>
-#include <boost/json/serialize.hpp>
 
 namespace nexilis
 {

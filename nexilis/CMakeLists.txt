@@ -24,6 +24,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 set(SOURCES
     src/logger/base_handler.cc
     src/logger/console_handler.cc
+    src/logger/logger.cc
 
     src/authentication.cc
     src/client.cc

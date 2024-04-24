@@ -45,17 +45,11 @@ public:
     }
 
     /// Remove all handlers.
-    void clearHandlers()
-    {
-        m_handlers.clear();
-    }
+    void clearHandlers();
 
-    /// Check if there are no handlers for the logger.
+     /// Check if there are no handlers for the logger.
     /// \return True if there are no handlers.
-    bool noHandlers()
-    {
-        return m_handlers.empty();
-    }
+    bool noHandlers();
 
     /// Send debug message.
     template <typename T, typename... Args>
@@ -95,43 +89,27 @@ public:
     /// Unset specific log level.
     /// \param level The log level to be unset.
     /// \return If unsetting is successfull.
-    bool unsetLevel(const LogLevel& level)
-    {
-        return (m_logLevel &= static_cast<uint8_t>(~(1 << static_cast<uint8_t>(level))));
-    }
+    bool unsetLevel(const LogLevel& level);
 
     /// Set specific log level.
     /// \param level The log level to be set up.
     /// \return If setting is successfull.
-    bool setLevel(const LogLevel& level)
-    {
-        return (m_logLevel |= (1 << static_cast<uint8_t>(level)));
-    }
+    bool setLevel(const LogLevel& level);
 
     /// Check if the given level is in use.
     /// \param level The level to be checked.
     /// \return True if level is in use, false if not.
-    bool getLevel(const LogLevel& level)
-    {
-        return (m_logLevel >> static_cast<uint8_t>(level)) & 1;
-    }
+    bool getLevel(const LogLevel& level);
 
     /// Set the minimun operation level for the logger.
     /// The level to be set and all the levels after that will be turned on.
     /// The order of levels can be checked from log_level.hh.
     /// \param level The minimun level that is turned on.
-    bool setMinimumLevel(const LogLevel& level)
-    {
-        return (m_logLevel |= (static_cast<uint8_t>(-1) << static_cast<uint8_t>(level)));
-    }
+    bool setMinimumLevel(const LogLevel& level);
 
     /// Set the logLevel with custom byte.
     /// \param logLevel The byte that determines
-    void setLogLevel(uint8_t logLevel)
-    {
-        assert((std::is_same<decltype(logLevel), uint8_t>::value));
-        m_logLevel = logLevel;
-    }
+    void setLogLevel(uint8_t logLevel);
 
 private:
     template <typename T>
