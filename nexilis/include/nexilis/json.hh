@@ -56,6 +56,8 @@ public:
     /// Print the contents of boost::json::object.
     static void print(const ::boost::json::object& obj);
 
+    static std::string toString(const ::boost::json::object& obj);
+
     /// Write json object to a file.
     static void saveToFile(const ::boost::json::object& obj, const std::string& filePath);
 

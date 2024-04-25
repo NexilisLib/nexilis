@@ -188,7 +188,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                 }
                 else
                 {
-                    Log::error("Unidentified client sends message other than password");
+                    Log::error("Unidentified client sends message other than password, message: ", std::string(message));
                     return errorMessage;
                 }
             }

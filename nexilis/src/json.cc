@@ -127,9 +127,13 @@ void Json::print(const boost::json::object& obj)
         {
             std::cout << value.as_string();
         }
-        else if (value.is_number())
+        else if (value.is_int64())
         {
             std::cout << value.as_int64();
+        }
+        else if (value.is_uint64())
+        {
+            std::cout << value.as_uint64();
         }
         else if (value.is_object())
         {
@@ -159,6 +163,53 @@ void Json::print(const boost::json::object& obj)
         }
         std::cout << std::endl;
     }
+}
+
+std::string Json::toString(const boost::json::object& obj)
+{
+    std::string result;
+    for (const auto& [key, value] : obj)
+    {
+        result += std::string(key.data(), key.size()) + ": ";
+
+        if (value.is_string())
+        {
+            result += value.as_string();
+        }
+        else if (value.is_int64())
+        {
+            result += std::to_string(value.as_int64());
+        }
+        else if (value.is_uint64())
+        {
+            result += std::to_string(value.as_uint64());
+        }
+        else if (value.is_object())
+        {
+            result += toString(value.as_object());
+        }
+        else if (value.is_array())
+        {
+            for (const auto& item : value.as_array())
+            {
+                if (item.is_string())
+                {
+                    result += item.as_string();
+                }
+                else if (item.is_number())
+                {
+                    result += std::to_string(item.as_int64());
+                }
+            }
+        }
+        else
+        {
+            // Handle unsupported value type
+            result += "Unsupported value type";
+        }
+        result += "\n";
+    }
+    return result;
 }
 
 boost::json::array Json::clientsToJSON(const std::vector<Client>& clients)

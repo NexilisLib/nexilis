@@ -283,6 +283,8 @@ bool ClientAPI::parse(boost::json::object json)
         return false;
     }
 
+    std::string nexilisCommand = Json::toString(json);
+
     if (json.contains("type"))
     {
         if (json["type"] == "roomData")
@@ -290,47 +292,56 @@ bool ClientAPI::parse(boost::json::object json)
             try
             {
                 auto rooms = json.at("rooms").as_array();
-                std::vector<Room> newRooms;
-                for (const auto& room : rooms)
+
+                if (!rooms.empty())
                 {
-                    std::string name = room.at("name").as_string().c_str();
-                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+                    std::vector<Room> newRooms;
+                    for (const auto& room : rooms)
+                    {
+                        std::string name = room.at("name").as_string().c_str();
+                        int maxSize = static_cast<int>(room.at("maxSize").as_int64());
 
-                    uint64_t creatorId;
-                    if (room.at("creatorId").if_uint64())
-                    {
-                        creatorId = room.at("creatorId").as_uint64();
-                    }
-                    else if (room.at("creatorId").if_int64())
-                    {
-                        creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
-                    }
-                    else
-                    {
-                        creatorId = 0;
-                    }
+                        uint64_t creatorId;
+                        if (room.at("creatorId").if_uint64())
+                        {
+                            creatorId = room.at("creatorId").as_uint64();
+                        }
+                        else if (room.at("creatorId").if_int64())
+                        {
+                            creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
+                        }
+                        else
+                        {
+                            creatorId = 0;
+                        }
 
-                    uint64_t id;
-                    if (room.at("id").if_uint64())
-                    {
-                        id = room.at("id").as_uint64();
-                    }
-                    else if (room.at("id").if_int64())
-                    {
-                        id = static_cast<uint64_t>(room.at("id").as_int64());
-                    }
-                    else
-                    {
-                        id = 0;
-                    }
+                        uint64_t id;
+                        if (room.at("id").if_uint64())
+                        {
+                            id = room.at("id").as_uint64();
+                        }
+                        else if (room.at("id").if_int64())
+                        {
+                            id = static_cast<uint64_t>(room.at("id").as_int64());
+                        }
+                        else
+                        {
+                            id = 0;
+                        }
 
-                    newRooms.emplace_back(Room(name, creatorId, id, maxSize));
+                        newRooms.emplace_back(Room(name, creatorId, id, maxSize));
+                    }
+                    m_currentlyActiveRooms = newRooms;
+                    return true;
                 }
-                m_currentlyActiveRooms = newRooms;
+                else
+                {
+                    Log::warning("No rooms! ", nexilisCommand);
+                    return false;
+                }
             }
             catch(...)
             {
-                Log::error("Cannot parse roomData");
             }
         }
 
