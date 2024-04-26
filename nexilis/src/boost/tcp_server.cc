@@ -1,4 +1,4 @@
-#include <functional>
+#include "nexilis/loggable.hh"
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/common/util.hh>
@@ -7,7 +7,8 @@ namespace nexilis::boost
 {
 
 TCPServer::TCPServer(int serverPort)
-    : m_mutex(std::make_unique<std::mutex>()),
+    : Loggable(Protocol::typeToString(getType()), __FILE__),
+      m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
                  boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
@@ -17,6 +18,7 @@ TCPServer::TCPServer(int serverPort)
 TCPServer::TCPServer(TCPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      Loggable(std::move(other)),
       m_mutex(std::move(other.m_mutex)),
       m_ioContext(std::move(other.m_ioContext)),
       m_acceptor(std::move(other.m_acceptor)),
@@ -31,6 +33,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        Loggable::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
@@ -178,7 +181,6 @@ bool TCPServer::acceptClients()
 
 bool TCPServer::sendToClient(const std::string& data, boost::asio::ip::tcp::socket& clientSocket)
 {
-    Log::info("sendToClient called!");
     if (clientSocket.is_open())
     {
         boost::asio::write(clientSocket, boost::asio::buffer(data));

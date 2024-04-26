@@ -380,19 +380,29 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Join room x.
                 case 0:
                 {
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    uint64_t roomId = Util::convertToType<uint64_t>(payload);
+                    Log::debug("Called Room::Join()");
 
-                    auto room = RoomStorage::getRoomById(roomId);
-
-                    if (!room)
+                    try
                     {
-                        Log::error("Cannot find room with specified id!");
-                        return false;
-                    }
+                        auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                        uint64_t roomId = Util::convertToType<uint64_t>(payload);
 
-                    room->joinRoom(client.getId());
-                    return true;
+                        auto room = RoomStorage::getRoomById(roomId);
+
+                        if (!room)
+                        {
+                            Log::error("Cannot find room with specified id!");
+                            return false;
+                        }
+
+                        room->joinRoom(client.getId());
+                        return true;
+                    }
+                    catch (...)
+                    {
+                        Log::error("Room::Join failed" );
+                    }
+                    return false;
                 }
 
                 // Leave current room.

@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/log.hh>
 #include <nexilis/packet.hh>
@@ -6,7 +5,7 @@
 namespace nexilis
 {
 
-size_t Packet::m_clientId = 0;
+uint64_t Packet::m_clientId = 0;
 
 std::vector<uint8_t> Packet::Get::clientId()
 {
@@ -75,7 +74,7 @@ std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
     return id;
 }
 
-void Packet::_initialize(size_t clientId)
+void Packet::_initialize(uint64_t clientId)
 {
     m_clientId = clientId;
 }
@@ -92,9 +91,10 @@ std::vector<uint8_t> Packet::clientIdentification()
 
     assert(!clientIdVector.empty());
     assert(Util::convertToType<uint64_t>(clientIdVector) != 0);
-    //assert(clientIdVector.back() == 0xFF);
 
     clientIdVector.emplace_back(0xFF);
+    assert(clientIdVector.back() == 0xFF);
+
     return clientIdVector;
 }
 

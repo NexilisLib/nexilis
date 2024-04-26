@@ -1,7 +1,9 @@
 #include "program.hh"
 #include "debug.hh"
+#include "menu.hh"
 #include "nexilis_client.hh"
 
+#include <cctype>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -38,153 +40,162 @@ void Program::inputHandler(Window& window)
         }
     }
 
-    /// Menu update ritual.
-    if (m_menu.getState() == Menu::State::menu)
+    /// Menu key input update ritual.
+    switch (m_menu.getState())
     {
-        switch (tolower(m_input))
+        case Menu::State::menu:
         {
-            case 'j':
-            case KEY_DOWN:
+            useVimInterface(window, tolower(m_input), State::menu);
+            switch (tolower(m_input))
             {
-                if (m_menuChoice < MENU_ITEM_COUNT)
+                case 'j':
+                case KEY_DOWN:
                 {
-                    ++m_menuChoice;
+                    if (m_menuChoice < MENU_ITEM_COUNT)
+                    {
+                        ++m_menuChoice;
+                    }
+                    else if (m_menuChoice == MENU_ITEM_COUNT)
+                    {
+                        m_menuChoice = 0;
+                    }
+                    break;
                 }
-                else if (m_menuChoice == MENU_ITEM_COUNT)
+                case 'k':
+                case KEY_UP:
                 {
-                    m_menuChoice = 0;
-                }
-                break;
-            }
-            case 'k':
-            case KEY_UP:
-            {
-                if (m_menuChoice > 0)
-                {
-                    --m_menuChoice;
-                }
-                else if (m_menuChoice == 0)
-                {
-                    m_menuChoice = MENU_ITEM_COUNT;
-                }
-                break;
-            }
-        }
-
-        // Press enter in menu to launch action.
-        if (m_input == 10)
-        {
-            switch (m_menuChoice)
-            {
-                // Chat.
-                case 0:
-                {
-                    m_menu.changeState(Menu::State::chat);
-                    wclear(m_window.getWindow());
+                    if (m_menuChoice > 0)
+                    {
+                        --m_menuChoice;
+                    }
+                    else if (m_menuChoice == 0)
+                    {
+                        m_menuChoice = MENU_ITEM_COUNT;
+                    }
                     break;
                 }
 
-                // Info.
-                case 1:
+                // Press enter in menu to launch action.
+                case 10:
                 {
-                    m_menu.changeState(Menu::State::infopage);
-                    wclear(m_window.getWindow());
+                    switch (m_menuChoice)
+                    {
+                        // Chat.
+                        case 0:
+                        {
+                            m_menu.changeState(Menu::State::chat);
+                            wclear(m_window.getWindow());
+                            break;
+                        }
+
+                        // Info.
+                        case 1:
+                        {
+                            m_menu.changeState(Menu::State::infopage);
+                            wclear(m_window.getWindow());
+                            break;
+                        }
+
+                        // Quit.
+                        case 2:
+                        {
+                            end();
+                            break;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
+        case Menu::State::chat:
+        {
+            useVimInterface(window, tolower(m_input), State::chat);
+            // Get information about the chat.
+            // This is honestly pretty fucking stupid.
+            if (updateRooms)
+            {
+                debug("Sent message to the server asking for server data");
+                sendTCPMessage(nexilis::Packet::Info::rooms());
+
+                updateRooms = false;
+            }
+
+            switch (tolower(m_input))
+            {
+                case 'j':
+                case KEY_DOWN:
+                {
+                    if (m_roomChoice < m_chat.getRoomAmount())
+                    {
+                        ++m_roomChoice;
+                    }
+                    else if (m_roomChoice == m_chat.getRoomAmount())
+                    {
+                        m_roomChoice = 0;
+                    }
+                    break;
+                }
+                case 'k':
+                case KEY_UP:
+                {
+                    if (m_roomChoice > 0)
+                    {
+                        --m_roomChoice;
+                    }
+                    else if (m_roomChoice == 0)
+                    {
+                        m_roomChoice = m_chat.getRoomAmount();
+                    }
+                    break;
+                }
+                case 10:
+                {
+                    debug("Pressed enter in chat mode");
+                    size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
+                    std::stringstream ss;
+                    ss << "Joining room: " << roomId;
+                    debug(ss.str());
+                    sendTCPMessage(nexilis::Packet::Room::join(roomId));
                     break;
                 }
 
-                // Quit.
-                case 2:
+                case KEY_F(1):
                 {
-                    end();
+                    std::string newRoomName = nexilis::Util::getRandomString(5);
+                    sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
+                    break;
+                }
+
+                case KEY_F(5):
+                {
+                    updateRooms = true;
+                    break;
+                }
+
+                case KEY_F(6):
+                {
+                    debug("Pressed key down");
+                    uint64_t copiedClientId = m_nexilisClient.getClientAPI().getClientId();
+                    std::string date = nexilis::Util::getDateAndTime();
+                    std::stringstream ss;
+                    ss << "../../../logs/" << copiedClientId << ":" << date << "log.json";
+                    nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
+                    break;
+                }
+
+                case KEY_F(7):
+                {
+                    debug("Pressed key up");
+                    debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
                     break;
                 }
             }
         }
-    }
-
-    else if (m_menu.getState() == Menu::State::chat)
-    {
-        // Get information about the chat.
-        if (updateRooms)
+        case Menu::State::infopage:
         {
-            debug("Sent message to the server asking for server data");
-            sendTCPMessage(nexilis::Packet::Info::rooms());
-
-            updateRooms = false;
-        }
-
-        switch (tolower(m_input))
-        {
-            case 'j':
-            case KEY_DOWN:
-            {
-                if (m_roomChoice < m_chat.getRoomAmount())
-                {
-                    ++m_roomChoice;
-                }
-                else if (m_roomChoice == m_chat.getRoomAmount())
-                {
-                    m_roomChoice = 0;
-                }
-                break;
-            }
-            case 'k':
-            case KEY_UP:
-            {
-                if (m_roomChoice > 0)
-                {
-                    --m_roomChoice;
-                }
-                else if (m_roomChoice == 0)
-                {
-                    m_roomChoice = m_chat.getRoomAmount();
-                }
-                break;
-            }
-        }
-
-        if (m_input == 10)
-        {
-            debug("Pressed enter in chat mode");
-            size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
-            std::stringstream ss;
-            ss << "Joining room: " << roomId;
-            debug(ss.str());
-            sendTCPMessage(nexilis::Packet::Room::join(roomId));
-        }
-
-        switch (tolower(m_input))
-        {
-            case KEY_F(1):
-            {
-                std::string newRoomName = nexilis::Util::getRandomString(5);
-                sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
-                break;
-            }
-
-            case KEY_F(5):
-            {
-                updateRooms = true;
-                break;
-            }
-
-            case KEY_F(6):
-            {
-                debug("Pressed key down");
-                uint64_t copiedClientId = m_nexilisClient.getClientAPI().getClientId();
-                std::string date = nexilis::Util::getDateAndTime();
-                std::stringstream ss;
-                ss << "../../../logs/" << copiedClientId << ":" << date << "log.json";
-                nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
-                break;
-            }
-
-            case KEY_F(7):
-            {
-                debug("Pressed key up");
-                debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
-                break;
-            }
+            useVimInterface(window, tolower(m_input), State::infopage);
+            break;
         }
     }
 }
@@ -237,6 +248,17 @@ void Program::parseMessage(boost::json::object object)
     }
 
     /// Here parse client specific messages.
+}
+
+void Program::useVimInterface(Window& window, int input, State state)
+{
+    // Pressed ":".
+    if (input == 58)
+    {
+        debug("COLON PRESSED");
+
+        mvprintw(window.getWinSize().second - 1, 0, ":");
+    }
 }
 
 void Program::update()

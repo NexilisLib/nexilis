@@ -14,7 +14,8 @@ namespace nexilis::boost
 namespace boost = ::boost;
 
 class TCPServer : public Protocol,
-                  public ServerProtocol
+                  public ServerProtocol,
+                  public Loggable
 {
 public:
     /// Constructor.

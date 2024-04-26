@@ -1,5 +1,3 @@
-#include "nexilis/room.hh"
-#include <algorithm>
 #include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
@@ -287,6 +285,7 @@ bool ClientAPI::parse(boost::json::object json)
 
     if (json.contains("type"))
     {
+        // This should be enumerated.
         if (json["type"] == "roomData")
         {
             try

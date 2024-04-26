@@ -32,6 +32,7 @@ private:
 
     void inputHandler(Window& window);
     void updateScreenSize(Window& window);
+    void useVimInterface(Window& window, int input, State state);
 
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
