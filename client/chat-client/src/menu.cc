@@ -2,9 +2,9 @@
 
 #include <ncurses.h>
 
-void Menu::update(WINDOW* window, int& highlight)
+void Menu::update(WINDOW* window, int& highlight, State state)
 {
-    switch (m_state)
+    switch (state)
     {
         case State::menu:
         {

@@ -1,6 +1,8 @@
 #ifndef CHAT_CLIENT_MENU_HH
 #define CHAT_CLIENT_MENU_HH
 
+#include "program_state.hh"
+
 /// Forward declare ncurses window.
 struct _win_st;
 
@@ -10,36 +12,16 @@ struct _win_st;
 
 // Currently gives 2.
 // Technically not correct, but we use the 0th index as well so it's fine.
-#define MENU_ITEM_COUNT static_cast<int>(Menu::State::chat)
+#define MENU_ITEM_COUNT 2
 
 class Menu
 {
 public:
-    /// Different menu states.
-    enum class State
-    {
-        menu,
-        infopage,
-        chat
-    };
-
     /// Constructor.
     Menu() = default;
 
     /// Update the menu view.
-    void update(_win_st* window, int& highlight);
-
-    /// Get the state of the menu.
-    State& getState()
-    {
-        return m_state;
-    }
-
-    /// Change the state.
-    void changeState(State state)
-    {
-        m_state = state;
-    }
+    void update(_win_st* window, int& highlight, State state);
 
 private:
     void showMenu(_win_st* window, int& highlight);
@@ -57,8 +39,6 @@ private:
             "Here we have information regarding this program",
             "Here is another line displaying information"};
 
-    /// The state of the menu.
-    State m_state = State::menu;
 };
 
 #endif

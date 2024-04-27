@@ -5,18 +5,11 @@
 #include "nexilis_client.hh"
 #include "window.hh"
 #include "chat.hh"
+#include "program_state.hh"
 
 class Program
 {
 public:
-    /// Different menu states.
-    enum class State
-    {
-        menu,
-        infopage,
-        chat
-    };
-
     /// Constructor.
     Program(int argc, char** argv);
 
@@ -43,11 +36,16 @@ private:
     void sendUDPMessage(const std::vector<uint8_t>& message);
 
 private:
+    void updateState(State state);
+
     /// Command line arguments argc.
     int m_argc;
 
     /// Command line argument argv.
     char** m_argv;
+
+    /// Program state.
+    State m_state = State::menu;
 
     /// Window object.
     Window m_window;

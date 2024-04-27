@@ -4,6 +4,7 @@
 #include "menu.hh"
 #include "window.hh"
 #include "debug.hh"
+#include "program_state.hh"
 
 #include <nexilis/client_api.hh>
 
@@ -13,9 +14,9 @@ class Chat
 {
 public:
     /// Constructor.
-    Chat(Menu::State* state, nexilis::ClientAPI* clientApi);
+    Chat(nexilis::ClientAPI* clientApi);
 
-    void update(Window& window, int& hightlight);
+    void update(Window& window, int& hightlight, State state);
 
     int getRoomAmount()
     {
@@ -35,7 +36,6 @@ private:
     void showRooms(Window& window, int& hightlight);
 
 private:
-    Menu::State* m_state = nullptr;
     nexilis::ClientAPI* m_clientApi;
 
     std::vector<nexilis::ClientAPI::Room> m_rooms;

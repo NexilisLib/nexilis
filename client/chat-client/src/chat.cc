@@ -1,23 +1,21 @@
 #include "chat.hh"
 
-#include <curses.h>
 #include <ncurses.h>
 
-Chat::Chat(Menu::State* state, nexilis::ClientAPI* clientApi) :
-    m_state(state),
+Chat::Chat(nexilis::ClientAPI* clientApi) :
     m_clientApi(clientApi)
 {
 }
 
-void Chat::update(Window& window, int& hightlight)
+void Chat::update(Window& window, int& hightlight, State state)
 {
-    switch (*m_state)
+    switch (state)
     {
-        case Menu::State::menu:
-        case Menu::State::infopage:
+        case State::menu:
+        case State::infopage:
             break;
 
-        case Menu::State::chat:
+        case State::chat:
         {
             werase(window.getWindow());
             showRooms(window, hightlight);

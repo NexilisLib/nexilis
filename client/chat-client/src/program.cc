@@ -4,6 +4,7 @@
 #include "nexilis_client.hh"
 
 #include <cctype>
+#include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -17,7 +18,7 @@ Program::Program(int argc, char** argv)
       m_window(),
       m_menu(),
       m_nexilisClient(),
-      m_chat(&m_menu.getState(), &m_nexilisClient.getClientAPI())
+      m_chat(&m_nexilisClient.getClientAPI())
 {
     m_nexilisClient.start();
 }
@@ -41,9 +42,9 @@ void Program::inputHandler(Window& window)
     }
 
     /// Menu key input update ritual.
-    switch (m_menu.getState())
+    switch (m_state)
     {
-        case Menu::State::menu:
+        case State::menu:
         {
             useVimInterface(window, tolower(m_input), State::menu);
             switch (tolower(m_input))
@@ -83,7 +84,7 @@ void Program::inputHandler(Window& window)
                         // Chat.
                         case 0:
                         {
-                            m_menu.changeState(Menu::State::chat);
+                            updateState(State::chat);
                             wclear(m_window.getWindow());
                             break;
                         }
@@ -91,7 +92,7 @@ void Program::inputHandler(Window& window)
                         // Info.
                         case 1:
                         {
-                            m_menu.changeState(Menu::State::infopage);
+                            updateState(State::infopage);
                             wclear(m_window.getWindow());
                             break;
                         }
@@ -108,7 +109,7 @@ void Program::inputHandler(Window& window)
             break;
         }
 
-        case Menu::State::chat:
+        case State::chat:
         {
             useVimInterface(window, tolower(m_input), State::chat);
             // Get information about the chat.
@@ -190,9 +191,12 @@ void Program::inputHandler(Window& window)
                     debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
                     break;
                 }
+
+                default: break;
             }
+            break;
         }
-        case Menu::State::infopage:
+        case State::infopage:
         {
             useVimInterface(window, tolower(m_input), State::infopage);
             break;
@@ -239,6 +243,11 @@ void Program::readMessage(boost::json::object object)
     }
 }
 
+void Program::updateState(State state)
+{
+    m_state = state;
+}
+
 void Program::parseMessage(boost::json::object object)
 {
     // Parsing message.
@@ -252,19 +261,38 @@ void Program::parseMessage(boost::json::object object)
 
 void Program::useVimInterface(Window& window, int input, State state)
 {
-    // Pressed ":".
     if (input == 58)
     {
         debug("COLON PRESSED");
 
         mvprintw(window.getWinSize().second - 1, 0, ":");
+        refresh();
+
+        int nextKey = wgetch(window.getWindow());
+        switch (nextKey)
+        {
+            case 'q':
+            {
+                switch (state)
+                {
+                    case State::chat:
+                        break;
+                    case State::menu:
+                        break;
+                    case State::infopage:
+                        break;
+                }
+                break;
+            }
+        }
+
     }
 }
 
 void Program::update()
 {
     inputHandler(m_window);
-    m_menu.update(m_window.getWindow(), m_menuChoice);
-    m_chat.update(m_window, m_roomChoice);
+    m_menu.update(m_window.getWindow(), m_menuChoice, m_state);
+    m_chat.update(m_window, m_roomChoice, m_state);
     readMessage(m_nexilisClient.getClientAPI().getCurrentMessage());
 }
