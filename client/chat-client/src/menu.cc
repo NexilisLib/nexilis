@@ -8,13 +8,17 @@ void Menu::update(WINDOW* window, int& highlight, State state)
     {
         case State::menu:
         {
+            wclear(window);
             showMenu(window, highlight);
+            wrefresh(window);
             break;
         }
         // The infopage shall be inside the menu.
         case State::infopage:
         {
+            wclear(window);
             showInfo(window);
+            wrefresh(window);
             break;
         }
         // This does not concern menu, do nothing.
@@ -23,7 +27,6 @@ void Menu::update(WINDOW* window, int& highlight, State state)
             break;
         }
     }
-    wrefresh(window);
 }
 
 void Menu::showMenu(WINDOW* window, int& highlight)

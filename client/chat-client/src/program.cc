@@ -268,24 +268,39 @@ void Program::useVimInterface(Window& window, int input, State state)
         mvprintw(window.getWinSize().second - 1, 0, ":");
         refresh();
 
-        int nextKey = wgetch(window.getWindow());
-        switch (nextKey)
+        // Loop to read input until a valid key is pressed
+        int nextKey;
+        do
+        {
+            nextKey = wgetch(window.getWindow());
+        }
+        while (nextKey == -1);
+
+        std::stringstream ss;
+        ss << "Next key: " << nextKey;
+        debug(ss.str());
+
+        switch (tolower(nextKey))
         {
             case 'q':
+            case 'x':
             {
                 switch (state)
                 {
                     case State::chat:
+                        updateState(State::menu);
                         break;
                     case State::menu:
+                        end();
                         break;
                     case State::infopage:
+                        updateState(State::menu);
                         break;
                 }
                 break;
             }
         }
-
+        wrefresh(window.getWindow());
     }
 }
 
