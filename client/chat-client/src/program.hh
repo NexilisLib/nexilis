@@ -6,6 +6,7 @@
 #include "window.hh"
 #include "chat.hh"
 #include "program_state.hh"
+#include <cstdint>
 
 class Program
 {
@@ -25,7 +26,6 @@ private:
 
     void inputHandler(Window& window);
     void updateScreenSize(Window& window);
-    void useVimInterface(Window& window, int input, State state);
 
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
@@ -35,8 +35,17 @@ private:
     void sendTCPMessage(const std::vector<uint8_t>& message);
     void sendUDPMessage(const std::vector<uint8_t>& message);
 
-private:
+    /// Vim mode simply built into this function.
+    /// Blocking operation if the current input is ":".
+    void useVim(int input, State state);
+
+    /// Applying the ":q", or ":x" command, so we are switching the program state.
+    void applyVim(std::vector<char> command, State state);
+
+    /// Changing the value of the m_state member.
+    /// \param state The new state of the m_state member variable.
     void updateState(State state);
+private:
 
     /// Command line arguments argc.
     int m_argc;

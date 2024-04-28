@@ -50,6 +50,7 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
     {
         id.emplace_back(elem);
     }
+    assert(id.size() == 19);
     return id;
 }
 

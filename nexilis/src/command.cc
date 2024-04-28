@@ -245,7 +245,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     return false;
                 }
 
-                // Passphrase autentication.
+                // Passphrase authentication.
                 // (Access to join nexilis session)
                 case 2:
                 {
@@ -375,6 +375,15 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
         case MainCommand::room:
         {
+            Log::debug("MainCommand room");
+            Log::debug("Next integer: ", static_cast<int>(command[1]));
+
+            for (uint8_t commandByte : command)
+            {
+                Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
+                Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
+            }
+
             switch (command[1])
             {
                 // Join room x.
@@ -408,6 +417,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Leave current room.
                 case 1:
                 {
+                    Log::debug("MainCommand room (leave)");
                     auto currentRoom = RoomStorage::getRoomById(client.getRoomId());
 
                     if (!currentRoom)
@@ -423,6 +433,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 /// Create room.
                 case 2:
                 {
+                    Log::debug("MainCommand room (create)");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string roomName;
                     try
@@ -442,7 +453,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     }
                     if (roomName == " ")
                     {
-                        Log::error("Room name cannot equal \" \" ");
+                        Log::error("Room name cannot be equal to \" \" ");
                         return false;
                     }
 

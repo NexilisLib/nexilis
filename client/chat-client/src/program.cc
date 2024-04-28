@@ -4,6 +4,7 @@
 #include "nexilis_client.hh"
 
 #include <cctype>
+#include <cstdint>
 #include <curses.h>
 #include <ncurses.h>
 
@@ -11,6 +12,7 @@
 #include <nexilis/log.hh>
 #include <nexilis/logger/file_handler.hh>
 #include <nexilis/packet.hh>
+#include <string>
 
 Program::Program(int argc, char** argv)
     : m_argc(argc),
@@ -46,7 +48,7 @@ void Program::inputHandler(Window& window)
     {
         case State::menu:
         {
-            useVimInterface(window, tolower(m_input), State::menu);
+            useVim(tolower(m_input), State::menu);
             switch (tolower(m_input))
             {
                 case 'j':
@@ -111,7 +113,7 @@ void Program::inputHandler(Window& window)
 
         case State::chat:
         {
-            useVimInterface(window, tolower(m_input), State::chat);
+            useVim(tolower(m_input), State::chat);
             // Get information about the chat.
             // This is honestly pretty fucking stupid.
             if (updateRooms)
@@ -198,7 +200,7 @@ void Program::inputHandler(Window& window)
         }
         case State::infopage:
         {
-            useVimInterface(window, tolower(m_input), State::infopage);
+            useVim(tolower(m_input), State::infopage);
             break;
         }
     }
@@ -259,48 +261,55 @@ void Program::parseMessage(boost::json::object object)
     /// Here parse client specific messages.
 }
 
-void Program::useVimInterface(Window& window, int input, State state)
+void Program::useVim(int input, State state)
 {
+    // Currently only reading after ":".
     if (input == 58)
     {
-        debug("COLON PRESSED");
-
-        mvprintw(window.getWinSize().second - 1, 0, ":");
+        mvprintw(m_window.getWinSize().second - 1, 0, ":");
         refresh();
 
         // Loop to read input until a valid key is pressed
-        int nextKey;
+        char nextKey;
+        std::vector<char> keys;
         do
         {
-            nextKey = wgetch(window.getWindow());
-        }
-        while (nextKey == -1);
-
-        std::stringstream ss;
-        ss << "Next key: " << nextKey;
-        debug(ss.str());
-
-        switch (tolower(nextKey))
-        {
-            case 'q':
-            case 'x':
+            nextKey = static_cast<char>(tolower(wgetch(m_window.getWindow())));
+            if (nextKey != -1)
             {
-                switch (state)
-                {
-                    case State::chat:
-                        updateState(State::menu);
-                        break;
-                    case State::menu:
-                        end();
-                        break;
-                    case State::infopage:
-                        updateState(State::menu);
-                        break;
-                }
+                mvprintw(m_window.getWinSize().second - 1, static_cast<int>(keys.size()) + 1, "%c", nextKey);
+                refresh();
+                keys.emplace_back(nextKey);
+            }
+        }
+        while (nextKey != 10);
+
+        applyVim(keys, m_state);
+    }
+}
+
+void Program::applyVim(std::vector<char> command, State currentState)
+{
+    if ((command[0] == 'q' && command[1] == 10) || (command[0] == 'x' && command[1] == 10))
+    {
+        switch (currentState)
+        {
+            case State::chat:
+            {
+                updateState(State::menu);
+                break;
+            }
+            case State::menu:
+            {
+                end();
+                break;
+            }
+            case State::infopage:
+            {
+                updateState(State::menu);
                 break;
             }
         }
-        wrefresh(window.getWindow());
     }
 }
 
