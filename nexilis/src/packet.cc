@@ -50,6 +50,11 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
     {
         id.emplace_back(elem);
     }
+
+    // ClientId 8 bytes.
+    // 0xFF 1 byte.
+    // Command raw sequence 2 bytes.
+    // Parameter roomId 8 bytes.
     assert(id.size() == 19);
     return id;
 }

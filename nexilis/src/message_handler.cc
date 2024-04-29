@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <nexilis/authentication.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
@@ -73,10 +72,10 @@ bool containsFF(const std::vector<uint8_t>& data)
 
 MessageHandler::Message MessageHandler::readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication)
 {
-    Log::info("Received message: ", message, " from ", address, " port ", port);
-    Log::info("Message size: ", message.size());
+    Log::debug("Received message: ", message, " from ", address, " port ", port);
+    Log::debug("Message size: ", message.size());
 
-    // Create new client.
+    // Create a new client.
     Client client(address);
 
     // TODO
@@ -172,7 +171,6 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, std::st
                     assert(client.getId() == realNewClient->getId());
 
                     // This message is equal to Packet::getId (without client id).
-                    // We want do this automatically.
                     std::vector<uint8_t> message{1, 0};
                     std::vector<uint8_t> idBytes = Util::convertToByteVector(client.getId());
                     for (size_t i = 0; i < idBytes.size(); i++)

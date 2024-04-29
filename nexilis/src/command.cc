@@ -384,6 +384,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
             }
 
+            Log::info("Second byte: ", static_cast<int>(command[1]));
             switch (command[1])
             {
                 // Join room x.
@@ -391,27 +392,21 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 {
                     Log::debug("Called Room::Join()");
 
-                    try
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    uint64_t roomId = Util::convertToType<uint64_t>(payload);
+
+                    auto room = RoomStorage::getRoomById(roomId);
+
+                    if (!room)
                     {
-                        auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                        uint64_t roomId = Util::convertToType<uint64_t>(payload);
-
-                        auto room = RoomStorage::getRoomById(roomId);
-
-                        if (!room)
-                        {
-                            Log::error("Cannot find room with specified id!");
-                            return false;
-                        }
-
+                        Log::error("Cannot find room with specified id!");
+                        return false;
+                    }
+                    else
+                    {
                         room->joinRoom(client.getId());
                         return true;
                     }
-                    catch (...)
-                    {
-                        Log::error("Room::Join failed" );
-                    }
-                    return false;
                 }
 
                 // Leave current room.
@@ -464,7 +459,10 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     }
 
                     auto newRoom = Room(Room::Settings(client.getId(), roomName));
+                    auto newRoomId = newRoom.getId();
                     RoomStorage::add(std::move(newRoom));
+                    Log::debug("Added room ", newRoomId, " to persistent storage");
+
                     return true;
                 }
 

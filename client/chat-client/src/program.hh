@@ -6,7 +6,6 @@
 #include "window.hh"
 #include "chat.hh"
 #include "program_state.hh"
-#include <cstdint>
 
 class Program
 {
@@ -37,7 +36,7 @@ private:
 
     /// Vim mode simply built into this function.
     /// Blocking operation if the current input is ":".
-    void useVim(int input, State state);
+    void useVim(int input);
 
     /// Applying the ":q", or ":x" command, so we are switching the program state.
     void applyVim(std::vector<char> command, State state);

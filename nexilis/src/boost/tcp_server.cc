@@ -1,7 +1,8 @@
-#include "nexilis/loggable.hh"
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/common/util.hh>
+
+#include <thread>
 
 namespace nexilis::boost
 {
@@ -117,7 +118,7 @@ bool TCPServer::acceptClients()
                     boost::asio::streambuf receiveBuffer;
                     boost::system::error_code error_code;
 
-                    size_t bytesRead = boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
+                    uint64_t bytesRead = boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
 
                     if (error_code == boost::asio::error::eof)
                     {
@@ -176,6 +177,8 @@ bool TCPServer::acceptClients()
                 Log::error("Error in client thread: ", e.what());
             } })
                 .detach();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 

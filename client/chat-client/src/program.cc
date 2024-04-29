@@ -48,7 +48,7 @@ void Program::inputHandler(Window& window)
     {
         case State::menu:
         {
-            useVim(tolower(m_input), State::menu);
+            useVim(tolower(m_input));
             switch (tolower(m_input))
             {
                 case 'j':
@@ -113,7 +113,7 @@ void Program::inputHandler(Window& window)
 
         case State::chat:
         {
-            useVim(tolower(m_input), State::chat);
+            useVim(tolower(m_input));
             // Get information about the chat.
             // This is honestly pretty fucking stupid.
             if (updateRooms)
@@ -157,9 +157,10 @@ void Program::inputHandler(Window& window)
                     debug("Pressed enter in chat mode");
                     size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
                     std::stringstream ss;
-                    ss << "Joining room: " << roomId;
+                    ss << "Room id: " << roomId << std::endl;
                     debug(ss.str());
                     sendTCPMessage(nexilis::Packet::Room::join(roomId));
+
                     break;
                 }
 
@@ -200,7 +201,7 @@ void Program::inputHandler(Window& window)
         }
         case State::infopage:
         {
-            useVim(tolower(m_input), State::infopage);
+            useVim(tolower(m_input));
             break;
         }
     }
@@ -261,7 +262,7 @@ void Program::parseMessage(boost::json::object object)
     /// Here parse client specific messages.
 }
 
-void Program::useVim(int input, State state)
+void Program::useVim(int input)
 {
     // Currently only reading after ":".
     if (input == 58)
@@ -272,7 +273,7 @@ void Program::useVim(int input, State state)
         // Loop to read input until a valid key is pressed
         char nextKey;
         std::vector<char> keys;
-        do
+        while (nextKey != 10)
         {
             nextKey = static_cast<char>(tolower(wgetch(m_window.getWindow())));
             if (nextKey != -1)
@@ -282,7 +283,6 @@ void Program::useVim(int input, State state)
                 keys.emplace_back(nextKey);
             }
         }
-        while (nextKey != 10);
 
         applyVim(keys, m_state);
     }
