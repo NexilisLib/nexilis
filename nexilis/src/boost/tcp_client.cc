@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/log.hh>
 
@@ -75,14 +76,14 @@ void TCPClient::stop()
     }
 }
 
-void TCPClient::sendMessage(const std::string& message)
+void TCPClient::sendMessage(const std::vector<uint8_t>& message)
 {
     send(message);
 }
 
-void TCPClient::sendMessage(const std::vector<uint8_t>& message)
+void TCPClient::sendMessage(const std::string& message)
 {
-    send(Util::convertToString(message));
+    Log::error("This function should not be called!");
 }
 
 bool TCPClient::connectToServer()
@@ -98,7 +99,7 @@ bool TCPClient::connectToServer()
     return m_socket.is_open();
 }
 
-bool TCPClient::send(const std::string& data)
+bool TCPClient::send(const std::vector<uint8_t>& data)
 {
     if (m_socket.is_open())
     {
@@ -126,8 +127,10 @@ bool TCPClient::send(const std::string& data)
     }
 }
 
-bool TCPClient::receive(std::string& buffer)
+bool TCPClient::receive(std::vector<uint8_t>& buffer)
 {
+    assert(buffer.size() == 0);
+
     std::lock_guard<std::mutex> lock(*m_mutex);
 
     boost::asio::streambuf receiveBuffer;
@@ -140,7 +143,16 @@ bool TCPClient::receive(std::string& buffer)
         return false;
     }
 
-    buffer = boost::asio::buffer_cast<const char*>(receiveBuffer.data());
+    // Extract data from the receive buffer and copy it into the buffer vector
+    std::vector<uint8_t> result;
+    for (auto it = boost::asio::buffers_begin(receiveBuffer.data()); it != boost::asio::buffers_end(receiveBuffer.data()); ++it)
+    {
+        result.emplace_back(*it);
+    }
+
+    assert(buffer != result);
+    buffer = result;
+
     return true;
 }
 
@@ -166,14 +178,13 @@ void TCPClient::receiveLoop()
 {
     while (true)
     {
-        std::string buffer;
+        std::vector<uint8_t> buffer;
 
         if (receive(buffer))
         {
             if (!buffer.empty())
             {
-                auto message = Util::convertToByteVector(buffer.c_str(), buffer.size());
-                ClientProtocol::getClientAPI()->readMessage(message);
+                ClientProtocol::getClientAPI()->readMessage(buffer);
             }
             else
             {

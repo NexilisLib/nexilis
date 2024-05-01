@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/common/util.hh>
@@ -147,8 +148,7 @@ bool TCPServer::acceptClients()
                     {
                         handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const std::vector<uint8_t>& bytes)
                         {
-                            std::string toString = Util::convertToString(bytes);
-                            if (sendToClient(toString, newSocket))
+                            if (sendToClient(bytes, newSocket))
                             {
                                 Log::info("Sended message to client succesfully");
                             }
@@ -182,7 +182,7 @@ bool TCPServer::acceptClients()
     }
 }
 
-bool TCPServer::sendToClient(const std::string& data, boost::asio::ip::tcp::socket& clientSocket)
+bool TCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket)
 {
     if (clientSocket.is_open())
     {

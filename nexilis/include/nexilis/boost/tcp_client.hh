@@ -1,6 +1,7 @@
 #ifndef NEXILIS_BOOST_TCP_CLIENT_HH
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
+#include <cstdint>
 #include <nexilis/client_protocol.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
@@ -59,8 +60,8 @@ protected:
 private:
     void receiveLoop();
     bool connectToServer();
-    bool send(const std::string& data);
-    bool receive(std::string& buffer);
+    bool send(const std::vector<uint8_t>& data);
+    bool receive(std::vector<uint8_t>& buffer);
 
 private:
     bool m_stopped = false;

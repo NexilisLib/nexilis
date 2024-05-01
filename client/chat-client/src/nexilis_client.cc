@@ -45,11 +45,13 @@ NexilisClient& NexilisClient::operator=(NexilisClient&& other)
 void NexilisClient::start()
 {
     m_udpClient.start();
-    m_udpClient.sendMessage(m_serverData.getPassword());
+    auto message = nexilis::Util::convertToByteVector(m_serverData.getPassword().c_str(), m_serverData.getPassword().size());
+
+    m_udpClient.sendMessage(message);
     m_clientAPI.waitUntilBoostUDPReady();
 
     m_tcpClient.start();
-    m_tcpClient.sendMessage(m_serverData.getPassword());
+    m_tcpClient.sendMessage(message);
     m_clientAPI.waitUntilBoostTCPReady();
 
     debug(nexilis::Util::getDateAndTime());
