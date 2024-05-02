@@ -1,8 +1,6 @@
 #ifndef NEXILIS_PROTOCOL_HH
 #define NEXILIS_PROTOCOL_HH
 
-#include <nexilis/message_handler.hh>
-
 #include <cstdint>
 #include <sstream>
 

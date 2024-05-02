@@ -1,5 +1,6 @@
 #include <nexilis/af_inet/tcp_client.hh>
 #include <nexilis/log.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <arpa/inet.h>
 #include <unistd.h>

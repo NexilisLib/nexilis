@@ -187,6 +187,19 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 else
                 {
                     Log::error("NEW MESSAGE WHICH IS IS NOT PASSWORD");
+                    Log::error("PRINTING ERROR SEQUENCE as CHARS:");
+
+                    for (auto i : payload)
+                    {
+                        Log::info(static_cast<char>(i));
+                    }
+
+                    Log::error("PRINTING ERROR SEQUENCE as INTEGERS:");
+                    for (auto i : payload)
+                    {
+                        Log::info(static_cast<int>(i));
+                    }
+
                     return errorMessage;
                 }
             }

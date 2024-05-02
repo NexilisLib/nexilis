@@ -4,6 +4,7 @@
 #include <nexilis/protocol.hh>
 
 #include <unordered_map>
+#include <vector>
 
 namespace nexilis
 {

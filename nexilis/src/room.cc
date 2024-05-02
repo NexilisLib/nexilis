@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/room.hh>
 #include <nexilis/log.hh>

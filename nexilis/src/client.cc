@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <nexilis/client.hh>
 
 namespace nexilis
