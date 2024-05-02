@@ -1,4 +1,5 @@
 #include "nexilis/loggable.hh"
+#include <cstdint>
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
@@ -45,10 +46,12 @@ void UDPServer::start()
         while (true)
         {
             BaseUDPServer::Message msg;
+            // TODO fix
+            std::vector<uint8_t> data;
 
             if (BaseUDPServer::getNextMessage(msg))
             {
-                auto message = getMessageHandler().readMessage(msg.address, msg.message, msg.port, Command::getAuthentication());
+                auto message = getMessageHandler().readMessage(msg.address, data, msg.port, Command::getAuthentication());
 
                 auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
                 {

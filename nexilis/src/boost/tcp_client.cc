@@ -81,11 +81,6 @@ void TCPClient::sendMessage(const std::vector<uint8_t>& message)
     send(message);
 }
 
-void TCPClient::sendMessage(const std::string& message)
-{
-    Log::error("This function should not be called!");
-}
-
 bool TCPClient::connectToServer()
 {
     try

@@ -56,7 +56,7 @@ private:
 private:
     std::string m_socketPath;
     int m_serverSocket;
-    std::vector<char> m_buffer;
+    std::vector<uint8_t> m_buffer;
     std::thread m_receiveThread;
 };
 

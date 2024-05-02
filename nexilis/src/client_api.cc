@@ -281,7 +281,7 @@ bool ClientAPI::parse(boost::json::object json)
         return false;
     }
 
-    std::string nexilisCommand = Json::toString(json);
+    //std::string nexilisCommand = Json::toString(json);
 
     if (json.contains("type"))
     {
@@ -335,7 +335,7 @@ bool ClientAPI::parse(boost::json::object json)
                 }
                 else
                 {
-                    Log::warning("No rooms! ", nexilisCommand);
+                    //Log::warning("No rooms! ", nexilisCommand);
                     return false;
                 }
             }

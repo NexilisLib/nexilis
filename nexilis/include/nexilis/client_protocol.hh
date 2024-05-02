@@ -29,10 +29,6 @@ public:
     /// Deleted copy assignment operator.
     ClientProtocol& operator=(const ClientProtocol& other) = delete;
 
-    /// Send message from client to server.
-    /// \param message The string message that is sent.
-    virtual void sendMessage(const std::string& message) = 0;
-
     /// Send nexilis message (std::vector<uint8_t>) to server.
     virtual void sendMessage(const std::vector<uint8_t>& message) = 0;
 

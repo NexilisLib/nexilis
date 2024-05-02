@@ -18,7 +18,7 @@ public:
     ~Client();
 
     /// Send message to the server.
-    void sendMessage(const std::string& message) override;
+    void sendMessage(const std::vector<uint8_t>& message) override;
 
     /// Protocol::start() implementation.
     void start() override;

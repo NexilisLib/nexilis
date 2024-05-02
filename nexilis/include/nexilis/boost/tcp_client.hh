@@ -35,9 +35,6 @@ public:
     /// Deleted copy assignment operator.
     TCPClient& operator=(const TCPClient& other) = delete;
 
-    /// ClientProtocol::sendMessage(const std::string&) implementation.
-    void sendMessage(const std::string& message) override;
-
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
 

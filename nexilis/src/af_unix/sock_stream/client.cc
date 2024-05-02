@@ -95,13 +95,9 @@ void Client::sendMsg(const std::string& message)
     }
 }
 
-void Client::sendMessage(const std::string& message)
-{
-    sendMsg(message);
-}
-
 void Client::sendMessage(const std::vector<uint8_t>& message)
 {
+    // TODO perform without string conversion.
     sendMsg(Util::convertToString(message));
 }
 

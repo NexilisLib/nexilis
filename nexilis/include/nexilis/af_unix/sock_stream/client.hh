@@ -47,10 +47,6 @@ public:
     }
 
     /// Send message to the server.
-    /// ClientProtocol::sendMessage(const std::string&) implementation.
-    void sendMessage(const std::string& message) override;
-
-    /// Send message to the server.
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
 

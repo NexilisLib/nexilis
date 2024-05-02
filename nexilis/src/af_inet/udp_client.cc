@@ -55,13 +55,9 @@ int UDPClient::createSocket()
     return socketFD;
 }
 
-void UDPClient::sendMessage(const std::string& message)
-{
-    sendData(message.c_str(), message.size());
-}
-
 void UDPClient::sendMessage(const std::vector<uint8_t>& message)
 {
+    /// TODO Remove string conversion.
     const char* data = reinterpret_cast<const char*>(message.data());
     sendData(data, message.size());
 }

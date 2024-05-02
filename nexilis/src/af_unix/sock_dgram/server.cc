@@ -99,8 +99,7 @@ void Server::receiveMessage()
                 std::cout << "Send reply to client" << std::endl;
             }
 
-            // std::string address = std::string(inet_ntoa(clientAddress.sin_addr));
-            auto message = getMessageHandler().readMessage("test", m_buffer.data(), -1, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(clientAddress.sun_path, m_buffer, -1, Command::getAuthentication());
 
             if (message.getClient())
             {

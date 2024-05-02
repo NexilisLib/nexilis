@@ -1,4 +1,5 @@
 #include "nexilis/server_protocol.hh"
+#include <cstdint>
 #include <nexilis/af_inet/tcp_server.hh>
 #include <nexilis/log.hh>
 #include <nexilis/server_manager.hh>
@@ -138,13 +139,16 @@ void TCPServer::operatingLoop()
 
         ssize_t bytesRead = read(client.getSocket(), buffer, sizeof(buffer));
 
+        // FIXME create std::vector<uint8_t> buffer
         buffer[bytesRead] = '\0';
         std::string receivedData(buffer);
         receivedData.resize(bytesRead);
 
+        std::vector<uint8_t> _reveivedData;
+
         if (bytesRead > 0)
         {
-            auto message = getMessageHandler().readMessage(client.getAddress(), receivedData, client.getPort(), Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(client.getAddress(), _reveivedData, client.getPort(), Command::getAuthentication());
 
             auto sendMsg = [this, &client](const std::vector<uint8_t> data)
             {

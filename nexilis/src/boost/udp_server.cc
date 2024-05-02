@@ -81,21 +81,21 @@ void UDPServer::receiveFromClients()
     {
         try
         {
-            std::size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+            m_receiveBuffer.clear();
 
-            std::string data = std::string(m_receiveBuffer.data(), bytes_transferred);
+            m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+
             std::string address = m_remoteEndpoint.address().to_string();
             uint16_t port = m_remoteEndpoint.port();
-            Log::info("Received from ", address, " port ", port, " data: ", data);
+            Log::info("Received from ", address, " port ", port);
 
-            auto handledMessage = getMessageHandler().readMessage(address, data, port, Command::getAuthentication());
+            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, Command::getAuthentication());
 
             if (!handledMessage.getClient()->isBoostUDPSet())
             {
                 handledMessage.getClient()->setBoostUDPSend([this](const std::vector<uint8_t>& bytes)
                 {
-                    std::string byteString = Util::convertToString(bytes);
-                    if (m_socket.send_to(boost::asio::buffer(byteString), m_remoteEndpoint) == 0)
+                    if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
                     {
                         Log::error("Failed to send message to client");
                     }
@@ -106,11 +106,11 @@ void UDPServer::receiveFromClients()
 
             if (passCommand)
             {
-                Log::info("UDPServer: Passed with command: ", data);
+                Log::info("UDPServer: Passed");
             }
             else
             {
-                Log::error("UDPServer: Failed with command: ", data);
+                Log::error("UDPServer: Failed");
             }
         }
         catch (const boost::system::system_error& e)

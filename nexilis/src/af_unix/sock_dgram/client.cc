@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdlib>
 #include <nexilis/af_unix/sock_dgram/client.hh>
 
@@ -22,10 +23,13 @@ Client::~Client()
     }
 }
 
-void Client::sendMessage(const std::string& message)
+void Client::sendMessage(const std::vector<uint8_t>& message)
 {
     std::cout << "SENDING MESSAGE: " << m_serverAddr.sun_path << std::endl;
 
+    // TODO
+    // Perform without string conversion.
+    /*
     ssize_t sentBytes = sendto(m_clientSocket, message.c_str(), message.size(), 0,
                                (struct sockaddr*)&m_serverAddr, sizeof(m_serverAddr));
 
@@ -34,6 +38,7 @@ void Client::sendMessage(const std::string& message)
         perror("sendto");
         std::cout << "Something went wrong with the client sending the message" << std::endl;
     }
+    */
 }
 
 std::string Client::receiveMessage()

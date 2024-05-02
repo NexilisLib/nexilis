@@ -1,3 +1,4 @@
+#include <boost/asio/buffer.hpp>
 #include <cstdint>
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/command.hh>
@@ -139,10 +140,21 @@ bool TCPServer::acceptClients()
                         break;
                     }
 
-                    std::string message = boost::asio::buffer_cast<const char*>(receiveBuffer.data());
-                    Log::debug("Received from client ", message);
+                    // Create a vector to hold the data
+                    std::vector<uint8_t> data;
 
-                    auto handledMessage = getMessageHandler().readMessage(clientAddress, message, clientPort, Command::getAuthentication());
+                    // Get the sequence of const buffers from the streambuf
+                    const boost::asio::const_buffers_1& buffers = receiveBuffer.data();
+
+                    // Iterate over each const buffer and copy its data into the vector
+                    for (const auto& buffer : buffers)
+                    {
+                        const uint8_t* bufferData = boost::asio::buffer_cast<const uint8_t*>(buffer);
+                        std::size_t bufferSize = boost::asio::buffer_size(buffer);
+                        data.insert(data.end(), bufferData, bufferData + bufferSize);
+                    }
+
+                    auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, Command::getAuthentication());
 
                     if (!handledMessage.getClient()->isBoostTCPSet())
                     {
@@ -150,7 +162,7 @@ bool TCPServer::acceptClients()
                         {
                             if (sendToClient(bytes, newSocket))
                             {
-                                Log::info("Sended message to client succesfully");
+                                Log::info("Sent message to client succesfully");
                             }
                             else
                             {
@@ -163,11 +175,11 @@ bool TCPServer::acceptClients()
 
                     if (passCommand)
                     {
-                        Log::info("Passed with command: ", message);
+                        Log::info("Passed");
                     }
                     else
                     {
-                        Log::info("Failed with command: ", message);
+                        Log::info("Failed");
                     }
                 }
             }

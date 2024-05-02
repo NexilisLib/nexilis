@@ -64,7 +64,7 @@ public:
     /// /// \param message The incoming message data.
     /// /// \param port The incoming message sender port.
     /// /// \param authentication The server authentication levels.
-    Message readMessage(std::string address, std::string message, uint16_t port, Authentication* authentication);
+    Message readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Authentication* authentication);
 };
 
 } // namespace nexilis

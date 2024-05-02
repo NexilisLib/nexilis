@@ -2,6 +2,7 @@
 #include "nexilis/nexilis_macros.hh"
 #include "nexilis/packet.hh"
 #include <boost/asio/ip/address.hpp>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <nexilis/boost/udp_client.hh>
@@ -93,23 +94,11 @@ void UDPClient::receiveLoop()
     }
 }
 
-void UDPClient::sendMessage(const std::string& message)
-{
-    std::lock_guard<std::mutex> lock(*m_mutex);
-    send(message);
-}
-
-void UDPClient::sendMessage(const std::vector<uint8_t>& message)
-{
-    std::string msg = reinterpret_cast<const char*>(message.data());
-    sendMessage(msg);
-}
-
-void UDPClient::send(const std::string& message)
+void UDPClient::sendMessage(const std::vector<uint8_t>& payload)
 {
     if (m_socket.is_open())
     {
-        m_socket.send_to(boost::asio::buffer(message), m_remoteEndpoint);
+        m_socket.send_to(boost::asio::buffer(payload), m_remoteEndpoint);
         Log::debug("sent message to server");
     }
     else
@@ -117,5 +106,6 @@ void UDPClient::send(const std::string& message)
         Log::error("UDPClient::send(): boost::UDPClient socket is not open");
     }
 }
+
 
 } // namespace nexilis::boost

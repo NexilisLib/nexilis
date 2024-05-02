@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/nexilis_macros.hh>
@@ -170,7 +171,8 @@ void Server::handleMessages()
         }
         else
         {
-            auto msg = getMessageHandler().readMessage("localhost", message, -1, Command::getAuthentication());
+            std::vector<uint8_t> example;
+            auto msg = getMessageHandler().readMessage("localhost", example, -1, Command::getAuthentication());
 
             if (msg.getClient())
             {
