@@ -60,7 +60,7 @@ Room::Room(const Settings& settings)
 
 Room::Room(Room&& other)
     : m_settings(std::move(other.m_settings)),
-      m_users(std::move(other.m_users))
+      m_clients(std::move(other.m_clients))
 {
 }
 
@@ -69,14 +69,14 @@ Room& Room::operator=(Room&& other)
     if (this != &other)
     {
         m_settings = std::move(other.m_settings);
-        m_users = std::move(other.m_users);
+        m_clients = std::move(other.m_clients);
     }
     return *this;
 }
 
 bool Room::contains(uint64_t userId)
 {
-    return std::find(m_users.begin(), m_users.end(), userId) != m_users.end();
+    return std::find(m_clients.begin(), m_clients.end(), userId) != m_clients.end();
 }
 
 void Room::joinRoom(uint64_t userId)
@@ -87,17 +87,17 @@ void Room::joinRoom(uint64_t userId)
     }
     else
     {
-        m_users.push_back(userId);
+        m_clients.emplace_back(userId);
         Log::info("New user in room: ", getId(), " user: ", userId);
     }
 }
 
 void Room::leaveRoom(uint64_t userId)
 {
-    auto it = std::find(m_users.begin(), m_users.end(), userId);
-    if (it != m_users.end())
+    auto it = std::find(m_clients.begin(), m_clients.end(), userId);
+    if (it != m_clients.end())
     {
-        m_users.erase(it);
+        m_clients.erase(it);
     }
     else
     {

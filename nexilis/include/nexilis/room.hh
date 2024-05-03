@@ -1,7 +1,6 @@
 #ifndef NEXILIS_ROOM_HH
 #define NEXILIS_ROOM_HH
 
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -104,7 +103,11 @@ public:
         return m_settings.getCreatorId();
     }
 
-    //std::string getCreatorName() const;
+    /// Get the copy if the client id's in the room.
+    std::vector<uint64_t> getClients() const
+    {
+        return m_clients;
+    }
 
     /// User joins the room context.
     /// \param userId The identifier of the user.
@@ -121,8 +124,8 @@ public:
 private:
     Settings m_settings;
 
-    /// Users inside the room.
-    std::vector<uint64_t> m_users;
+    /// Clients inside the room.
+    std::vector<uint64_t> m_clients;
 };
 
 } // namespace nexilis

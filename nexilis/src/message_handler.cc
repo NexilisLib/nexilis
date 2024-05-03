@@ -14,9 +14,9 @@
 namespace nexilis
 {
 
-size_t extractSizeFromVector(const std::vector<uint8_t>& data)
+uint64_t extractUint64FromVector(const std::vector<uint8_t>& data)
 {
-    size_t result = 0;
+    uint64_t result = 0;
 
     if (Config::getBigEndian())
     {
@@ -31,13 +31,13 @@ size_t extractSizeFromVector(const std::vector<uint8_t>& data)
     }
     else
     {
-        for (size_t i = 0; i < data.size(); ++i)
+        for (uint64_t i = 0; i < data.size(); ++i)
         {
             if (data[i] == 0xFF)
             {
                 break;
             }
-            result |= static_cast<size_t>(data[i]) << (i * 8);
+            result |= static_cast<uint64_t>(data[i]) << (i * 8);
         }
     }
 
@@ -88,7 +88,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     Client* realClient = nullptr;
     if (normalMessage)
     {
-        size_t id = extractSizeFromVector(payload);
+        uint64_t id = extractUint64FromVector(payload);
 
         // Id extraction is successfull.
         if (id)
@@ -162,7 +162,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                     Log::info("Correct password by user ", client.getId());
                     client.setCommonAccess(true);
 
-                    size_t newClientId = client.getId();
+                    uint64_t newClientId = client.getId();
                     ClientStorage::add(std::move(client));
                     auto realNewClient = ClientStorage::getClientById(newClientId);
 
@@ -173,7 +173,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                     // This message is equal to Packet::getId (without client id).
                     std::vector<uint8_t> message{1, 0};
                     std::vector<uint8_t> idBytes = Util::convertToByteVector(client.getId());
-                    for (size_t i = 0; i < idBytes.size(); i++)
+                    for (uint64_t i = 0; i < idBytes.size(); i++)
                     {
                         message.push_back(idBytes[i]);
                     }

@@ -15,6 +15,7 @@ add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 add_executable(nexilis_tests
     src/main.cc
     src/logging/logging.cc
+    src/protocol/protocol.cc
     )
 
 target_link_libraries(nexilis_tests nexilis ${GTEST_LIBRARIES})

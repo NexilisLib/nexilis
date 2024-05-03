@@ -1,7 +1,6 @@
 #ifndef NEXILIS_BOOST_TCP_CLIENT_HH
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
-#include <cstdint>
 #include <nexilis/client_protocol.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>

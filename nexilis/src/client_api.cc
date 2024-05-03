@@ -281,8 +281,6 @@ bool ClientAPI::parse(boost::json::object json)
         return false;
     }
 
-    //std::string nexilisCommand = Json::toString(json);
-
     if (json.contains("type"))
     {
         // This should be enumerated.
