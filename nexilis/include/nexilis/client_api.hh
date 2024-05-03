@@ -208,8 +208,35 @@ public:
     class Room
     {
     public:
+        class Client
+        {
+        public:
+            /// Constuctor.
+            Client(uint64_t id);
+
+            /// Copy constructor.
+            Client(const Client& other);
+
+            /// Copy assignment operator.
+            Client& operator=(const Client& other);
+
+            /// Move constructor.
+            Client(Client&& other);
+
+            /// Move assignment operator.
+            Client& operator=(Client&& other);
+
+            /// Get the identifier of the client.
+            uint64_t getId() const
+            {
+                return m_id;
+            }
+        private:
+            uint64_t m_id;
+        };
+
         /// Constructor.
-        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize);
+        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Client>& clients);
 
         /// Copy constructor.
         Room(const Room& other);
@@ -263,6 +290,7 @@ public:
         uint64_t m_creatorId;
         uint64_t m_roomId;
         int m_maxSize;
+        std::vector<Client> m_clients;
     };
 
     /// Constructor.

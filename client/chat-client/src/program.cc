@@ -3,16 +3,12 @@
 #include "menu.hh"
 #include "nexilis_client.hh"
 
-#include <cctype>
-#include <cstdint>
-#include <curses.h>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
 #include <nexilis/logger/file_handler.hh>
 #include <nexilis/packet.hh>
-#include <string>
 
 Program::Program(int argc, char** argv)
     : m_argc(argc),

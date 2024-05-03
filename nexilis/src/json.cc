@@ -255,23 +255,24 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
         roomObj["id"] = room.getId();
         roomObj["creatorId"] = room.getCreatorId();
 
-        resultingArray.emplace_back(std::move(roomObj));
-
         // Get data from clients in a room.
         boost::json::array clientArray;
         auto clients = room.getClients();
 
         // Currently just id but will be adding stuff.
-        for (auto client : clients)
+        for (uint64_t client : clients)
         {
             boost::json::object clientObj;
             clientObj["id"] = client;
+            clientArray.emplace_back(std::move(clientObj));
         }
 
         if (clients.size() > 0)
         {
-            resultingArray.emplace_back(std::move(clientArray));
+            roomObj["clients"] = std::move(clientArray);
         }
+
+        resultingArray.emplace_back(std::move(roomObj));
     }
     return resultingArray;
 }

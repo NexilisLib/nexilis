@@ -1,3 +1,4 @@
+#include "nexilis/client.hh"
 #include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
@@ -14,10 +15,7 @@
 namespace nexilis
 {
 
-///
-/// ClientAPI::ServerData
-///
-
+// ClientAPI::ServerData
 ClientAPI::ServerData::ServerData(const std::string& password)
     : m_password(password)
 {
@@ -101,6 +99,7 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     return *this;
 }
 
+// ClientAPI::Room
 ClientAPI::Room::Room(const Room& other) :
     m_name(other.m_name),
     m_creatorId(other.m_creatorId),
@@ -141,12 +140,47 @@ ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
     return *this;
 }
 
-ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize)
+ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Client>& clients)
     : m_name(name),
       m_creatorId(creatorId),
       m_roomId(roomId),
-      m_maxSize(maxSize)
+      m_maxSize(maxSize),
+      m_clients(clients)
 {
+}
+
+/// ClientAPI::Room::Client
+ClientAPI::Room::Client::Client(uint64_t id)
+    : m_id(id)
+{
+}
+
+ClientAPI::Room::Client::Client(const Client& other)
+    : m_id(other.m_id)
+{
+}
+
+ClientAPI::Room::Client::Client(Client&& other)
+    : m_id(std::move(other.m_id))
+{
+}
+
+ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(const Client& other)
+{
+    if (this != &other)
+    {
+        m_id = other.m_id;
+    }
+    return *this;
+}
+
+ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
+{
+    if (this != &other)
+    {
+        m_id = other.m_id;
+    }
+    return *this;
 }
 
 ///
@@ -286,62 +320,81 @@ bool ClientAPI::parse(boost::json::object json)
         // This should be enumerated.
         if (json["type"] == "roomData")
         {
-            try
+            if (json.find("rooms") != json.end())
             {
                 auto rooms = json.at("rooms").as_array();
-
-                if (!rooms.empty())
+                std::vector<Room> newRooms;
+                for (const auto& room : rooms)
                 {
-                    std::vector<Room> newRooms;
-                    for (const auto& room : rooms)
+                    std::string name = room.at("name").as_string().c_str();
+                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+
+                    uint64_t creatorId;
+                    if (room.at("creatorId").if_uint64())
                     {
-                        std::string name = room.at("name").as_string().c_str();
-                        int maxSize = static_cast<int>(room.at("maxSize").as_int64());
-
-                        uint64_t creatorId;
-                        if (room.at("creatorId").if_uint64())
-                        {
-                            creatorId = room.at("creatorId").as_uint64();
-                        }
-                        else if (room.at("creatorId").if_int64())
-                        {
-                            creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
-                        }
-                        else
-                        {
-                            creatorId = 0;
-                        }
-
-                        uint64_t id;
-                        if (room.at("id").if_uint64())
-                        {
-                            id = room.at("id").as_uint64();
-                        }
-                        else if (room.at("id").if_int64())
-                        {
-                            id = static_cast<uint64_t>(room.at("id").as_int64());
-                        }
-                        else
-                        {
-                            id = 0;
-                        }
-
-                        newRooms.emplace_back(Room(name, creatorId, id, maxSize));
+                        creatorId = room.at("creatorId").as_uint64();
                     }
-                    m_currentlyActiveRooms = newRooms;
-                    return true;
+                    else if (room.at("creatorId").if_int64())
+                    {
+                        creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
+                    }
+                    else
+                    {
+                        creatorId = 0;
+                    }
+
+                    uint64_t id;
+                    if (room.at("id").if_uint64())
+                    {
+                        id = room.at("id").as_uint64();
+                    }
+                    else if (room.at("id").if_int64())
+                    {
+                        id = static_cast<uint64_t>(room.at("id").as_int64());
+                    }
+                    else
+                    {
+                        id = 0;
+                    }
+
+                    std::vector<ClientAPI::Room::Client> roomClients;
+
+                    if (room.as_object().find("clients") != room.as_object().end())
+                    {
+                        auto clients = room.at("clients").as_array();
+
+                        for (const auto& client : clients)
+                        {
+                            uint64_t id;
+                            if (client.at("id").if_uint64())
+                            {
+                                id = client.at("id").as_uint64();
+                            }
+                            else if (client.at("id").if_int64())
+                            {
+                                id = static_cast<uint64_t>(client.at("id").as_int64());
+                            }
+                            else
+                            {
+                                id = 0;
+                            }
+
+                            ClientAPI::Room::Client newClient(id);
+                            roomClients.emplace_back(std::move(newClient));
+                        }
+                    }
+
+                    newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
                 }
-                else
-                {
-                    //Log::warning("No rooms! ", nexilisCommand);
-                    return false;
-                }
+                m_currentlyActiveRooms = newRooms;
+                return true;
             }
-            catch(...)
+            else
             {
+                Log::warning("No rooms!");
+                return false;
             }
         }
-
         else if (json["type"] == "set_client_id")
         {
             if (json["set_client_id"].if_uint64())
@@ -401,11 +454,11 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
 
     if (parse(json))
     {
+        m_currentMessage = json;
         return true;
     }
     else
     {
-        m_currentMessage = json;
         Log::info("Received message that is not read by the server");
         return false;
     }
