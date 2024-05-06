@@ -1,4 +1,5 @@
 #include "nexilis/client.hh"
+#include <cstdint>
 #include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
@@ -104,7 +105,8 @@ ClientAPI::Room::Room(const Room& other) :
     m_name(other.m_name),
     m_creatorId(other.m_creatorId),
     m_roomId(other.m_roomId),
-    m_maxSize(other.m_maxSize)
+    m_maxSize(other.m_maxSize),
+    m_clients(other.m_clients)
 {
 }
 
@@ -112,7 +114,8 @@ ClientAPI::Room::Room(Room&& other) :
     m_name(std::move(other.m_name)),
     m_creatorId(std::move(other.m_creatorId)),
     m_roomId(std::move(other.m_roomId)),
-    m_maxSize(std::move(other.m_maxSize))
+    m_maxSize(std::move(other.m_maxSize)),
+    m_clients(std::move(other.m_clients))
 {
 }
 
@@ -124,6 +127,7 @@ ClientAPI::Room& ClientAPI::Room::operator=(const Room& other)
         m_creatorId = other.m_creatorId;
         m_roomId = other.m_roomId;
         m_maxSize = other.m_maxSize;
+        m_clients = other.m_clients;
     }
     return *this;
 }
@@ -136,6 +140,7 @@ ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
         m_creatorId = std::move(other.m_creatorId);
         m_roomId = std::move(other.m_roomId);
         m_maxSize = std::move(other.m_maxSize);
+        m_clients = std::move(other.m_clients);
     }
     return *this;
 }
@@ -306,12 +311,31 @@ void ClientAPI::waitUntilUnixStreamReady()
     }
 }
 
+bool ClientAPI::clientInRoom()
+{
+    auto rooms = getActiveRooms();
+
+    for (auto r = rooms.begin(); r != rooms.end(); r++)
+    {
+        auto clients = r->getClients();
+        for (auto c = clients.begin(); c != clients.end(); c++)
+        {
+            if (c->getId() == m_clientId)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool ClientAPI::parse(boost::json::object json)
 {
     // Parsing message.
     if (!json.contains("nexilis_status"))
     {
         Log::info("Running code without nexilis status");
+        Json::print(json);
         return false;
     }
 
@@ -384,6 +408,8 @@ bool ClientAPI::parse(boost::json::object json)
                         }
                     }
 
+                    Log::info("ROOMCLIENTS AMOUNT: ", roomClients.size());
+
                     newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
                 }
                 m_currentlyActiveRooms = newRooms;
@@ -422,6 +448,11 @@ bool ClientAPI::parse(boost::json::object json)
                 Log::error("The value of set_client_id is not convertible to as_uint64");
                 return false;
             }
+        }
+        else
+        {
+            Log::info("UNDEFINED TYPE", json["type"]);
+            return false;
         }
     }
     // TODO continue parsing.

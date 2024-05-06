@@ -32,6 +32,8 @@ public:
         return m_rooms[static_cast<size_t>(position)].getRoomId();
     }
 
+    std::string roomData(const nexilis::ClientAPI::Room& room);
+
 private:
     void showRooms(Window& window, int& hightlight);
 

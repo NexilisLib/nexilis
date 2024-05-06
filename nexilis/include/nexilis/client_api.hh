@@ -226,6 +226,18 @@ public:
             /// Move assignment operator.
             Client& operator=(Client&& other);
 
+            /// Comparison operator overload.
+            friend bool operator==(const Client& lhs, const Client& rhs)
+            {
+                return lhs.getId() == rhs.getId();
+            }
+
+            /// Non-comparison operator overload.
+            friend bool operator!=(const Client& lhs, const Client& rhs)
+            {
+                return !(lhs == rhs);
+            }
+
             /// Get the identifier of the client.
             uint64_t getId() const
             {
@@ -256,7 +268,8 @@ public:
             return lhs.getName() == rhs.getName() &&
                lhs.getCreatorId() == rhs.getCreatorId() &&
                lhs.getRoomId() == rhs.getRoomId() &&
-               lhs.getMaxSize() == rhs.getMaxSize();
+               lhs.getMaxSize() == rhs.getMaxSize() &&
+               lhs.getClients() == rhs.getClients();
         }
 
         /// Non-comparison operator overload.
@@ -285,6 +298,11 @@ public:
             return m_maxSize;
         }
 
+        std::vector<Client> getClients() const
+        {
+            return m_clients;
+        }
+
     private:
         std::string m_name;
         uint64_t m_creatorId;
@@ -308,6 +326,7 @@ public:
     /// Copy assignment operator.
     ClientAPI& operator=(const ClientAPI& other);
 
+    /// Stuff related to specific connnections.
 public:
     /// If the client UDP af_inet connection is ready.
     bool IsInetUDPReady();
@@ -348,6 +367,11 @@ public:
 public:
     /// Read incoming message to client.
     bool readMessage(std::vector<uint8_t> message);
+
+public:
+    /// Is client currently in a room.
+    /// \return True if the client is currently in the room.
+    bool clientInRoom();
 
 public:
     /// Getters.
@@ -433,7 +457,7 @@ public:
 public:
     /// Room stuff.
     /// Return a copy of the currently active rooms.
-    std::vector<Room> getActiveRooms()
+    std::vector<Room>& getActiveRooms()
     {
         return m_currentlyActiveRooms;
     }
@@ -452,7 +476,8 @@ private:
     ServerData m_data;
     uint64_t m_clientId = 0;
     boost::json::object m_currentMessage;
-    std::vector<Room> m_currentlyActiveRooms;
+
+    std::vector<ClientAPI::Room> m_currentlyActiveRooms;
 };
 
 } // namespace nexilis
