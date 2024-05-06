@@ -1,5 +1,3 @@
-#include "nexilis/client.hh"
-#include <cstdint>
 #include <nexilis/room_storage.hh>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
@@ -155,18 +153,21 @@ ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t room
 }
 
 /// ClientAPI::Room::Client
-ClientAPI::Room::Client::Client(uint64_t id)
-    : m_id(id)
+ClientAPI::Room::Client::Client(uint64_t id, const std::string& name)
+    : m_id(id),
+      m_name(name)
 {
 }
 
 ClientAPI::Room::Client::Client(const Client& other)
-    : m_id(other.m_id)
+    : m_id(other.m_id),
+      m_name(other.m_name)
 {
 }
 
 ClientAPI::Room::Client::Client(Client&& other)
-    : m_id(std::move(other.m_id))
+    : m_id(std::move(other.m_id)),
+      m_name(std::move(other.m_name))
 {
 }
 
@@ -175,6 +176,7 @@ ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(const Client& other)
     if (this != &other)
     {
         m_id = other.m_id;
+        m_name = other.m_name;
     }
     return *this;
 }
@@ -183,7 +185,8 @@ ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
 {
     if (this != &other)
     {
-        m_id = other.m_id;
+        m_id = std::move(other.m_id);
+        m_name = std::move(other.m_name);
     }
     return *this;
 }
@@ -329,6 +332,25 @@ bool ClientAPI::clientInRoom()
     return false;
 }
 
+uint64_t ClientAPI::clientRoomId()
+{
+    auto rooms = getActiveRooms();
+
+    for (auto r = rooms.begin(); r != rooms.end(); r++)
+    {
+        auto clients = r->getClients();
+        for (auto c = clients.begin(); c != clients.end(); c++)
+        {
+            if (c->getId() == m_clientId)
+            {
+                return r->getRoomId();
+            }
+        }
+    }
+
+    return 0;
+}
+
 bool ClientAPI::parse(boost::json::object json)
 {
     // Parsing message.
@@ -403,7 +425,13 @@ bool ClientAPI::parse(boost::json::object json)
                                 id = 0;
                             }
 
-                            ClientAPI::Room::Client newClient(id);
+                            std::string clientName;
+                            if (client.at("name").if_string())
+                            {
+                                clientName = client.at("name").as_string();
+                            }
+
+                            ClientAPI::Room::Client newClient(id, clientName);
                             roomClients.emplace_back(std::move(newClient));
                         }
                     }

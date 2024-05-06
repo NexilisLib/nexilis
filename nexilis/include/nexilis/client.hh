@@ -12,6 +12,9 @@
 namespace nexilis
 {
 
+/// This class has shitty name that should be changed. This "Client" only exists as a very specific client
+/// abstraction for the internal server API.
+
 /// Nexilis Server-side API.
 /// Abstraction layer for client interfaces such as sending messages with different protocols.
 class Client

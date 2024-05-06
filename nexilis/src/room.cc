@@ -6,14 +6,54 @@
 namespace nexilis
 {
 
-Room::Settings::Settings(uint64_t creatorId, const std::string& name, uint32_t maxSize)
+/// Room::Client
+Room::Client::Client(uint64_t clientId, const std::string& name)
+    : m_id(clientId),
+      m_name(name)
+{
+}
+
+Room::Client::Client(const Client& other)
+    : m_id(other.m_id),
+      m_name(other.m_name)
+{
+}
+
+Room::Client& Room::Client::operator=(const Client& other)
+{
+    if (this != &other)
+    {
+        m_id = other.m_id;
+        m_name = other.m_name;
+    }
+    return *this;
+}
+
+Room::Client::Client(Client&& other)
+    : m_id(std::move(other.m_id)),
+      m_name(std::move(other.m_name))
+{
+}
+
+Room::Client& Room::Client::operator=(Client&& other)
+{
+    if (this != &other)
+    {
+        m_id = std::move(other.m_id);
+        m_name = std::move(other.m_name);
+    }
+    return *this;
+}
+
+/// Room::Data
+Room::Data::Data(uint64_t creatorId, const std::string& name, uint32_t maxSize)
     : m_creatorId(creatorId),
       m_name(name),
       m_maxSize(maxSize)
 {
 }
 
-Room::Settings::Settings(const Settings& other)
+Room::Data::Data(const Data& other)
     : m_creatorId(other.m_creatorId),
       m_name(other.m_name),
       m_maxSize(other.m_maxSize),
@@ -21,7 +61,7 @@ Room::Settings::Settings(const Settings& other)
 {
 }
 
-Room::Settings::Settings(Settings&& other)
+Room::Data::Data(Data&& other)
     : m_creatorId(std::move(other.m_creatorId)),
       m_name(std::move(other.m_name)),
       m_maxSize(std::move(other.m_maxSize)),
@@ -29,7 +69,7 @@ Room::Settings::Settings(Settings&& other)
 {
 }
 
-Room::Settings& Room::Settings::operator=(const Settings& other)
+Room::Data& Room::Data::operator=(const Data& other)
 {
     if (this != &other)
     {
@@ -41,7 +81,7 @@ Room::Settings& Room::Settings::operator=(const Settings& other)
     return *this;
 }
 
-Room::Settings& Room::Settings::operator=(Settings&& other)
+Room::Data& Room::Data::operator=(Data&& other)
 {
     if (this != &other)
     {
@@ -53,13 +93,13 @@ Room::Settings& Room::Settings::operator=(Settings&& other)
     return *this;
 }
 
-Room::Room(const Settings& settings)
-    : m_settings(settings)
+Room::Room(const Data& data)
+    : m_data(data)
 {
 }
 
 Room::Room(Room&& other)
-    : m_settings(std::move(other.m_settings)),
+    : m_data(std::move(other.m_data)),
       m_clients(std::move(other.m_clients))
 {
 }
@@ -68,7 +108,7 @@ Room& Room::operator=(Room&& other)
 {
     if (this != &other)
     {
-        m_settings = std::move(other.m_settings);
+        m_data = std::move(other.m_data);
         m_clients = std::move(other.m_clients);
     }
     return *this;
@@ -76,7 +116,16 @@ Room& Room::operator=(Room&& other)
 
 bool Room::contains(uint64_t userId)
 {
-    return std::find(m_clients.begin(), m_clients.end(), userId) != m_clients.end();
+    auto& clients = m_clients;
+
+    for (auto c = clients.begin(); c != clients.end(); c++)
+    {
+        if (c->getId() == userId)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Room::joinRoom(uint64_t userId)
@@ -87,21 +136,21 @@ void Room::joinRoom(uint64_t userId)
     }
     else
     {
-        m_clients.emplace_back(userId);
+        m_clients.emplace_back(Room::Client(userId));
         Log::info("New user in room: ", getId(), " user: ", userId);
     }
 }
 
 void Room::leaveRoom(uint64_t userId)
 {
-    auto it = std::find(m_clients.begin(), m_clients.end(), userId);
-    if (it != m_clients.end())
+    auto& clients = m_clients;
+
+    for (auto c = clients.begin(); c != clients.end(); c++)
     {
-        m_clients.erase(it);
-    }
-    else
-    {
-        Log::warning("Trying to remove non-existing user from the room");
+        if (c->getId() == userId)
+        {
+            m_clients.erase(c);
+        }
     }
 }
 

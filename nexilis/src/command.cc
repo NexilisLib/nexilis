@@ -459,7 +459,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         return false;
                     }
 
-                    auto newRoom = Room(Room::Settings(client.getId(), roomName));
+                    auto newRoom = Room(Room::Data(client.getId(), roomName));
                     auto newRoomId = newRoom.getId();
                     RoomStorage::add(std::move(newRoom));
                     Log::debug("Added room ", newRoomId, " to persistent storage");

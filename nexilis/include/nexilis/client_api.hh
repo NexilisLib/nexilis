@@ -18,29 +18,6 @@ namespace nexilis
 class ClientAPI
 {
 public:
-    class Message
-    {
-    public:
-        Message(std::string address, std::vector<uint8_t> data)
-            : m_address(address), m_data(data)
-        {
-        }
-
-        std::string getAddress() const
-        {
-            return m_address;
-        }
-
-        std::vector<uint8_t> getData() const
-        {
-            return m_data;
-        }
-
-    private:
-        std::string m_address;
-        std::vector<uint8_t> m_data;
-    };
-
     class ServerData
     {
     public:
@@ -212,7 +189,7 @@ public:
         {
         public:
             /// Constuctor.
-            Client(uint64_t id);
+            Client(uint64_t id, const std::string& name = "UNDEFINED");
 
             /// Copy constructor.
             Client(const Client& other);
@@ -243,8 +220,18 @@ public:
             {
                 return m_id;
             }
+
+            /// Get the name if the client.
+            std::string getName() const
+            {
+                return m_name;
+            }
+
         private:
+            /// The id of the client.
             uint64_t m_id;
+
+            std::string m_name;
         };
 
         /// Constructor.
@@ -372,6 +359,9 @@ public:
     /// Is client currently in a room.
     /// \return True if the client is currently in the room.
     bool clientInRoom();
+
+    /// The room id of the room that the client is currently in.
+    uint64_t clientRoomId();
 
 public:
     /// Getters.

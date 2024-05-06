@@ -36,28 +36,15 @@ void Chat::showRooms(Window& window, int& highlight)
         m_rooms = newRooms;
     }
 
-    for (auto r = m_rooms.begin(); r != m_rooms.end(); r++)
-    {
-        auto clients = r->getClients();
-
-        if (clients.empty())
-        {
-            mvwprintw(window.getWindow(), 0, 0, "NO CLIENTS IN ROOMS");
-        }
-        else
-        {
-            mvwprintw(window.getWindow(), 0, 0, "SOME CLIENTS IN ROOMS");
-        }
-    }
-
-
     if (m_rooms.empty() && newRooms.empty())
     {
-        mvwprintw(window.getWindow(), 10, 10, "Nothing to show");
+        mvwprintw(window.getWindow(), 0, 0, "Nothing to show");
     }
     else if (m_clientApi->clientInRoom())
     {
-        mvwprintw(window.getWindow(), 10, 10, "Client already in a room");
+        std::stringstream ss;
+        ss << "In room: " << m_clientApi->clientRoomId();
+        mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
     }
     else
     {
@@ -92,15 +79,18 @@ void Chat::showRooms(Window& window, int& highlight)
 
 std::string Chat::roomData(const nexilis::ClientAPI::Room& room)
 {
-    std::string data;
-
     std::stringstream ss;
     ss << room.getName() << " ";
 
     auto clients = room.getClients();
     for (auto c = clients.begin(); c != clients.end(); c++)
     {
-        ss << c->getId() << " ";
+        ss << c->getName() << "(" << c->getId() << ")";
+
+        if (c != clients.end() - 1)
+        {
+            ss << ", ";
+        }
     }
     return ss.str();
 }
