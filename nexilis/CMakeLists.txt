@@ -12,9 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
     set(CMAKE_SYSTEM_NAME Windows)
-    set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
-    set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++ -lwinpthread")
+    include_directories("C:\\boost_1_85_0")
 else()
     # Boost system, json. Asio is header only
     find_package(Boost COMPONENTS system json REQUIRED)
@@ -80,6 +78,7 @@ add_library(nexilis ${SOURCES})
 target_include_directories(nexilis PUBLIC include)
 
 if(WIN32)
+    target_link_libraries(nexilis boost_json boost_system)
 else()
     target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
 endif()

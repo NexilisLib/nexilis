@@ -1,6 +1,9 @@
 #ifndef NEXILIS_LOGGER_LOGLEVEL_HH
 #define NEXILIS_LOGGER_LOGLEVEL_HH
 
+// windows.h
+#undef ERROR
+
 namespace nexilis::logger
 {
 
