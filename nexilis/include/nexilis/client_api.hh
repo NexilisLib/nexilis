@@ -231,11 +231,12 @@ public:
             /// The id of the client.
             uint64_t m_id;
 
+            /// The name of the client.
             std::string m_name;
         };
 
         /// Constructor.
-        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Client>& clients);
+        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Room::Client>& clients);
 
         /// Copy constructor.
         Room(const Room& other);

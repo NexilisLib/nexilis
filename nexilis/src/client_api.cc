@@ -430,6 +430,10 @@ bool ClientAPI::parse(boost::json::object json)
                             {
                                 clientName = client.at("name").as_string();
                             }
+                            else
+                            {
+                                clientName = "NO NAME!";
+                            }
 
                             ClientAPI::Room::Client newClient(id, clientName);
                             roomClients.emplace_back(std::move(newClient));

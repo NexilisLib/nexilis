@@ -6,16 +6,24 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# clang
+# Compile with clang.
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-# Boost
-find_package(Boost COMPONENTS system json REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
+if(WIN32)
+    set(CMAKE_SYSTEM_NAME Windows)
+    set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
+    set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++ -lwinpthread")
+else()
+    # Boost system, json. Asio is header only
+    find_package(Boost COMPONENTS system json REQUIRED)
+    include_directories(${Boost_INCLUDE_DIRS})
 
-# MySQL C API
-find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
+    # MySQL C API
+    find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
+endif()
+
 
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 
@@ -69,6 +77,9 @@ set(SOURCES
 )
 
 add_library(nexilis ${SOURCES})
-
 target_include_directories(nexilis PUBLIC include)
-target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
+
+if(WIN32)
+else()
+    target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
+endif()
