@@ -1,3 +1,5 @@
+#ifdef HAS_MYSQL_CLIENT_LIBRARY
+
 #ifndef NEXILIS_MYSQL_DATABASE_HH
 #define NEXILIS_MYSQL_DATABASE_HH
 
@@ -14,6 +16,7 @@ namespace nexilis::mysql
 /// Database class holds context to mysql or mariadb database.
 /// Database is not copyable, is is movable.
 /// This class should be ideally used in context of a reference.
+
 class Database
 {
 public:
@@ -112,4 +115,5 @@ private:
 
 } // namespace nexilis::mysql
 
+#endif
 #endif

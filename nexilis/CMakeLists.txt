@@ -20,6 +20,13 @@ else()
 
     # MySQL C API
     find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
+
+    if(MYSQL_CLIENT_LIBRARY)
+        add_definitions(-DHAS_MYSQL_CLIENT_LIBRARY)
+        message("MySQL client library found")
+    else()
+        message("MySQL client library not found")
+    endif()
 endif()
 
 
@@ -80,5 +87,9 @@ target_include_directories(nexilis PUBLIC include)
 if(WIN32)
     target_link_libraries(nexilis boost_json boost_system)
 else()
-    target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
+    if(MYSQL_CLIENT_LIBRARY)
+        target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
+    else()
+        target_link_libraries(nexilis ${Boost_LIBRARIES})
+    endif()
 endif()

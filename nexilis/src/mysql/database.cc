@@ -1,3 +1,5 @@
+#ifdef HAS_MYSQL_CLIENT_LIBRARY
+
 #include <nexilis/log.hh>
 #include <nexilis/mysql/database.hh>
 
@@ -189,3 +191,5 @@ Database::ResultSet Database::executeQuery(const std::string& query)
 }
 
 } // namespace nexilis::mysql
+
+#endif
