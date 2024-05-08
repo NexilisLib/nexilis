@@ -45,6 +45,32 @@ void Chat::showRooms(Window& window, int& highlight)
         std::stringstream ss;
         ss << "In room: " << m_clientApi->clientRoomId();
         mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
+
+        int textHeight = 5;
+        int textWidth = 30;
+        int startY = window.getWinSize().second / 2;
+        int startX = window.getWinSize().first / 2;
+
+        // Prompt message
+        mvwprintw(window.getWindow(), startY, startX, "Enter chat message:");
+
+        // Create a buffer to the store the input.
+        char buffer[100];
+        memset(buffer, 0, sizeof(buffer));
+
+        // Move cursor to the input box.
+        mvwprintw(window.getWindow(), 1, 1, "> ");
+        wrefresh(window.getWindow());
+
+        // Get input from the user
+        wgetstr(window.getWindow(), buffer);
+
+        // Print the input
+        mvprintw(startY + 2, startX, "You entered: %s", buffer);
+        refresh();
+
+        // Wait for user input to exit
+        getch();
     }
     else
     {
