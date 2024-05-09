@@ -151,7 +151,11 @@ void Program::inputHandler(Window& window)
                 case 10:
                 {
                     debug("Pressed enter in chat mode");
-                    size_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
+                    uint64_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
+                    if (roomId == 0)
+                    {
+                        break;
+                    }
                     std::stringstream ss;
                     ss << "Room id: " << roomId << std::endl;
                     debug(ss.str());

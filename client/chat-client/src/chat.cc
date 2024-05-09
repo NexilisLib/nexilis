@@ -58,19 +58,45 @@ void Chat::showRooms(Window& window, int& highlight)
         char buffer[100];
         memset(buffer, 0, sizeof(buffer));
 
-        // Move cursor to the input box.
-        mvwprintw(window.getWindow(), 1, 1, "> ");
-        wrefresh(window.getWindow());
+        // Position for the first character input
+        int xPos = startX + 2;
 
         // Get input from the user
-        wgetstr(window.getWindow(), buffer);
+        int ch;
+        int index = 0;
+        while ((ch = wgetch(window.getWindow())) != '\n' && index < 99)
+        {
+            // Check for special keys
+            if (ch == KEY_BACKSPACE)
+            {
+                if (index > 0)
+                {
+                    // Move cursor back one position
+                    //mvwprintw(window.getWindow(), startY + 1, xPos + index - 1, " ");
+                    index--;
+                }
+            }
+            else if (ch != 0)
+            {
+                // Display the character
+                //mvwprintw(window.getWindow(), startY + 1, xPos + index, "%c", ch);
+                buffer[index++] = static_cast<char>(ch);
+            }
+            //wrefresh(window.getWindow());
+        }
+        buffer[index] = '\0'; // Null-terminate the string
 
         // Print the input
         mvprintw(startY + 2, startX, "You entered: %s", buffer);
-        refresh();
 
-        // Wait for user input to exit
-        getch();
+        /*
+        if (strcmp(buffer, "") != 0)
+        {
+            debug(buffer);
+        }
+        */
+
+        wrefresh(window.getWindow());
     }
     else
     {
