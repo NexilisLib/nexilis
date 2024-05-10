@@ -109,7 +109,7 @@ void Program::inputHandler(Window& window)
 
         case State::chat:
         {
-            useVim(tolower(m_input));
+            //useVim(tolower(m_input));
             // Get information about the chat.
             // This is honestly pretty fucking stupid.
             if (updateRooms)

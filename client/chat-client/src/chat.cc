@@ -1,5 +1,6 @@
 #include "chat.hh"
 
+#include <cstdint>
 #include <ncurses.h>
 #include <sstream>
 
@@ -46,8 +47,6 @@ void Chat::showRooms(Window& window, int& highlight)
         ss << "In room: " << m_clientApi->clientRoomId();
         mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
 
-        int textHeight = 5;
-        int textWidth = 30;
         int startY = window.getWinSize().second / 2;
         int startX = window.getWinSize().first / 2;
 
@@ -55,48 +54,50 @@ void Chat::showRooms(Window& window, int& highlight)
         mvwprintw(window.getWindow(), startY, startX, "Enter chat message:");
 
         // Create a buffer to the store the input.
-        char buffer[100];
-        memset(buffer, 0, sizeof(buffer));
-
-        // Position for the first character input
-        int xPos = startX + 2;
+        std::vector<char> buffer;
 
         // Get input from the user
         int ch;
         int index = 0;
-        while ((ch = wgetch(window.getWindow())) != '\n' && index < 99)
+        while ((ch = wgetch(window.getWindow())) != '\n')
         {
             // Check for special keys
             if (ch == KEY_BACKSPACE)
             {
                 if (index > 0)
                 {
-                    // Move cursor back one position
-                    //mvwprintw(window.getWindow(), startY + 1, xPos + index - 1, " ");
+                    mvwprintw(window.getWindow(), startY + 1, startX + 2 + index - 1, " ");
+                    wrefresh(window.getWindow());
                     index--;
+                    buffer.pop_back(); // Remove last character from buffer
                 }
             }
-            else if (ch != 0)
+            else
             {
                 // Display the character
-                //mvwprintw(window.getWindow(), startY + 1, xPos + index, "%c", ch);
-                buffer[index++] = static_cast<char>(ch);
+                mvwprintw(window.getWindow(), startY + 1, startX + index, "%c", ch);
+                wrefresh(window.getWindow());
+                buffer.push_back(static_cast<char>(ch));
+                index++;
             }
-            //wrefresh(window.getWindow());
         }
-        buffer[index] = '\0'; // Null-terminate the string
+        std::string userString(buffer.begin(), buffer.end());
 
-        // Print the input
-        mvprintw(startY + 2, startX, "You entered: %s", buffer);
-
-        /*
-        if (strcmp(buffer, "") != 0)
+        if (!userString.empty())
         {
-            debug(buffer);
-        }
-        */
+            mvprintw(30, 30, "You entered: %s", userString.c_str());
+            wrefresh(window.getWindow());
 
-        wrefresh(window.getWindow());
+            std::stringstream ss;
+            ss << "NOT EMPTY: " << userString;
+            debug(ss.str());
+        }
+        else
+        {
+            mvprintw(40, 40, "Empty input");
+            wrefresh(window.getWindow());
+            debug("EMPTY\n");
+        }
     }
     else
     {
