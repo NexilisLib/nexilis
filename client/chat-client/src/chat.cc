@@ -1,8 +1,6 @@
 #include "chat.hh"
 
-#include <cstdint>
 #include <ncurses.h>
-#include <sstream>
 
 Chat::Chat(nexilis::ClientAPI* clientApi) :
     m_clientApi(clientApi)
@@ -56,30 +54,37 @@ void Chat::showRooms(Window& window, int& highlight)
         // Create a buffer to the store the input.
         std::vector<char> buffer;
 
-        // Get input from the user
         int ch;
+        char nextKey = -1;
         int index = 0;
-        while ((ch = wgetch(window.getWindow())) != '\n')
+
+        while (nextKey != 10)
         {
-            // Check for special keys
-            if (ch == KEY_BACKSPACE)
+            ch = wgetch(window.getWindow());
+            nextKey = static_cast<char>(tolower(ch));
+
+            if (nextKey != -1)
             {
-                if (index > 0)
+                if (ch == KEY_BACKSPACE)
                 {
-                    mvwprintw(window.getWindow(), startY + 1, startX + 2 + index - 1, " ");
+                    if (index > 0)
+                    {
+                        mvwprintw(window.getWindow(), startY + 1, startX + 2 + index - 1, " ");
+                        wrefresh(window.getWindow());
+                        index--;
+                        buffer.pop_back();
+                    }
+                }
+                else
+                {
+                    // Display the character
+                    mvwprintw(window.getWindow(), startY + 1, startX + index, "%c", nextKey);
                     wrefresh(window.getWindow());
-                    index--;
-                    buffer.pop_back(); // Remove last character from buffer
+                    buffer.push_back(nextKey);
+                    index++;
                 }
             }
-            else
-            {
-                // Display the character
-                mvwprintw(window.getWindow(), startY + 1, startX + index, "%c", ch);
-                wrefresh(window.getWindow());
-                buffer.push_back(static_cast<char>(ch));
-                index++;
-            }
+
         }
         std::string userString(buffer.begin(), buffer.end());
 
@@ -96,7 +101,6 @@ void Chat::showRooms(Window& window, int& highlight)
         {
             mvprintw(40, 40, "Empty input");
             wrefresh(window.getWindow());
-            debug("EMPTY\n");
         }
     }
     else
