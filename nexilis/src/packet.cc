@@ -39,6 +39,36 @@ std::vector<uint8_t> Packet::Info::rooms()
     return id;
 }
 
+std::vector<uint8_t> Packet::Communicate::broadcast(const std::string& message)
+{
+    auto id = clientIdentification();
+    id.emplace_back(7);
+    id.emplace_back(0);
+
+    auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
+    for (const auto& elem : messageVector)
+    {
+        id.emplace_back(elem);
+    }
+
+    return id;
+}
+
+std::vector<uint8_t> Packet::Communicate::multicast(const std::string& message)
+{
+    auto id = clientIdentification();
+    id.emplace_back(7);
+    id.emplace_back(1);
+
+    auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
+    for (const auto& elem : messageVector)
+    {
+        id.emplace_back(elem);
+    }
+
+    return id;
+}
+
 std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
 {
     auto id = clientIdentification();

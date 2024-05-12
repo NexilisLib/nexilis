@@ -1,9 +1,12 @@
 #include "chat.hh"
 
+#include <nexilis/packet.hh>
+
 #include <ncurses.h>
 
-Chat::Chat(nexilis::ClientAPI* clientApi) :
-    m_clientApi(clientApi)
+Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP) :
+    m_clientApi(clientApi),
+    m_sendTCP(sendTCP)
 {
 }
 
@@ -80,7 +83,7 @@ void Chat::showRooms(Window& window, int& highlight)
                     // Display the character
                     mvwprintw(window.getWindow(), startY + 1, startX + index, "%c", nextKey);
                     wrefresh(window.getWindow());
-                    buffer.push_back(nextKey);
+                    buffer.emplace_back(nextKey);
                     index++;
                 }
             }
@@ -88,10 +91,14 @@ void Chat::showRooms(Window& window, int& highlight)
         }
         std::string userString(buffer.begin(), buffer.end());
 
+
         if (!userString.empty())
         {
-            mvprintw(30, 30, "You entered: %s", userString.c_str());
+            mvprintw(startX + 10, startY + 10, "You entered: %s", userString.c_str());
             wrefresh(window.getWindow());
+
+            // TODO Perform input validation.
+            m_sendTCP(nexilis::Packet::Communicate::broadcast("moikakaiki"));
 
             std::stringstream ss;
             ss << "NOT EMPTY: " << userString;
@@ -101,6 +108,7 @@ void Chat::showRooms(Window& window, int& highlight)
         {
             mvprintw(40, 40, "Empty input");
             wrefresh(window.getWindow());
+            debug("empty");
         }
     }
     else

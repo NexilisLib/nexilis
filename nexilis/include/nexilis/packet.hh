@@ -31,6 +31,13 @@ public:
         static std::vector<uint8_t> rooms();
     };
 
+    class Communicate
+    {
+    public:
+        static std::vector<uint8_t> broadcast(const std::string& message);
+        static std::vector<uint8_t> multicast(const std::string& message);
+    };
+
     class Room
     {
     public:

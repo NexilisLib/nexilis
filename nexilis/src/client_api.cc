@@ -481,9 +481,16 @@ bool ClientAPI::parse(boost::json::object json)
                 return false;
             }
         }
+
+        else if (json["type"] == "broadcast")
+        {
+            Log::info("Received broadcast");
+            return true;
+        }
+
         else
         {
-            Log::info("UNDEFINED TYPE", json["type"]);
+            Log::info("UNDEFINED TYPE ", json["type"]);
             return false;
         }
     }

@@ -294,59 +294,53 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
         {
             switch (command[1])
             {
-                // Client sends message to everyone.
+                /// Send message to every client using the server version of client protocol.
                 case 0:
                 {
-                    switch (command[2])
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+
+                    std::map<std::string, boost::json::value> data{
+                            {"nexilis_status", boost::json::value(1)},
+                            // TODO start refactoring from "type" to "command".
+                            //{"command", boost::json::value("communicate")},
+                            {"type", boost::json::value("broadcast")},
+                            {"message", boost::json::value(Util::convertToString(payload))}};
+
+                    auto json = Json::createJSON(data);
+                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+
+                    auto& clients = ClientStorage::getAllClients();
+                    for (auto& c : clients)
                     {
-                        // Default state.
-                        case 0:
-                        {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-
-                            std::map<std::string, boost::json::value> data{
-                                    {"nexilis_status", boost::json::value(1)},
-                                    {"type", boost::json::value("broadcast")},
-                                    {"message", boost::json::value(Util::convertToString(payload))}};
-
-                            auto json = Json::createJSON(data);
-                            std::vector<uint8_t> message = Util::convertToByteVector(json);
-
-                            auto& clients = ClientStorage::getAllClients();
-                            for (auto& c : clients)
-                            {
-                                sendMessageToClient(message, c, protocol);
-                            }
-                            return true;
-                        }
-                        default:
-                            return false;
+                        sendMessageToClient(message, c, protocol);
                     }
+                    return true;
                 }
 
                 // Client sends a message to everyone except itself.
                 case 1:
                 {
-                    switch (command[2])
-                    {
-                        // Default state.
-                        case 0:
-                        {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto& clients = ClientStorage::getAllClients();
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 3);
 
-                            for (auto& c : clients)
-                            {
-                                if (c.getId() != client.getId())
-                                {
-                                    sendMessageToClient(payload, c, protocol);
-                                }
-                            }
-                            return true;
+                    std::map<std::string, boost::json::value> data{
+                            {"nexilis_status", boost::json::value(1)},
+                            //{"command", boost::json::value("communicate")},
+                            {"type", boost::json::value("multicast")},
+                            {"message", boost::json::value(Util::convertToString(payload))}};
+
+                    auto json = Json::createJSON(data);
+                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto& c : clients)
+                    {
+                        if (c.getId() != client.getId())
+                        {
+                            sendMessageToClient(message, c, protocol);
                         }
-                        default:
-                            return false;
                     }
+                    return true;
                 }
 
                 // Client sends a message in a room context.
@@ -431,40 +425,37 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 {
                     Log::debug("MainCommand room (create)");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    std::string roomName;
-                    try
+                    std::string roomName = Util::convertToString(payload);
+
+                    if (roomName.empty())
                     {
-                        roomName = Util::convertToString(payload);
-                    }
-                    catch(...)
-                    {
-                        Log::error("Cannot create string from input");
+                        Log::error("Room name cannot be empty");
                         return false;
                     }
-
-                    if (roomName == "")
+                    else if (roomName == "")
                     {
                         Log::error("Room name cannot be an empty string");
                         return false;
                     }
-                    if (roomName == " ")
+                    else if (roomName == " ")
                     {
                         Log::error("Room name cannot be equal to \" \" ");
                         return false;
                     }
-
-                    if (roomName.length() > 20)
+                    else if (roomName.length() > 20)
                     {
                         Log::error("Too long room name");
                         return false;
                     }
+                    else
+                    {
+                        auto newRoom = Room(Room::Data(client.getId(), roomName));
+                        auto newRoomId = newRoom.getId();
+                        RoomStorage::add(std::move(newRoom));
+                        Log::debug("Added room ", newRoomId, " to persistent storage");
 
-                    auto newRoom = Room(Room::Data(client.getId(), roomName));
-                    auto newRoomId = newRoom.getId();
-                    RoomStorage::add(std::move(newRoom));
-                    Log::debug("Added room ", newRoomId, " to persistent storage");
-
-                    return true;
+                        return true;
+                    }
                 }
 
                 default: return false;

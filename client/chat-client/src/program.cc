@@ -3,6 +3,7 @@
 #include "menu.hh"
 #include "nexilis_client.hh"
 
+#include <cstdint>
 #include <ncurses.h>
 
 #include <nexilis/json.hh>
@@ -16,7 +17,10 @@ Program::Program(int argc, char** argv)
       m_window(),
       m_menu(),
       m_nexilisClient(),
-      m_chat(&m_nexilisClient.getClientAPI())
+      m_chat(&m_nexilisClient.getClientAPI(), [this](const std::vector<uint8_t>& payload)
+         {
+            sendTCPMessage(payload);
+         })
 {
     m_nexilisClient.start();
 }
