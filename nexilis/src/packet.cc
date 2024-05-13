@@ -41,7 +41,6 @@ std::vector<uint8_t> Packet::Info::rooms()
 
 std::vector<uint8_t> Packet::Communicate::broadcast(const std::string& message)
 {
-    Log::info("broadcast called lol");
     auto id = clientIdentification();
     id.emplace_back(7);
     id.emplace_back(0);

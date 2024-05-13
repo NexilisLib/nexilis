@@ -185,16 +185,12 @@ public:
     {
     public:
         /// Communication type for communications in a room.
-        template <typename T>
         class Communication
         {
         public:
             /// Constructor.
             /// \param payload The data for the Communication messages.
-            /// This be initialized as a string.
-            /// There is a lot architechture behind Communication byte and how rooms work,
-            /// so this is pretty fun idea.
-            Communication(const T& payload, uint64_t clientId) :
+            Communication(const std::string& payload, uint64_t clientId) :
                 m_payload(payload),
                 m_clientId(clientId)
             {
@@ -237,18 +233,18 @@ public:
             }
 
             /// Get the payload data as a string.
-            std::string getPayloadAsString()
+            std::string getPayload() const
             {
-                return std::to_string(m_payload);
+                return m_payload;
             }
 
             /// Get client identification.
-            uint64_t getClientId()
+            uint64_t getClientId() const
             {
                 return m_clientId;
             }
         private:
-            T m_payload;
+            std::string m_payload;
             uint64_t m_clientId;
         };
 
@@ -302,6 +298,9 @@ public:
             /// The name of the client.
             std::string m_name;
         };
+
+        /// Default constructor.
+        Room() = default;
 
         /// Constructor.
         explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Room::Client>& clients);
@@ -359,14 +358,14 @@ public:
             return m_clients;
         }
 
-        void addBroadCast(Room::Communication<std::string>&& broadcast)
+        void addMessage(Room::Communication&& broadcast)
         {
-            m_broadcasts.emplace_back(std::move(broadcast));
+            m_roomMessages.emplace_back(std::move(broadcast));
         }
 
-        std::vector<Room::Communication<std::string>> getBroadcasts()
+        std::vector<Room::Communication> getMessages()
         {
-            return m_broadcasts;
+            return m_roomMessages;
         }
 
     private:
@@ -386,7 +385,7 @@ public:
         std::vector<Room::Client> m_clients;
 
         /// All of the broadcasts that have been sent in this room.
-        std::vector<Room::Communication<std::string>> m_broadcasts;
+        std::vector<Room::Communication> m_roomMessages;
     };
 
     /// Constructor.
@@ -544,6 +543,14 @@ public:
         return m_currentlyActiveRooms;
     }
 
+    /// Room where the client is currently in.
+    Room& roomWhereClientIs(uint64_t clientId);
+
+    ClientAPI::Room& getDefaultRoom()
+    {
+        return m_defaultRoom;
+    }
+
 private:
     /// Setters.
     void setClientId(size_t id)
@@ -553,9 +560,6 @@ private:
 
     /// Parse clientside data.
     bool parse(boost::json::object json);
-
-    /// Room where the client is currently in.
-    Room* roomWhereClientIs(uint64_t clientId);
 
 private:
     /// The initialization data for the ClientAPI.
@@ -567,6 +571,10 @@ private:
     /// Last TCP message received, bad lol.
     boost::json::object m_currentMessage;
 
+    /// Default room that as compared against.
+    ClientAPI::Room m_defaultRoom;
+
+    /// Rooms that client knows about.
     std::vector<ClientAPI::Room> m_currentlyActiveRooms;
 };
 

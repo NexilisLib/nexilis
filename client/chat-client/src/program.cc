@@ -118,7 +118,6 @@ void Program::inputHandler(Window& window)
             // This is honestly pretty fucking stupid.
             if (updateRooms)
             {
-                debug("Sent message to the server asking for server data");
                 sendTCPMessage(nexilis::Packet::Info::rooms());
 
                 updateRooms = false;

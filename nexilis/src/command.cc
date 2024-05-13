@@ -428,6 +428,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     else
                     {
                         room->joinRoom(client.getId());
+                        client.setRoomId(roomId);
                         assert(RoomStorage::getRoomById(roomId)->contains(client.getId()));
                         return true;
                     }

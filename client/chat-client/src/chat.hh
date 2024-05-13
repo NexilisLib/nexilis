@@ -39,6 +39,8 @@ public:
 private:
     void showRooms(Window& window, int& hightlight);
 
+    void updateChat(Window& window);
+
 private:
     nexilis::ClientAPI* m_clientApi;
     std::function<void(const std::vector<uint8_t>&)> m_sendTCP;

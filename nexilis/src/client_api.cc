@@ -98,7 +98,8 @@ ClientAPI::Room::Room(const Room& other) :
     m_creatorId(other.m_creatorId),
     m_roomId(other.m_roomId),
     m_maxSize(other.m_maxSize),
-    m_clients(other.m_clients)
+    m_clients(other.m_clients),
+    m_roomMessages(other.m_roomMessages)
 {
 }
 
@@ -107,7 +108,8 @@ ClientAPI::Room::Room(Room&& other) :
     m_creatorId(std::move(other.m_creatorId)),
     m_roomId(std::move(other.m_roomId)),
     m_maxSize(std::move(other.m_maxSize)),
-    m_clients(std::move(other.m_clients))
+    m_clients(std::move(other.m_clients)),
+    m_roomMessages(std::move(other.m_roomMessages))
 {
 }
 
@@ -120,6 +122,7 @@ ClientAPI::Room& ClientAPI::Room::operator=(const Room& other)
         m_roomId = other.m_roomId;
         m_maxSize = other.m_maxSize;
         m_clients = other.m_clients;
+        m_roomMessages = other.m_roomMessages;
     }
     return *this;
 }
@@ -133,6 +136,7 @@ ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
         m_roomId = std::move(other.m_roomId);
         m_maxSize = std::move(other.m_maxSize);
         m_clients = std::move(other.m_clients);
+        m_roomMessages = std::move(other.m_roomMessages);
     }
     return *this;
 }
@@ -196,7 +200,10 @@ ClientAPI::ClientAPI(ServerData data)
 
 ClientAPI::ClientAPI(ClientAPI&& other)
     : m_data(std::move(other.m_data)),
-      m_clientId(std::move(other.m_clientId))
+      m_clientId(std::move(other.m_clientId)),
+      m_currentMessage(std::move(other.m_currentMessage)),
+      m_defaultRoom(std::move(other.m_defaultRoom)),
+      m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms))
 {
 }
 
@@ -206,13 +213,19 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
     {
         m_data = std::move(other.m_data);
         m_clientId = std::move(other.m_clientId);
+        m_currentMessage = std::move(other.m_currentMessage);
+        m_defaultRoom = std::move(other.m_defaultRoom);
+        m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
     }
     return *this;
 }
 
 ClientAPI::ClientAPI(const ClientAPI& other)
     : m_data(other.m_data),
-      m_clientId(other.m_clientId)
+      m_clientId(other.m_clientId),
+      m_currentMessage(other.m_currentMessage),
+      m_defaultRoom(other.m_defaultRoom),
+      m_currentlyActiveRooms(other.m_currentlyActiveRooms)
 {
 }
 
@@ -222,6 +235,9 @@ ClientAPI& ClientAPI::operator=(const ClientAPI& other)
     {
         m_data = other.m_data;
         m_clientId = other.m_clientId;
+        m_currentMessage = other.m_currentMessage;
+        m_defaultRoom = other.m_defaultRoom;
+        m_currentlyActiveRooms = other.m_currentlyActiveRooms;
     }
     return *this;
 }
@@ -508,16 +524,22 @@ bool ClientAPI::parse(boost::json::object json)
 
             std::string message = json.at("message").as_string().c_str();
 
-            // Get client room.
-            auto clientRoom = roomWhereClientIs(id);
-            assert(clientRoom);
+            assert(!message.empty());
+            assert(id != 0);
+            assert(roomId != 0);
 
-            Room::Communication<std::string> broadcast(message, id);
 
-            clientRoom->addBroadCast(std::move(broadcast));
-
-            Log::info("Received broadcast");
-            return true;
+            for (auto room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+            {
+                if (room->getRoomId() == roomId)
+                {
+                    Room::Communication newMessage(message, id);
+                    room->addMessage(std::move(newMessage));
+                    return true;
+                }
+            }
+            Log::info("Client not in the room it's targetting!");
+            return false;
         }
 
         else
@@ -566,7 +588,7 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
     }
 }
 
-ClientAPI::Room* ClientAPI::roomWhereClientIs(uint64_t clientId)
+ClientAPI::Room& ClientAPI::roomWhereClientIs(uint64_t clientId)
 {
     for (auto& room : m_currentlyActiveRooms)
     {
@@ -574,12 +596,11 @@ ClientAPI::Room* ClientAPI::roomWhereClientIs(uint64_t clientId)
         {
             if (client.getId() == clientId)
             {
-                return &room;
+                return room;
             }
         }
     }
-
-    return nullptr;
+    return m_defaultRoom;
 }
 
 } // namespace nexilis
