@@ -8,7 +8,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -185,6 +184,75 @@ public:
     class Room
     {
     public:
+        /// Communication type for communications in a room.
+        template <typename T>
+        class Communication
+        {
+        public:
+            /// Constructor.
+            /// \param payload The data for the Communication messages.
+            /// This be initialized as a string.
+            /// There is a lot architechture behind Communication byte and how rooms work,
+            /// so this is pretty fun idea.
+            Communication(const T& payload, uint64_t clientId) :
+                m_payload(payload),
+                m_clientId(clientId)
+            {
+            }
+
+            /// Copy constructor.
+            Communication(const Communication& other) :
+                m_payload(other.m_payload),
+                m_clientId(other.m_clientId)
+            {
+            }
+
+            /// Copy assignment.
+            Communication& operator=(const Communication& other)
+            {
+                if (this != &other)
+                {
+                    m_payload = other.m_payload;
+                    m_clientId = other.m_clientId;
+                }
+                return *this;
+            }
+
+            /// Move constructor.
+            Communication(Communication&& other) :
+                m_payload(std::move(other.m_payload)),
+                m_clientId(std::move(other.m_clientId))
+            {
+            }
+
+            /// Move assignment operator.
+            Communication& operator=(Communication& other)
+            {
+                if (this != &other)
+                {
+                    m_payload = std::move(other.m_payload);
+                    m_clientId = std::move(other.m_clientId);
+                }
+                return *this;
+            }
+
+            /// Get the payload data as a string.
+            std::string getPayloadAsString()
+            {
+                return std::to_string(m_payload);
+            }
+
+            /// Get client identification.
+            uint64_t getClientId()
+            {
+                return m_clientId;
+            }
+        private:
+            T m_payload;
+            uint64_t m_clientId;
+        };
+
+        /// Client type for clients in a room.
         class Client
         {
         public:
@@ -286,17 +354,39 @@ public:
             return m_maxSize;
         }
 
-        std::vector<Client> getClients() const
+        std::vector<Room::Client> getClients() const
         {
             return m_clients;
         }
 
+        void addBroadCast(Room::Communication<std::string>&& broadcast)
+        {
+            m_broadcasts.emplace_back(std::move(broadcast));
+        }
+
+        std::vector<Room::Communication<std::string>> getBroadcasts()
+        {
+            return m_broadcasts;
+        }
+
     private:
+        /// The name of the room.
         std::string m_name;
+
+        /// The id of the creator of this room.
         uint64_t m_creatorId;
+
+        /// The identifier for this room.
         uint64_t m_roomId;
+
+        /// The max amount of clients in this room.
         int m_maxSize;
-        std::vector<Client> m_clients;
+
+        /// All clients currently inside this room.
+        std::vector<Room::Client> m_clients;
+
+        /// All of the broadcasts that have been sent in this room.
+        std::vector<Room::Communication<std::string>> m_broadcasts;
     };
 
     /// Constructor.
@@ -357,6 +447,7 @@ public:
     bool readMessage(std::vector<uint8_t> message);
 
 public:
+    /// Room stuff
     /// Is client currently in a room.
     /// \return True if the client is currently in the room.
     bool clientInRoom();
@@ -463,9 +554,17 @@ private:
     /// Parse clientside data.
     bool parse(boost::json::object json);
 
+    /// Room where the client is currently in.
+    Room* roomWhereClientIs(uint64_t clientId);
+
 private:
+    /// The initialization data for the ClientAPI.
     ServerData m_data;
+
+    /// The client id for the user of the client API.
     uint64_t m_clientId = 0;
+
+    /// Last TCP message received, bad lol.
     boost::json::object m_currentMessage;
 
     std::vector<ClientAPI::Room> m_currentlyActiveRooms;

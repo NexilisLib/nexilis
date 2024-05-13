@@ -1,15 +1,9 @@
 #include <nexilis/room_storage.hh>
-#include <boost/json/object.hpp>
-#include <boost/json/serialize.hpp>
 #include <nexilis/client_api.hh>
-#include <nexilis/log.hh>
-
 #include <nexilis/common/util.hh>
 #include <nexilis/json.hh>
 #include <nexilis/packet.hh>
-
-#include <ostream>
-#include <fstream>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -152,7 +146,7 @@ ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t room
 {
 }
 
-/// ClientAPI::Room::Client
+// ClientAPI::Room::Client
 ClientAPI::Room::Client::Client(uint64_t id, const std::string& name)
     : m_id(id),
       m_name(name)
@@ -482,8 +476,46 @@ bool ClientAPI::parse(boost::json::object json)
             }
         }
 
-        else if (json["type"] == "broadcast")
+        else if (json["type"] == "room_message")
         {
+            uint64_t id;
+            if (json.at("id").if_uint64())
+            {
+                id = json.at("id").as_uint64();
+            }
+            else if (json.at("id").if_int64())
+            {
+                id = static_cast<uint64_t>(json.at("id").as_int64());
+            }
+            else
+            {
+                id = 0;
+            }
+
+            uint64_t roomId;
+            if (json.at("roomId").if_uint64())
+            {
+                roomId = json.at("roomId").as_uint64();
+            }
+            else if (json.at("roomId").if_int64())
+            {
+                roomId = static_cast<uint64_t>(json.at("roomId").as_int64());
+            }
+            else
+            {
+                roomId = 0;
+            }
+
+            std::string message = json.at("message").as_string().c_str();
+
+            // Get client room.
+            auto clientRoom = roomWhereClientIs(id);
+            assert(clientRoom);
+
+            Room::Communication<std::string> broadcast(message, id);
+
+            clientRoom->addBroadCast(std::move(broadcast));
+
             Log::info("Received broadcast");
             return true;
         }
@@ -532,6 +564,22 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
         Log::info("Received message that is not read by the server");
         return false;
     }
+}
+
+ClientAPI::Room* ClientAPI::roomWhereClientIs(uint64_t clientId)
+{
+    for (auto& room : m_currentlyActiveRooms)
+    {
+        for (auto& client : room.getClients())
+        {
+            if (client.getId() == clientId)
+            {
+                return &room;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 } // namespace nexilis

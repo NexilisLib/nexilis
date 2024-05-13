@@ -36,6 +36,7 @@ public:
     public:
         static std::vector<uint8_t> broadcast(const std::string& message);
         static std::vector<uint8_t> multicast(const std::string& message);
+        static std::vector<uint8_t> roomMessage(const std::string& message);
     };
 
     class Room

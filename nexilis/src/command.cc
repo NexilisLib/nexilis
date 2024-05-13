@@ -292,12 +292,13 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
         case MainCommand::communicate:
         {
+            /// 0, and 1 need some work, running 2 as default.
             switch (command[1])
             {
                 /// Send message to every client using the server version of client protocol.
                 case 0:
                 {
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
@@ -320,7 +321,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Client sends a message to everyone except itself.
                 case 1:
                 {
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
@@ -346,6 +347,34 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Client sends a message in a room context.
                 case 2:
                 {
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+
+                    // Get the room id where client is currently in.
+                    auto roomId = client.getRoomId();
+
+                    std::map<std::string, boost::json::value> data{
+                            {"nexilis_status", boost::json::value(1)},
+                            //{"command", boost::json::value("communicate")},
+                            {"type", boost::json::value("room_message")},
+                            {"id", boost::json::value(client.getId())},
+                            {"roomId", boost::json::value(roomId)},
+                            {"message", boost::json::value(Util::convertToString(payload))}};
+
+                    auto json = Json::createJSON(data);
+                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+
+                    // Accessing server side clients.
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto& c : clients)
+                    {
+                        /// If the client has the same room id as the sender of the message.
+                        if (c.getRoomId() == roomId)
+                        {
+                            sendMessageToClient(message, c, protocol);
+                        }
+                    }
+                    return true;
                 }
             }
             return false;

@@ -22,7 +22,7 @@ void Chat::update(Window& window, int& hightlight, State state)
         {
             werase(window.getWindow());
             showRooms(window, hightlight);
-            wrefresh(window.getWindow());
+            //wrefresh(window.getWindow());
             break;
         }
     }
@@ -97,8 +97,7 @@ void Chat::showRooms(Window& window, int& highlight)
             mvprintw(startX + 10, startY + 10, "You entered: %s", userString.c_str());
             wrefresh(window.getWindow());
 
-            // TODO Perform input validation.
-            m_sendTCP(nexilis::Packet::Communicate::broadcast("moikakaiki"));
+            m_sendTCP(nexilis::Packet::Communicate::roomMessage("moikakaiki"));
 
             std::stringstream ss;
             ss << "NOT EMPTY: " << userString;
