@@ -8,31 +8,30 @@
 #include <boost/asio.hpp>
 #include <boost/json.hpp>
 
-namespace nexilis::boost
+namespace nexilis
 {
-namespace boost = ::boost;
 
-class TCPClient : public Protocol,
+class BoostTCPClient : public Protocol,
                   public ClientProtocol
 {
 public:
     /// Constructor.
-    TCPClient(ClientAPI& api);
+    BoostTCPClient(ClientAPI& api);
 
     /// Destructor.
-    ~TCPClient();
+    ~BoostTCPClient();
 
     /// Move constructor.
-    TCPClient(TCPClient&& other);
+    BoostTCPClient(BoostTCPClient&& other);
 
     /// Move assignment operator.
-    TCPClient& operator=(TCPClient&& other);
+    BoostTCPClient& operator=(BoostTCPClient&& other);
 
     /// Deleted copy constructor.
-    TCPClient(const TCPClient& other) = delete;
+    BoostTCPClient(const BoostTCPClient& other) = delete;
 
     /// Deleted copy assignment operator.
-    TCPClient& operator=(const TCPClient& other) = delete;
+    BoostTCPClient& operator=(const BoostTCPClient& other) = delete;
 
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
@@ -61,7 +60,7 @@ private:
 
 private:
     bool m_stopped = false;
-    std::unique_ptr<::boost::asio::io_context> m_ioContext;
+    std::unique_ptr<boost::asio::io_context> m_ioContext;
     boost::asio::ip::tcp::socket m_socket;
     boost::asio::ip::tcp::resolver m_resolver;
     boost::asio::ip::tcp::resolver::iterator m_iterator;
@@ -69,6 +68,6 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
 };
 
-} // namespace nexilis::boost
+} // namespace nexilis
 
 #endif

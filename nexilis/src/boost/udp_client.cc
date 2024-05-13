@@ -1,17 +1,17 @@
-#include "nexilis/loggable.hh"
-#include "nexilis/nexilis_macros.hh"
-#include "nexilis/packet.hh"
+#include <nexilis/boost/udp_client.hh>
+#include <nexilis/nexilis_macros.hh>
+#include <nexilis/log.hh>
+
 #include <boost/asio/ip/address.hpp>
+
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <nexilis/boost/udp_client.hh>
-#include <nexilis/log.hh>
 
-namespace nexilis::boost
+namespace nexilis
 {
 
-UDPClient::UDPClient(ClientAPI& clientApi)
+BoostUDPClient::BoostUDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
       Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
@@ -22,7 +22,7 @@ UDPClient::UDPClient(ClientAPI& clientApi)
 {
 }
 
-UDPClient::~UDPClient()
+BoostUDPClient::~BoostUDPClient()
 {
     m_socket.close();
     m_ioContext->stop();
@@ -38,7 +38,7 @@ UDPClient::~UDPClient()
     }
 }
 
-UDPClient::UDPClient(UDPClient&& other)
+BoostUDPClient::BoostUDPClient(BoostUDPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       Loggable(std::move(other)),
@@ -54,7 +54,7 @@ UDPClient::UDPClient(UDPClient&& other)
     other.m_mutex = nullptr;
 }
 
-UDPClient& UDPClient::operator=(UDPClient&& other)
+BoostUDPClient& BoostUDPClient::operator=(BoostUDPClient&& other)
 {
     if (this != &other)
     {
@@ -75,14 +75,14 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
     return *this;
 }
 
-void UDPClient::start()
+void BoostUDPClient::start()
 {
     m_ioContextThread = std::thread([this](){ m_ioContext->run(); });
     m_socket.open(boost::asio::ip::udp::v4());
-    m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
+    m_receiveMessageThread = std::thread(&BoostUDPClient::receiveLoop, this);
 }
 
-void UDPClient::receiveLoop()
+void BoostUDPClient::receiveLoop()
 {
     while (m_socket.is_open())
     {
@@ -94,7 +94,7 @@ void UDPClient::receiveLoop()
     }
 }
 
-void UDPClient::sendMessage(const std::vector<uint8_t>& payload)
+void BoostUDPClient::sendMessage(const std::vector<uint8_t>& payload)
 {
     if (m_socket.is_open())
     {
@@ -108,4 +108,4 @@ void UDPClient::sendMessage(const std::vector<uint8_t>& payload)
 }
 
 
-} // namespace nexilis::boost
+} // namespace nexilis

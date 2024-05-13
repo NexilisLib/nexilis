@@ -6,10 +6,10 @@
 
 #include <thread>
 
-namespace nexilis::boost
+namespace nexilis
 {
 
-TCPServer::TCPServer(int serverPort)
+BoostTCPServer::BoostTCPServer(int serverPort)
     : Loggable(Protocol::typeToString(getType()), __FILE__),
       m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
@@ -18,7 +18,7 @@ TCPServer::TCPServer(int serverPort)
 {
 }
 
-TCPServer::TCPServer(TCPServer&& other)
+BoostTCPServer::BoostTCPServer(BoostTCPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
       Loggable(std::move(other)),
@@ -30,7 +30,7 @@ TCPServer::TCPServer(TCPServer&& other)
 {
 }
 
-TCPServer& TCPServer::operator=(TCPServer&& other)
+BoostTCPServer& BoostTCPServer::operator=(BoostTCPServer&& other)
 {
     if (this != &other)
     {
@@ -46,12 +46,12 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     return *this;
 }
 
-TCPServer::~TCPServer()
+BoostTCPServer::~BoostTCPServer()
 {
     stop();
 }
 
-void TCPServer::start()
+void BoostTCPServer::start()
 {
     m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
 
@@ -64,7 +64,7 @@ void TCPServer::start()
     });
 }
 
-void TCPServer::stop()
+void BoostTCPServer::stop()
 {
     m_ioContext->stop();
 
@@ -78,13 +78,13 @@ void TCPServer::stop()
     }
 }
 
-bool TCPServer::startListening()
+bool BoostTCPServer::startListening()
 {
     m_acceptor.listen();
     return true;
 }
 
-bool TCPServer::acceptClients()
+bool BoostTCPServer::acceptClients()
 {
     while (true)
     {
@@ -194,7 +194,7 @@ bool TCPServer::acceptClients()
     }
 }
 
-bool TCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket)
+bool BoostTCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket)
 {
     if (clientSocket.is_open())
     {
@@ -204,4 +204,4 @@ bool TCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::
     return false;
 }
 
-} // namespace nexilis::boost
+} // namespace nexilis

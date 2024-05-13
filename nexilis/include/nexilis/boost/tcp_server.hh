@@ -9,32 +9,31 @@
 #include <boost/asio.hpp>
 #include <boost/json.hpp>
 
-namespace nexilis::boost
+namespace nexilis
 {
-namespace boost = ::boost;
 
-class TCPServer : public Protocol,
+class BoostTCPServer : public Protocol,
                   public ServerProtocol,
                   public Loggable
 {
 public:
     /// Constructor.
-    TCPServer(int serverPort);
+    BoostTCPServer(int serverPort);
 
     /// Destructor.
-    ~TCPServer();
+    ~BoostTCPServer();
 
     /// Move constructor.
-    TCPServer(TCPServer&& other);
+    BoostTCPServer(BoostTCPServer&& other);
 
     /// Move assignment operator.
-    TCPServer& operator=(TCPServer&& other);
+    BoostTCPServer& operator=(BoostTCPServer&& other);
 
     /// Deleted move constructor.
-    TCPServer(const TCPServer&) = delete;
+    BoostTCPServer(const BoostTCPServer&) = delete;
 
     /// Deleted move assignment operator.
-    TCPServer& operator=(const TCPServer&) = delete;
+    BoostTCPServer& operator=(const BoostTCPServer&) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -63,6 +62,6 @@ private:
     std::thread m_ioContextThread;
 };
 
-} // namespace nexilis::boost
+} // namespace nexilis
 
 #endif

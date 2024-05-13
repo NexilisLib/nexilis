@@ -4,10 +4,10 @@
 
 #include <thread>
 
-namespace nexilis::boost
+namespace nexilis
 {
 
-TCPClient::TCPClient(ClientAPI& api)
+BoostTCPClient::BoostTCPClient(ClientAPI& api)
     : ClientProtocol(&api),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_socket(*m_ioContext),
@@ -18,7 +18,7 @@ TCPClient::TCPClient(ClientAPI& api)
 {
 }
 
-TCPClient::TCPClient(TCPClient&& other)
+BoostTCPClient::BoostTCPClient(BoostTCPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
@@ -34,7 +34,7 @@ TCPClient::TCPClient(TCPClient&& other)
     other.m_mutex = nullptr;
 }
 
-TCPClient& TCPClient::operator=(TCPClient&& other)
+BoostTCPClient& BoostTCPClient::operator=(BoostTCPClient&& other)
 {
     if (this != &other)
     {
@@ -55,12 +55,12 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
     return *this;
 }
 
-TCPClient::~TCPClient()
+BoostTCPClient::~BoostTCPClient()
 {
     stop();
 }
 
-void TCPClient::stop()
+void BoostTCPClient::stop()
 {
     m_stopped = true;
     m_socket.close();
@@ -76,12 +76,12 @@ void TCPClient::stop()
     }
 }
 
-void TCPClient::sendMessage(const std::vector<uint8_t>& message)
+void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message)
 {
     send(message);
 }
 
-bool TCPClient::connectToServer()
+bool BoostTCPClient::connectToServer()
 {
     try
     {
@@ -94,7 +94,7 @@ bool TCPClient::connectToServer()
     return m_socket.is_open();
 }
 
-bool TCPClient::send(const std::vector<uint8_t>& data)
+bool BoostTCPClient::send(const std::vector<uint8_t>& data)
 {
     if (m_socket.is_open())
     {
@@ -122,7 +122,7 @@ bool TCPClient::send(const std::vector<uint8_t>& data)
     }
 }
 
-bool TCPClient::receive(std::vector<uint8_t>& buffer)
+bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)
 {
     assert(buffer.size() == 0);
 
@@ -151,7 +151,7 @@ bool TCPClient::receive(std::vector<uint8_t>& buffer)
     return true;
 }
 
-void TCPClient::start()
+void BoostTCPClient::start()
 {
     if (connectToServer())
     {
@@ -161,7 +161,7 @@ void TCPClient::start()
                                         { m_ioContext->run(); });
 
         // Start a separate thread to continuously receive messages.
-        m_receiveThread = std::thread(&TCPClient::receiveLoop, this);
+        m_receiveThread = std::thread(&BoostTCPClient::receiveLoop, this);
     }
     else
     {
@@ -169,7 +169,7 @@ void TCPClient::start()
     }
 }
 
-void TCPClient::receiveLoop()
+void BoostTCPClient::receiveLoop()
 {
     while (true)
     {
@@ -197,4 +197,4 @@ void TCPClient::receiveLoop()
     }
 }
 
-} // namespace nexilis::boost
+} // namespace nexilis

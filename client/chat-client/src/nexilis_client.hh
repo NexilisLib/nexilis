@@ -24,12 +24,12 @@ public:
         return m_clientAPI;
     }
 
-    nexilis::boost::TCPClient& getTCPClient()
+    nexilis::BoostTCPClient& getTCPClient()
     {
         return m_tcpClient;
     }
 
-    nexilis::boost::UDPClient& getUDPClient()
+    nexilis::BoostUDPClient& getUDPClient()
     {
         return m_udpClient;
     }
@@ -38,8 +38,8 @@ private:
     nexilis::ClientAPI::ServerData m_serverData;
     nexilis::ClientAPI m_clientAPI;
     nexilis::ProtocolManager m_protocolManager;
-    nexilis::boost::UDPClient m_udpClient;
-    nexilis::boost::TCPClient m_tcpClient;
+    nexilis::BoostUDPClient m_udpClient;
+    nexilis::BoostTCPClient m_tcpClient;
 };
 
 #endif

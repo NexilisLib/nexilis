@@ -7,31 +7,30 @@
 
 #include <boost/asio.hpp>
 
-namespace nexilis::boost
+namespace nexilis
 {
-namespace boost = ::boost;
 
-class UDPServer : public Protocol,
+class BoostUDPServer : public Protocol,
                   public ServerProtocol
 {
 public:
     /// Constructor.
-    UDPServer(int port);
+    BoostUDPServer(int port);
 
     /// Destructor.
-    ~UDPServer();
+    ~BoostUDPServer();
 
     /// Move constructor.
-    UDPServer(UDPServer&& other);
+    BoostUDPServer(BoostUDPServer&& other);
 
     /// Move assignment operator.
-    UDPServer& operator=(UDPServer&& other);
+    BoostUDPServer& operator=(BoostUDPServer&& other);
 
     /// Deleted copy constructor.
-    UDPServer(const UDPServer&) = delete;
+    BoostUDPServer(const BoostUDPServer&) = delete;
 
     /// Deleted copy assignment operator.
-    UDPServer& operator=(const UDPServer&) = delete;
+    BoostUDPServer& operator=(const BoostUDPServer&) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -61,6 +60,6 @@ private:
     std::thread m_receiveThread;
 };
 
-} // namespace nexilis::boost
+} // namespace nexilis
 
 #endif

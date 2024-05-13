@@ -7,32 +7,31 @@
 
 #include <boost/asio.hpp>
 
-namespace nexilis::boost
+namespace nexilis
 {
-namespace boost = ::boost;
 
-class UDPClient : public Protocol,
+class BoostUDPClient : public Protocol,
                   public ClientProtocol,
                   public Loggable
 {
 public:
     /// Constructor.
-    UDPClient(ClientAPI& api);
+    BoostUDPClient(ClientAPI& api);
 
     /// Destructor.
-    ~UDPClient();
+    ~BoostUDPClient();
 
     /// Move constructor.
-    UDPClient(UDPClient&& other);
+    BoostUDPClient(BoostUDPClient&& other);
 
     /// Move assignment operator.
-    UDPClient& operator=(UDPClient&& other);
+    BoostUDPClient& operator=(BoostUDPClient&& other);
 
     /// Deleted copy constructor.
-    UDPClient(const UDPClient&) = delete;
+    BoostUDPClient(const BoostUDPClient&) = delete;
 
     /// Deleted copy assignment operator.
-    UDPClient& operator=(const UDPClient&) = delete;
+    BoostUDPClient& operator=(const BoostUDPClient&) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -60,13 +59,13 @@ private:
     std::thread m_receiveMessageThread;
 
 private:
-    std::unique_ptr<::boost::asio::io_context> m_ioContext;
+    std::unique_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<std::mutex> m_mutex;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
     boost::asio::ip::udp::socket m_socket;
     std::vector<char> m_receiveBuffer;
 };
 
-} // namespace nexilis::boost
+} // namespace nexilis
 
 #endif

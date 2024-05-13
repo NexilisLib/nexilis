@@ -15,8 +15,8 @@ nexilis::ClientAPI::ServerData getServerData()
 NexilisClient::NexilisClient()
     : m_serverData(getServerData()),
       m_clientAPI(m_serverData),
-      m_udpClient(m_protocolManager.createProtocol<nexilis::boost::UDPClient>(m_clientAPI)),
-      m_tcpClient(m_protocolManager.createProtocol<nexilis::boost::TCPClient>(m_clientAPI))
+      m_udpClient(m_protocolManager.createProtocol<nexilis::BoostUDPClient>(m_clientAPI)),
+      m_tcpClient(m_protocolManager.createProtocol<nexilis::BoostTCPClient>(m_clientAPI))
 {
 }
 

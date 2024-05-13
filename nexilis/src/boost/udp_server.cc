@@ -4,10 +4,10 @@
 #include <nexilis/log.hh>
 #include <nexilis/command.hh>
 
-namespace nexilis::boost
+namespace nexilis
 {
 
-UDPServer::UDPServer(int port)
+BoostUDPServer::BoostUDPServer(int port)
     : m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_remoteEndpoint(boost::asio::ip::udp::v4(), port),
@@ -19,7 +19,7 @@ UDPServer::UDPServer(int port)
     m_socket.set_option(reuse);
 }
 
-UDPServer::~UDPServer()
+BoostUDPServer::~BoostUDPServer()
 {
     m_socket.close();
     m_ioContext->stop();
@@ -35,7 +35,7 @@ UDPServer::~UDPServer()
     }
 }
 
-UDPServer::UDPServer(UDPServer&& other)
+BoostUDPServer::BoostUDPServer(BoostUDPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
       m_ioContext(std::move(other.m_ioContext)),
@@ -48,7 +48,7 @@ UDPServer::UDPServer(UDPServer&& other)
 {
 }
 
-UDPServer& UDPServer::operator=(UDPServer&& other)
+BoostUDPServer& BoostUDPServer::operator=(BoostUDPServer&& other)
 {
     if (this != &other)
     {
@@ -65,15 +65,15 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
     return *this;
 }
 
-void UDPServer::start()
+void BoostUDPServer::start()
 {
     m_ioContextThread = std::thread([this]()
                                     { m_ioContext->run(); });
 
-    m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
+    m_receiveThread = std::thread(&BoostUDPServer::receiveFromClients, this);
 }
 
-void UDPServer::receiveFromClients()
+void BoostUDPServer::receiveFromClients()
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
 
@@ -123,4 +123,4 @@ void UDPServer::receiveFromClients()
     Log::error("Socket is not open!");
 }
 
-} // namespace nexilis::boost
+} // namespace nexilis
