@@ -2,7 +2,7 @@
 #define NEXILIS_JSON_HH
 
 #include <boost/json/kind.hpp>
-#include <nexilis/client.hh>
+#include <nexilis/user.hh>
 #include <nexilis/room.hh>
 
 #include <boost/json.hpp>
@@ -69,7 +69,7 @@ private:
     static ::boost::json::array roomsToJSON(const std::vector<Room>& rooms);
 
     /// Get json data from client vector.
-    static ::boost::json::array clientsToJSON(const std::vector<Client>& clients);
+    static ::boost::json::array clientsToJSON(const std::vector<User>& clients);
 };
 
 } // namespace nexilis

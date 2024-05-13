@@ -8,7 +8,7 @@ namespace nexilis
 
 Authentication* Command::m_authentication = nullptr;
 
-bool Command::read(const char* command_data, size_t lenght, Client& client, Protocol& protocol)
+bool Command::read(const char* command_data, size_t lenght, User& client, Protocol& protocol)
 {
     return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol);
 }
@@ -25,7 +25,7 @@ std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_dat
     return result;
 }
 
-bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol)
+bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol)
 {
     Log::debug("Command: Nexilis command sequence");
     for (uint8_t commandByte : command)
@@ -44,7 +44,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 /// requires privileges.
                 case 0:
                 {
-                    if (!client.hasRootAccess())
+                    if (!user.hasRootAccess())
                     {
                         Log::error("Client needs root access for changing id");
                         /// TODO return errormessage.
@@ -61,10 +61,10 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     for (auto c = clients.begin(); c != clients.end(); c++)
                     {
-                        if (*c == client)
+                        if (*c == user)
                         {
                             assert(c->hasRootAccess());
-                            assert(client.hasRootAccess());
+                            assert(user.hasRootAccess());
                             c->setId(id);
                             return true;
                         }
@@ -84,7 +84,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     for (auto c = clients.begin(); c != clients.end(); c++)
                     {
-                        if (*c == client)
+                        if (*c == user)
                         {
                             c->setUsername(username);
                             return true;
@@ -107,15 +107,15 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 // Get client id.
                 case 0:
                 {
-                    Log::info("Client id before send: ", client.getId());
+                    Log::info("Client id before send: ", user.getId());
                     // Fix this, nexilis_status = 1 is correct tho.
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
                             { "type", boost::json::value("set_client_id")},
-                            {"set_client_id", boost::json::value(client.getId())}};
+                            {"set_client_id", boost::json::value(user.getId())}};
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
-                    sendMessageToClient(message, client, protocol);
+                    sendMessageToClient(message, user, protocol);
 
                     Log::info("sent message to client");
                     return true;
@@ -173,7 +173,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     std::string stringData = boost::json::serialize(message);
                     auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
 
-                    sendMessageToClient(data, client, protocol);
+                    sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
                     return true;
                 }
@@ -186,7 +186,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     std::string stringData = boost::json::serialize(message);
                     auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
 
-                    sendMessageToClient(data, client, protocol);
+                    sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::clientInfo");
                     return true;
                 }
@@ -199,7 +199,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     std::string stringData = boost::json::serialize(message);
                     auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
 
-                    sendMessageToClient(data, client, protocol);
+                    sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::roomInfo");
                     return true;
                 }
@@ -229,8 +229,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     {
                         if (m_authentication->isRootPassword(password))
                         {
-                            client.setRootAccess(true);
-                            Log::info("Client ", client.getIPAddress(), " has root access!");
+                            user.setRootAccess(true);
+                            Log::info("Client ", user.getIPAddress(), " has root access!");
                             return true;
                         }
                         else
@@ -256,8 +256,8 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     {
                         if (m_authentication->isPassphrase(password))
                         {
-                            client.setCommonAccess(true);
-                            Log::info("Client ", client.getIPAddress(), " has common access!");
+                            user.setCommonAccess(true);
+                            Log::info("Client ", user.getIPAddress(), " has common access!");
                             return true;
                         }
                         else
@@ -336,7 +336,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
 
                     for (auto& c : clients)
                     {
-                        if (c.getId() != client.getId())
+                        if (c.getId() != user.getId())
                         {
                             sendMessageToClient(message, c, protocol);
                         }
@@ -350,13 +350,13 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
 
                     // Get the room id where client is currently in.
-                    auto roomId = client.getRoomId();
+                    auto roomId = user.getRoomId();
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
                             //{"command", boost::json::value("communicate")},
                             {"type", boost::json::value("room_message")},
-                            {"id", boost::json::value(client.getId())},
+                            {"id", boost::json::value(user.getId())},
                             {"roomId", boost::json::value(roomId)},
                             {"message", boost::json::value(Util::convertToString(payload))}};
 
@@ -427,9 +427,9 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     }
                     else
                     {
-                        room->joinRoom(client.getId());
-                        client.setRoomId(roomId);
-                        assert(RoomStorage::getRoomById(roomId)->contains(client.getId()));
+                        room->joinRoom(user.getId());
+                        user.setRoomId(roomId);
+                        assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
                         return true;
                     }
                 }
@@ -438,7 +438,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                 case 1:
                 {
                     Log::debug("MainCommand room (leave)");
-                    auto currentRoom = RoomStorage::getRoomById(client.getRoomId());
+                    auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
 
                     if (!currentRoom)
                     {
@@ -446,7 +446,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                         // Intentionally not return anything.
                     }
 
-                    currentRoom->leaveRoom(client.getId());
+                    currentRoom->leaveRoom(user.getId());
                     return true;
                 }
 
@@ -479,7 +479,7 @@ bool Command::read(const std::vector<uint8_t>& command, Client& client, Protocol
                     }
                     else
                     {
-                        auto newRoom = Room(Room::Data(client.getId(), roomName));
+                        auto newRoom = Room(Room::Data(user.getId(), roomName));
                         auto newRoomId = newRoom.getId();
                         RoomStorage::add(std::move(newRoom));
                         Log::debug("Added room ", newRoomId, " to persistent storage");
@@ -516,13 +516,13 @@ std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)
     return ipAddress;
 }
 
-void Command::sendMessageToClient(std::vector<uint8_t> data, Client& client, Protocol& protocol)
+void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol)
 {
     switch (protocol.getType())
     {
         case Protocol::Type::BOOST_TCP_SERVER:
         {
-            if (!client.boostTCPSend(data))
+            if (!user.boostTCPSend(data))
             {
                 Log::error("Cannot send messages using this protocol (BOOST_TCP)");
             }
@@ -531,7 +531,7 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, Client& client, Pro
 
         case Protocol::Type::BOOST_UDP_SERVER:
         {
-            if (!client.boostUDPSend(data))
+            if (!user.boostUDPSend(data))
             {
                 Log::error("Cannot send messages using this protocol (BOOST_UDP)");
             }

@@ -3,7 +3,6 @@
 #include <nexilis/packet.hh>
 
 #include <ncurses.h>
-#include <sstream>
 
 Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP) :
     m_clientApi(clientApi),

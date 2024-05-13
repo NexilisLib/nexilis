@@ -1,47 +1,41 @@
-#ifndef NEXILIS_CLIENT_HH
-#define NEXILIS_CLIENT_HH
+#ifndef NEXILIS_USER_HH
+#define NEXILIS_USER_HH
 
 #include <boost/asio.hpp>
 
-#include <cstdint>
-#include <memory>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
-#include <sys/types.h>
 
 namespace nexilis
 {
 
-/// This class has shitty name that should be changed. This "Client" only exists as a very specific client
-/// abstraction for the internal server API.
+/// Internal client abstraction for server.
 
-/// Nexilis Server-side API.
-/// Abstraction layer for client interfaces such as sending messages with different protocols.
-class Client
+class User
 {
 public:
     /// Constructor.
-    Client(std::string ip_address) noexcept;
+    User(std::string ip_address) noexcept;
 
     /// Move constructor.
-    Client(Client&& other);
+    User(User&& other);
 
     /// Move assignment operator.
-    Client& operator=(Client&& other);
+    User& operator=(User&& other);
 
     /// Deleted copy constructor.
-    Client(const Client& other) = delete;
+    User(const User& other) = delete;
 
     /// Deleted copy assignment operator.
-    Client& operator=(const Client& other) = delete;
+    User& operator=(const User& other) = delete;
 
     /// Destructor.
-    ~Client()
+    ~User()
     {
     }
 
     /// Operator overload for comparison operator.
-    bool operator==(const Client& other) const
+    bool operator==(const User& other) const
     {
         return m_ip_address == other.getIPAddress();
     }

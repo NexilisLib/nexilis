@@ -10,23 +10,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-if(WIN32)
-    set(CMAKE_SYSTEM_NAME Windows)
-    include_directories("C:\\boost_1_85_0")
+# Boost system, json. Asio is header only
+find_package(Boost COMPONENTS system json REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# MySQL C API
+find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
+
+if(MYSQL_CLIENT_LIBRARY)
+    add_definitions(-DHAS_MYSQL_CLIENT_LIBRARY)
+    message("MySQL client library found")
 else()
-    # Boost system, json. Asio is header only
-    find_package(Boost COMPONENTS system json REQUIRED)
-    include_directories(${Boost_INCLUDE_DIRS})
-
-    # MySQL C API
-    find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
-
-    if(MYSQL_CLIENT_LIBRARY)
-        add_definitions(-DHAS_MYSQL_CLIENT_LIBRARY)
-        message("MySQL client library found")
-    else()
-        message("MySQL client library not found")
-    endif()
+    message("MySQL client library not found")
 endif()
 
 
@@ -40,7 +35,7 @@ set(SOURCES
     src/logger/logger.cc
 
     src/authentication.cc
-    src/client.cc
+    src/user.cc
     src/command.cc
     src/config.cc
     src/vector3.cc
@@ -84,12 +79,8 @@ set(SOURCES
 add_library(nexilis ${SOURCES})
 target_include_directories(nexilis PUBLIC include)
 
-if(WIN32)
-    target_link_libraries(nexilis boost_json boost_system)
+if(MYSQL_CLIENT_LIBRARY)
+    target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
 else()
-    if(MYSQL_CLIENT_LIBRARY)
-        target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
-    else()
-        target_link_libraries(nexilis ${Boost_LIBRARIES})
-    endif()
+    target_link_libraries(nexilis ${Boost_LIBRARIES})
 endif()

@@ -212,7 +212,7 @@ std::string Json::toString(const boost::json::object& obj)
     return result;
 }
 
-boost::json::array Json::clientsToJSON(const std::vector<Client>& clients)
+boost::json::array Json::clientsToJSON(const std::vector<User>& clients)
 {
     boost::json::array resultingArray;
 

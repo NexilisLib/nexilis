@@ -76,7 +76,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     Log::debug("Payload size: ", payload.size());
 
     // Create a new client.
-    Client client(address);
+    User user(address);
 
     // TODO
     // Error Messages.
@@ -85,7 +85,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
 
     // If the message contains 0xFF byte we consider this message nexilis message.
     bool normalMessage = containsFF(payload);
-    Client* realClient = nullptr;
+    User* realUser = nullptr;
     if (normalMessage)
     {
         uint64_t id = extractUint64FromVector(payload);
@@ -94,14 +94,14 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
         if (id)
         {
             Log::debug("Message from client: ", id);
-            auto existingClient = ClientStorage::getClientById(id);
+            auto existingUser = ClientStorage::getClientById(id);
 
-            if (existingClient)
+            if (existingUser)
             {
                 Log::debug("Existing client: ", id);
 
                 // Valid state to enter switch (authentication->getMode()).
-                realClient = existingClient;
+                realUser = existingUser;
             }
             else
             {
@@ -134,9 +134,9 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
         }
         case Authentication::Mode::passwordProtected:
         {
-            if (realClient)
+            if (realUser)
             {
-                if (realClient->hasCommonAccess())
+                if (realUser->hasCommonAccess())
                 {
                     Log::info("Known client sends a message!");
 
@@ -144,7 +144,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                             address,
                             removeItemsUntilFF(payload),
                             port,
-                            realClient);
+                            realUser);
                 }
                 // Message from verified client that has no access.
                 else
@@ -159,20 +159,20 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 // Normally string conversion is avoided throughout nexilis, but this one stays for obvious reasons.
                 if (authentication->isPassphrase(Util::convertToString(payload)))
                 {
-                    Log::info("Correct password by user ", client.getId());
-                    client.setCommonAccess(true);
+                    Log::info("Correct password by user ", user.getId());
+                    user.setCommonAccess(true);
 
-                    uint64_t newClientId = client.getId();
-                    ClientStorage::add(std::move(client));
+                    uint64_t newClientId = user.getId();
+                    ClientStorage::add(std::move(user));
                     auto realNewClient = ClientStorage::getClientById(newClientId);
 
                     // Checking successfull client creation.
                     assert(realNewClient);
-                    assert(client.getId() == realNewClient->getId());
+                    assert(user.getId() == realNewClient->getId());
 
                     // This message is equal to Packet::getId (without client id).
                     std::vector<uint8_t> message{1, 0};
-                    std::vector<uint8_t> idBytes = Util::convertToByteVector(client.getId());
+                    std::vector<uint8_t> idBytes = Util::convertToByteVector(user.getId());
                     for (uint64_t i = 0; i < idBytes.size(); i++)
                     {
                         message.push_back(idBytes[i]);

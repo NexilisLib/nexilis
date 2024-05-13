@@ -2,7 +2,7 @@
 #define NEXILIS_MESSAGE_HANDLER_HH
 
 #include <nexilis/authentication.hh>
-#include <nexilis/client.hh>
+#include <nexilis/user.hh>
 
 #include <cstdint>
 #include <vector>
@@ -24,11 +24,11 @@ public:
     class Message
     {
     public:
-        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, Client* client)
+        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, User* user)
             : m_address(address),
               m_data(data),
               m_port(port),
-              m_client(client)
+              m_user(user)
         {
         }
 
@@ -47,16 +47,16 @@ public:
             return m_port;
         }
 
-        Client* getClient()
+        User* getClient()
         {
-            return m_client;
+            return m_user;
         }
 
     private:
         std::string m_address;
         std::vector<uint8_t> m_data;
         uint16_t m_port = 0;
-        Client* m_client = nullptr;
+        User* m_user = nullptr;
     };
 
     /// Read the unifiltered server message and return it ready for `Command`.

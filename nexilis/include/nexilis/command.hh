@@ -2,7 +2,7 @@
 #define NEXILIS_COMMAND_HH
 
 #include <nexilis/authentication.hh>
-#include <nexilis/client.hh>
+#include <nexilis/user.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
@@ -25,18 +25,18 @@ class Command
 public:
     /// Read the command from client.
     /// \param command The vector of bytes that is the command.
-    /// \param client The client that sent the message.
+    /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const std::vector<uint8_t>& command, Client& client, Protocol& protocol);
+    static bool read(const std::vector<uint8_t>& command, User& user, Protocol& protocol);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
-    /// \param client The client that sent the message.
+    /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
     /// \return True if the reading of the command is succesfull.
-    static bool read(const char* command_data, size_t lenght, Client& client, Protocol& protocol);
+    static bool read(const char* command_data, size_t lenght, User& client, Protocol& protocol);
 
     /// Give server authentication details via Authentication object.
     /// /// \param authentication The object than contains authentication rules.
@@ -62,7 +62,7 @@ public:
 
 private:
     /// Send message to every protocol that is avainable for a client;
-    static void sendMessageToClient(std::vector<uint8_t> data, Client& client, Protocol& protocol);
+    static void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
 
 private:
     static Authentication* m_authentication;

@@ -1,14 +1,14 @@
-#include <nexilis/client.hh>
+#include <nexilis/user.hh>
 
 namespace nexilis
 {
 
-Client::Client(std::string ip_address) noexcept
+User::User(std::string ip_address) noexcept
     : m_ip_address(ip_address)
 {
 }
 
-Client::Client(Client&& other)
+User::User(User&& other)
     : m_ip_address(std::move(other.m_ip_address)),
       m_username(std::move(other.m_username)),
       m_id(std::move(other.m_id)),
@@ -20,7 +20,7 @@ Client::Client(Client&& other)
 }
 
 /// Move assignment operator.
-Client& Client::operator=(Client&& other)
+User& User::operator=(User&& other)
 {
     if (this != &other)
     {
@@ -35,7 +35,7 @@ Client& Client::operator=(Client&& other)
     return *this;
 }
 
-bool Client::boostTCPSend(std::vector<uint8_t> data)
+bool User::boostTCPSend(std::vector<uint8_t> data)
 {
     if (m_boostTCPSendToClient)
     {
@@ -45,7 +45,7 @@ bool Client::boostTCPSend(std::vector<uint8_t> data)
     return false;
 }
 
-bool Client::boostUDPSend(std::vector<uint8_t> data)
+bool User::boostUDPSend(std::vector<uint8_t> data)
 {
     if (m_boostUDPSendToClient)
     {

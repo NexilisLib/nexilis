@@ -1,7 +1,7 @@
-#ifndef NEXILIS_CONNECTION_STORAGE_HH
-#define NEXILIS_CONNECTION_STORAGE_HH
+#ifndef NEXILIS_CLIENT_STORAGE_HH
+#define NEXILIS_CLIENT_STORAGE_HH
 
-#include <nexilis/client.hh>
+#include <nexilis/user.hh>
 
 #include <vector>
 
@@ -13,18 +13,18 @@ namespace nexilis
 class ClientStorage
 {
 public:
-    static void add(Client&& client);
+    static void add(User&& client);
 
     static bool contains(uint64_t id);
 
-    static std::vector<Client>& getAllClients();
+    static std::vector<User>& getAllClients();
 
-    static Client* getClientById(uint64_t id);
+    static User* getClientById(uint64_t id);
 
-    static std::vector<Client*> getClientsByIpAddress(const std::string& ip_address);
+    static std::vector<User*> getClientsByIpAddress(const std::string& ip_address);
 
 private:
-    static std::vector<Client> m_clients;
+    static std::vector<User> m_clients;
 };
 
 } // namespace nexilis
