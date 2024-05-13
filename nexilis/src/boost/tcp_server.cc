@@ -171,9 +171,9 @@ bool TCPServer::acceptClients()
                         });
                     }
 
-                    bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+                    Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
 
-                    if (passCommand)
+                    if (passCommand == Command::Result::success)
                     {
                         Log::info("Passed");
                     }

@@ -1,3 +1,4 @@
+#include "nexilis/command.hh"
 #include "nexilis/server_protocol.hh"
 #include <cstdint>
 #include <nexilis/af_inet/tcp_server.hh>
@@ -158,7 +159,7 @@ void TCPServer::operatingLoop()
 
             if (message.getClient())
             {
-                if (!Command::read(message.getData(), *message.getClient(), *this))
+                if (Command::read(message.getData(), *message.getClient(), *this) != Command::Result::success)
                 {
                     Log::error("TCPServer: message reading error, message: ", receivedData);
                 }

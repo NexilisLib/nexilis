@@ -2,30 +2,19 @@
 #include <nexilis/command_type.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/room_storage.hh>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
 
 Authentication* Command::m_authentication = nullptr;
 
-bool Command::read(const char* command_data, size_t lenght, User& client, Protocol& protocol)
+Command::Result Command::read(const char* command_data, size_t lenght, User& client, Protocol& protocol)
 {
-    return Command::read(Command::createVectorFromCommandPtr(command_data, lenght), client, protocol);
+    return Command::read(Util::convertToByteVector(command_data, lenght), client, protocol);
 }
 
-std::vector<uint8_t> Command::createVectorFromCommandPtr(const char* command_data, size_t lenght)
-{
-    std::vector<uint8_t> result;
-    result.reserve(lenght);
-
-    for (size_t i = 0; i < lenght; i++)
-    {
-        result.emplace_back(static_cast<uint8_t>(command_data[i]));
-    }
-    return result;
-}
-
-bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol)
+Command::Result Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol)
 {
     Log::debug("Command: Nexilis command sequence");
     for (uint8_t commandByte : command)
@@ -52,7 +41,7 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                         /// However we cannot run code, that does not exist.
                         /// There is a case that this could be done with "goto" but it's very cursed.
                         /// This should be done with common interface for this class and the "error" byte.
-                        return false;
+                        return Result::unauthorized;
                     }
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     uint64_t id = Util::convertToType<uint64_t>(payload);
@@ -66,12 +55,12 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                             assert(c->hasRootAccess());
                             assert(user.hasRootAccess());
                             c->setId(id);
-                            return true;
+                            return Result::success;
                         }
                     }
 
                     Log::error("Error in MainCommand::set::clientID");
-                    return false;
+                    return Result::error;
 
                 }
 
@@ -87,17 +76,17 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                         if (*c == user)
                         {
                             c->setUsername(username);
-                            return true;
+                            return Result::success;
                         }
                     }
                     Log::error("Cannot find client");
-                    return false;
+                    return Result::error;
                 }
 
                 default:
-                    return false;
+                    return Result::not_found;
             }
-            return false;
+            return Result::not_found;
         }
 
         case MainCommand::getting:
@@ -118,10 +107,10 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                     sendMessageToClient(message, user, protocol);
 
                     Log::info("sent message to client");
-                    return true;
+                    return Result::success;
                 }
                 default:
-                    return false;
+                    return Result::not_found;
             }
         }
 
@@ -134,30 +123,30 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                 case 0:
                 {
                     // TODO create pong message, I mean this is kinda stupid.
-                    return false;
+                    return Result::not_found;
                 }
 
                 // Receive ping.
                 case 1:
                 {
-                    return false;
+                    return Result::not_found;
                 }
 
                 // Start listening
                 case 2:
                 {
-                    return false;
+                    return Result::not_found;
                 }
 
                 // Stop listening
                 case 3:
                 {
-                    return false;
+                    return Result::not_found;
                 }
 
                 default:
                 {
-                    return false;
+                    return Result::not_found;
                 }
             }
         }
@@ -175,7 +164,7 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
-                    return true;
+                    return Result::success;
                 }
 
                 // Get data from the clients existing on the server.
@@ -188,7 +177,7 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::clientInfo");
-                    return true;
+                    return Result::success;
                 }
 
                 // Get data from the rooms existing on the server.
@@ -201,11 +190,11 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::roomInfo");
-                    return true;
+                    return Result::success;
                 }
-                default: return false;
+                default: return Result::not_found;
             }
-            return false;
+            return Result::not_found;
         }
 
         case MainCommand::authentication:
@@ -216,7 +205,7 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                 case 0:
                 {
                     Log::info("New client wants to authenticate, not implemented");
-                    return false;
+                    return Result::not_found;
                 }
 
                 // Check authentication for root access.
@@ -231,18 +220,19 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                         {
                             user.setRootAccess(true);
                             Log::info("Client ", user.getIPAddress(), " has root access!");
-                            return true;
+                            return Result::success;
                         }
                         else
                         {
                             Log::error("Wrong password!");
+                            return Result::invalid_input;
                         }
                     }
                     else
                     {
                         Log::error("Trying to set password for server without auth!");
+                        return Result::unauthorized;
                     }
-                    return false;
                 }
 
                 // Passphrase authentication.
@@ -258,36 +248,34 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                         {
                             user.setCommonAccess(true);
                             Log::info("Client ", user.getIPAddress(), " has common access!");
-                            return true;
+                            return Result::success;
                         }
                         else
                         {
                             Log::error("Wrong password!");
-                            return false;
+                            return Result::invalid_input;
                         }
                     }
                     else
                     {
                         Log::error("Trying to set password for server without auth!");
-                        return false;
+                        return Result::unauthorized;
                     }
-
-                    return false;
                 }
 
                 default:
-                    return false;
+                    return Result::not_found;
             }
         }
 
         case MainCommand::server_management:
         {
-            return false;
+            return Result::not_found;
         }
 
         case MainCommand::player_management:
         {
-            return false;
+            return Result::not_found;
         }
 
         case MainCommand::communicate:
@@ -315,7 +303,7 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                     {
                         sendMessageToClient(message, c, protocol);
                     }
-                    return true;
+                    return Result::success;
                 }
 
                 // Client sends a message to everyone except itself.
@@ -341,7 +329,7 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                             sendMessageToClient(message, c, protocol);
                         }
                     }
-                    return true;
+                    return Result::success;
                 }
 
                 // Client sends a message in a room context.
@@ -374,10 +362,10 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                             sendMessageToClient(message, c, protocol);
                         }
                     }
-                    return true;
+                    return Result::success;
                 }
             }
-            return false;
+            return Result::not_found;
         }
 
         case MainCommand::error:
@@ -389,10 +377,10 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                 case 0:
                 {
                     Log::critical("Internal server error: x");
-                    return true;
+                    return Result::error;
                 }
                 default:
-                    return false;
+                    return Result::not_found;
             }
         }
 
@@ -423,14 +411,14 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                     if (!room)
                     {
                         Log::error("Cannot find room with specified id!");
-                        return false;
+                        return Result::invalid_input;
                     }
                     else
                     {
                         room->joinRoom(user.getId());
                         user.setRoomId(roomId);
                         assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
-                        return true;
+                        return Result::success;
                     }
                 }
 
@@ -443,11 +431,11 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                     if (!currentRoom)
                     {
                         Log::warning("Client not currently in room so cannot leave current room.");
-                        // Intentionally not return anything.
+                        return Result::failure;
                     }
 
                     currentRoom->leaveRoom(user.getId());
-                    return true;
+                    return Result::success;
                 }
 
                 /// Create room.
@@ -460,22 +448,22 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                     if (roomName.empty())
                     {
                         Log::error("Room name cannot be empty");
-                        return false;
+                        return Result::invalid_input;
                     }
                     else if (roomName == "")
                     {
                         Log::error("Room name cannot be an empty string");
-                        return false;
+                        return Result::invalid_input;
                     }
                     else if (roomName == " ")
                     {
                         Log::error("Room name cannot be equal to \" \" ");
-                        return false;
+                        return Result::invalid_input;
                     }
                     else if (roomName.length() > 20)
                     {
                         Log::error("Too long room name");
-                        return false;
+                        return Result::invalid_input;
                     }
                     else
                     {
@@ -483,20 +471,17 @@ bool Command::read(const std::vector<uint8_t>& command, User& user, Protocol& pr
                         auto newRoomId = newRoom.getId();
                         RoomStorage::add(std::move(newRoom));
                         Log::debug("Added room ", newRoomId, " to persistent storage");
-
-                        return true;
+                        return Result::success;
                     }
                 }
 
-                default: return false;
+                default: return Result::not_found;
             }
         }
 
         default:
-            return false;
+            return Result::not_found;
     }
-
-    return false;
 }
 
 std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)

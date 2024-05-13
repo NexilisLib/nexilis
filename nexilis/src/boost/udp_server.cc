@@ -102,16 +102,17 @@ void UDPServer::receiveFromClients()
                 });
             }
 
-            bool passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+            Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
 
-            if (passCommand)
+            switch (passCommand)
             {
-                Log::info("UDPServer: Passed");
+                case Command::Result::success:
+                    Log::info("UDPServer: Passed");
+                break;
+
+                default: Log::error("UDPServer: Something FAILED");
             }
-            else
-            {
-                Log::error("UDPServer: Failed");
-            }
+
         }
         catch (const boost::system::system_error& e)
         {

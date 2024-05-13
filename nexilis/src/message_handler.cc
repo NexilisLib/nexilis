@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <nexilis/authentication.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
@@ -6,10 +5,9 @@
 #include <nexilis/json.hh>
 #include <nexilis/message_handler.hh>
 #include <nexilis/packet.hh>
+#include <nexilis/log.hh>
 
 #include <nexilis/common/util.hh>
-
-#include <sys/types.h>
 
 namespace nexilis
 {

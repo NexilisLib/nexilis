@@ -2,15 +2,12 @@
 #define NEXILIS_COMMAND_HH
 
 #include <nexilis/authentication.hh>
-#include <nexilis/user.hh>
 #include <nexilis/command_type.hh>
-#include <nexilis/log.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/json.hh>
 
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <string>
 #include <vector>
 
@@ -23,20 +20,42 @@ namespace nexilis
 class Command
 {
 public:
+    /// Result for reading the Nexilis command sequence.
+    enum class Result
+    {
+        // Command success.
+        success,
+
+        // Logical failure in the command, failing is ok.
+        failure,
+
+        // Command is not found.
+        not_found,
+
+        // The input for command is not correct.
+        invalid_input,
+
+        // There is an error implementing command.
+        error,
+
+        // The command usage is unauthorized.
+        unauthorized
+    };
+
     /// Read the command from client.
     /// \param command The vector of bytes that is the command.
     /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
-    /// \return True if the reading of the command is succesfull.
-    static bool read(const std::vector<uint8_t>& command, User& user, Protocol& protocol);
+    /// \return Result from reading the command.
+    static Result read(const std::vector<uint8_t>& command, User& user, Protocol& protocol);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
     /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
-    /// \return True if the reading of the command is succesfull.
-    static bool read(const char* command_data, size_t lenght, User& client, Protocol& protocol);
+    /// \return Result from reading the command.
+    static Result read(const char* command_data, size_t lenght, User& client, Protocol& protocol);
 
     /// Give server authentication details via Authentication object.
     /// /// \param authentication The object than contains authentication rules.
@@ -57,8 +76,6 @@ public:
     /// \param address The address data.
     /// \return string Created IPV4 string.
     std::string createIPv4Address(const std::vector<uint8_t>& address);
-
-    static std::vector<uint8_t> createVectorFromCommandPtr(const char* command_data, size_t lenght);
 
 private:
     /// Send message to every protocol that is avainable for a client;

@@ -103,8 +103,7 @@ void Server::receiveMessage()
 
             if (message.getClient())
             {
-                // TODO
-                if (!Command::read(message.getData(), *message.getClient(), *this))
+                if (Command::read(message.getData(), *message.getClient(), *this) != Command::Result::success)
                 {
                     Log::error("Unix socket server message reading error from message: ");
                 }

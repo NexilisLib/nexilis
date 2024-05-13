@@ -60,7 +60,7 @@ void UDPServer::start()
 
                 if (message.getClient())
                 {
-                    if (!Command::read(message.getData(), *message.getClient(), *this))
+                    if (Command::read(message.getData(), *message.getClient(), *this) != Command::Result::success)
                     {
                         Log::error("UDP server message reading error, message: ", msg.message);
                     }
