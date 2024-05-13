@@ -16,12 +16,10 @@ Command::Result Command::read(const char* command_data, size_t lenght, User& cli
 
 Command::Result Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol)
 {
+    assert(user.getId() != 0);
+
     Log::debug("Command: Nexilis command sequence");
-    for (uint8_t commandByte : command)
-    {
-        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
-        Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
-    }
+    Util::debugUint8Vector(command);
 
     switch (static_cast<MainCommand>(command.front()))
     {
@@ -36,11 +34,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     if (!user.hasRootAccess())
                     {
                         Log::error("Client needs root access for changing id");
-                        /// TODO return errormessage.
-                        /// Usually errormessages in servermessages is in "error" byte.
-                        /// However we cannot run code, that does not exist.
-                        /// There is a case that this could be done with "goto" but it's very cursed.
-                        /// This should be done with common interface for this class and the "error" byte.
                         return Result::unauthorized;
                     }
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
@@ -339,6 +332,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     // Get the room id where client is currently in.
                     auto roomId = user.getRoomId();
+
+                    assert(roomId != 0);
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},

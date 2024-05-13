@@ -367,7 +367,6 @@ bool ClientAPI::parse(boost::json::object json)
     if (!json.contains("nexilis_status"))
     {
         Log::info("Running code without nexilis status");
-        Json::print(json);
         return false;
     }
 
@@ -528,13 +527,13 @@ bool ClientAPI::parse(boost::json::object json)
             assert(id != 0);
             assert(roomId != 0);
 
-
             for (auto room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
             {
                 if (room->getRoomId() == roomId)
                 {
                     Room::Communication newMessage(message, id);
                     room->addMessage(std::move(newMessage));
+                    Log::info("Added new message in room: ", roomId);
                     return true;
                 }
             }
@@ -561,17 +560,8 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
     }
     catch (...)
     {
-        Log::error("Cannot convert message to json");
-        Log::debug("Trying to debug json");
-
-        try
-        {
-            Json::print(json);
-        }
-        catch (...)
-        {
-            Log::debug("Something wrong with message: ", boost::json::serialize(json));
-        }
+        //Log::error("Cannot convert message to json");
+        Util::debugUint8Vector(message);
         return false;
     }
 

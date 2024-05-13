@@ -353,6 +353,11 @@ public:
             return m_maxSize;
         }
 
+        void addClient(Room::Client&& client)
+        {
+            m_clients.emplace_back(std::move(client));
+        }
+
         std::vector<Room::Client> getClients() const
         {
             return m_clients;

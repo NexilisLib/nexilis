@@ -63,7 +63,7 @@ public:
     static std::vector<uint8_t> removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount);
 
     /// Get random uint64_t between two values.
-    static size_t getRandomSizeUint16(uint64_t from, uint64_t to);
+    static size_t getRandomSizeUint64(uint64_t from, uint64_t to);
 
     /// Get random size_t value between 0 and max uint64.
     static size_t getRandomUint64();
@@ -77,8 +77,10 @@ public:
     static std::vector<uint8_t> convertToByteVector(uint64_t value);
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
 
-    /// Other random static interface
+    /// Logging.
     static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
+    static void debugUint8Vector(const std::vector<uint8_t>& vector);
+
     static std::string getDateAndTime();
 };
 

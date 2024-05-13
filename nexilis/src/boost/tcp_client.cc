@@ -179,7 +179,12 @@ void BoostTCPClient::receiveLoop()
         {
             if (!buffer.empty())
             {
-                ClientProtocol::getClientAPI()->readMessage(buffer);
+                auto a = ClientProtocol::getClientAPI()->readMessage(buffer);
+
+                if (!a)
+                {
+                    Util::debugUint8Vector(buffer);
+                }
             }
             else
             {

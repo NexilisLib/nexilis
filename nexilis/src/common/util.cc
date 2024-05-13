@@ -1,8 +1,8 @@
-#include <boost/json/object.hpp>
-#include <boost/json/serialize.hpp>
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/log.hh>
+
+#include <boost/json/serialize.hpp>
 
 #include <iomanip>
 #include <random>
@@ -52,12 +52,21 @@ std::vector<uint8_t> Util::convertToByteVector(uint64_t value)
     return result;
 }
 
-uint64_t Util::getRandomSizeUint16(uint64_t from, uint64_t to)
+uint64_t Util::getRandomSizeUint64(uint64_t from, uint64_t to)
 {
     std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
     std::uniform_int_distribution<size_t> dist(from, to);
-    return dist(generator);
+    uint64_t randomValue = dist(generator);
+
+    if (randomValue != 0)
+    {
+        return randomValue;
+    }
+    else
+    {
+        return getRandomSizeUint64(from, to);
+    }
 }
 
 uint64_t Util::getRandomUint64()
@@ -69,7 +78,14 @@ uint64_t Util::getRandomUint64()
 
     assert(typeid(randomValue) == typeid(uint64_t));
 
-    return randomValue;
+    if (randomValue != 0)
+    {
+        return randomValue;
+    }
+    else
+    {
+        return getRandomUint64();
+    }
 }
 
 std::string Util::getRandomString(uint64_t charAmount)
@@ -136,6 +152,15 @@ void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::strin
     }
 
     std::cout << color << data << "\033[0m" << std::endl;
+}
+
+void Util::debugUint8Vector(const std::vector<uint8_t>& vector)
+{
+    for (uint8_t byte : vector)
+    {
+        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(byte));
+        Log::debug("Commandbyte char: ", static_cast<char>(byte));
+    }
 }
 
 std::string Util::getDateAndTime()

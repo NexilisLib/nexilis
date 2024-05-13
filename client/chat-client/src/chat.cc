@@ -23,7 +23,6 @@ void Chat::update(Window& window, int& hightlight, State state)
             werase(window.getWindow());
             showRooms(window, hightlight);
             updateChat(window);
-            wrefresh(window.getWindow());
             break;
         }
     }
@@ -34,6 +33,7 @@ void Chat::showRooms(Window& window, int& highlight)
     // Kinda sus in a loop honestly.
     auto newRooms = m_clientApi->getActiveRooms();
 
+    // Update new rooms.
     if (m_rooms != newRooms)
     {
         m_rooms = newRooms;
@@ -116,8 +116,8 @@ void Chat::showRooms(Window& window, int& highlight)
         int startY = 0;
         if (!m_rooms.empty())
         {
-            // Calculate starting position for room display
-            startY = (window.getWinSize().second - static_cast<int>(m_rooms.size())) / 2;
+            // Calculate position for room display
+            startY = ((window.getWinSize().second - static_cast<int>(m_rooms.size())) / 2);
             startX = (window.getWinSize().first - static_cast<int>(m_rooms[0].getName().length())) / 2;
 
             for (size_t i = 0; i < m_rooms.size(); i++)
@@ -172,24 +172,29 @@ void Chat::updateChat(Window& window)
 
     auto messages = clientRoom.getMessages();
 
-    int startX = window.getWinSize().first / 2;
-    int startY = window.getWinSize().second / 2 - window.getWinSize().second / 4;
-    int index = 0;
-    int textWidthX = 5;
-    int textWidthY = 30;
-
-    for (auto b = messages.begin(); b != messages.end(); b++)
+    if (!messages.empty())
     {
-        std::stringstream messageCount;
-        messageCount << "Message count: " << index;
-        debug(messageCount.str());
+        //int startX = window.getWinSize().first / 2;
+        //int startY = window.getWinSize().second / 2 - window.getWinSize().second / 4;
+        int index = 0;
 
-        std::stringstream ss;
-        ss << "(" << b->getClientId() << ") " << b->getPayload();
-        mvwprintw(window.getWindow(), startY + textWidthY * index, startX + textWidthX * index, "%s", ss.str().c_str());
-        index++;
+        // Calculate position for room display
+        int startY = (window.getWinSize().second - static_cast<int>(messages.size())) / 2;
+        int startX = (window.getWinSize().first - static_cast<int>(messages[0].getPayload().length())) / 2;
+
+        for (auto b = messages.begin(); b != messages.end(); b++)
+        {
+            std::stringstream messageCount;
+            messageCount << "Message count: " << index;
+            debug(messageCount.str());
+
+            std::stringstream ss;
+            ss << "(" << b->getClientId() << ") " << b->getPayload();
+            mvwprintw(window.getWindow(), startY + index, startX, "%s", ss.str().c_str());
+            index++;
+        }
+        wrefresh(window.getWindow());
     }
-
 }
 
 std::string Chat::roomData(const nexilis::ClientAPI::Room& room)
