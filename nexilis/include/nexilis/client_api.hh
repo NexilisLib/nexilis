@@ -548,9 +548,6 @@ public:
         return m_currentlyActiveRooms;
     }
 
-    /// Room where the client is currently in.
-    Room& roomWhereClientIs(uint64_t clientId);
-
     ClientAPI::Room& getDefaultRoom()
     {
         return m_defaultRoom;
@@ -562,6 +559,9 @@ private:
     {
         m_clientId = id;
     }
+
+    /// Hacky shit that does not work!
+    Room& roomWhereClientIs(uint64_t clientId);
 
     /// Parse clientside data.
     bool parse(boost::json::object json);

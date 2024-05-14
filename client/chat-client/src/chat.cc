@@ -21,8 +21,8 @@ void Chat::update(Window& window, int& hightlight, State state)
         case State::chat:
         {
             werase(window.getWindow());
-            showRooms(window, hightlight);
             updateChat(window);
+            showRooms(window, hightlight);
             break;
         }
     }
@@ -94,7 +94,7 @@ void Chat::showRooms(Window& window, int& highlight)
         std::string userString(buffer.begin(), buffer.end());
         if (!userString.empty())
         {
-            mvprintw(startX + 10, startY + 10, "You entered: %s", userString.c_str());
+            mvprintw(startY / 2, startX / 2, "You entered: %s", userString.c_str());
             wrefresh(window.getWindow());
 
             m_sendTCP(nexilis::Packet::Communicate::roomMessage(userString));
@@ -143,6 +143,17 @@ void Chat::showRooms(Window& window, int& highlight)
 
 void Chat::updateChat(Window& window)
 {
+    if (m_rooms.empty())
+    {
+        return;
+    }
+
+    for (auto r = m_rooms.begin(); r != m_rooms.end(); r++)
+    {
+    }
+
+    //if (m_rooms)
+
     uint64_t clientId = m_clientApi->getClientId();
 
     if (!clientId)
@@ -152,9 +163,8 @@ void Chat::updateChat(Window& window)
     }
 
     nexilis::ClientAPI::Room clientRoom;
-    auto& rooms = m_clientApi->getActiveRooms();
 
-    for (auto& room : rooms)
+    for (auto& room : m_rooms)
     {
         for (auto& client : room.getClients())
         {
@@ -165,10 +175,12 @@ void Chat::updateChat(Window& window)
         }
     }
 
+    /*
     if (clientRoom == m_clientApi->getDefaultRoom())
     {
         return;
     }
+    */
 
     auto messages = clientRoom.getMessages();
 
@@ -191,9 +203,9 @@ void Chat::updateChat(Window& window)
             std::stringstream ss;
             ss << "(" << b->getClientId() << ") " << b->getPayload();
             mvwprintw(window.getWindow(), startY + index, startX, "%s", ss.str().c_str());
+            wrefresh(window.getWindow());
             index++;
         }
-        wrefresh(window.getWindow());
     }
 }
 
