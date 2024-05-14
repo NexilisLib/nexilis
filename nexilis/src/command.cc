@@ -93,7 +93,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     // Fix this, nexilis_status = 1 is correct tho.
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
-                            { "type", boost::json::value("set_client_id")},
+                            {"command", boost::json::value("getting")},
+                            {"type", boost::json::value("set_client_id")},
                             {"set_client_id", boost::json::value(user.getId())}};
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
@@ -150,10 +151,14 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 // Get all public information from a server.
                 case 0:
                 {
-                    auto message = Json::getNexilisStatus(2);
-                    Json::emplace(message, Json::getServerData());
-                    std::string stringData = boost::json::serialize(message);
-                    auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
+                    std::map<std::string, boost::json::value> header{
+                                {"nexilis_status", boost::json::value(1)},
+                                {"command", boost::json::value("info")},
+                                {"type", boost::json::value("server_data")}};
+
+                    auto json = Json::createJSON(header);
+                    Json::emplace(json, Json::getServerData());
+                    std::vector<uint8_t> data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
@@ -163,10 +168,14 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 // Get data from the clients existing on the server.
                 case 1:
                 {
-                    auto message = Json::getNexilisStatus(2);
-                    Json::emplace(message, Json::getClientDataMessage());
-                    std::string stringData = boost::json::serialize(message);
-                    auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
+                    std::map<std::string, boost::json::value> header{
+                                {"nexilis_status", boost::json::value(1)},
+                                {"command", boost::json::value("info")},
+                                {"type", boost::json::value("client_data")}};
+
+                    auto json = Json::createJSON(header);
+                    Json::emplace(json, Json::getClientData());
+                    std::vector<uint8_t> data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::clientInfo");
@@ -176,10 +185,14 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 // Get data from the rooms existing on the server.
                 case 2:
                 {
-                    auto message = Json::getNexilisStatus(2);
-                    Json::emplace(message, Json::getRoomDataMessage());
-                    std::string stringData = boost::json::serialize(message);
-                    auto data = Util::convertToByteVector(stringData.c_str(), stringData.size());
+                    std::map<std::string, boost::json::value> header{
+                                {"nexilis_status", boost::json::value(1)},
+                                {"command", boost::json::value("info")},
+                                {"type", boost::json::value("room_data")}};
+
+                    auto json = Json::createJSON(header);
+                    Json::emplace(json, Json::getRoomData());
+                    std::vector<uint8_t> data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::roomInfo");
@@ -283,8 +296,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
-                            // TODO start refactoring from "type" to "command".
-                            //{"command", boost::json::value("communicate")},
+                            {"command", boost::json::value("communicate")},
                             {"type", boost::json::value("broadcast")},
                             {"message", boost::json::value(Util::convertToString(payload))}};
 
@@ -306,7 +318,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
-                            //{"command", boost::json::value("communicate")},
+                            {"command", boost::json::value("communicate")},
                             {"type", boost::json::value("multicast")},
                             {"message", boost::json::value(Util::convertToString(payload))}};
 
@@ -337,7 +349,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
-                            //{"command", boost::json::value("communicate")},
+                            {"command", boost::json::value("communicate")},
                             {"type", boost::json::value("room_message")},
                             {"id", boost::json::value(user.getId())},
                             {"roomId", boost::json::value(roomId)},
@@ -381,16 +393,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
         case MainCommand::room:
         {
-            Log::debug("MainCommand room");
-            Log::debug("Next integer: ", static_cast<int>(command[1]));
-
-            for (uint8_t commandByte : command)
-            {
-                Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(commandByte));
-                Log::debug("Commandbyte char: ", static_cast<char>(commandByte));
-            }
-
-            Log::info("Second byte: ", static_cast<int>(command[1]));
             switch (command[1])
             {
                 // Join room x.

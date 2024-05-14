@@ -370,180 +370,218 @@ bool ClientAPI::parse(boost::json::object json)
         return false;
     }
 
-    if (json.contains("type"))
+    if (json.contains("command") && json.contains("type"))
     {
+        auto command = json["command"];
+        auto type = json["type"];
+
         // This should be enumerated.
-        if (json["type"] == "roomData")
+        if (command == "info")
         {
-            if (json.find("rooms") != json.end())
+            if (type == "room_data")
             {
-                auto rooms = json.at("rooms").as_array();
-                std::vector<Room> newRooms;
-                for (const auto& room : rooms)
+                if (json.find("rooms") != json.end())
                 {
-                    std::string name = room.at("name").as_string().c_str();
-                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+                    auto rooms = json.at("rooms").as_array();
+                    std::vector<Room> newRooms;
+                    for (const auto& room : rooms)
+                    {
+                        std::string name = room.at("name").as_string().c_str();
+                        int maxSize = static_cast<int>(room.at("maxSize").as_int64());
 
-                    uint64_t creatorId;
-                    if (room.at("creatorId").if_uint64())
-                    {
-                        creatorId = room.at("creatorId").as_uint64();
-                    }
-                    else if (room.at("creatorId").if_int64())
-                    {
-                        creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
-                    }
-                    else
-                    {
-                        creatorId = 0;
-                    }
-
-                    uint64_t id;
-                    if (room.at("id").if_uint64())
-                    {
-                        id = room.at("id").as_uint64();
-                    }
-                    else if (room.at("id").if_int64())
-                    {
-                        id = static_cast<uint64_t>(room.at("id").as_int64());
-                    }
-                    else
-                    {
-                        id = 0;
-                    }
-
-                    std::vector<ClientAPI::Room::Client> roomClients;
-
-                    if (room.as_object().find("clients") != room.as_object().end())
-                    {
-                        auto clients = room.at("clients").as_array();
-
-                        for (const auto& client : clients)
+                        uint64_t creatorId;
+                        if (room.at("creatorId").if_uint64())
                         {
-                            uint64_t id;
-                            if (client.at("id").if_uint64())
-                            {
-                                id = client.at("id").as_uint64();
-                            }
-                            else if (client.at("id").if_int64())
-                            {
-                                id = static_cast<uint64_t>(client.at("id").as_int64());
-                            }
-                            else
-                            {
-                                id = 0;
-                            }
-
-                            std::string clientName;
-                            if (client.at("name").if_string())
-                            {
-                                clientName = client.at("name").as_string();
-                            }
-                            else
-                            {
-                                clientName = "NO NAME!";
-                            }
-
-                            ClientAPI::Room::Client newClient(id, clientName);
-                            roomClients.emplace_back(std::move(newClient));
+                            creatorId = room.at("creatorId").as_uint64();
                         }
+                        else if (room.at("creatorId").if_int64())
+                        {
+                            creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
+                        }
+                        else
+                        {
+                            creatorId = 0;
+                        }
+
+                        uint64_t id;
+                        if (room.at("id").if_uint64())
+                        {
+                            id = room.at("id").as_uint64();
+                        }
+                        else if (room.at("id").if_int64())
+                        {
+                            id = static_cast<uint64_t>(room.at("id").as_int64());
+                        }
+                        else
+                        {
+                            id = 0;
+                        }
+
+                        std::vector<ClientAPI::Room::Client> roomClients;
+
+                        if (room.as_object().find("clients") != room.as_object().end())
+                        {
+                            auto clients = room.at("clients").as_array();
+
+                            for (const auto& client : clients)
+                            {
+                                uint64_t id;
+                                if (client.at("id").if_uint64())
+                                {
+                                    id = client.at("id").as_uint64();
+                                }
+                                else if (client.at("id").if_int64())
+                                {
+                                    id = static_cast<uint64_t>(client.at("id").as_int64());
+                                }
+                                else
+                                {
+                                    id = 0;
+                                }
+
+                                std::string clientName;
+                                if (client.at("name").if_string())
+                                {
+                                    clientName = client.at("name").as_string();
+                                }
+                                else
+                                {
+                                    clientName = "NO NAME!";
+                                }
+
+                                ClientAPI::Room::Client newClient(id, clientName);
+                                roomClients.emplace_back(std::move(newClient));
+                            }
+                        }
+
+                        Log::info("ROOMCLIENTS AMOUNT: ", roomClients.size());
+
+                        newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
                     }
-
-                    Log::info("ROOMCLIENTS AMOUNT: ", roomClients.size());
-
-                    newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
-                }
-                m_currentlyActiveRooms = newRooms;
-                return true;
-            }
-            else
-            {
-                Log::warning("No rooms!");
-                return false;
-            }
-        }
-        else if (json["type"] == "set_client_id")
-        {
-            if (json["set_client_id"].if_uint64())
-            {
-                uint64_t id = json["set_client_id"].as_uint64();
-                setClientId(id);
-                Packet::_initialize(id);
-                return true;
-            }
-            // boost::json::value is so bad.
-            else if (json["set_client_id"].if_int64())
-            {
-                int64_t id = json["set_client_id"].as_int64();
-                uint64_t u_id = id;
-
-                assert(sizeof(id) == sizeof(u_id));
-                assert(static_cast<uint64_t>(id) == u_id);
-
-                setClientId(id);
-                Packet::_initialize(id);
-                return true;
-            }
-            else
-            {
-                Log::error("The value of set_client_id is not convertible to as_uint64");
-                return false;
-            }
-        }
-
-        else if (json["type"] == "room_message")
-        {
-            uint64_t id;
-            if (json.at("id").if_uint64())
-            {
-                id = json.at("id").as_uint64();
-            }
-            else if (json.at("id").if_int64())
-            {
-                id = static_cast<uint64_t>(json.at("id").as_int64());
-            }
-            else
-            {
-                id = 0;
-            }
-
-            uint64_t roomId;
-            if (json.at("roomId").if_uint64())
-            {
-                roomId = json.at("roomId").as_uint64();
-            }
-            else if (json.at("roomId").if_int64())
-            {
-                roomId = static_cast<uint64_t>(json.at("roomId").as_int64());
-            }
-            else
-            {
-                roomId = 0;
-            }
-
-            std::string message = json.at("message").as_string().c_str();
-
-            assert(!message.empty());
-            assert(id != 0);
-            assert(roomId != 0);
-
-            for (auto room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
-            {
-                if (room->getRoomId() == roomId)
-                {
-                    Room::Communication newMessage(message, id);
-                    room->addMessage(std::move(newMessage));
-                    Log::info("Added new message in room: ", roomId);
+                    m_currentlyActiveRooms = newRooms;
                     return true;
                 }
             }
-            Log::info("Client not in the room it's targetting!");
-            return false;
+            else if (type == "client_data")
+            {
+                Log::error("Not implemented");
+                return false;
+            }
+            else if (type == "server_data")
+            {
+                Log::error("Not implemented");
+                return false;
+            }
+            else
+            {
+                Log::error("Wrong type!");
+                return false;
+            }
+        }
+
+        else if (command == "getting")
+        {
+            if (type == "set_client_id")
+            {
+                if (json["set_client_id"].if_uint64())
+                {
+                    uint64_t id = json["set_client_id"].as_uint64();
+                    setClientId(id);
+                    Packet::_initialize(id);
+                    return true;
+                }
+                // boost::json::value is so bad.
+                else if (json["set_client_id"].if_int64())
+                {
+                    int64_t id = json["set_client_id"].as_int64();
+                    uint64_t u_id = id;
+
+                    assert(sizeof(id) == sizeof(u_id));
+                    assert(static_cast<uint64_t>(id) == u_id);
+
+                    setClientId(id);
+                    Packet::_initialize(id);
+                    return true;
+                }
+                else
+                {
+                    Log::error("The value of set_client_id is not convertible to as_uint64");
+                    return false;
+                }
+            }
+            else
+            {
+                Log::error("Unused path");
+                return false;
+            }
+        }
+
+        else if (command == "communicate")
+        {
+            if (type == "room_message")
+            {
+                uint64_t id;
+                if (json.at("id").if_uint64())
+                {
+                    id = json.at("id").as_uint64();
+                }
+                else if (json.at("id").if_int64())
+                {
+                    id = static_cast<uint64_t>(json.at("id").as_int64());
+                }
+                else
+                {
+                    id = 0;
+                }
+
+                uint64_t roomId;
+                if (json.at("roomId").if_uint64())
+                {
+                    roomId = json.at("roomId").as_uint64();
+                }
+                else if (json.at("roomId").if_int64())
+                {
+                    roomId = static_cast<uint64_t>(json.at("roomId").as_int64());
+                }
+                else
+                {
+                    roomId = 0;
+                }
+
+                std::string message = json.at("message").as_string().c_str();
+
+                assert(!message.empty());
+                assert(id != 0);
+                assert(roomId != 0);
+
+                for (auto room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                {
+                    if (room->getRoomId() == roomId)
+                    {
+                        Room::Communication newMessage(message, id);
+                        room->addMessage(std::move(newMessage));
+                        Log::info("Added new message in room: ", roomId);
+                        return true;
+                    }
+                }
+                Log::info("Client not in the room it's targetting!");
+                return false;
+            }
+            else if (type == "broadcast")
+            {
+                Log::error("Not implemented");
+                return false;
+            }
+            else if (type == "multicast")
+            {
+                Log::error("Not implemented");
+                return false;
+            }
         }
 
         else
         {
-            Log::info("UNDEFINED TYPE ", json["type"]);
+            Log::error("UNDEFINED TYPE");
             return false;
         }
     }
