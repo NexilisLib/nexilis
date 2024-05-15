@@ -1,8 +1,11 @@
-#include <cstdint>
 #include <nexilis/boost/tcp_client.hh>
 #include <nexilis/log.hh>
 
-#include <thread>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/streambuf.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/asio/buffers_iterator.hpp>
 
 namespace nexilis
 {
@@ -85,7 +88,7 @@ bool BoostTCPClient::connectToServer()
 {
     try
     {
-        ::boost::asio::connect(m_socket, m_iterator);
+        boost::asio::connect(m_socket, m_iterator);
     }
     catch (...)
     {
@@ -181,7 +184,11 @@ void BoostTCPClient::receiveLoop()
             {
                 auto a = ClientProtocol::getClientAPI()->readMessage(buffer);
 
-                if (!a)
+                if (a == ClientAPI::ReadResult::success)
+                {
+                    Log::info("Read success");
+                }
+                else
                 {
                     Util::debugUint8Vector(buffer);
                 }

@@ -1,8 +1,6 @@
 #ifndef NEXILIS_USER_HH
 #define NEXILIS_USER_HH
 
-#include <boost/asio.hpp>
-
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 

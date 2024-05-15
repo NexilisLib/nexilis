@@ -4,8 +4,6 @@
 
 #include <boost/asio/ip/address.hpp>
 
-#include <cstdint>
-#include <memory>
 #include <mutex>
 
 namespace nexilis

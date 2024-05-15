@@ -5,7 +5,10 @@
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/udp.hpp>
+
+#include <thread>
 
 namespace nexilis
 {

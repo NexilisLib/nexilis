@@ -3,13 +3,12 @@
 #include "menu.hh"
 #include "nexilis_client.hh"
 
-#include <cstdint>
+#include <nexilis/json.hh>
+#include <nexilis/packet.hh>
+
 #include <ncurses.h>
 
-#include <nexilis/json.hh>
-#include <nexilis/log.hh>
-#include <nexilis/logger/file_handler.hh>
-#include <nexilis/packet.hh>
+#include <boost/json/serialize.hpp>
 
 Program::Program(int argc, char** argv)
     : m_argc(argc),

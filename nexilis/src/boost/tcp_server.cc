@@ -1,10 +1,11 @@
-#include <boost/asio/buffer.hpp>
-#include <cstdint>
 #include <nexilis/boost/tcp_server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/common/util.hh>
 
-#include <thread>
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/streambuf.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 
 namespace nexilis
 {

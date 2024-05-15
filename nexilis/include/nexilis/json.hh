@@ -1,11 +1,9 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
-#include <boost/json/kind.hpp>
 #include <nexilis/user.hh>
 #include <nexilis/room.hh>
 
-#include <boost/json.hpp>
 #include <boost/json/object.hpp>
 
 #include <map>
@@ -23,26 +21,27 @@ public:
     Json() = default;
 
     // Create JSON data from given key-value pairs
-    static ::boost::json::object createJSON(const std::map<std::string, boost::json::value>& keyValues);
-
-    /// Read JSON data from file.
-    static ::boost::json::value readJSONFromFile(const std::string& filename);
+    static boost::json::object createJSON(const std::map<std::string, boost::json::value>& keyValues);
 
     /// Get data about the rooms in the server.
-    static ::boost::json::object getRoomData();
+    static boost::json::object getRoomData();
 
     /// Get data about the clients in the server.
-    static ::boost::json::object getClientData();
+    static boost::json::object getClientData();
 
     /// Return all data from the server.
-    static ::boost::json::object getServerData();
+    static boost::json::object getServerData();
+
+    /// Read JSON data from file.
+    static boost::json::value readJSONFromFile(const std::string& filename);
 
     /// Convert std::vector<uint8_t> to boost::json::object.
-    static ::boost::json::object convertToJSON(const std::vector<uint8_t>& bytes);
+    static boost::json::object convertToJSON(const std::vector<uint8_t>& bytes);
 
     /// Print the contents of boost::json::object.
-    static void print(const ::boost::json::object& obj);
+    static void print(const boost::json::object& obj);
 
+    /// Convert json object to string.
     static std::string toString(const boost::json::object& obj);
 
     /// Write json object to a file.

@@ -393,6 +393,37 @@ public:
         std::vector<Room::Communication> m_roomMessages;
     };
 
+    /// Result from ClientAPI::readMessage(const std::vector<uint8_t>&).
+    enum class ReadResult
+    {
+        // The payload does nothing with nexilis.
+        clean,
+
+        // Command success.
+        success,
+
+        // Logical failure in the command, failing is ok.
+        failure,
+
+        // Command is not found.
+        not_found,
+
+        // The input for command is not correct.
+        invalid_input,
+
+        // There is an error implementing command.
+        error,
+
+        // The command usage is unauthorized.
+        unauthorized,
+
+        // The nexilis_status is missing from the message.
+        missing_nexilis_status,
+
+        // Not implemented.
+        not_implemented
+    };
+
     /// Constructor.
     ClientAPI(ServerData data);
 
@@ -448,7 +479,7 @@ public:
 
 public:
     /// Read incoming message to client.
-    bool readMessage(std::vector<uint8_t> message);
+    ReadResult readMessage(const std::vector<uint8_t>& message);
 
 public:
     /// Room stuff
@@ -564,7 +595,7 @@ private:
     Room& roomWhereClientIs(uint64_t clientId);
 
     /// Parse clientside data.
-    bool parse(boost::json::object json);
+    ReadResult parse(boost::json::object json);
 
 private:
     /// The initialization data for the ClientAPI.

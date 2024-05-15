@@ -361,13 +361,13 @@ uint64_t ClientAPI::clientRoomId()
     return 0;
 }
 
-bool ClientAPI::parse(boost::json::object json)
+ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 {
     // Parsing message.
     if (!json.contains("nexilis_status"))
     {
         Log::info("Running code without nexilis status");
-        return false;
+        return ReadResult::missing_nexilis_status;
     }
 
     if (json.contains("command") && json.contains("type"))
@@ -459,23 +459,23 @@ bool ClientAPI::parse(boost::json::object json)
                         newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
                     }
                     m_currentlyActiveRooms = newRooms;
-                    return true;
+                    return ReadResult::success;
                 }
             }
             else if (type == "client_data")
             {
                 Log::error("Not implemented");
-                return false;
+                return ReadResult::not_implemented;
             }
             else if (type == "server_data")
             {
                 Log::error("Not implemented");
-                return false;
+                return ReadResult::not_implemented;
             }
             else
             {
                 Log::error("Wrong type!");
-                return false;
+                return ReadResult::not_implemented;
             }
         }
 
@@ -488,7 +488,7 @@ bool ClientAPI::parse(boost::json::object json)
                     uint64_t id = json["set_client_id"].as_uint64();
                     setClientId(id);
                     Packet::_initialize(id);
-                    return true;
+                    return ReadResult::success;
                 }
                 // boost::json::value is so bad.
                 else if (json["set_client_id"].if_int64())
@@ -501,18 +501,18 @@ bool ClientAPI::parse(boost::json::object json)
 
                     setClientId(id);
                     Packet::_initialize(id);
-                    return true;
+                    return ReadResult::success;
                 }
                 else
                 {
                     Log::error("The value of set_client_id is not convertible to as_uint64");
-                    return false;
+                    return ReadResult::error;
                 }
             }
             else
             {
                 Log::error("Unused path");
-                return false;
+                return ReadResult::not_found;
             }
         }
 
@@ -561,35 +561,34 @@ bool ClientAPI::parse(boost::json::object json)
                         Room::Communication newMessage(message, id);
                         room->addMessage(std::move(newMessage));
                         Log::info("Added new message in room: ", roomId);
-                        return true;
+                        return ReadResult::success;
                     }
                 }
                 Log::info("Client not in the room it's targetting!");
-                return false;
+                return ReadResult::failure;
             }
             else if (type == "broadcast")
             {
                 Log::error("Not implemented");
-                return false;
+                return ReadResult::not_implemented;
             }
             else if (type == "multicast")
             {
                 Log::error("Not implemented");
-                return false;
+                return ReadResult::not_implemented;
             }
         }
 
         else
         {
             Log::error("UNDEFINED TYPE");
-            return false;
+            return ReadResult::not_found;
         }
     }
-    // TODO continue parsing.
-    return true;
+    return ReadResult::clean;
 }
 
-bool ClientAPI::readMessage(std::vector<uint8_t> message)
+ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message)
 {
     boost::json::object json;
     try
@@ -598,21 +597,20 @@ bool ClientAPI::readMessage(std::vector<uint8_t> message)
     }
     catch (...)
     {
-        //Log::error("Cannot convert message to json");
         Util::debugUint8Vector(message);
-        return false;
+        return ReadResult::error;
     }
 
 
-    if (parse(json))
+    if (parse(json) == ReadResult::success)
     {
         m_currentMessage = json;
-        return true;
+        return ReadResult::success;
     }
     else
     {
         Log::info("Received message that is not read by the server");
-        return false;
+        return ReadResult::not_found;
     }
 }
 
