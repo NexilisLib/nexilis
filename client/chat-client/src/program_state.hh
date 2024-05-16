@@ -5,6 +5,7 @@ enum class State
 {
     menu,
     infopage,
+    rooms,
     chat
 };
 

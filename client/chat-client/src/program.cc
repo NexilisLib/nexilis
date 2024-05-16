@@ -85,7 +85,7 @@ void Program::inputHandler(Window& window)
                         // Chat.
                         case 0:
                         {
-                            updateState(State::chat);
+                            updateState(State::rooms);
                             wclear(m_window.getWindow());
                             break;
                         }
@@ -110,9 +110,9 @@ void Program::inputHandler(Window& window)
             break;
         }
 
-        case State::chat:
+        case State::rooms:
         {
-            //useVim(tolower(m_input));
+            useVim(tolower(m_input));
             // Get information about the chat.
             // This is honestly pretty fucking stupid.
             if (updateRooms)
@@ -199,6 +199,12 @@ void Program::inputHandler(Window& window)
 
                 default: break;
             }
+            break;
+        }
+
+        case State::chat:
+        {
+            useVim(tolower(m_input));
             break;
         }
         case State::infopage:
@@ -298,7 +304,7 @@ void Program::applyVim(std::vector<char> command, State currentState)
         {
             case State::chat:
             {
-                updateState(State::menu);
+                updateState(State::rooms);
                 break;
             }
             case State::menu:
@@ -307,6 +313,11 @@ void Program::applyVim(std::vector<char> command, State currentState)
                 break;
             }
             case State::infopage:
+            {
+                updateState(State::menu);
+                break;
+            }
+            case State::rooms:
             {
                 updateState(State::menu);
                 break;

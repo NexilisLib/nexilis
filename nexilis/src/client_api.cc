@@ -554,12 +554,14 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
                 assert(id != 0);
                 assert(roomId != 0);
 
-                for (auto room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
                     if (room->getRoomId() == roomId)
                     {
                         Room::Communication newMessage(message, id);
                         room->addMessage(std::move(newMessage));
+
+                        assert(room->containsCommunication(newMessage.getId()));
                         Log::info("Added new message in room: ", roomId);
                         return ReadResult::success;
                     }
@@ -600,7 +602,6 @@ ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message
         Util::debugUint8Vector(message);
         return ReadResult::error;
     }
-
 
     if (parse(json) == ReadResult::success)
     {

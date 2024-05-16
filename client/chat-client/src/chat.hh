@@ -6,7 +6,6 @@
 #include "debug.hh"
 #include "program_state.hh"
 
-#include <cstdint>
 #include <nexilis/client_api.hh>
 
 #include <sstream>
@@ -17,7 +16,7 @@ public:
     /// Constructor.
     Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP);
 
-    void update(Window& window, int& hightlight, State state);
+    void update(Window& window, int& hightlight, State& state);
 
     int getRoomAmount()
     {
@@ -37,7 +36,7 @@ public:
     std::string roomData(const nexilis::ClientAPI::Room& room);
 
 private:
-    void showRooms(Window& window, int& hightlight);
+    void showRooms(Window& window, int& hightlight, State& state);
 
     void updateChat(Window& window);
 

@@ -1,4 +1,5 @@
 #include "chat.hh"
+#include "nexilis/client_api.hh"
 
 #include <nexilis/packet.hh>
 
@@ -10,7 +11,7 @@ Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::ve
 {
 }
 
-void Chat::update(Window& window, int& hightlight, State state)
+void Chat::update(Window& window, int& hightlight, State& state)
 {
     switch (state)
     {
@@ -22,13 +23,18 @@ void Chat::update(Window& window, int& hightlight, State state)
         {
             werase(window.getWindow());
             updateChat(window);
-            showRooms(window, hightlight);
+            break;
+        }
+        case State::rooms:
+        {
+            werase(window.getWindow());
+            showRooms(window, hightlight, state);
             break;
         }
     }
 }
 
-void Chat::showRooms(Window& window, int& highlight)
+void Chat::showRooms(Window& window, int& highlight, State& state)
 {
     // Kinda sus in a loop honestly.
     auto newRooms = m_clientApi->getActiveRooms();
@@ -45,6 +51,9 @@ void Chat::showRooms(Window& window, int& highlight)
     }
     else if (m_clientApi->clientInRoom())
     {
+        // Change program state.
+        state = State::chat;
+
         std::stringstream ss;
         ss << "In room: " << m_clientApi->clientRoomId();
         mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
@@ -52,7 +61,7 @@ void Chat::showRooms(Window& window, int& highlight)
         int startY = window.getWinSize().second / 2;
         int startX = window.getWinSize().first / 2;
 
-        // Prompt message
+        // Prompt message.
         mvwprintw(window.getWindow(), startY, startX, "Enter chat message:");
 
         // Create a buffer to the store the input.
@@ -112,6 +121,9 @@ void Chat::showRooms(Window& window, int& highlight)
     }
     else
     {
+        // Change program state.
+        state = State::rooms;
+
         int startX = 0;
         int startY = 0;
         if (!m_rooms.empty())
@@ -143,27 +155,22 @@ void Chat::showRooms(Window& window, int& highlight)
 
 void Chat::updateChat(Window& window)
 {
-    if (m_rooms.empty())
-    {
-        return;
-    }
+    // Kinda sus in a loop honestly.
+    auto newRooms = m_clientApi->getActiveRooms();
 
-    for (auto r = m_rooms.begin(); r != m_rooms.end(); r++)
+    // Update new rooms.
+    if (m_rooms != newRooms)
     {
+        m_rooms = newRooms;
     }
-
-    //if (m_rooms)
 
     uint64_t clientId = m_clientApi->getClientId();
 
-    if (!clientId)
-    {
-        debug("Error receiving client id");
-        return;
-    }
+    assert(clientId);
+    assert(!m_rooms.empty());
 
+    /// Get the room that client is currently in.
     nexilis::ClientAPI::Room clientRoom;
-
     for (auto& room : m_rooms)
     {
         for (auto& client : room.getClients())
@@ -174,38 +181,45 @@ void Chat::updateChat(Window& window)
             }
         }
     }
+    assert(clientRoom != m_clientApi->getDefaultRoom());
 
-    /*
-    if (clientRoom == m_clientApi->getDefaultRoom())
+    std::vector<nexilis::ClientAPI::Room::Communication> messages;
+
+    bool foundMessages = false;
+    for (auto r = m_rooms.begin(); r != m_rooms.end(); r++)
     {
-        return;
+        /// List room messages.
+        if (*r == clientRoom)
+        {
+            messages = r->getMessages();
+            foundMessages = true;
+        }
     }
-    */
 
-    auto messages = clientRoom.getMessages();
+    assert(foundMessages);
 
     if (!messages.empty())
     {
-        //int startX = window.getWinSize().first / 2;
-        //int startY = window.getWinSize().second / 2 - window.getWinSize().second / 4;
-        int index = 0;
-
         // Calculate position for room display
         int startY = (window.getWinSize().second - static_cast<int>(messages.size())) / 2;
         int startX = (window.getWinSize().first - static_cast<int>(messages[0].getPayload().length())) / 2;
+        int index = 0;
 
         for (auto b = messages.begin(); b != messages.end(); b++)
         {
-            std::stringstream messageCount;
-            messageCount << "Message count: " << index;
-            debug(messageCount.str());
-
             std::stringstream ss;
             ss << "(" << b->getClientId() << ") " << b->getPayload();
             mvwprintw(window.getWindow(), startY + index, startX, "%s", ss.str().c_str());
             wrefresh(window.getWindow());
             index++;
         }
+    }
+    else
+    {
+        int startX = 0;
+        int startY = 0;
+        mvwprintw(window.getWindow(), startY, startX, "No messages in this room");
+        wrefresh(window.getWindow());
     }
 }
 

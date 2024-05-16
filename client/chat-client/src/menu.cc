@@ -23,9 +23,8 @@ void Menu::update(WINDOW* window, int& highlight, State state)
         }
         // This does not concern menu, do nothing.
         case State::chat:
-        {
+        case State::rooms:
             break;
-        }
     }
 }
 
