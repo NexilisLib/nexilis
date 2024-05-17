@@ -92,6 +92,103 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     return *this;
 }
 
+// ClientAPI::Room::Communication
+ClientAPI::Room::Communication::Communication(const std::string& payload, uint64_t clientId) :
+    m_payload(payload),
+    m_clientId(clientId),
+    m_id(Util::getRandomUint64())
+{
+}
+
+ClientAPI::Room::Communication::Communication(const Communication& other) :
+    m_payload(other.m_payload),
+    m_clientId(other.m_clientId),
+    m_id(other.m_id)
+{
+}
+
+ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(const Communication& other)
+{
+    if (this != &other)
+    {
+        m_payload = other.m_payload;
+        m_clientId = other.m_clientId;
+        m_id = other.m_id;
+    }
+    return *this;
+}
+
+ClientAPI::Room::Communication::Communication(Communication&& other) :
+    m_payload(std::move(other.m_payload)),
+    m_clientId(std::move(other.m_clientId)),
+    m_id(std::move(other.m_id))
+
+{
+}
+
+ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(Communication&& other)
+{
+    if (this != &other)
+    {
+        m_payload = std::move(other.m_payload);
+        m_clientId = std::move(other.m_clientId);
+        m_id = std::move(other.m_id);
+    }
+    return *this;
+}
+
+bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room::Communication& rhs)
+{
+    return lhs.getPayload() == rhs.getPayload() &&
+           lhs.getClientId() == rhs.getClientId() &&
+           lhs.getId() == rhs.getId();
+}
+
+// ClientAPI::Room::Client
+ClientAPI::Room::Client::Client(uint64_t id, const std::string& name)
+    : m_id(id),
+      m_name(name)
+{
+}
+
+ClientAPI::Room::Client::Client(const Client& other)
+    : m_id(other.m_id),
+      m_name(other.m_name)
+{
+}
+
+ClientAPI::Room::Client::Client(Client&& other)
+    : m_id(std::move(other.m_id)),
+      m_name(std::move(other.m_name))
+{
+}
+
+ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(const Client& other)
+{
+    if (this != &other)
+    {
+        m_id = other.m_id;
+        m_name = other.m_name;
+    }
+    return *this;
+}
+
+ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
+{
+    if (this != &other)
+    {
+        m_id = std::move(other.m_id);
+        m_name = std::move(other.m_name);
+    }
+    return *this;
+}
+
+bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Client& rhs)
+{
+    return lhs.getId() == rhs.getId() &&
+        lhs.getName() == rhs.getName();
+}
+
 // ClientAPI::Room
 ClientAPI::Room::Room(const Room& other) :
     m_name(other.m_name),
@@ -150,44 +247,31 @@ ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t room
 {
 }
 
-// ClientAPI::Room::Client
-ClientAPI::Room::Client::Client(uint64_t id, const std::string& name)
-    : m_id(id),
-      m_name(name)
+bool operator==(const ClientAPI::Room& lhs, const ClientAPI::Room& rhs)
 {
+    return lhs.getName() == rhs.getName() &&
+       lhs.getCreatorId() == rhs.getCreatorId() &&
+       lhs.getRoomId() == rhs.getRoomId() &&
+       lhs.getMaxSize() == rhs.getMaxSize() &&
+       lhs.getClients() == rhs.getClients() &&
+       lhs.getMessages() == rhs.getMessages();
 }
 
-ClientAPI::Room::Client::Client(const Client& other)
-    : m_id(other.m_id),
-      m_name(other.m_name)
+bool ClientAPI::Room::containsCommunication(const Room::Communication& communication)
 {
+    return std::find(m_roomMessages.begin(), m_roomMessages.end(), communication) != m_roomMessages.end();
 }
 
-ClientAPI::Room::Client::Client(Client&& other)
-    : m_id(std::move(other.m_id)),
-      m_name(std::move(other.m_name))
+bool ClientAPI::Room::containsCommunication(uint64_t communicationId)
 {
-}
-
-ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(const Client& other)
-{
-    if (this != &other)
+    auto idComparator = [communicationId](const Communication& item)
     {
-        m_id = other.m_id;
-        m_name = other.m_name;
-    }
-    return *this;
+        return item.getId() == communicationId;
+    };
+
+    return std::find_if(m_roomMessages.begin(), m_roomMessages.end(), idComparator) != m_roomMessages.end();
 }
 
-ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
-{
-    if (this != &other)
-    {
-        m_id = std::move(other.m_id);
-        m_name = std::move(other.m_name);
-    }
-    return *this;
-}
 
 ///
 /// ClientAPI

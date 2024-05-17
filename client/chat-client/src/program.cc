@@ -2,6 +2,7 @@
 #include "debug.hh"
 #include "menu.hh"
 #include "nexilis_client.hh"
+#include "vim.hh"
 
 #include <nexilis/json.hh>
 #include <nexilis/packet.hh>
@@ -47,7 +48,7 @@ void Program::inputHandler(Window& window)
     {
         case State::menu:
         {
-            useVim(tolower(m_input));
+            useVimMode(m_input, m_state, m_window);
             switch (tolower(m_input))
             {
                 case 'j':
@@ -112,7 +113,8 @@ void Program::inputHandler(Window& window)
 
         case State::rooms:
         {
-            useVim(tolower(m_input));
+            useVimMode(m_input, m_state, m_window);
+
             // Get information about the chat.
             // This is honestly pretty fucking stupid.
             if (updateRooms)
@@ -204,12 +206,12 @@ void Program::inputHandler(Window& window)
 
         case State::chat:
         {
-            useVim(tolower(m_input));
+            useVimMode(m_input, m_state, m_window);
             break;
         }
         case State::infopage:
         {
-            useVim(tolower(m_input));
+            useVimMode(m_input, m_state, m_window);
             break;
         }
     }
@@ -268,62 +270,6 @@ void Program::parseMessage(boost::json::object object)
     }
 
     /// Here parse client specific messages.
-}
-
-void Program::useVim(int input)
-{
-    // Currently only reading after ":".
-    if (input == 58)
-    {
-        mvprintw(m_window.getWinSize().second - 1, 0, ":");
-        refresh();
-
-        // Loop to read input until a valid key is pressed
-        char nextKey;
-        std::vector<char> keys;
-        while (nextKey != 10)
-        {
-            nextKey = static_cast<char>(tolower(wgetch(m_window.getWindow())));
-            if (nextKey != -1)
-            {
-                mvprintw(m_window.getWinSize().second - 1, static_cast<int>(keys.size()) + 1, "%c", nextKey);
-                refresh();
-                keys.emplace_back(nextKey);
-            }
-        }
-
-        applyVim(keys, m_state);
-    }
-}
-
-void Program::applyVim(std::vector<char> command, State currentState)
-{
-    if ((command[0] == 'q' && command[1] == 10) || (command[0] == 'x' && command[1] == 10))
-    {
-        switch (currentState)
-        {
-            case State::chat:
-            {
-                updateState(State::rooms);
-                break;
-            }
-            case State::menu:
-            {
-                end();
-                break;
-            }
-            case State::infopage:
-            {
-                updateState(State::menu);
-                break;
-            }
-            case State::rooms:
-            {
-                updateState(State::menu);
-                break;
-            }
-        }
-    }
 }
 
 void Program::update()

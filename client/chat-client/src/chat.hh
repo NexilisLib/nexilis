@@ -8,8 +8,6 @@
 
 #include <nexilis/client_api.hh>
 
-#include <sstream>
-
 class Chat
 {
 public:

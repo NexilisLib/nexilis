@@ -34,13 +34,6 @@ private:
     void sendTCPMessage(const std::vector<uint8_t>& message);
     void sendUDPMessage(const std::vector<uint8_t>& message);
 
-    /// Vim mode simply built into this function.
-    /// Blocking operation if the current input is ":".
-    void useVim(int input);
-
-    /// Applying the ":q", or ":x" command, so we are switching the program state.
-    void applyVim(std::vector<char> command, State state);
-
     /// Changing the value of the m_state member.
     /// \param state The new state of the m_state member variable.
     void updateState(State state);

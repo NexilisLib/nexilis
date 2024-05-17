@@ -190,61 +190,22 @@ public:
         public:
             /// Constructor.
             /// \param payload The data for the Communication messages.
-            Communication(const std::string& payload, uint64_t clientId) :
-                m_payload(payload),
-                m_clientId(clientId),
-                m_id(Util::getRandomUint64())
-            {
-            }
+            Communication(const std::string& payload, uint64_t clientId);
 
             /// Copy constructor.
-            Communication(const Communication& other) :
-                m_payload(other.m_payload),
-                m_clientId(other.m_clientId),
-                m_id(other.m_id)
-            {
-            }
+            Communication(const Communication& other);
 
             /// Copy assignment.
-            Communication& operator=(const Communication& other)
-            {
-                if (this != &other)
-                {
-                    m_payload = other.m_payload;
-                    m_clientId = other.m_clientId;
-                    m_id = other.m_id;
-                }
-                return *this;
-            }
+            Communication& operator=(const Communication& other);
 
             /// Move constructor.
-            Communication(Communication&& other) :
-                m_payload(std::move(other.m_payload)),
-                m_clientId(std::move(other.m_clientId)),
-                m_id(std::move(other.m_id))
-
-            {
-            }
+            Communication(Communication&& other);
 
             /// Move assignment operator.
-            Communication& operator=(Communication& other)
-            {
-                if (this != &other)
-                {
-                    m_payload = std::move(other.m_payload);
-                    m_clientId = std::move(other.m_clientId);
-                    m_id = std::move(other.m_id);
-                }
-                return *this;
-            }
+            Communication& operator=(Communication&& other);
 
             /// Comparison operator overload.
-            friend bool operator==(const Communication& lhs, const Communication& rhs)
-            {
-                return lhs.getPayload() == rhs.getPayload() &&
-                       lhs.getClientId() == rhs.getClientId() &&
-                       lhs.getId() == rhs.getId();
-            }
+            friend bool operator==(const Communication& lhs, const Communication& rhs);
 
             /// Non-comparison operator overload.
             friend bool operator!=(const Communication& lhs, const Communication& rhs)
@@ -294,11 +255,7 @@ public:
             Client& operator=(Client&& other);
 
             /// Comparison operator overload.
-            friend bool operator==(const Client& lhs, const Client& rhs)
-            {
-                return lhs.getId() == rhs.getId() &&
-                       lhs.getName() == rhs.getName();
-            }
+            friend bool operator==(const Client& lhs, const Client& rhs);
 
             /// Non-comparison operator overload.
             friend bool operator!=(const Client& lhs, const Client& rhs)
@@ -345,15 +302,7 @@ public:
         Room& operator=(Room&& other);
 
         /// Comparison operator overload.
-        friend bool operator==(const Room& lhs, const Room& rhs)
-        {
-            return lhs.getName() == rhs.getName() &&
-               lhs.getCreatorId() == rhs.getCreatorId() &&
-               lhs.getRoomId() == rhs.getRoomId() &&
-               lhs.getMaxSize() == rhs.getMaxSize() &&
-               lhs.getClients() == rhs.getClients() &&
-               lhs.getMessages() == rhs.getMessages();
-        }
+        friend bool operator==(const Room& lhs, const Room& rhs);
 
         /// Non-comparison operator overload.
         friend bool operator!=(const Room& lhs, const Room& rhs)
@@ -401,20 +350,8 @@ public:
             return m_roomMessages;
         }
 
-        bool containsCommunication(const Room::Communication& communication)
-        {
-            return std::find(m_roomMessages.begin(), m_roomMessages.end(), communication) != m_roomMessages.end();
-        }
-
-        bool containsCommunication(uint64_t communicationId)
-        {
-            auto idComparator = [communicationId](const Communication& item)
-            {
-                return item.getId() == communicationId;
-            };
-
-            return std::find_if(m_roomMessages.begin(), m_roomMessages.end(), idComparator) != m_roomMessages.end();
-        }
+        bool containsCommunication(const Room::Communication& communication);
+        bool containsCommunication(uint64_t communicationId);
 
     private:
         /// The name of the room.
@@ -429,7 +366,7 @@ public:
         /// The max amount of clients in this room.
         int m_maxSize;
 
-        /// All clients currently inside this room.
+        /// All of the clients currently inside this room.
         std::vector<Room::Client> m_clients;
 
         /// All of the broadcasts that have been sent in this room.
