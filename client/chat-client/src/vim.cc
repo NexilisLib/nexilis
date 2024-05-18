@@ -1,12 +1,69 @@
 #include "vim.hh"
 #include "debug.hh"
 
-#include <cctype>
-#include <curses.h>
-#include <iterator>
 #include <ncurses.h>
 
 #include <vector>
+
+enum class VimFeature
+{
+    escape,
+    no_feature
+};
+
+struct VimCommand
+{
+    VimFeature feature;
+    std::vector<int> data;
+};
+
+VimCommand createCommand(Window& window)
+{
+    std::vector<int> command;
+
+    while (true)
+    {
+        int ch = wgetch(window.getWindow());
+        if (ch != -1 && ch != 27)
+        {
+            // If user entered ":".
+            if (ch == 58)
+            {
+                mvprintw(window.getWinSize().second - 1, 0, ":");
+                refresh();
+
+                // User input after ":".
+                while (true)
+                {
+                    int commandCh = wgetch(window.getWindow());
+
+                    if (commandCh != -1 && commandCh != 27)
+                    {
+                        command.emplace_back(commandCh);
+
+                        mvprintw(window.getWinSize().second - 1, static_cast<int>(command.size()), "%c", static_cast<char>(commandCh));
+                        refresh();
+
+                        // User entered space, so command is ready.
+                        if (commandCh == 10)
+                        {
+                            return VimCommand{ VimFeature::escape, command};
+                        }
+                    }
+                    else if (commandCh == 27)
+                    {
+                        return VimCommand{VimFeature::no_feature, command};
+                    }
+                }
+            }
+        }
+        else if (ch == 27)
+        {
+            return VimCommand{VimFeature::no_feature, command};
+        }
+    }
+    return VimCommand{ VimFeature::no_feature, command};
+}
 
 void useVimMode(State& programState, Window& window)
 {
@@ -15,132 +72,44 @@ void useVimMode(State& programState, Window& window)
 
 void useVimMode(int trigger, State& programState, Window& window)
 {
+    // Esc-key press
     if (trigger == 27)
     {
-        char nextKey = -1;
-        int ch;
-        std::vector<char> command;
-        bool commandReady = false;
+        auto vimCommand = createCommand(window);
 
-        while (!commandReady)
+        if (vimCommand.feature == VimFeature::escape)
         {
-            ch = wgetch(window.getWindow());
-            nextKey = static_cast<char>(tolower(ch));
-
-            if (nextKey != -1)
+            // Check for "q" or ":x".
+            if ((vimCommand.data[0] == 113 && vimCommand.data[1] == 10) || (vimCommand.data[0] == 120 && vimCommand.data[1] == 10))
             {
-                // If user entered ":".
-                if (nextKey == 58)
+                switch (programState)
                 {
-                    mvprintw(window.getWinSize().second - 1, 0, ":");
-                    refresh();
-
-                    while (true)
+                    case State::chat:
                     {
-                        ch = wgetch(window.getWindow());
-                        int thirdKey = static_cast<char>(tolower(ch));
-                        command.emplace_back(thirdKey);
-                        mvprintw(window.getWinSize().second - 1, static_cast<int>(command.size()) + 1, "%c", thirdKey);
-                        refresh();
+                        programState = State::rooms;
+                        break;
+                    }
 
-                        if (thirdKey == 10)
-                        {
-                            commandReady = true;
-                            debug("Escaped vim command");
-                            break;
-                        }
+                    // Force close application in menu.
+                    case State::menu:
+                    {
+                        endwin();
+                        exit(0);
+                        break;
+                    }
+                    case State::infopage:
+                    {
+                        programState = State::menu;
+                        break;
+                    }
+                    case State::rooms:
+                    {
+                        programState = State::menu;
+                        break;
                     }
                 }
             }
-
-        }
-
-        // Check for ":q" or ":x".
-        if ((command[0] == 'q' && command[1] == 10) || (command[0] == 'x' && command[1] == 10))
-        {
-            switch (programState)
-            {
-                case State::chat:
-                {
-                    programState = State::rooms;
-                    break;
-                }
-                case State::menu:
-                {
-                    // TODO
-                    //end();
-                    break;
-                }
-                case State::infopage:
-                {
-                    programState = State::menu;
-                    break;
-                }
-                case State::rooms:
-                {
-                    programState = State::menu;
-                    break;
-                }
-            }
         }
     }
 }
 
-
-/*
-void Program::useVim(int input)
-{
-    // Currently only reading after ":".
-    if (input == 58)
-    {
-        mvprintw(m_window.getWinSize().second - 1, 0, ":");
-        refresh();
-
-        // Loop to read input until a valid key is pressed
-        char nextKey;
-        std::vector<char> keys;
-        while (nextKey != 10)
-        {
-            nextKey = static_cast<char>(tolower(wgetch(m_window.getWindow())));
-            if (nextKey != -1)
-            {
-                mvprintw(m_window.getWinSize().second - 1, static_cast<int>(keys.size()) + 1, "%c", nextKey);
-                refresh();
-                keys.emplace_back(nextKey);
-            }
-        }
-
-        applyVim(keys, m_state);
-    }
-}
-
-void Program::applyVim(std::vector<char> command, State currentState)
-{
-    if ((command[0] == 'q' && command[1] == 10) || (command[0] == 'x' && command[1] == 10))
-    {
-        switch (currentState)
-        {
-            case State::chat:
-            {
-                updateState(State::rooms);
-                break;
-            }
-            case State::menu:
-            {
-                end();
-                break;
-            }
-            case State::infopage:
-            {
-                updateState(State::menu);
-                break;
-            }
-            case State::rooms:
-            {
-                updateState(State::menu);
-                break;
-            }
-        }
-    }
-}
-*/
