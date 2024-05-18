@@ -74,11 +74,13 @@ void Chat::showRooms(Window& window, int& highlight, State& state)
                 {
                     wattron(window.getWindow(), A_REVERSE);
                     mvwprintw(window.getWindow(), startY + static_cast<int>(i), startX, "%s", roomData(m_rooms[i]).c_str());
+                    wrefresh(window.getWindow());
                     wattroff(window.getWindow(), A_REVERSE);
                 }
                 else
                 {
                     mvwprintw(window.getWindow(), startY + static_cast<int>(i), startX, "%s", roomData(m_rooms[i]).c_str());
+                    wrefresh(window.getWindow());
                 }
             }
         }
@@ -98,71 +100,6 @@ void Chat::updateChat(Window& window)
     if (m_rooms != newRooms)
     {
         m_rooms = newRooms;
-    }
-
-    std::stringstream ss;
-    ss << "In room: " << m_clientApi->clientRoomId();
-    mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
-
-    // Prompt message.
-    int startY = window.getWinSize().second / 2;
-    int startX = window.getWinSize().first / 2;
-    mvwprintw(window.getWindow(), startY, startX, "Enter chat message:");
-
-    // Create a buffer to the store the input.
-    std::vector<char> buffer;
-
-    int ch;
-    char nextKey = -1;
-    int index = 0;
-
-    while (nextKey != 10)
-    {
-        ch = wgetch(window.getWindow());
-        nextKey = static_cast<char>(tolower(ch));
-
-        if (nextKey != -1)
-        {
-            if (ch == KEY_BACKSPACE)
-            {
-                if (index > 0)
-                {
-                    mvwprintw(window.getWindow(), startY + 1, startX + 2 + index - 1, " ");
-                    wrefresh(window.getWindow());
-                    index--;
-                    buffer.pop_back();
-                }
-            }
-            else
-            {
-                // Display the character
-                mvwprintw(window.getWindow(), startY + 1, startX + index, "%c", nextKey);
-                wrefresh(window.getWindow());
-                buffer.emplace_back(nextKey);
-                index++;
-            }
-        }
-
-    }
-
-    // Log the input.
-    std::string userString(buffer.begin(), buffer.end());
-    if (!userString.empty())
-    {
-        mvprintw(startY / 2, startX / 2, "You entered: %s", userString.c_str());
-        wrefresh(window.getWindow());
-
-        m_sendTCP(nexilis::Packet::Communicate::roomMessage(userString));
-
-        std::stringstream ss;
-        ss << "NOT EMPTY: " << userString;
-        debug(ss.str());
-    }
-    else
-    {
-        mvprintw(40, 40, "Empty input");
-        wrefresh(window.getWindow());
-        debug("empty");
     }
 
     uint64_t clientId = m_clientApi->getClientId();
@@ -223,6 +160,71 @@ void Chat::updateChat(Window& window)
         int startY = 0;
         mvwprintw(window.getWindow(), startY, startX, "No messages in this room");
         wrefresh(window.getWindow());
+    }
+
+    std::stringstream ss;
+    ss << "In room: " << m_clientApi->clientRoomId();
+    mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
+
+    // Prompt message.
+    int startY = window.getWinSize().second / 2 + window.getWinSize().second / 3;
+    int startX = window.getWinSize().first / 2;
+    mvwprintw(window.getWindow(), startY, startX, "Enter chat message:");
+
+    // Create a buffer to the store the input.
+    std::vector<char> buffer;
+
+    int ch;
+    char nextKey = -1;
+    int index = 0;
+
+    while (nextKey != 10)
+    {
+        ch = wgetch(window.getWindow());
+        nextKey = static_cast<char>(tolower(ch));
+
+        if (nextKey != -1)
+        {
+            if (ch == KEY_BACKSPACE)
+            {
+                if (index > 0)
+                {
+                    mvwprintw(window.getWindow(), startY + 1, startX + 2 + index - 1, " ");
+                    wrefresh(window.getWindow());
+                    index--;
+                    buffer.pop_back();
+                }
+            }
+            else
+            {
+                // Display the character
+                mvwprintw(window.getWindow(), startY + 1, startX + index, "%c", nextKey);
+                wrefresh(window.getWindow());
+                buffer.emplace_back(nextKey);
+                index++;
+            }
+        }
+
+    }
+
+    // Log the input.
+    std::string userString(buffer.begin(), buffer.end());
+    if (!userString.empty())
+    {
+        mvprintw(startY / 2, startX / 2, "You entered: %s", userString.c_str());
+        wrefresh(window.getWindow());
+
+        m_sendTCP(nexilis::Packet::Communicate::roomMessage(userString));
+
+        std::stringstream ss;
+        ss << "NOT EMPTY: " << userString;
+        debug(ss.str());
+    }
+    else
+    {
+        mvprintw(40, 40, "Empty input");
+        wrefresh(window.getWindow());
+        debug("empty");
     }
 }
 
