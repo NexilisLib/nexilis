@@ -17,10 +17,10 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: |
-      sudo apt-get update
-      sudo apt-get install -y cmake g++ libgtest-dev \
-      libboost-system-dev libboost-json-dev libboost-asio-dev
+      run:
+        sudo apt-get update && \
+        sudo apt-get install -y cmake g++ libgtest-dev \
+        libboost-system-dev libboost-json-dev libboost-asio-dev
 
     - name: Build and run tests
       run: |
