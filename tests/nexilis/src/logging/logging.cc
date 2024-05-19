@@ -60,10 +60,11 @@ TEST(LoggerTest, removeHandlers)
     EXPECT_TRUE(nexilis::Log::noHandlers());
 
     auto handler = nexilis::logger::ConsoleHandler();
+    uint64_t handlerId = handler.getId();
 
     nexilis::Log::addHandler(std::move(handler));
     EXPECT_FALSE(nexilis::Log::noHandlers());
-    nexilis::Log::removeHandler(std::move(handler));
+    nexilis::Log::removeHandler(handlerId);
     EXPECT_TRUE(nexilis::Log::noHandlers());
 }
 

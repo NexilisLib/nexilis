@@ -32,14 +32,14 @@ public:
         m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
     }
 
-    template <typename T>
-    void removeHandler(T&& handlerToRemove)
+    /// Remove handler based on it's identifier.
+    void removeHandler(uint64_t handlerId)
     {
         std::lock_guard<std::mutex> lock(m_mtx);
 
         auto it = std::remove_if(m_handlers.begin(), m_handlers.end(),
                                  [&](const std::unique_ptr<BaseHandler>& handler)
-                                 { return *handler == handlerToRemove; });
+                                 { return handlerId == handler->getId(); });
 
         m_handlers.erase(it, m_handlers.end());
     }

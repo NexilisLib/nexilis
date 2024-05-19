@@ -32,11 +32,9 @@ public:
         log.addHandler(std::move(handler));
     }
 
-    /// Remove handle that logs messages.
-    template <typename T>
-    static void removeHandler(T&& handler)
+    static void removeHandler(uint64_t handlerId)
     {
-        log.removeHandler(std::forward<T>(handler));
+        log.removeHandler(handlerId);
     }
 
     /// Remove all handlers.
