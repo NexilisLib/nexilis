@@ -18,7 +18,7 @@ jobs:
 
     - name: Install dependencies
       run:
-        apt update && apt install sudo && sudo apt-get install -y cmake g++ libgtest-dev libboost-json-dev libboost-system-dev
+        sudo apt update && sudo apt-get install -y cmake g++ libgtest-dev libboost-json-dev libboost-system-dev
 
     - name: Build and run tests
       run: |
