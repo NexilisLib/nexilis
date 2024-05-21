@@ -24,9 +24,10 @@ Window::Window()
     // Remove cursor.
     curs_set(0);
 
+    /// Create a new window.
     m_window = newwin(0, 0, 0, 0);
 
-    // This might be useful.
+    // Set the window to non-blocking mode.
     nodelay(m_window, TRUE);
 
     // Get the size of the window.

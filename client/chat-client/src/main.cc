@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv)
 {
-#define NEXILIS_DEBUG
+//#define NEXILIS_DEBUG
 #ifdef NEXILIS_DEBUG
     auto ncursesDebug = [](nexilis::logger::LogLevel logLevel, const std::string& data)
     {
