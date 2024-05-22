@@ -133,7 +133,7 @@ std::vector<uint8_t> Util::convertToByteVector(const boost::json::object& obj)
     return byteStream;
 }
 
-void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data)
+std::string Util::getColorMessage(logger::LogLevel logLevel, const std::string &data)
 {
     std::string color;
     switch (logLevel)
@@ -150,8 +150,14 @@ void Util::sendColorMessageToConsole(logger::LogLevel logLevel, const std::strin
             color = "\033[31m";
             break;
     }
+    std::stringstream ss;
+    ss << color << data << "\033[0m" << std::endl;
+    return ss.str();
+}
 
-    std::cout << color << data << "\033[0m" << std::endl;
+void Util::printColorMessageToConsole(logger::LogLevel logLevel, const std::string& data)
+{
+    std::cout << getColorMessage(logLevel, data);
 }
 
 void Util::debugUint8Vector(const std::vector<uint8_t>& vector)

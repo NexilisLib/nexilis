@@ -76,7 +76,8 @@ public:
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
 
     /// Logging.
-    static void sendColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
+    static std::string getColorMessage(logger::LogLevel logLevel, const std::string& data);
+    static void printColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
     static void debugUint8Vector(const std::vector<uint8_t>& vector);
 
     static std::string getDateAndTime();

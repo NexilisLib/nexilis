@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Dependencies: dmenu
+
 # Function to display confirmation dialog using dmenu
 confirm_delete()
 {

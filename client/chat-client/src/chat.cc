@@ -179,7 +179,8 @@ void Chat::updateChat(Window& window)
                 }
             }
 
-            // This really means that we correctly find a room where client currently is.
+            // This really means that we correctly find the room where client currently is.
+            // The messages could still be empty.
             assert(foundMessages);
 
             if (!messages.empty())
