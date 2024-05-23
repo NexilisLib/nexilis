@@ -35,8 +35,7 @@ public:
 
 private:
     void showRooms(Window& window, int& hightlight, State& state);
-
-    void updateChat(Window& window);
+    void updateChat(Window& window, State& programState);
 
 private:
     nexilis::ClientAPI* m_clientApi;

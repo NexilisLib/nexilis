@@ -34,11 +34,7 @@ private:
     void sendTCPMessage(const std::vector<uint8_t>& message);
     void sendUDPMessage(const std::vector<uint8_t>& message);
 
-    /// Changing the value of the m_state member.
-    /// \param state The new state of the m_state member variable.
-    void updateState(State state);
 private:
-
     /// Command line arguments argc.
     int m_argc;
 

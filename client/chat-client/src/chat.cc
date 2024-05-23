@@ -1,5 +1,5 @@
 #include "chat.hh"
-#include "nexilis/client_api.hh"
+#include "vim.hh"
 
 #include <nexilis/packet.hh>
 
@@ -24,7 +24,7 @@ void Chat::update(Window& window, int& hightlight, State& state)
         case State::chat:
         {
             werase(window.getWindow());
-            updateChat(window);
+            updateChat(window, state);
             break;
         }
         case State::rooms:
@@ -91,7 +91,7 @@ void Chat::showRooms(Window& window, int& highlight, State& state)
     }
 }
 
-void Chat::updateChat(Window& window)
+void Chat::updateChat(Window& window, State& programState)
 {
     std::stringstream ss;
     ss << "In room: " << m_clientApi->clientRoomId();
@@ -125,6 +125,11 @@ void Chat::updateChat(Window& window)
                     index--;
                     buffer.pop_back();
                 }
+            }
+            // Press esc to open vim mode.
+            else if (nextKey == 27)
+            {
+                useVimMode(programState, window);
             }
             else
             {
@@ -216,7 +221,7 @@ void Chat::updateChat(Window& window)
     }
     else
     {
-        mvprintw(40, 40, "Empty input");
+        mvprintw(0, 40, "Empty input");
         wrefresh(window.getWindow());
     }
 }

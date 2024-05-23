@@ -86,7 +86,7 @@ void Program::inputHandler(Window& window)
                         // Chat.
                         case 0:
                         {
-                            updateState(State::rooms);
+                            m_state = State::rooms;
                             wclear(m_window.getWindow());
                             break;
                         }
@@ -94,7 +94,7 @@ void Program::inputHandler(Window& window)
                         // Info.
                         case 1:
                         {
-                            updateState(State::infopage);
+                            m_state = State::infopage;
                             wclear(m_window.getWindow());
                             break;
                         }
@@ -254,11 +254,6 @@ void Program::readMessage(boost::json::object object)
         m_currentMessage = object;
         parseMessage(m_currentMessage);
     }
-}
-
-void Program::updateState(State state)
-{
-    m_state = state;
 }
 
 void Program::parseMessage(boost::json::object object)

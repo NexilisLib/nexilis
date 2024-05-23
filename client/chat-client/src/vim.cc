@@ -1,5 +1,6 @@
 #include "vim.hh"
 #include "debug.hh"
+#include "nexilis/packet.hh"
 
 #include <ncurses.h>
 
@@ -87,6 +88,7 @@ void useVimMode(int trigger, State& programState, Window& window)
                     case State::chat:
                     {
                         programState = State::rooms;
+                        nexilis::Packet::Room::leave();
                         break;
                     }
 
@@ -104,6 +106,7 @@ void useVimMode(int trigger, State& programState, Window& window)
                     }
                     case State::rooms:
                     {
+                        debug("STATE = ROOMS");
                         programState = State::menu;
                         break;
                     }
