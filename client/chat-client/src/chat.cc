@@ -143,7 +143,7 @@ void Chat::updateChat(Window& window, State& programState)
         // No input, update existing messages.
         else
         {
-            // Kinda sus in a loop honestly.
+            // Get new room data.
             auto newRooms = m_clientApi->getActiveRooms();
 
             // Update new rooms.

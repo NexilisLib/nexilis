@@ -115,12 +115,10 @@ void Program::inputHandler(Window& window)
         {
             useVimMode(m_input, m_state, m_window);
 
-            // Get information about the chat.
-            // This is honestly pretty fucking stupid.
+            // When looking at room scene for the first time, auto update.
             if (updateRooms)
             {
                 sendTCPMessage(nexilis::Packet::Info::rooms());
-
                 updateRooms = false;
             }
 
@@ -164,14 +162,16 @@ void Program::inputHandler(Window& window)
                     ss << "Room id: " << roomId << std::endl;
                     debug(ss.str());
                     sendTCPMessage(nexilis::Packet::Room::join(roomId));
-
+                    updateRooms = true;
                     break;
                 }
 
+                // Create new room with random name.
                 case KEY_F(1):
                 {
                     std::string newRoomName = nexilis::Util::getRandomString(5);
                     sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
+                    updateRooms = true;
                     break;
                 }
 
@@ -258,13 +258,13 @@ void Program::readMessage(boost::json::object object)
 
 void Program::parseMessage(boost::json::object object)
 {
-    // Parsing message.
     if (object.contains("nexilis_status"))
     {
-        debug("There should not be any nexilis status messages in the client so something is wrong");
     }
-
     /// Here parse client specific messages.
+    else
+    {
+    }
 }
 
 void Program::update()
