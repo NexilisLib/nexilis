@@ -2,6 +2,7 @@
 #include "debug.hh"
 #include "nexilis/packet.hh"
 
+#include <cstdint>
 #include <ncurses.h>
 
 #include <vector>
@@ -66,12 +67,12 @@ VimCommand createCommand(Window& window)
     return VimCommand{ VimFeature::no_feature, command};
 }
 
-void useVimMode(State& programState, Window& window)
+void useVimMode(State& programState, Window& window, const std::function<void(const std::vector<uint8_t>&)>& sendTCPMessage)
 {
-    useVimMode(27, programState, window);
+    useVimMode(27, programState, window, sendTCPMessage);
 }
 
-void useVimMode(int trigger, State& programState, Window& window)
+void useVimMode(int trigger, State& programState, Window& window, const std::function<void(const std::vector<uint8_t>&)>& sendTCPMessage)
 {
     // Esc-key press
     if (trigger == 27)
@@ -88,7 +89,7 @@ void useVimMode(int trigger, State& programState, Window& window)
                     case State::chat:
                     {
                         programState = State::rooms;
-                        nexilis::Packet::Room::leave();
+                        sendTCPMessage(nexilis::Packet::Room::leave());
                         break;
                     }
 
@@ -106,7 +107,6 @@ void useVimMode(int trigger, State& programState, Window& window)
                     }
                     case State::rooms:
                     {
-                        debug("STATE = ROOMS");
                         programState = State::menu;
                         break;
                     }

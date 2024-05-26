@@ -4,7 +4,10 @@
 #include "window.hh"
 #include "program_state.hh"
 
-void useVimMode(State& programState, Window& window);
-void useVimMode(int trigger, State& programState, Window& window);
+#include <cstdint>
+#include <functional>
+
+void useVimMode(State& programState, Window& window, const std::function<void(const std::vector<uint8_t>&)>& sendTCPMessage);
+void useVimMode(int trigger, State& programState, Window& window, const std::function<void(const std::vector<uint8_t>&)>& sendTCPMessage);
 
 #endif

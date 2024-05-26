@@ -116,9 +116,7 @@ Room& Room::operator=(Room&& other)
 
 bool Room::contains(uint64_t userId)
 {
-    auto& clients = m_clients;
-
-    for (auto c = clients.begin(); c != clients.end(); c++)
+    for (auto c = m_clients.begin(); c != m_clients.end(); c++)
     {
         if (c->getId() == userId)
         {
@@ -143,15 +141,8 @@ void Room::joinRoom(uint64_t userId)
 
 void Room::leaveRoom(uint64_t userId)
 {
-    auto& clients = m_clients;
-
-    for (auto c = clients.begin(); c != clients.end(); c++)
-    {
-        if (c->getId() == userId)
-        {
-            m_clients.erase(c);
-        }
-    }
+    m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
+        [userId](const Client& client) { return client.getId() == userId; }), m_clients.end());
 }
 
 } // namespace nexilis

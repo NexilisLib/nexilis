@@ -17,10 +17,11 @@ Program::Program(int argc, char** argv)
       m_window(),
       m_menu(),
       m_nexilisClient(),
-      m_chat(&m_nexilisClient.getClientAPI(), [this](const std::vector<uint8_t>& payload)
-         {
-            sendTCPMessage(payload);
-         })
+      m_sendTCPMessage([this](const std::vector<uint8_t>& payload)
+          {
+              sendTCPMessage(payload);
+          }),
+      m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage)
 {
     m_nexilisClient.start();
 }
@@ -48,7 +49,7 @@ void Program::inputHandler(Window& window)
     {
         case State::menu:
         {
-            useVimMode(m_input, m_state, m_window);
+            useVimMode(m_input, m_state, m_window, m_sendTCPMessage);
             switch (tolower(m_input))
             {
                 case 'j':
@@ -113,7 +114,7 @@ void Program::inputHandler(Window& window)
 
         case State::rooms:
         {
-            useVimMode(m_input, m_state, m_window);
+            useVimMode(m_input, m_state, m_window, m_sendTCPMessage);
 
             // When looking at room scene for the first time, auto update.
             if (updateRooms)
@@ -152,15 +153,11 @@ void Program::inputHandler(Window& window)
                 }
                 case 10:
                 {
-                    debug("Pressed enter in chat mode");
                     uint64_t roomId = m_chat.getRoomIdByPosition(m_roomChoice);
                     if (roomId == 0)
                     {
                         break;
                     }
-                    std::stringstream ss;
-                    ss << "Room id: " << roomId << std::endl;
-                    debug(ss.str());
                     sendTCPMessage(nexilis::Packet::Room::join(roomId));
                     updateRooms = true;
                     break;
@@ -206,12 +203,12 @@ void Program::inputHandler(Window& window)
 
         case State::chat:
         {
-            useVimMode(m_input, m_state, m_window);
+            useVimMode(m_input, m_state, m_window, m_sendTCPMessage);
             break;
         }
         case State::infopage:
         {
-            useVimMode(m_input, m_state, m_window);
+            useVimMode(m_input, m_state, m_window, m_sendTCPMessage);
             break;
         }
     }

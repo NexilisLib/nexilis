@@ -13,7 +13,7 @@ Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::ve
 {
 }
 
-void Chat::update(Window& window, int& hightlight, State& state)
+void Chat::update(Window& window, int& highlight, State& state)
 {
     switch (state)
     {
@@ -30,7 +30,7 @@ void Chat::update(Window& window, int& hightlight, State& state)
         case State::rooms:
         {
             werase(window.getWindow());
-            showRooms(window, hightlight, state);
+            showRooms(window, highlight, state);
             break;
         }
     }
@@ -38,10 +38,14 @@ void Chat::update(Window& window, int& hightlight, State& state)
 
 void Chat::showRooms(Window& window, int& highlight, State& state)
 {
-    // Kinda sus in a loop honestly.
-    auto newRooms = m_clientApi->getActiveRooms();
+    if (m_clientApi->clientInRoom())
+    {
+        state = State::chat;
+        return;
+    }
 
     // Update new rooms.
+    auto newRooms = m_clientApi->getActiveRooms();
     if (m_rooms != newRooms)
     {
         m_rooms = newRooms;
@@ -51,15 +55,8 @@ void Chat::showRooms(Window& window, int& highlight, State& state)
     {
         mvwprintw(window.getWindow(), 0, 0, "Nothing to show");
     }
-    else if (m_clientApi->clientInRoom())
-    {
-        // If a client is in a room, the program state is assumed to be chat.
-        state = State::chat;
-    }
     else
     {
-        state = State::rooms;
-
         int startX = 0;
         int startY = 0;
         if (!m_rooms.empty())
@@ -93,6 +90,12 @@ void Chat::showRooms(Window& window, int& highlight, State& state)
 
 void Chat::updateChat(Window& window, State& programState)
 {
+    if (!m_clientApi->clientInRoom())
+    {
+        programState = State::chat;
+        return;
+    }
+
     std::stringstream ss;
     ss << "In room: " << m_clientApi->clientRoomId();
     mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
@@ -120,7 +123,7 @@ void Chat::updateChat(Window& window, State& programState)
             {
                 if (index > 0)
                 {
-                    mvwprintw(window.getWindow(), startY + 1, startX + 2 + index - 1, " ");
+                    mvwprintw(window.getWindow(), startY + 1, startX + index - 1, " ");
                     wrefresh(window.getWindow());
                     index--;
                     buffer.pop_back();
@@ -129,7 +132,8 @@ void Chat::updateChat(Window& window, State& programState)
             // Press esc to open vim mode.
             else if (nextKey == 27)
             {
-                useVimMode(programState, window);
+                useVimMode(programState, window, m_sendTCP);
+                return;
             }
             else
             {
@@ -143,10 +147,8 @@ void Chat::updateChat(Window& window, State& programState)
         // No input, update existing messages.
         else
         {
-            // Get new room data.
-            auto newRooms = m_clientApi->getActiveRooms();
-
             // Update new rooms.
+            auto newRooms = m_clientApi->getActiveRooms();
             if (m_rooms != newRooms)
             {
                 m_rooms = newRooms;

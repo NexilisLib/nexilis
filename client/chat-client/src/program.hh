@@ -53,6 +53,9 @@ private:
     /// NexilisClient object.
     NexilisClient m_nexilisClient;
 
+    /// Function for sending TCP messages using nexilis.
+    std::function<void(const std::vector<uint8_t>&)> m_sendTCPMessage;
+
     /// Chat object.
     Chat m_chat;
 

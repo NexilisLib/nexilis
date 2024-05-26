@@ -422,7 +422,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 // Leave current room.
                 case 1:
                 {
-                    Log::debug("MainCommand room (leave)");
+                    Log::debug("Called Room::leave()");
                     auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
 
                     if (!currentRoom)
@@ -432,6 +432,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     }
 
                     currentRoom->leaveRoom(user.getId());
+                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
+                    user.setRoomId(0);
                     return Result::success;
                 }
 
