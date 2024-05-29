@@ -6,6 +6,7 @@
 #include <ncurses.h>
 
 #include <sstream>
+#include <thread>
 
 Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP) :
     m_clientApi(clientApi),
@@ -90,12 +91,6 @@ void Chat::showRooms(Window& window, int& highlight, State& state)
 
 void Chat::updateChat(Window& window, State& programState)
 {
-    if (!m_clientApi->clientInRoom())
-    {
-        programState = State::chat;
-        return;
-    }
-
     std::stringstream ss;
     ss << "In room: " << m_clientApi->clientRoomId();
     mvwprintw(window.getWindow(), 0, 0, "%s", ss.str().c_str());
@@ -175,20 +170,14 @@ void Chat::updateChat(Window& window, State& programState)
 
             std::vector<nexilis::ClientAPI::Room::Communication> messages;
 
-            bool foundMessages = false;
             for (auto r = m_rooms.begin(); r != m_rooms.end(); r++)
             {
                 /// List room messages.
                 if (*r == clientRoom)
                 {
                     messages = r->getMessages();
-                    foundMessages = true;
                 }
             }
-
-            // This really means that we correctly find the room where client currently is.
-            // The messages could still be empty.
-            assert(foundMessages);
 
             if (!messages.empty())
             {
@@ -208,7 +197,7 @@ void Chat::updateChat(Window& window, State& programState)
             }
             else
             {
-                int startX = 0;
+                int startX = 30;
                 int startY = 0;
                 mvwprintw(window.getWindow(), startY, startX, "No messages in this room");
                 wrefresh(window.getWindow());
@@ -219,7 +208,20 @@ void Chat::updateChat(Window& window, State& programState)
     std::string userString(buffer.begin(), buffer.end());
     if (!userString.empty())
     {
-        m_sendTCP(nexilis::Packet::Communicate::roomMessage(userString));
+        // Remove newline from input
+        userString.erase(std::remove(userString.begin(), userString.end(), '\n'), userString.cend());
+
+        if (userString == "/quit")
+        {
+            m_sendTCP(nexilis::Packet::Room::leave());
+            m_sendTCP(nexilis::Packet::Info::rooms());
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            programState = State::rooms;
+        }
+        else
+        {
+            m_sendTCP(nexilis::Packet::Communicate::roomMessage(userString));
+        }
     }
     else
     {
