@@ -102,7 +102,7 @@ void BoostUDPServer::receiveFromClients()
                 });
             }
 
-            Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+            Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
             switch (passCommand)
             {

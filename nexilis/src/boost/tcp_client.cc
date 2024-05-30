@@ -84,6 +84,14 @@ void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message)
     send(message);
 }
 
+void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+{
+    uint64_t messageId = Util::getMessageIdFromNexilisMessage(message);
+    std::pair<uint64_t, std::function<void()>> pair = std::make_pair(messageId, callback);
+    ClientProtocol::getClientAPI()->addCallback(pair);
+    send(message);
+}
+
 bool BoostTCPClient::connectToServer()
 {
     try

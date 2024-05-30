@@ -9,12 +9,12 @@ namespace nexilis
 
 Authentication* Command::m_authentication = nullptr;
 
-Command::Result Command::read(const char* command_data, size_t lenght, User& client, Protocol& protocol)
+Command::Result Command::read(const char* command_data, size_t lenght, User& client, Protocol& protocol, uint64_t messageId)
 {
-    return Command::read(Util::convertToByteVector(command_data, lenght), client, protocol);
+    return Command::read(Util::convertToByteVector(command_data, lenght), client, protocol, messageId);
 }
 
-Command::Result Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol)
+Command::Result Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId)
 {
     assert(user.getId() != 0);
 
@@ -188,7 +188,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     std::map<std::string, boost::json::value> header{
                                 {"nexilis_status", boost::json::value(1)},
                                 {"command", boost::json::value("info")},
-                                {"type", boost::json::value("room_data")}};
+                                {"type", boost::json::value("room_data")},
+                                {"callback", boost::json::value(messageId)}};
 
                     auto json = Json::createJSON(header);
                     Json::emplace(json, Json::getRoomData());
@@ -415,6 +416,17 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         room->joinRoom(user.getId());
                         user.setRoomId(roomId);
                         assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
+
+                        std::map<std::string, boost::json::value> data{
+                                {"nexilis_status", boost::json::value(1)},
+                                {"command", boost::json::value("room")},
+                                {"type", boost::json::value("join")},
+                                {"callback", boost::json::value(messageId)}};
+
+                        auto json = Json::createJSON(data);
+                        std::vector<uint8_t> message = Util::convertToByteVector(json);
+                        sendMessageToClient(message, user, protocol);
+
                         return Result::success;
                     }
                 }

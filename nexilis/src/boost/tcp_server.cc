@@ -172,7 +172,7 @@ bool BoostTCPServer::acceptClients()
                         });
                     }
 
-                    Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this);
+                    Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
                     if (passCommand == Command::Result::success)
                     {

@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 #include <nexilis/log.hh>
@@ -184,6 +185,68 @@ std::string Util::getDateAndTime()
     std::stringstream ss;
     ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
     return ss.str();
+}
+
+uint64_t Util::extractUint64FromVector(const std::vector<uint8_t>& data)
+{
+    uint64_t result = 0;
+
+    if (Config::getBigEndian())
+    {
+        for (auto byte : data)
+        {
+            if (byte == 0xFF)
+            {
+                break;
+            }
+            result = (result << 8) | byte;
+        }
+    }
+    else
+    {
+        for (uint64_t i = 0; i < data.size(); ++i)
+        {
+            if (data[i] == 0xFF)
+            {
+                break;
+            }
+            result |= static_cast<uint64_t>(data[i]) << (i * 8);
+        }
+    }
+
+    return result;
+}
+
+std::vector<uint8_t> Util::removeItemsUntilFF(const std::vector<uint8_t>& data)
+{
+    auto ffPosition = std::find(data.begin(), data.end(), 0xFF);
+
+    if (ffPosition != data.end())
+    {
+        return std::vector<uint8_t>(ffPosition + 1, data.end());
+    }
+    else
+    {
+        return {};
+    }
+}
+
+bool Util::containsFF(const std::vector<uint8_t>& data)
+{
+    for (auto byte : data)
+    {
+        if (byte == 0xFF)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+uint64_t Util::getMessageIdFromNexilisMessage(const std::vector<uint8_t>& data)
+{
+    auto a = removeItemsUntilFF(data);
+    return extractUint64FromVector(a);
 }
 
 } // namespace nexilis

@@ -290,7 +290,8 @@ ClientAPI::ClientAPI(ClientAPI&& other)
       m_currentMessage(std::move(other.m_currentMessage)),
       m_defaultRoom(std::move(other.m_defaultRoom)),
       m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
-      m_messageIds(std::move(other.m_messageIds))
+      m_messageIds(std::move(other.m_messageIds)),
+      m_callbacks(std::move(other.m_callbacks))
 {
 }
 
@@ -304,6 +305,7 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
         m_defaultRoom = std::move(other.m_defaultRoom);
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
+        m_callbacks = std::move(other.m_callbacks);
     }
     return *this;
 }
@@ -314,7 +316,8 @@ ClientAPI::ClientAPI(const ClientAPI& other)
       m_currentMessage(other.m_currentMessage),
       m_defaultRoom(other.m_defaultRoom),
       m_currentlyActiveRooms(other.m_currentlyActiveRooms),
-      m_messageIds(other.m_messageIds)
+      m_messageIds(other.m_messageIds),
+      m_callbacks(other.m_callbacks)
 {
 }
 
@@ -328,6 +331,7 @@ ClientAPI& ClientAPI::operator=(const ClientAPI& other)
         m_defaultRoom = other.m_defaultRoom;
         m_currentlyActiveRooms = other.m_currentlyActiveRooms;
         m_messageIds = other.m_messageIds;
+        m_callbacks = other.m_callbacks;
     }
     return *this;
 }
@@ -466,9 +470,10 @@ uint64_t ClientAPI::getNewMessageId()
     }
 }
 
-void ClientAPI::invokeCallbacks()
+void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()>&>& callback)
 {
-
+    Log::warning("Added callback with id: ", callback.first);
+    m_callbacks.emplace_back(callback);
 }
 
 ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
@@ -482,6 +487,40 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 
     if (json.contains("command") && json.contains("type"))
     {
+        // Check possible callback.
+        if (json.find("callback") != json.end() && json["callback"] != 0)
+        {
+            uint64_t callback;
+            if (json.at("callback").if_uint64())
+            {
+                Log::debug("Callback is uint (as it should)");
+                callback = json.at("callback").as_uint64();
+            }
+            else if (json.at("callback").if_int64())
+            {
+                Log::debug("Callback is int (as it should not)");
+                callback = static_cast<uint64_t>(json.at("callback").as_int64());
+            }
+            else
+            {
+                callback = 0;
+            }
+
+            Log::debug("Callback id: ", callback);
+
+            for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
+            {
+                Log::debug("EXISTING CALLBACK: ", it->first);
+                if (it->first == callback)
+                {
+                    Log::debug("Found correct callback, trying to invoke");
+                    it->second();
+                    it = m_callbacks.erase(it);
+                    break;
+                }
+            }
+        }
+
         auto command = json["command"];
         auto type = json["type"];
 

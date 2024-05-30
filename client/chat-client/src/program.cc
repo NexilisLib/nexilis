@@ -4,6 +4,7 @@
 #include "nexilis_client.hh"
 #include "vim.hh"
 
+#include <cstdint>
 #include <nexilis/json.hh>
 #include <nexilis/packet.hh>
 
@@ -21,7 +22,11 @@ Program::Program(int argc, char** argv)
           {
               sendTCPMessage(payload);
           }),
-      m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage)
+      m_sendTCPMessageWithCallback([this](const std::vector<uint8_t>& message, const std::function<void()>& callback)
+          {
+            m_nexilisClient.getTCPClient().sendMessage(message, callback);
+          }),
+      m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
     m_nexilisClient.start();
 }
@@ -158,7 +163,8 @@ void Program::inputHandler(Window& window)
                     {
                         break;
                     }
-                    sendTCPMessage(nexilis::Packet::Room::join(roomId));
+                    //sendTCPMessage(nexilis::Packet::Room::join(roomId));
+                    m_sendTCPMessageWithCallback(nexilis::Packet::Room::join(roomId), [this](){ m_state = State::chat; });
                     updateRooms = true;
                     break;
                 }

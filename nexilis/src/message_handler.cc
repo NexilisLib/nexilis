@@ -12,63 +12,7 @@
 namespace nexilis
 {
 
-uint64_t extractUint64FromVector(const std::vector<uint8_t>& data)
-{
-    uint64_t result = 0;
-
-    if (Config::getBigEndian())
-    {
-        for (auto byte : data)
-        {
-            if (byte == 0xFF)
-            {
-                break;
-            }
-            result = (result << 8) | byte;
-        }
-    }
-    else
-    {
-        for (uint64_t i = 0; i < data.size(); ++i)
-        {
-            if (data[i] == 0xFF)
-            {
-                break;
-            }
-            result |= static_cast<uint64_t>(data[i]) << (i * 8);
-        }
-    }
-
-    return result;
-}
-
-std::vector<uint8_t> removeItemsUntilFF(const std::vector<uint8_t>& data)
-{
-    auto ffPosition = std::find(data.begin(), data.end(), 0xFF);
-
-    if (ffPosition != data.end())
-    {
-        return std::vector<uint8_t>(ffPosition + 1, data.end());
-    }
-    else
-    {
-        return {};
-    }
-}
-
-bool containsFF(const std::vector<uint8_t>& data)
-{
-    for (auto byte : data)
-    {
-        if (byte == 0xFF)
-        {
-            return true;
-        }
-    }
-    return false;
-}
 // NEXILIS_ERROR("myfilename", ErrorType::NOT_IMPLEMENTED);
-
 MessageHandler::Message MessageHandler::readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Authentication* authentication)
 {
     Log::debug("Payload size: ", payload.size());
@@ -82,11 +26,11 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     Message errorMessage("", errordata, -1, nullptr, 0);
 
     // If the message contains 0xFF byte we consider this message nexilis message.
-    bool normalMessage = containsFF(payload);
+    bool normalMessage = Util::containsFF(payload);
     User* realUser = nullptr;
     if (normalMessage)
     {
-        uint64_t id = extractUint64FromVector(payload);
+        uint64_t id = Util::extractUint64FromVector(payload);
 
         // Id extraction is successfull.
         if (id)
@@ -138,9 +82,9 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 {
                     Log::info("Known client sends a message!");
 
-                    auto a = removeItemsUntilFF(payload);
-                    uint64_t messageId = extractUint64FromVector(payload);
-                    auto b = removeItemsUntilFF(a);
+                    auto a = Util::removeItemsUntilFF(payload);
+                    uint64_t messageId = Util::extractUint64FromVector(a);
+                    auto b = Util::removeItemsUntilFF(a);
 
                     return Message(
                             address,

@@ -180,7 +180,7 @@ void Server::handleMessages()
                                                  { sendMessage(clientSocket, message); };
                 (void)sendMsg;
 
-                Command::Result readCommand = Command::read(msg.getData(), *msg.getClient(), *this);
+                Command::Result readCommand = Command::read(msg.getData(), *msg.getClient(), *this, msg.getMessageId());
 
                 if (Command::Result::success == readCommand)
                 {

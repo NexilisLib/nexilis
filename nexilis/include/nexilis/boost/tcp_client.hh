@@ -38,6 +38,9 @@ public:
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
 
+    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&, const std::function<void()>&) implementation.
+    void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback) override;
+
     /// Protocol::start() implementation.
     void start() override;
 

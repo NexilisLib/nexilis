@@ -46,16 +46,18 @@ public:
     /// \param command The vector of bytes that is the command.
     /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
+    /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    static Result read(const std::vector<uint8_t>& command, User& user, Protocol& protocol);
+    static Result read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId);
 
     /// Read the command from client.
     /// \param command_data The data for the command
     /// \param lenght The command lenght in bytes.
     /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
+    /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    static Result read(const char* command_data, size_t lenght, User& client, Protocol& protocol);
+    static Result read(const char* command_data, size_t lenght, User& client, Protocol& protocol, uint64_t messageId);
 
     /// Give server authentication details via Authentication object.
     /// /// \param authentication The object than contains authentication rules.

@@ -32,6 +32,12 @@ public:
     /// Send nexilis message (std::vector<uint8_t>) to server.
     virtual void sendMessage(const std::vector<uint8_t>& message) = 0;
 
+    virtual void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+    {
+        (void)message;
+        (void)callback;
+    }
+
     ClientAPI* getClientAPI()
     {
         return m_api;

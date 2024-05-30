@@ -160,7 +160,7 @@ void TCPServer::operatingLoop()
 
             if (message.getClient())
             {
-                if (Command::read(message.getData(), *message.getClient(), *this) != Command::Result::success)
+                if (Command::read(message.getData(), *message.getClient(), *this, message.getMessageId()) != Command::Result::success)
                 {
                     Log::error("TCPServer: message reading error, message: ", receivedData);
                 }

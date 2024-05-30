@@ -6,13 +6,14 @@
 #include "debug.hh"
 #include "program_state.hh"
 
+#include <cstdint>
 #include <nexilis/client_api.hh>
 
 class Chat
 {
 public:
     /// Constructor.
-    Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP);
+    Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback);
 
     void update(Window& window, int& hightlight, State& state);
 
@@ -34,12 +35,13 @@ public:
     std::string roomData(const nexilis::ClientAPI::Room& room);
 
 private:
-    void showRooms(Window& window, int& hightlight, State& state);
+    void showRooms(Window& window, int& hightlight);
     void updateChat(Window& window, State& programState);
 
 private:
     nexilis::ClientAPI* m_clientApi;
     std::function<void(const std::vector<uint8_t>&)> m_sendTCP;
+    std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)> m_sendTCPWithCallback;
 
     std::vector<nexilis::ClientAPI::Room> m_rooms;
 };

@@ -474,8 +474,7 @@ public:
     /// Message id stuff.
     uint64_t getNewMessageId();
 
-    void invokeCallbacks();
-
+    void addCallback(const std::pair<uint64_t, const std::function<void()>&>& callback);
 public:
     /// Getters.
 
@@ -601,6 +600,9 @@ private:
 
     /// Existing message id's.
     std::vector<uint64_t> m_messageIds;
+
+    /// Currently existing callbacks.
+    std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
 };
 
 } // namespace nexilis

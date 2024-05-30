@@ -81,6 +81,19 @@ public:
     static void debugUint8Vector(const std::vector<uint8_t>& vector);
 
     static std::string getDateAndTime();
+
+    /// Message parsing functions
+    /// Extract uint64_t before hitting 0xFF.
+    static uint64_t extractUint64FromVector(const std::vector<uint8_t>& data);
+
+    /// Remove all the items before and including the 0xFF byte.
+    static std::vector<uint8_t> removeItemsUntilFF(const std::vector<uint8_t>& data);
+
+    /// Check if the vector contains 0xFF byte.
+    static bool containsFF(const std::vector<uint8_t>& data);
+
+    /// Get message id from message.
+    static uint64_t getMessageIdFromNexilisMessage(const std::vector<uint8_t>& data);
 };
 
 } // namespace nexilis

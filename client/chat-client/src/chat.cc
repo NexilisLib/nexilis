@@ -8,9 +8,10 @@
 #include <sstream>
 #include <thread>
 
-Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP) :
+Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback) :
     m_clientApi(clientApi),
-    m_sendTCP(sendTCP)
+    m_sendTCP(sendTCP),
+    m_sendTCPWithCallback(sendTCPWithCallback)
 {
 }
 
@@ -31,20 +32,14 @@ void Chat::update(Window& window, int& highlight, State& state)
         case State::rooms:
         {
             werase(window.getWindow());
-            showRooms(window, highlight, state);
+            showRooms(window, highlight);
             break;
         }
     }
 }
 
-void Chat::showRooms(Window& window, int& highlight, State& state)
+void Chat::showRooms(Window& window, int& highlight)
 {
-    if (m_clientApi->clientInRoom())
-    {
-        state = State::chat;
-        return;
-    }
-
     // Update new rooms.
     auto newRooms = m_clientApi->getActiveRooms();
     if (m_rooms != newRooms)
@@ -107,7 +102,7 @@ void Chat::updateChat(Window& window, State& programState)
     char nextKey = -1;
     int index = 0;
 
-    while (nextKey != 10)
+    while (nextKey != 10 && programState == State::chat)
     {
         ch = wgetch(window.getWindow());
         nextKey = static_cast<char>(tolower(ch));
@@ -214,9 +209,7 @@ void Chat::updateChat(Window& window, State& programState)
         if (userString == "/quit")
         {
             m_sendTCP(nexilis::Packet::Room::leave());
-            m_sendTCP(nexilis::Packet::Info::rooms());
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            programState = State::rooms;
+            m_sendTCPWithCallback(nexilis::Packet::Info::rooms(), [&programState](){ programState = State::rooms; });
         }
         else
         {

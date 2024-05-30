@@ -3,11 +3,6 @@
 
 #include <nexilis/client_api.hh>
 
-#include <cstddef>
-#include <cstdint>
-#include <string>
-#include <vector>
-
 namespace nexilis
 {
 
