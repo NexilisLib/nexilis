@@ -178,6 +178,7 @@ void Server::handleMessages()
             {
                 auto sendMsg = [this, &clientSocket](const std::vector<uint8_t>& message)
                                                  { sendMessage(clientSocket, message); };
+                (void)sendMsg;
 
                 Command::Result readCommand = Command::read(msg.getData(), *msg.getClient(), *this);
 

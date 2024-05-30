@@ -1,6 +1,8 @@
 #ifndef NEXILIS_PACKET_HH
 #define NEXILIS_PACKET_HH
 
+#include <nexilis/client_api.hh>
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -13,7 +15,7 @@ class Packet
 {
 public:
     // Internal initilization function.
-    static void _initialize(size_t clientId);
+    static void _initialize(ClientAPI& clientApi);
 
     class Get
     {
@@ -50,7 +52,7 @@ public:
 private:
     static std::vector<uint8_t> clientIdentification();
 
-    static size_t m_clientId;
+    static ClientAPI* m_clientApi;
 };
 
 } // namespace nexilis

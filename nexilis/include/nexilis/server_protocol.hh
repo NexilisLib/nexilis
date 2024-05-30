@@ -25,12 +25,6 @@ public:
     /// Deleted copy assignment operator.
     ServerProtocol& operator=(const ServerProtocol&) = delete;
 
-    virtual bool sendMessageToAll()
-    {
-        Log::error("Send message to all not implemented error");
-        return false;
-    }
-
 protected:
     /// Use this to parse the message before sending to Command.
     MessageHandler& getMessageHandler()

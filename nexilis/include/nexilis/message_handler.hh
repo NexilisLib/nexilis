@@ -24,11 +24,12 @@ public:
     class Message
     {
     public:
-        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, User* user)
+        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, User* user, uint64_t messageId)
             : m_address(address),
               m_data(data),
               m_port(port),
-              m_user(user)
+              m_user(user),
+              m_messageId(messageId)
         {
         }
 
@@ -52,11 +53,17 @@ public:
             return m_user;
         }
 
+        uint64_t getMessageId()
+        {
+            return m_messageId;
+        }
+
     private:
         std::string m_address;
         std::vector<uint8_t> m_data;
         uint16_t m_port = 0;
         User* m_user = nullptr;
+        uint64_t m_messageId;
     };
 
     /// Read the unifiltered server message and return it ready for `Command`.

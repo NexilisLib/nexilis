@@ -1,3 +1,5 @@
+#include "nexilis/af_unix/sock_dgram/client.hh"
+#include <cstdint>
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -287,7 +289,8 @@ ClientAPI::ClientAPI(ClientAPI&& other)
       m_clientId(std::move(other.m_clientId)),
       m_currentMessage(std::move(other.m_currentMessage)),
       m_defaultRoom(std::move(other.m_defaultRoom)),
-      m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms))
+      m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
+      m_messageIds(std::move(other.m_messageIds))
 {
 }
 
@@ -300,6 +303,7 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
         m_currentMessage = std::move(other.m_currentMessage);
         m_defaultRoom = std::move(other.m_defaultRoom);
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
+        m_messageIds = std::move(other.m_messageIds);
     }
     return *this;
 }
@@ -309,7 +313,8 @@ ClientAPI::ClientAPI(const ClientAPI& other)
       m_clientId(other.m_clientId),
       m_currentMessage(other.m_currentMessage),
       m_defaultRoom(other.m_defaultRoom),
-      m_currentlyActiveRooms(other.m_currentlyActiveRooms)
+      m_currentlyActiveRooms(other.m_currentlyActiveRooms),
+      m_messageIds(other.m_messageIds)
 {
 }
 
@@ -322,6 +327,7 @@ ClientAPI& ClientAPI::operator=(const ClientAPI& other)
         m_currentMessage = other.m_currentMessage;
         m_defaultRoom = other.m_defaultRoom;
         m_currentlyActiveRooms = other.m_currentlyActiveRooms;
+        m_messageIds = other.m_messageIds;
     }
     return *this;
 }
@@ -443,6 +449,26 @@ uint64_t ClientAPI::clientRoomId()
     }
 
     return 0;
+}
+
+uint64_t ClientAPI::getNewMessageId()
+{
+    uint64_t newId = Util::getRandomUint64();
+
+    if (std::find(m_messageIds.begin(), m_messageIds.end(), newId) != m_messageIds.end())
+    {
+        return getNewMessageId();
+    }
+    else
+    {
+        m_messageIds.emplace_back(newId);
+        return newId;
+    }
+}
+
+void ClientAPI::invokeCallbacks()
+{
+
 }
 
 ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
@@ -571,7 +597,7 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
                 {
                     uint64_t id = json["set_client_id"].as_uint64();
                     setClientId(id);
-                    Packet::_initialize(id);
+                    Packet::_initialize(*this);
                     return ReadResult::success;
                 }
                 // boost::json::value is so bad.
@@ -584,7 +610,7 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
                     assert(static_cast<uint64_t>(id) == u_id);
 
                     setClientId(id);
-                    Packet::_initialize(id);
+                    Packet::_initialize(*this);
                     return ReadResult::success;
                 }
                 else

@@ -79,7 +79,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     // TODO
     // Error Messages.
     std::vector<uint8_t> errordata = {9, 0, 0};
-    Message errorMessage("", errordata, -1, nullptr);
+    Message errorMessage("", errordata, -1, nullptr, 0);
 
     // If the message contains 0xFF byte we consider this message nexilis message.
     bool normalMessage = containsFF(payload);
@@ -138,11 +138,16 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 {
                     Log::info("Known client sends a message!");
 
+                    auto a = removeItemsUntilFF(payload);
+                    uint64_t messageId = extractUint64FromVector(payload);
+                    auto b = removeItemsUntilFF(a);
+
                     return Message(
                             address,
-                            removeItemsUntilFF(payload),
+                            b,
                             port,
-                            realUser);
+                            realUser,
+                            messageId);
                 }
                 // Message from verified client that has no access.
                 else
@@ -180,7 +185,8 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                             address,
                             message,
                             port,
-                            realNewClient);
+                            realNewClient,
+                            0);
                 }
                 else
                 {

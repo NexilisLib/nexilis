@@ -471,6 +471,12 @@ public:
     uint64_t clientRoomId();
 
 public:
+    /// Message id stuff.
+    uint64_t getNewMessageId();
+
+    void invokeCallbacks();
+
+public:
     /// Getters.
 
     /// General.
@@ -592,6 +598,9 @@ private:
 
     /// Rooms that client knows about.
     std::vector<ClientAPI::Room> m_currentlyActiveRooms;
+
+    /// Existing message id's.
+    std::vector<uint64_t> m_messageIds;
 };
 
 } // namespace nexilis

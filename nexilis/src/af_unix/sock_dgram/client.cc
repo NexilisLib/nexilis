@@ -26,6 +26,7 @@ Client::~Client()
 
 void Client::sendMessage(const std::vector<uint8_t>& message)
 {
+    (void)message;
     std::cout << "SENDING MESSAGE: " << m_serverAddr.sun_path << std::endl;
 
     // TODO

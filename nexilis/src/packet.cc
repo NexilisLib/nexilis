@@ -5,7 +5,7 @@
 namespace nexilis
 {
 
-uint64_t Packet::m_clientId = 0;
+ClientAPI* Packet::m_clientApi = nullptr;
 
 std::vector<uint8_t> Packet::Get::clientId()
 {
@@ -96,11 +96,6 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
         id.emplace_back(elem);
     }
 
-    // ClientId 8 bytes.
-    // 0xFF 1 byte.
-    // Command raw sequence 2 bytes.
-    // Parameter roomId 8 bytes.
-    assert(id.size() == 19);
     return id;
 }
 
@@ -125,23 +120,40 @@ std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
     return id;
 }
 
-void Packet::_initialize(uint64_t clientId)
+void Packet::_initialize(ClientAPI& clientAPI)
 {
-    m_clientId = clientId;
+    m_clientApi = &clientAPI;
 }
 
 std::vector<uint8_t> Packet::clientIdentification()
 {
-    if (m_clientId == 0)
+    if (!m_clientApi)
     {
-        Log::error("Packet has not initialized clientIdentification");
+        Log::error("Packet has not initialized ClientAPI");
         return {};
     }
 
-    auto clientIdVector = Util::convertToByteVector(m_clientId);
+    uint64_t clientId = m_clientApi->getClientId();
+    if (clientId == 0)
+    {
+        Log::error("Error creating new message id");
+        return {};
+    }
+
+    auto clientIdVector = Util::convertToByteVector(clientId);
 
     assert(!clientIdVector.empty());
     assert(Util::convertToType<uint64_t>(clientIdVector) != 0);
+
+    clientIdVector.emplace_back(0xFF);
+    assert(clientIdVector.back() == 0xFF);
+
+    auto messageIdVector = Util::convertToByteVector(m_clientApi->getNewMessageId());
+
+    for (const auto& byte : messageIdVector)
+    {
+        clientIdVector.emplace_back(byte);
+    }
 
     clientIdVector.emplace_back(0xFF);
     assert(clientIdVector.back() == 0xFF);

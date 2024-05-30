@@ -58,6 +58,8 @@ void UDPServer::start()
                     sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
                 };
 
+                (void)sendMsg;
+
                 if (message.getClient())
                 {
                     if (Command::read(message.getData(), *message.getClient(), *this) != Command::Result::success)

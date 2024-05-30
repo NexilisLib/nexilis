@@ -156,6 +156,7 @@ void TCPServer::operatingLoop()
                 auto charData = reinterpret_cast<const char*>(data.data());
                 sendToClient(client.getSocket(), charData, sizeof(charData));
             };
+            (void)sendMsg;
 
             if (message.getClient())
             {
