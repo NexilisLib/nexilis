@@ -20,13 +20,17 @@ Program::Program(int argc, char** argv)
       m_nexilisClient(),
       m_sendTCPMessage([this](const std::vector<uint8_t>& payload)
           {
-              sendTCPMessage(payload);
+              m_nexilisClient.getTCPClient().sendMessage(payload);
           }),
       m_sendTCPMessageWithCallback([this](const std::vector<uint8_t>& message, const std::function<void()>& callback)
           {
             m_nexilisClient.getTCPClient().sendMessage(message, callback);
           }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
+{
+}
+
+void Program::start()
 {
     m_nexilisClient.start();
 }
@@ -124,7 +128,7 @@ void Program::inputHandler(Window& window)
             // When looking at room scene for the first time, auto update.
             if (updateRooms)
             {
-                sendTCPMessage(nexilis::Packet::Info::rooms());
+                m_sendTCPMessage(nexilis::Packet::Info::rooms());
                 updateRooms = false;
             }
 
@@ -163,7 +167,6 @@ void Program::inputHandler(Window& window)
                     {
                         break;
                     }
-                    //sendTCPMessage(nexilis::Packet::Room::join(roomId));
                     m_sendTCPMessageWithCallback(nexilis::Packet::Room::join(roomId), [this](){ m_state = State::chat; });
                     updateRooms = true;
                     break;
@@ -173,7 +176,7 @@ void Program::inputHandler(Window& window)
                 case KEY_F(1):
                 {
                     std::string newRoomName = nexilis::Util::getRandomString(5);
-                    sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
+                    m_sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
                     updateRooms = true;
                     break;
                 }
@@ -226,16 +229,6 @@ void Program::updateScreenSize(Window& window)
     getmaxyx(window.getWindow(), maxY, maxX);
     auto newSize = std::make_pair(maxX, maxY);
     window.updateScreenSize(newSize);
-}
-
-void Program::sendTCPMessage(const std::vector<uint8_t>& message)
-{
-    m_nexilisClient.getTCPClient().sendMessage(message);
-}
-
-void Program::sendUDPMessage(const std::vector<uint8_t>& message)
-{
-    m_nexilisClient.getUDPClient().sendMessage(message);
 }
 
 void Program::debugObject(boost::json::object object)

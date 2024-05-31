@@ -16,6 +16,9 @@ public:
     /// Destructor.
     ~Program();
 
+    // Start running the program.
+    void start();
+
     /// The update loop for the program.
     void update();
 
@@ -29,10 +32,6 @@ private:
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
     void parseMessage(boost::json::object object);
-
-    // Message sending functions.
-    void sendTCPMessage(const std::vector<uint8_t>& message);
-    void sendUDPMessage(const std::vector<uint8_t>& message);
 
 private:
     /// Command line arguments argc.

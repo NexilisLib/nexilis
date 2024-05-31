@@ -493,12 +493,10 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
             uint64_t callback;
             if (json.at("callback").if_uint64())
             {
-                Log::debug("Callback is uint (as it should)");
                 callback = json.at("callback").as_uint64();
             }
             else if (json.at("callback").if_int64())
             {
-                Log::debug("Callback is int (as it should not)");
                 callback = static_cast<uint64_t>(json.at("callback").as_int64());
             }
             else
@@ -508,12 +506,11 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 
             Log::debug("Callback id: ", callback);
 
+            // Calling callback.
             for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
             {
-                Log::debug("EXISTING CALLBACK: ", it->first);
                 if (it->first == callback)
                 {
-                    Log::debug("Found correct callback, trying to invoke");
                     it->second();
                     it = m_callbacks.erase(it);
                     break;
@@ -524,7 +521,7 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
         auto command = json["command"];
         auto type = json["type"];
 
-        // This should be enumerated.
+        // TODO This should be enumerated.
         if (command == "info")
         {
             if (type == "room_data")

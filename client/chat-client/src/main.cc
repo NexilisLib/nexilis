@@ -2,8 +2,6 @@
 
 #include <nexilis/logger/file_handler.hh>
 
-#include <ncurses.h>
-
 int main(int argc, char** argv)
 {
 #define NEXILIS_DEBUG
@@ -16,9 +14,12 @@ int main(int argc, char** argv)
 #endif
 
     Program program(argc, argv);
+    program.start();
 
     while (true)
     {
         program.update();
     }
+
+    return 0;
 }

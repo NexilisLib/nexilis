@@ -3,12 +3,10 @@
 #ifndef NEXILIS_MYSQL_DATABASE_HH
 #define NEXILIS_MYSQL_DATABASE_HH
 
+#include <mysql/mysql.h>
+
 #include <string>
 #include <vector>
-
-// Forward declarations.
-struct st_mysql;
-struct st_mysql_res;
 
 namespace nexilis::mysql
 {
@@ -68,7 +66,7 @@ public:
     {
     public:
         /// Constructor.
-        ResultSet(st_mysql_res* result);
+        ResultSet(MYSQL_RES* result);
 
         /// Destructor.
         ~ResultSet();
@@ -80,7 +78,7 @@ public:
         void print();
 
     private:
-        st_mysql_res* m_result;
+        MYSQL_RES* m_result;
     };
 
     /// Constructor.
@@ -109,7 +107,7 @@ public:
     ResultSet executeQuery(const std::string& query);
 
 private:
-    st_mysql* m_connection;
+    MYSQL* m_connection;
     ConnectionData m_connectionData;
 };
 
