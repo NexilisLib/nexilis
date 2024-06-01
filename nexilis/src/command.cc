@@ -495,23 +495,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
     }
 }
 
-std::string Command::createIPv4Address(const std::vector<uint8_t>& characters)
-{
-    if (characters.size() < 4)
-    {
-        Log::critical("Insufficient characters to create an IPv4 address.");
-        return "";
-    }
-
-    std::string ipAddress;
-    ipAddress += std::to_string(characters[0]) + "." +
-                 std::to_string(characters[1]) + "." +
-                 std::to_string(characters[2]) + "." +
-                 std::to_string(characters[3]);
-
-    return ipAddress;
-}
-
 void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol)
 {
     switch (protocol.getType())

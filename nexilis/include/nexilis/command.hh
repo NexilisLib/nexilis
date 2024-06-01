@@ -72,18 +72,12 @@ public:
         return m_authentication;
     }
 
-    /// Helper functions.
-
-    /// Create IPv4 address from IPV4 data.
-    /// \param address The address data.
-    /// \return string Created IPV4 string.
-    std::string createIPv4Address(const std::vector<uint8_t>& address);
-
 private:
     /// Send message to every protocol that is avainable for a client;
     static void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
 
 private:
+    /// Pointer to the authentication.
     static Authentication* m_authentication;
 };
 

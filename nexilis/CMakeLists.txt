@@ -38,6 +38,7 @@ set(SOURCES
     src/user.cc
     src/command.cc
     src/config.cc
+    src/cmd_line_options.cc
     src/vector3.cc
     src/ports.cc
     src/client_storage.cc
