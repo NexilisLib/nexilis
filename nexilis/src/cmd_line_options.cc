@@ -1,15 +1,55 @@
-#include <memory>
 #include <nexilis/cmd_line_options.hh>
+#include <nexilis/log.hh>
 
 #include <algorithm>
 
 namespace nexilis
 {
 
-CmdLineOptions::Argument::Argument(const std::vector<std::string>& names, const std::vector<std::shared_ptr<IValue>>& values)
-    : m_names(names),
+// Helper function to check if a string can be parsed as a specific type
+template <typename T>
+bool tryParse(const std::string& str, T& result)
+{
+    std::istringstream iss(str);
+    // `noskipws` considers whitespace an error
+    iss >> std::noskipws >> result;
+    return iss.eof() && !iss.fail();
+}
+
+CmdLineOptions::Argument::Argument(const std::string& name, const std::vector<std::shared_ptr<IValue>>& values)
+    : m_name(name),
       m_values(values)
 {
+}
+
+CmdLineOptions::Argument::Argument(CmdLineOptions::Argument&& other)
+    : m_name(std::move(other.m_name)),
+      m_values(std::move(other.m_values))
+{
+}
+
+CmdLineOptions::Argument& CmdLineOptions::Argument::operator=(Argument&& other)
+{
+    if (this != &other)
+    {
+        m_name = std::move(other.m_name);
+        m_values = std::move(other.m_values);
+    }
+    return *this;
+}
+
+CmdLineOptions::CmdLineOptions(CmdLineOptions&& other) :
+    m_arguments(std::move(other.m_arguments))
+{
+}
+
+CmdLineOptions& CmdLineOptions::operator=(CmdLineOptions&& other)
+{
+    if (this != &other)
+    {
+        m_arguments = std::move(other.m_arguments);
+    }
+    return *this;
 }
 
 CmdLineOptions::CmdLineOptions(int argc, char** argv)
@@ -20,16 +60,33 @@ CmdLineOptions::CmdLineOptions(int argc, char** argv)
         std::string arg = argv[i];
         if (arg[0] == '-')
         {
-            // This is a command line option
-            std::vector<std::string> names = { arg };
+            std::string name = arg;
             std::vector<std::shared_ptr<IValue>> values;
 
-            // Check if the next argument is a value
-            if (i + 1 < argc && argv[i + 1][0] != '-') {
+            // Collect all following non-option arguments as values
+            while (i + 1 < argc && argv[i + 1][0] != '-')
+            {
                 std::string val = argv[++i];
-                values.push_back(std::make_shared<Value<std::string>>(val)); // Store the value as a string
+
+                // Try to parse as different types
+                if (int intValue; tryParse(val, intValue))
+                {
+                    values.emplace_back(std::make_shared<Value<int>>(intValue));
+                }
+                else if (double doubleValue; tryParse(val, doubleValue))
+                {
+                    values.emplace_back(std::make_shared<Value<double>>(doubleValue));
+                }
+                else if (std::string stringValue; tryParse(val, stringValue))
+                {
+                    values.emplace_back(std::make_shared<Value<std::string>>(val));
+                }
+                else
+                {
+                    Log::error("Undefined value as command line option!");
+                }
             }
-            m_arguments.emplace_back(names, values);
+            m_arguments.emplace_back(name, values);
         }
     }
 }
@@ -38,7 +95,8 @@ const CmdLineOptions::Argument* CmdLineOptions::getArgument(const std::string& n
 {
     for (const auto& arg : m_arguments)
     {
-        if (std::find(arg.getNames().begin(), arg.getNames().end(), name) != arg.getNames().end()) {
+        if (arg.getName() == name)
+        {
             return &arg;
         }
     }

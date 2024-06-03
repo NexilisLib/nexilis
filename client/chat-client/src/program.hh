@@ -7,11 +7,13 @@
 #include "chat.hh"
 #include "program_state.hh"
 
+#include <nexilis/cmd_line_options.hh>
+
 class Program
 {
 public:
     /// Constructor.
-    Program(int argc, char** argv);
+    Program(nexilis::CmdLineOptions&& opts);
 
     /// Destructor.
     ~Program();
@@ -34,11 +36,7 @@ private:
     void parseMessage(boost::json::object object);
 
 private:
-    /// Command line arguments argc.
-    int m_argc;
-
-    /// Command line argument argv.
-    char** m_argv;
+    nexilis::CmdLineOptions m_options;
 
     /// Program state.
     State m_state = State::menu;

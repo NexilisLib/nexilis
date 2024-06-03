@@ -1,7 +1,6 @@
 #include "program.hh"
 #include "debug.hh"
 #include "menu.hh"
-#include "nexilis_client.hh"
 #include "vim.hh"
 
 #include <cstdint>
@@ -12,9 +11,8 @@
 
 #include <boost/json/serialize.hpp>
 
-Program::Program(int argc, char** argv)
-    : m_argc(argc),
-      m_argv(argv),
+Program::Program(nexilis::CmdLineOptions&& options)
+    : m_options(std::move(options)),
       m_window(),
       m_menu(),
       m_nexilisClient(),

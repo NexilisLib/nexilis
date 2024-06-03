@@ -36,22 +36,25 @@ public:
         /// Constructor.
         /// \param names The aliases for command like "--argument".
         /// \param value The values for the argument.
-        explicit Argument(const std::vector<std::string>& names, const std::vector<std::shared_ptr<IValue>>& values = {});
+        explicit Argument(const std::string& name, const std::vector<std::shared_ptr<IValue>>& values = {});
 
-        template <typename T>
-        void addValues(const std::vector<T>& values)
-        {
-            for (const auto& value : values)
-            {
-                m_values.emplace_back(std::make_shared<Value<T>>(value));
-            }
-        }
+        /// Move constructor.
+        Argument(Argument&& other);
+
+        /// Move assignment overload.
+        Argument& operator=(Argument&& other);
+
+        /// Deleted copy constructor.
+        Argument(const Argument& other) = delete;
+
+        /// Deleted copy assignment overload.
+        Argument& operator=(const Argument& other) = delete;
 
         // Function to get the value
         template <typename T>
-        T getValue() const
+        T getValue(uint64_t index = 0) const
         {
-            auto derived = std::dynamic_pointer_cast<Value<T>>(m_values);
+            auto derived = std::dynamic_pointer_cast<Value<T>>(m_values[index]);
             if (derived)
             {
                 return derived->value;
@@ -59,15 +62,9 @@ public:
             throw std::bad_cast();
         }
 
-        // Function to get the argument names
-        const std::vector<std::string>& getNames() const
+        const std::string& getName() const
         {
-            return m_names;
-        }
-
-        uint64_t getNameCount() const
-        {
-            return m_names.size();
+            return m_name;
         }
 
         uint64_t getValueCount() const
@@ -76,21 +73,26 @@ public:
         }
 
     private:
-        std::vector<std::string> m_names;
+        std::string m_name;
         std::vector<std::shared_ptr<IValue>> m_values;
     };
 
     /// Constructor.
     CmdLineOptions(int argc, char** argv);
 
-    template <typename T>
-    void addArgument(const std::vector<std::string>& names, const std::vector<T>& value)
-    {
-        Argument arg(names);
-        arg.addValues(value);
-        m_arguments.emplace_back(arg);
-    }
+    /// Move Constructor.
+    CmdLineOptions(CmdLineOptions&& other);
 
+    /// Move assignment operator.
+    CmdLineOptions& operator=(CmdLineOptions&& other);
+
+    /// Deleted copy constructor.
+    CmdLineOptions(const CmdLineOptions& other) = delete;
+
+    /// Deleted copy assignment overload.
+    CmdLineOptions& operator=(const CmdLineOptions& other) = delete;
+
+    /// Get the argument based on any passing name.
     const Argument* getArgument(const std::string& name) const;
 
 private:
