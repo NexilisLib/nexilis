@@ -22,10 +22,26 @@ CmdLineOptions::Argument::Argument(const std::string& name, const std::vector<st
 {
 }
 
+CmdLineOptions::Argument::Argument(const CmdLineOptions::Argument& other)
+    : m_name(other.m_name),
+      m_values(other.m_values)
+{
+}
+
 CmdLineOptions::Argument::Argument(CmdLineOptions::Argument&& other)
     : m_name(std::move(other.m_name)),
       m_values(std::move(other.m_values))
 {
+}
+
+CmdLineOptions::Argument& CmdLineOptions::Argument::operator=(const Argument& other)
+{
+    if (this != &other)
+    {
+        m_name = other.m_name;
+        m_values = other.m_values;
+    }
+    return *this;
 }
 
 CmdLineOptions::Argument& CmdLineOptions::Argument::operator=(Argument&& other)
@@ -38,8 +54,13 @@ CmdLineOptions::Argument& CmdLineOptions::Argument::operator=(Argument&& other)
     return *this;
 }
 
-CmdLineOptions::CmdLineOptions(CmdLineOptions&& other) :
-    m_arguments(std::move(other.m_arguments))
+CmdLineOptions::CmdLineOptions(const CmdLineOptions& other)
+    : m_arguments(other.m_arguments)
+{
+}
+
+CmdLineOptions::CmdLineOptions(CmdLineOptions&& other)
+    : m_arguments(std::move(other.m_arguments))
 {
 }
 
@@ -48,6 +69,15 @@ CmdLineOptions& CmdLineOptions::operator=(CmdLineOptions&& other)
     if (this != &other)
     {
         m_arguments = std::move(other.m_arguments);
+    }
+    return *this;
+}
+
+CmdLineOptions& CmdLineOptions::operator=(const CmdLineOptions& other)
+{
+    if (this != &other)
+    {
+        m_arguments = other.m_arguments;
     }
     return *this;
 }

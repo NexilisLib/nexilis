@@ -34,23 +34,23 @@ public:
     {
     public:
         /// Constructor.
-        /// \param names The aliases for command like "--argument".
-        /// \param value The values for the argument.
+        /// \param name The "identifier" or "name" of the command line argument.
+        /// \param values All values given to the argument.
         explicit Argument(const std::string& name, const std::vector<std::shared_ptr<IValue>>& values = {});
 
         /// Move constructor.
         Argument(Argument&& other);
 
+        /// Copy constructor.
+        Argument(const Argument& other);
+
+        /// Copy assignment overload.
+        Argument& operator=(const Argument& other);
+
         /// Move assignment overload.
         Argument& operator=(Argument&& other);
 
-        /// Deleted copy constructor.
-        Argument(const Argument& other) = delete;
-
-        /// Deleted copy assignment overload.
-        Argument& operator=(const Argument& other) = delete;
-
-        // Function to get the value
+        /// Function to get the value based on index.
         template <typename T>
         T getValue(uint64_t index = 0) const
         {
@@ -60,6 +60,23 @@ public:
                 return derived->value;
             }
             throw std::bad_cast();
+        }
+
+        /// Get all the values based on template argument.
+        template <typename T>
+        std::vector<T> getValues() const
+        {
+            std::vector<T> result;
+            for (const auto& val : m_values)
+            {
+                auto derived = std::dynamic_pointer_cast<Value<T>>(val);
+
+                if (derived)
+                {
+                    result.emplace_back(derived->value);
+                }
+            }
+            return result;
         }
 
         const std::string& getName() const
@@ -80,17 +97,17 @@ public:
     /// Constructor.
     CmdLineOptions(int argc, char** argv);
 
+    /// Copy constructor.
+    CmdLineOptions(const CmdLineOptions& other);
+
     /// Move Constructor.
     CmdLineOptions(CmdLineOptions&& other);
 
+    /// Copy assignment overload.
+    CmdLineOptions& operator=(const CmdLineOptions& other);
+
     /// Move assignment operator.
     CmdLineOptions& operator=(CmdLineOptions&& other);
-
-    /// Deleted copy constructor.
-    CmdLineOptions(const CmdLineOptions& other) = delete;
-
-    /// Deleted copy assignment overload.
-    CmdLineOptions& operator=(const CmdLineOptions& other) = delete;
 
     /// Get the argument based on any passing name.
     const Argument* getArgument(const std::string& name) const;

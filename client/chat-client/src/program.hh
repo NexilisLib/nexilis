@@ -13,7 +13,7 @@ class Program
 {
 public:
     /// Constructor.
-    Program(nexilis::CmdLineOptions&& opts);
+    Program(const nexilis::CmdLineOptions& opts);
 
     /// Destructor.
     ~Program();

@@ -3,7 +3,6 @@
 #include "menu.hh"
 #include "vim.hh"
 
-#include <cstdint>
 #include <nexilis/json.hh>
 #include <nexilis/packet.hh>
 
@@ -11,11 +10,13 @@
 
 #include <boost/json/serialize.hpp>
 
-Program::Program(nexilis::CmdLineOptions&& options)
+Program::Program(const nexilis::CmdLineOptions& options)
     : m_options(std::move(options)),
       m_window(),
       m_menu(),
-      m_nexilisClient(),
+      // I think this value should have a dedicated setter somewhere,
+      // however having a parameter here is better.
+      m_nexilisClient("192.168.202.74"),
       m_sendTCPMessage([this](const std::vector<uint8_t>& payload)
           {
               m_nexilisClient.getTCPClient().sendMessage(payload);
@@ -26,6 +27,22 @@ Program::Program(nexilis::CmdLineOptions&& options)
           }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
+    auto playerNameArguments = m_options.getArgument("--name");
+    auto playerNameStringValues = playerNameArguments->getValues<std::string>();
+    std::stringstream data;
+    for (const auto& val : playerNameStringValues)
+    {
+        data << "String argument: " << val << std::endl;
+    }
+    data << std::endl;
+
+    auto playerNameIntValues = playerNameArguments->getValues<int>();
+    for (const auto& val : playerNameIntValues)
+    {
+        data << "Int argument: " << val << std::endl;
+    }
+    data << std::endl;
+    debug(data.str());
 }
 
 void Program::start()

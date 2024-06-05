@@ -4,16 +4,16 @@
 #include <nexilis/common/util.hh>
 #include <nexilis/packet.hh>
 
-nexilis::ClientAPI::ServerData getServerData()
+nexilis::ClientAPI::ServerData getServerData(const std::string& ipAddress)
 {
     nexilis::ClientAPI::ServerData serverData("salasana");
-    serverData.setBoostTCP("192.168.1.85", 12348);
-    serverData.setBoostUDP("192.168.1.85", 12347);
+    serverData.setBoostTCP(ipAddress, 12348);
+    serverData.setBoostUDP(ipAddress, 12347);
     return serverData;
 }
 
-NexilisClient::NexilisClient()
-    : m_serverData(getServerData()),
+NexilisClient::NexilisClient(const std::string& ipAddress)
+    : m_serverData(getServerData(ipAddress)),
       m_clientAPI(m_serverData),
       m_udpClient(m_protocolManager.createProtocol<nexilis::BoostUDPClient>(m_clientAPI)),
       m_tcpClient(m_protocolManager.createProtocol<nexilis::BoostTCPClient>(m_clientAPI))
@@ -45,12 +45,10 @@ NexilisClient& NexilisClient::operator=(NexilisClient&& other)
 void NexilisClient::start()
 {
     m_udpClient.start();
-    auto message = nexilis::Util::convertToByteVector(m_serverData.getPassword().c_str(), m_serverData.getPassword().size());
-
-    //m_udpClient.sendMessage(message);
-    //m_clientAPI.waitUntilBoostUDPReady();
-
     m_tcpClient.start();
+
+    // Convert the passphrase into nexilis format (std::vector<uint8_t>).
+    auto message = nexilis::Util::convertToByteVector(m_serverData.getPassword().c_str(), m_serverData.getPassword().size());
     m_tcpClient.sendMessage(message);
     m_clientAPI.waitUntilBoostTCPReady();
 

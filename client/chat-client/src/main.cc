@@ -17,13 +17,7 @@ int main(int argc, char** argv)
 
     nexilis::CmdLineOptions opts(argc, argv);
 
-    auto playerName = opts.getArgument("--name");
-
-    std::stringstream data;
-    data << "Argument name: " << playerName->getName() << ", player name: " << playerName->getValue<std::string>() << " int: " << playerName->getValue<int>(1);
-    debug(data.str());
-
-    Program program(std::move(opts));
+    Program program(opts);
     program.start();
 
     while (true)
