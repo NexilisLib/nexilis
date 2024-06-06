@@ -10,7 +10,7 @@
 class NexilisClient
 {
 public:
-    NexilisClient(const std::string& ipAddress);
+    NexilisClient(const std::string& ipAddress, const std::string& userName);
     void start();
 
     /// Move constructor.

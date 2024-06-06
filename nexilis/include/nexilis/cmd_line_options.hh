@@ -79,7 +79,7 @@ public:
             return result;
         }
 
-        const std::string& getName() const
+        std::string getName() const
         {
             return m_name;
         }

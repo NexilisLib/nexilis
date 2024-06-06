@@ -10,18 +10,6 @@
 namespace nexilis
 {
 
-// ClientAPI::ServerData
-ClientAPI::ServerData::ServerData(const std::string& password)
-    : m_password(password)
-{
-}
-
-ClientAPI::ServerData::ServerData(const std::string password, const std::string username)
-    : m_password(password),
-      m_username(username)
-{
-}
-
 ClientAPI::ServerData::ServerData(ServerData&& other)
     : m_password(std::move(other.m_password)),
       m_username(std::move(other.m_username)),

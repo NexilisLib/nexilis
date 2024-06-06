@@ -4,16 +4,18 @@
 #include <nexilis/common/util.hh>
 #include <nexilis/packet.hh>
 
-nexilis::ClientAPI::ServerData getServerData(const std::string& ipAddress)
+nexilis::ClientAPI::ServerData getServerData(const std::string& ipAddress, const std::string& userName)
 {
-    nexilis::ClientAPI::ServerData serverData("salasana");
+    nexilis::ClientAPI::ServerData serverData;
+    serverData.setPassword("salasana");
+    serverData.setUserName(userName);
     serverData.setBoostTCP(ipAddress, 12348);
     serverData.setBoostUDP(ipAddress, 12347);
     return serverData;
 }
 
-NexilisClient::NexilisClient(const std::string& ipAddress)
-    : m_serverData(getServerData(ipAddress)),
+NexilisClient::NexilisClient(const std::string& ipAddress, const std::string& userName)
+    : m_serverData(getServerData(ipAddress, userName)),
       m_clientAPI(m_serverData),
       m_udpClient(m_protocolManager.createProtocol<nexilis::BoostUDPClient>(m_clientAPI)),
       m_tcpClient(m_protocolManager.createProtocol<nexilis::BoostTCPClient>(m_clientAPI))

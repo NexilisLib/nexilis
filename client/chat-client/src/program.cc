@@ -12,11 +12,10 @@
 
 Program::Program(const nexilis::CmdLineOptions& options)
     : m_options(std::move(options)),
+      m_optionUserName(m_options.getArgument("-name")->getValue<std::string>()),
       m_window(),
       m_menu(),
-      // I think this value should have a dedicated setter somewhere,
-      // however having a parameter here is better.
-      m_nexilisClient("192.168.202.74"),
+      m_nexilisClient("192.168.202.74", m_optionUserName),
       m_sendTCPMessage([this](const std::vector<uint8_t>& payload)
           {
               m_nexilisClient.getTCPClient().sendMessage(payload);
@@ -27,22 +26,6 @@ Program::Program(const nexilis::CmdLineOptions& options)
           }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
-    auto playerNameArguments = m_options.getArgument("--name");
-    auto playerNameStringValues = playerNameArguments->getValues<std::string>();
-    std::stringstream data;
-    for (const auto& val : playerNameStringValues)
-    {
-        data << "String argument: " << val << std::endl;
-    }
-    data << std::endl;
-
-    auto playerNameIntValues = playerNameArguments->getValues<int>();
-    for (const auto& val : playerNameIntValues)
-    {
-        data << "Int argument: " << val << std::endl;
-    }
-    data << std::endl;
-    debug(data.str());
 }
 
 void Program::start()

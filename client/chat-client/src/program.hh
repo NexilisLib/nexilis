@@ -36,7 +36,11 @@ private:
     void parseMessage(boost::json::object object);
 
 private:
+    /// Command line options given to the program.
     nexilis::CmdLineOptions m_options;
+
+    /// Command line option for "-name", expecting string value.
+    std::string m_optionUserName;
 
     /// Program state.
     State m_state = State::menu;

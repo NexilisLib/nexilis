@@ -23,14 +23,6 @@ public:
         /// Default constructor.
         ServerData() = default;
 
-        /// Constructor.
-        /// \param password The password matching "commonPassword" in the server code.
-        ServerData(const std::string& password);
-
-        /// Constructor.
-        /// \param password The password matching "commonPassword" in the server code.
-        ServerData(const std::string password, const std::string username);
-
         /// Move constructor.
         ServerData(ServerData&& other);
 
@@ -230,8 +222,14 @@ public:
                 return m_id;
             }
         private:
+            /// The data of the communication.
             std::string m_payload;
+
+            /// The id of the client that sent the message.
+            /// TODO could this be a reference to the client object?
             uint64_t m_clientId;
+
+            /// The id of the message.
             uint64_t m_id;
         };
 
