@@ -226,7 +226,6 @@ public:
             std::string m_payload;
 
             /// The id of the client that sent the message.
-            /// TODO could this be a reference to the client object?
             uint64_t m_clientId;
 
             /// The id of the message.

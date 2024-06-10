@@ -71,7 +71,7 @@ public:
     static std::string getRandomString(uint64_t charAmount);
 
     /// Byte vector conversions.
-    static std::vector<uint8_t> convertToByteVector(const char* command_data, uint64_t lenght);
+    static std::vector<uint8_t> convertToByteVector(const char* command_data, uint64_t length);
     static std::vector<uint8_t> convertToByteVector(uint64_t value);
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
 

@@ -115,12 +115,12 @@ std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> or
     return std::vector<uint8_t>(original.begin() + amount, original.end());
 }
 
-std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_t lenght)
+std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_t length)
 {
     std::vector<uint8_t> result;
-    result.reserve(lenght);
+    result.reserve(length);
 
-    for (size_t i = 0; i < lenght; i++)
+    for (size_t i = 0; i < length; i++)
     {
         result.emplace_back(static_cast<uint8_t>(command_data[i]));
     }

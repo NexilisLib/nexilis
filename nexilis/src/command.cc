@@ -9,9 +9,9 @@ namespace nexilis
 
 Authentication* Command::m_authentication = nullptr;
 
-Command::Result Command::read(const char* command_data, size_t lenght, User& client, Protocol& protocol, uint64_t messageId)
+Command::Result Command::read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId)
 {
-    return Command::read(Util::convertToByteVector(command_data, lenght), client, protocol, messageId);
+    return Command::read(Util::convertToByteVector(command_data, length), client, protocol, messageId);
 }
 
 Command::Result Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId)
