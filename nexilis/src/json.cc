@@ -74,7 +74,7 @@ boost::json::object Json::getServerData()
     return serverDataObj;
 }
 
-void Json::emplace(::boost::json::object& first, const ::boost::json::object& second)
+void Json::emplace(boost::json::object& first, const boost::json::object& second)
 {
     for (const auto& [key, value] : second)
     {

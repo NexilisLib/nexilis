@@ -60,20 +60,41 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 // Set username to the client.
                 case 1:
                 {
+                    Log::debug("Called Command::Set::username");
+
+                    // Create string data.
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string username = Util::convertToString(payload);
-                    auto& clients = ClientStorage::getAllClients();
 
+                    // Perform server-side operations.
+                    auto& clients = ClientStorage::getAllClients();
+                    bool setUserName = false;
                     for (auto c = clients.begin(); c != clients.end(); c++)
                     {
                         if (*c == user)
                         {
                             c->setUsername(username);
-                            return Result::success;
+                            setUserName = true;
                         }
                     }
-                    Log::error("Cannot find client");
-                    return Result::error;
+
+                    if (!setUserName)
+                    {
+                        return Result::error;
+                    }
+
+                    // Send data back to "this" client.
+                    std::map<std::string, boost::json::value> header{
+                                {"nexilis_status", boost::json::value(1)},
+                                {"command", boost::json::value("set")},
+                                {"type", boost::json::value("username")},
+                                {"callback", boost::json::value(messageId)},
+                                {"set_username", boost::json::value(username)}};
+
+                    auto data = Util::convertToByteVector(Json::createJSON(header));
+                    sendMessageToClient(data, user, protocol);
+
+                    return Result::success;
                 }
 
                 default:

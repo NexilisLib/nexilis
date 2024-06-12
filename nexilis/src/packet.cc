@@ -7,6 +7,20 @@ namespace nexilis
 
 ClientAPI* Packet::m_clientApi = nullptr;
 
+std::vector<uint8_t> Packet::Set::userName(const std::string& name)
+{
+    auto id = clientIdentification();
+    id.emplace_back(0);
+    id.emplace_back(1);
+
+    auto nameVector = Util::convertToByteVector(name.c_str(), name.size());
+    for (const auto& elem : nameVector)
+    {
+        id.emplace_back(elem);
+    }
+    return id;
+}
+
 std::vector<uint8_t> Packet::Get::clientId()
 {
     auto id = clientIdentification();

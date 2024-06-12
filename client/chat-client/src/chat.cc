@@ -231,7 +231,7 @@ std::string Chat::roomData(const nexilis::ClientAPI::Room& room)
     auto clients = room.getClients();
     for (auto c = clients.begin(); c != clients.end(); c++)
     {
-        ss << c->getName() << "(" << c->getId() << ")";
+        ss << c->getName() << "(" << c->getId() << ")" << c->getName();
 
         if (c != clients.end() - 1)
         {

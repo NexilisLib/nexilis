@@ -20,6 +20,12 @@ public:
         static std::vector<uint8_t> clientId();
     };
 
+    class Set
+    {
+    public:
+        static std::vector<uint8_t> userName(const std::string& name);
+    };
+
     class Info
     {
     public:

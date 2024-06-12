@@ -613,6 +613,11 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
             }
         }
 
+        else if (command == "set")
+        {
+            Log::info("SET CALLED");
+        }
+
         else if (command == "getting")
         {
             if (type == "set_client_id")

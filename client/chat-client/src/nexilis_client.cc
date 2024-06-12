@@ -54,5 +54,9 @@ void NexilisClient::start()
     m_tcpClient.sendMessage(message);
     m_clientAPI.waitUntilBoostTCPReady();
 
+    // Set username.
+    std::string username = "niih";
+    m_tcpClient.sendMessage(nexilis::Packet::Set::userName(username));
+
     debug(nexilis::Util::getDateAndTime());
 }
