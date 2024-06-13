@@ -3,6 +3,7 @@
 
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/user.hh>
 
 namespace nexilis
 {
@@ -12,38 +13,6 @@ namespace nexilis
 class Room
 {
 public:
-    class Client
-    {
-    public:
-        Client(uint64_t clientId, const std::string& name = "UNNAMED");
-
-        /// Copy constructor.
-        Client(const Client& other);
-
-        /// Copy assignment operator.
-        Client& operator=(const Client& other);
-
-        /// Move constructor.
-        Client(Client&& other);
-
-        /// Move assignment operator.
-        Client& operator=(Client&& other);
-
-        uint64_t getId() const
-        {
-            return m_id;
-        }
-
-        std::string getName() const
-        {
-            return m_name;
-        }
-
-    private:
-        uint64_t m_id;
-        std::string m_name;
-    };
-
     /// The data and settings for the associated room.
     class Data
     {
@@ -143,25 +112,23 @@ public:
     }
 
     /// User joins the room context.
-    /// \param userId The identifier of the user.
-    void joinRoom(uint64_t userId);
+    /// \param user The user that joins the room.
+    void joinRoom(User& user);
 
     /// User leaves the room.
-    /// \param userId The identifier of the user.
-    void leaveRoom(uint64_t userId);
+    void leaveRoom(User& user);
 
-    /// If the room contains certiain client.
-    /// \param userId The identifier of the user.
-    bool contains(uint64_t userId);
+    /// If the room contains certain user.
+    bool contains(User& user);
 
-    std::vector<Room::Client> getClients() const
+    std::vector<User*> getClients() const
     {
         return m_clients;
     }
 
 private:
     Data m_data;
-    std::vector<Room::Client> m_clients;
+    std::vector<User*> m_clients;
 };
 
 } // namespace nexilis

@@ -6,45 +6,6 @@
 namespace nexilis
 {
 
-/// Room::Client
-Room::Client::Client(uint64_t clientId, const std::string& name)
-    : m_id(clientId),
-      m_name(name)
-{
-}
-
-Room::Client::Client(const Client& other)
-    : m_id(other.m_id),
-      m_name(other.m_name)
-{
-}
-
-Room::Client& Room::Client::operator=(const Client& other)
-{
-    if (this != &other)
-    {
-        m_id = other.m_id;
-        m_name = other.m_name;
-    }
-    return *this;
-}
-
-Room::Client::Client(Client&& other)
-    : m_id(std::move(other.m_id)),
-      m_name(std::move(other.m_name))
-{
-}
-
-Room::Client& Room::Client::operator=(Client&& other)
-{
-    if (this != &other)
-    {
-        m_id = std::move(other.m_id);
-        m_name = std::move(other.m_name);
-    }
-    return *this;
-}
-
 /// Room::Data
 Room::Data::Data(uint64_t creatorId, const std::string& name, uint32_t maxSize)
     : m_creatorId(creatorId),
@@ -114,11 +75,11 @@ Room& Room::operator=(Room&& other)
     return *this;
 }
 
-bool Room::contains(uint64_t userId)
+bool Room::contains(User& user)
 {
     for (auto c = m_clients.begin(); c != m_clients.end(); c++)
     {
-        if (c->getId() == userId)
+        if (*c == &user)
         {
             return true;
         }
@@ -126,23 +87,24 @@ bool Room::contains(uint64_t userId)
     return false;
 }
 
-void Room::joinRoom(uint64_t userId)
+void Room::joinRoom(User& user)
 {
-    if (contains(userId))
+    if (contains(user))
     {
         Log::warning("User already in this room!");
     }
     else
     {
-        m_clients.emplace_back(Room::Client(userId));
-        Log::info("New user in room: ", getId(), " user: ", userId);
+        m_clients.emplace_back(std::move(&user));
+        Log::info("New user in room: ", getId(), " user: ", user.getId());
     }
 }
 
-void Room::leaveRoom(uint64_t userId)
+void Room::leaveRoom(User& user)
 {
+    auto userId = user.getId();
     m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
-        [userId](const Client& client) { return client.getId() == userId; }), m_clients.end());
+        [&userId](const User* user) { return userId == user->getId(); }), m_clients.end());
 }
 
 } // namespace nexilis

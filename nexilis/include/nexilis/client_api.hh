@@ -266,10 +266,15 @@ public:
                 return m_id;
             }
 
-            /// Get the name if the client.
-            std::string getName() const
+            /// Get the user name of the client.
+            std::string getUsername() const
             {
                 return m_name;
+            }
+
+            void setUsername(const std::string& username)
+            {
+                m_name = username;
             }
 
         private:

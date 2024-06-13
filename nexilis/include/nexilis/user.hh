@@ -27,11 +27,6 @@ public:
     /// Deleted copy assignment operator.
     User& operator=(const User& other) = delete;
 
-    /// Destructor.
-    ~User()
-    {
-    }
-
     /// Operator overload for comparison operator.
     bool operator==(const User& other) const
     {

@@ -176,7 +176,7 @@ ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
 bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Client& rhs)
 {
     return lhs.getId() == rhs.getId() &&
-        lhs.getName() == rhs.getName();
+        lhs.getUsername() == rhs.getUsername();
 }
 
 // ClientAPI::Room
@@ -615,10 +615,33 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 
         else if (command == "set")
         {
-            Log::info("SET CALLED");
+            if (type == "set_username")
+            {
+                std::string a = json.at("set_username").as_string().data();
+
+                // Set own m_data.
+                m_data.setUserName(a);
+
+                for (const auto& rooms : m_currentlyActiveRooms)
+                {
+                    for (auto& client : rooms.getClients())
+                    {
+                        if (client.getId() == m_clientId)
+                        {
+                            client.setUsername(a);
+                            return ReadResult::success;
+                        }
+                    }
+                }
+                return ReadResult::not_found;
+            }
+            else
+            {
+                return ReadResult::error;
+            }
         }
 
-        else if (command == "getting")
+        else if (command == "get")
         {
             if (type == "set_client_id")
             {

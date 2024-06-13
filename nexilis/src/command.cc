@@ -68,11 +68,25 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     // Perform server-side operations.
                     auto& clients = ClientStorage::getAllClients();
+
+                    auto& rooms = RoomStorage::getAllRooms();
+                    for (auto& clients : rooms)
+                    {
+                        for (auto& client : clients.getClients())
+                        {
+                            if (client->getId() == user.getId())
+                            {
+                                client->setUsername(username);
+                            }
+                        }
+                    }
+
                     bool setUserName = false;
                     for (auto c = clients.begin(); c != clients.end(); c++)
                     {
                         if (*c == user)
                         {
+                            Log::debug("Client username reset!");
                             c->setUsername(username);
                             setUserName = true;
                         }
@@ -111,10 +125,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 case 0:
                 {
                     Log::info("Client id before send: ", user.getId());
-                    // Fix this, nexilis_status = 1 is correct tho.
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
-                            {"command", boost::json::value("getting")},
+                            {"command", boost::json::value("get")},
                             {"type", boost::json::value("set_client_id")},
                             {"set_client_id", boost::json::value(user.getId())}};
                     auto json = Json::createJSON(data);
@@ -434,9 +447,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     }
                     else
                     {
-                        room->joinRoom(user.getId());
+                        room->joinRoom(user);
                         user.setRoomId(roomId);
-                        assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
+                        assert(RoomStorage::getRoomById(roomId)->contains(user));
 
                         std::map<std::string, boost::json::value> data{
                                 {"nexilis_status", boost::json::value(1)},
@@ -464,8 +477,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         return Result::failure;
                     }
 
-                    currentRoom->leaveRoom(user.getId());
-                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
+                    currentRoom->leaveRoom(user);
+                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user));
                     user.setRoomId(0);
                     return Result::success;
                 }
@@ -500,6 +513,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     else
                     {
                         auto newRoom = Room(Room::Data(user.getId(), roomName));
+
                         auto newRoomId = newRoom.getId();
                         RoomStorage::add(std::move(newRoom));
                         Log::debug("Added room ", newRoomId, " to persistent storage");

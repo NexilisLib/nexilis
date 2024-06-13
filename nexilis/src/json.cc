@@ -234,8 +234,8 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
         for (auto client : clients)
         {
             boost::json::object clientObj;
-            clientObj["id"] = client.getId();
-            clientObj["name"] = client.getName();
+            clientObj["id"] = client->getId();
+            clientObj["name"] = client->getUsername();
             clientArray.emplace_back(std::move(clientObj));
         }
 
