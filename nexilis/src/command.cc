@@ -69,6 +69,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     // Perform server-side operations.
                     auto& clients = ClientStorage::getAllClients();
 
+                    /*
                     auto& rooms = RoomStorage::getAllRooms();
                     for (auto& clients : rooms)
                     {
@@ -80,6 +81,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             }
                         }
                     }
+                    */
 
                     bool setUserName = false;
                     for (auto c = clients.begin(); c != clients.end(); c++)
@@ -449,6 +451,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     {
                         room->joinRoom(user);
                         user.setRoomId(roomId);
+
                         assert(RoomStorage::getRoomById(roomId)->contains(user));
 
                         std::map<std::string, boost::json::value> data{

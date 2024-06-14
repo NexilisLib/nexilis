@@ -176,62 +176,6 @@ public:
     class Room
     {
     public:
-        /// Communication type for communications in a room.
-        class Communication
-        {
-        public:
-            /// Constructor.
-            /// \param payload The data for the Communication messages.
-            Communication(const std::string& payload, uint64_t clientId);
-
-            /// Copy constructor.
-            Communication(const Communication& other);
-
-            /// Copy assignment.
-            Communication& operator=(const Communication& other);
-
-            /// Move constructor.
-            Communication(Communication&& other);
-
-            /// Move assignment operator.
-            Communication& operator=(Communication&& other);
-
-            /// Comparison operator overload.
-            friend bool operator==(const Communication& lhs, const Communication& rhs);
-
-            /// Non-comparison operator overload.
-            friend bool operator!=(const Communication& lhs, const Communication& rhs)
-            {
-                return !(lhs == rhs);
-            }
-
-            /// Get the payload data as a string.
-            std::string getPayload() const
-            {
-                return m_payload;
-            }
-
-            /// Get client identification.
-            uint64_t getClientId() const
-            {
-                return m_clientId;
-            }
-
-            uint64_t getId() const
-            {
-                return m_id;
-            }
-        private:
-            /// The data of the communication.
-            std::string m_payload;
-
-            /// The id of the client that sent the message.
-            uint64_t m_clientId;
-
-            /// The id of the message.
-            uint64_t m_id;
-        };
-
         /// Client type for clients in a room.
         class Client
         {
@@ -283,6 +227,62 @@ public:
 
             /// The name of the client.
             std::string m_name;
+        };
+
+        /// Communication type for communications in a room.
+        class Communication
+        {
+        public:
+            /// Constructor.
+            /// \param payload The data for the Communication messages.
+            Communication(const std::string& payload, Client* sender);
+
+            /// Copy constructor.
+            Communication(const Communication& other);
+
+            /// Copy assignment.
+            Communication& operator=(const Communication& other);
+
+            /// Move constructor.
+            Communication(Communication&& other);
+
+            /// Move assignment operator.
+            Communication& operator=(Communication&& other);
+
+            /// Comparison operator overload.
+            friend bool operator==(const Communication& lhs, const Communication& rhs);
+
+            /// Non-comparison operator overload.
+            friend bool operator!=(const Communication& lhs, const Communication& rhs)
+            {
+                return !(lhs == rhs);
+            }
+
+            /// Get the payload data as a string.
+            std::string getPayload() const
+            {
+                return m_payload;
+            }
+
+            /// Get client identification.
+            const Client* getClient() const
+            {
+                return m_client;
+            }
+
+            uint64_t getId() const
+            {
+                return m_id;
+            }
+        private:
+            /// The data of the communication.
+            std::string m_payload;
+
+            /// The id of the message.
+            const Client* m_client;
+
+            /// The id of the message.
+            uint64_t m_id;
         };
 
         /// Default constructor.

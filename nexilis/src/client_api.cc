@@ -83,16 +83,16 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
 }
 
 // ClientAPI::Room::Communication
-ClientAPI::Room::Communication::Communication(const std::string& payload, uint64_t clientId) :
+ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::Room::Client* client) :
     m_payload(payload),
-    m_clientId(clientId),
+    m_client(client),
     m_id(Util::getRandomUint64())
 {
 }
 
 ClientAPI::Room::Communication::Communication(const Communication& other) :
     m_payload(other.m_payload),
-    m_clientId(other.m_clientId),
+    m_client(other.m_client),
     m_id(other.m_id)
 {
 }
@@ -102,7 +102,7 @@ ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(const 
     if (this != &other)
     {
         m_payload = other.m_payload;
-        m_clientId = other.m_clientId;
+        m_client = other.m_client;
         m_id = other.m_id;
     }
     return *this;
@@ -110,7 +110,7 @@ ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(const 
 
 ClientAPI::Room::Communication::Communication(Communication&& other) :
     m_payload(std::move(other.m_payload)),
-    m_clientId(std::move(other.m_clientId)),
+    m_client(std::move(other.m_client)),
     m_id(std::move(other.m_id))
 
 {
@@ -121,7 +121,7 @@ ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(Commun
     if (this != &other)
     {
         m_payload = std::move(other.m_payload);
-        m_clientId = std::move(other.m_clientId);
+        m_client = std::move(other.m_client);
         m_id = std::move(other.m_id);
     }
     return *this;
@@ -130,7 +130,7 @@ ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(Commun
 bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room::Communication& rhs)
 {
     return lhs.getPayload() == rhs.getPayload() &&
-           lhs.getClientId() == rhs.getClientId() &&
+           lhs.getClient() == rhs.getClient() &&
            lhs.getId() == rhs.getId();
 }
 
@@ -718,9 +718,18 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
+                    Room::Client* sender = nullptr;
+                    for (auto& client : room->getClients())
+                    {
+                        if (client.getId() == id)
+                        {
+                            sender = &client;
+                        }
+                    }
+
                     if (room->getRoomId() == roomId)
                     {
-                        Room::Communication newMessage(message, id);
+                        Room::Communication newMessage(message, sender);
                         room->addMessage(std::move(newMessage));
 
                         assert(room->containsCommunication(newMessage.getId()));
