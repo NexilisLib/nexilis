@@ -69,20 +69,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     // Perform server-side operations.
                     auto& clients = ClientStorage::getAllClients();
 
-                    /*
-                    auto& rooms = RoomStorage::getAllRooms();
-                    for (auto& clients : rooms)
-                    {
-                        for (auto& client : clients.getClients())
-                        {
-                            if (client->getId() == user.getId())
-                            {
-                                client->setUsername(username);
-                            }
-                        }
-                    }
-                    */
-
                     bool setUserName = false;
                     for (auto c = clients.begin(); c != clients.end(); c++)
                     {

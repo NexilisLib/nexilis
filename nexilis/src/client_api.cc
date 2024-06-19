@@ -1,5 +1,3 @@
-#include "nexilis/af_unix/sock_dgram/client.hh"
-#include <cstdint>
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -509,8 +507,75 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
         auto command = json["command"];
         auto type = json["type"];
 
-        // TODO This should be enumerated.
-        if (command == "info")
+        if (command == "set")
+        {
+            if (type == "username")
+            {
+                std::string a = json.at("set_username").as_string().data();
+
+                // Set own m_data.
+                m_data.setUserName(a);
+                return ReadResult::success;
+
+                /*
+                for (const auto& rooms : m_currentlyActiveRooms)
+                {
+                    for (auto& client : rooms.getClients())
+                    {
+                        if (client.getId() == m_clientId)
+                        {
+                            client.setUsername(a);
+                            return ReadResult::success;
+                        }
+                    }
+                }
+                return ReadResult::not_found;
+                */
+            }
+            else
+            {
+                return ReadResult::error;
+            }
+        }
+
+        else if (command == "get")
+        {
+            if (type == "set_client_id")
+            {
+                if (json["set_client_id"].if_uint64())
+                {
+                    uint64_t id = json["set_client_id"].as_uint64();
+                    setClientId(id);
+                    Packet::_initialize(*this);
+                    return ReadResult::success;
+                }
+                // boost::json::value is so bad.
+                else if (json["set_client_id"].if_int64())
+                {
+                    int64_t id = json["set_client_id"].as_int64();
+                    uint64_t u_id = id;
+
+                    assert(sizeof(id) == sizeof(u_id));
+                    assert(static_cast<uint64_t>(id) == u_id);
+
+                    setClientId(id);
+                    Packet::_initialize(*this);
+                    return ReadResult::success;
+                }
+                else
+                {
+                    Log::error("The value of set_client_id is not convertible to as_uint64");
+                    return ReadResult::error;
+                }
+            }
+            else
+            {
+                Log::error("Unused path");
+                return ReadResult::not_found;
+            }
+        }
+
+        else if (command == "info")
         {
             if (type == "room_data")
             {
@@ -613,71 +678,6 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
             }
         }
 
-        else if (command == "set")
-        {
-            if (type == "set_username")
-            {
-                std::string a = json.at("set_username").as_string().data();
-
-                // Set own m_data.
-                m_data.setUserName(a);
-
-                for (const auto& rooms : m_currentlyActiveRooms)
-                {
-                    for (auto& client : rooms.getClients())
-                    {
-                        if (client.getId() == m_clientId)
-                        {
-                            client.setUsername(a);
-                            return ReadResult::success;
-                        }
-                    }
-                }
-                return ReadResult::not_found;
-            }
-            else
-            {
-                return ReadResult::error;
-            }
-        }
-
-        else if (command == "get")
-        {
-            if (type == "set_client_id")
-            {
-                if (json["set_client_id"].if_uint64())
-                {
-                    uint64_t id = json["set_client_id"].as_uint64();
-                    setClientId(id);
-                    Packet::_initialize(*this);
-                    return ReadResult::success;
-                }
-                // boost::json::value is so bad.
-                else if (json["set_client_id"].if_int64())
-                {
-                    int64_t id = json["set_client_id"].as_int64();
-                    uint64_t u_id = id;
-
-                    assert(sizeof(id) == sizeof(u_id));
-                    assert(static_cast<uint64_t>(id) == u_id);
-
-                    setClientId(id);
-                    Packet::_initialize(*this);
-                    return ReadResult::success;
-                }
-                else
-                {
-                    Log::error("The value of set_client_id is not convertible to as_uint64");
-                    return ReadResult::error;
-                }
-            }
-            else
-            {
-                Log::error("Unused path");
-                return ReadResult::not_found;
-            }
-        }
-
         else if (command == "communicate")
         {
             if (type == "room_message")
@@ -774,16 +774,19 @@ ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message
         return ReadResult::error;
     }
 
-    if (parse(json) == ReadResult::success)
+    auto result = parse(json);
+
+    if (result == ReadResult::success)
     {
         m_currentMessage = json;
-        return ReadResult::success;
     }
     else
     {
-        Log::info("Received message that is not read by the server");
-        return ReadResult::not_found;
+        Log::error("Received message that is not read by the server");
+        std::string stringMessage = Util::convertToString(message);
+        Log::error("Data: ", stringMessage);
     }
+    return result;
 }
 
 ClientAPI::Room& ClientAPI::roomWhereClientIs(uint64_t clientId)

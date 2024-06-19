@@ -26,6 +26,8 @@ Program::Program(const nexilis::CmdLineOptions& options)
           }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
+    // Check that options are correct.
+    //debug(m_optionUserName);
 }
 
 void Program::start()
