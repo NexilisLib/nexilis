@@ -59,7 +59,10 @@ public:
             {
                 return derived->value;
             }
-            throw std::bad_cast();
+            else
+            {
+                return T();
+            }
         }
 
         /// Get all the values based on template argument.
