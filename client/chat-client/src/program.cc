@@ -12,7 +12,7 @@
 
 Program::Program(const nexilis::CmdLineOptions& options)
     : m_options(std::move(options)),
-      m_optionUserName(m_options.getArgument("-name")->getValue<std::string>()),
+      m_optionUserName(m_options.getValue("-name", "NO USERNAME")),
       m_window(),
       m_menu(),
       m_nexilisClient("192.168.1.8", m_optionUserName),
@@ -26,8 +26,6 @@ Program::Program(const nexilis::CmdLineOptions& options)
           }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
-    // Check that options are correct.
-    //debug(m_optionUserName);
 }
 
 void Program::start()

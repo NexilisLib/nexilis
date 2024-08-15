@@ -115,6 +115,14 @@ public:
     /// Get the argument based on any passing name.
     const Argument* getArgument(const std::string& name) const;
 
+    /// Get value for specific argument.
+    template <typename T>
+    T getValue(const std::string& argumentName, T defaultValue)
+    {
+        auto arg = getArgument(argumentName);
+        return arg ? arg->getValue<T>() : defaultValue;
+    }
+
 private:
     std::vector<Argument> m_arguments;
 };
