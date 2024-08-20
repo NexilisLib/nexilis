@@ -1,5 +1,4 @@
 #include <nexilis/boost/tcp_client.hh>
-#include <nexilis/log.hh>
 
 #include <boost/asio/connect.hpp>
 #include <boost/asio/streambuf.hpp>
@@ -66,7 +65,14 @@ BoostTCPClient::~BoostTCPClient()
 void BoostTCPClient::stop()
 {
     m_stopped = true;
-    m_socket.close();
+
+    if (m_socket.is_open())
+    {
+        boost::system::error_code ec;
+        m_socket.cancel(ec);
+        m_socket.close(ec);
+    }
+
     m_ioContext->stop();
 
     if (m_ioContextThread.joinable())
@@ -144,6 +150,18 @@ bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)
 
     boost::asio::read(m_socket, receiveBuffer, boost::asio::transfer_at_least(1), error);
 
+    // Handle the case where the socket is closed or an error occurs
+    if (error == boost::asio::error::operation_aborted || error == boost::asio::error::eof)
+    {
+        return false;
+    }
+
+    if (error)
+    {
+        Log::error("Receive error: " + error.message());
+        return false; // Some other error occurred
+    }
+
     if (receiveBuffer.data().size() <= 0)
     {
         return false;
@@ -182,11 +200,11 @@ void BoostTCPClient::start()
 
 void BoostTCPClient::receiveLoop()
 {
-    while (true)
+    while (!m_stopped)
     {
         std::vector<uint8_t> buffer;
 
-        if (receive(buffer))
+        if (!m_stopped && receive(buffer))
         {
             if (!buffer.empty())
             {
@@ -209,6 +227,11 @@ void BoostTCPClient::receiveLoop()
         }
         else
         {
+            if (m_stopped)
+            {
+                Log::info("Receive loop stopped due to stop signal");
+                break;
+            }
             Log::info("Error receiving from server");
             break;
         }

@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_COMPILER "clang++")
 
 # Boost system, json. Asio is header only
-find_package(Boost COMPONENTS system json REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system json)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # MySQL C API
@@ -81,7 +81,7 @@ add_library(nexilis ${SOURCES})
 target_include_directories(nexilis PUBLIC include)
 
 if(MYSQL_CLIENT_LIBRARY)
-    target_link_libraries(nexilis ${Boost_LIBRARIES} ${MYSQL_CLIENT_LIBRARY})
+    target_link_libraries(nexilis PRIVATE Boost::system Boost::json ${MYSQL_CLIENT_LIBRARY})
 else()
-    target_link_libraries(nexilis ${Boost_LIBRARIES})
+    target_link_libraries(nexilis PRIVATE Boost::system Boost::json)
 endif()

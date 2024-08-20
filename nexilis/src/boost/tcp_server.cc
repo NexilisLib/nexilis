@@ -93,45 +93,46 @@ bool BoostTCPServer::acceptClients()
 
         // Create a new socket for each client connection
         boost::asio::ip::tcp::socket newSocket(*m_ioContext);
+        boost::system::error_code accept_error;
         m_acceptor.accept(newSocket);
+
+        if (accept_error)
+        {
+            Log::error("Error accepting client connection: ", accept_error.message());
+            continue;  // Proceed to accept the next client
+        }
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
         {
             try
             {
+                std::string clientAddress;
+                uint16_t clientPort;
+
+                try
+                {
+                    boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
+                    boost::asio::ip::address remoteAddress = remoteEndpoint.address();
+                    clientAddress = remoteAddress.to_string();
+                    clientPort = remoteEndpoint.port();
+                    Log::debug("Remote IP address: ", clientAddress);
+                }
+                catch (const std::exception& e)
+                {
+                    Log::debug("Error getting info from remote, reason: ", e.what());
+                }
+
                 while (true)
                 {
-                    std::string clientAddress;
-                    uint16_t clientPort;
-                    try
-                    {
-                        boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
-                        boost::asio::ip::address remoteAddress = remoteEndpoint.address();
-                        clientAddress = remoteAddress.to_string();
-                        clientPort = remoteEndpoint.port();
-                        Log::debug("Remote IP address: ", clientAddress);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        Log::debug("Error getting info from remote, reason: ", e.what());
-                    }
-
-                    // Receive data from the client
                     boost::asio::streambuf receiveBuffer;
                     boost::system::error_code error_code;
 
-                    uint64_t bytesRead = boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
+                    boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
 
                     if (error_code == boost::asio::error::eof)
                     {
                         Log::debug("End receive ", clientAddress);
-                        break;
-                    }
-                    else if (bytesRead <= 0)
-                    {
-                        // Other type of error.
-                        Log::error("TCPServer Error: boost::asio::read");
                         break;
                     }
                     else if (error_code)
@@ -146,6 +147,13 @@ bool BoostTCPServer::acceptClients()
 
                     // Get the sequence of const buffers from the streambuf
                     const boost::asio::const_buffers_1& buffers = receiveBuffer.data();
+
+                    // Check if the buffer is empty
+                    if (buffers.size() == 0)
+                    {
+                        Log::info("Getting empty data");
+                        continue;  // Skip processing and wait for more data
+                    }
 
                     // Iterate over each const buffer and copy its data into the vector
                     for (const auto& buffer : buffers)
@@ -188,8 +196,12 @@ bool BoostTCPServer::acceptClients()
             {
                 // Handle errors or client disconnect here
                 Log::error("Error in client thread: ", e.what());
-            } })
-                .detach();
+            }
+            catch (const std::exception& e)
+            {
+                Log::error("Exception in client thread: ", e.what());
+            }
+        }).detach();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
