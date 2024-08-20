@@ -3,13 +3,13 @@
 compile() {
     if [ -d "build" ]; then
         cd build
-        make -j9
+        make -j$(nproc)
         cd ..
     else
         mkdir build
         cd build
         cmake ..
-        make -j9
+        make -j$(nproc)
         cd ..
     fi
 }
