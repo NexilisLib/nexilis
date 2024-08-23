@@ -241,30 +241,9 @@ void Program::end()
     exit(0);
 }
 
-void Program::readMessage(boost::json::object object)
-{
-    if (object != m_currentMessage)
-    {
-        m_currentMessage = object;
-        parseMessage(m_currentMessage);
-    }
-}
-
-void Program::parseMessage(boost::json::object object)
-{
-    if (object.contains("nexilis_status"))
-    {
-    }
-    /// Here parse client specific messages.
-    else
-    {
-    }
-}
-
 void Program::update()
 {
     inputHandler(m_window);
     m_menu.update(m_window.getWindow(), m_menuChoice, m_state);
     m_chat.update(m_window, m_roomChoice, m_state);
-    readMessage(m_nexilisClient.getClientAPI().getCurrentMessage());
 }

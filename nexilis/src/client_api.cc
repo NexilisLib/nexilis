@@ -473,7 +473,7 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 
     if (json.contains("command") && json.contains("type"))
     {
-        // Check possible callback.
+        // Check for possible callback in the message.
         if (json.find("callback") != json.end() && json["callback"] != 0)
         {
             uint64_t callback;
@@ -652,9 +652,6 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
-
-                        Log::info("ROOMCLIENTS AMOUNT: ", roomClients.size());
-
                         newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
                     }
                     m_currentlyActiveRooms = newRooms;
@@ -751,7 +748,14 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
                 return ReadResult::not_implemented;
             }
         }
-
+        else if (command == "room")
+        {
+            if (type == "join")
+            {
+                // This is a valid command, but there is nothing to do.
+                return ReadResult::success;
+            }
+        }
         else
         {
             Log::error("UNDEFINED TYPE");

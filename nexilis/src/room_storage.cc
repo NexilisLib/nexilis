@@ -1,5 +1,5 @@
-#include <nexilis/log.hh>
 #include <nexilis/room_storage.hh>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -15,7 +15,7 @@ void RoomStorage::add(Room&& room)
 {
     Log::info("New room: ", room.getName(), " id: ", room.getId());
     m_rooms.emplace_back(std::move(room));
-    Log::info("Total amount = ", m_rooms.size());
+    Log::info("Total room amount = ", m_rooms.size());
 }
 
 bool RoomStorage::contains(uint64_t id)

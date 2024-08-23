@@ -70,9 +70,6 @@ private:
     /// Chat room choice.
     int m_roomChoice = 0;
 
-    /// The newest message from the server.
-    boost::json::object m_currentMessage;
-
     /// Should the room data to be updated?
     bool updateRooms = true;
 };

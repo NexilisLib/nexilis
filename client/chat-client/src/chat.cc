@@ -184,10 +184,6 @@ void Chat::updateChat(Window& window, State& programState)
                 for (auto b = messages.begin(); b != messages.end(); b++)
                 {
                     std::stringstream ss;
-
-                    //std::string str = b->getClient()->getUsername();
-                    //debug(str);
-
                     ss << "(" << b->getClient()->getId() << ") " << b->getPayload();
                     mvwprintw(window.getWindow(), startY + index, startX, "%s", ss.str().c_str());
                     wrefresh(window.getWindow());
