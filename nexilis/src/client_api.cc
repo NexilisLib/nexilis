@@ -5,6 +5,8 @@
 #include <nexilis/packet.hh>
 #include <nexilis/log.hh>
 
+#include <thread>
+
 namespace nexilis
 {
 
@@ -462,7 +464,7 @@ void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()
     m_callbacks.emplace_back(callback);
 }
 
-ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
+ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 {
     // Parsing message.
     if (!json.contains("nexilis_status"))
@@ -473,37 +475,6 @@ ClientAPI::ReadResult ClientAPI::parse(boost::json::object json)
 
     if (json.contains("command") && json.contains("type"))
     {
-        // Check for possible callback in the message.
-        if (json.find("callback") != json.end() && json["callback"] != 0)
-        {
-            uint64_t callback;
-            if (json.at("callback").if_uint64())
-            {
-                callback = json.at("callback").as_uint64();
-            }
-            else if (json.at("callback").if_int64())
-            {
-                callback = static_cast<uint64_t>(json.at("callback").as_int64());
-            }
-            else
-            {
-                callback = 0;
-            }
-
-            Log::debug("Callback id: ", callback);
-
-            // Calling callback.
-            for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
-            {
-                if (it->first == callback)
-                {
-                    it->second();
-                    it = m_callbacks.erase(it);
-                    break;
-                }
-            }
-        }
-
         auto command = json["command"];
         auto type = json["type"];
 
@@ -778,7 +749,12 @@ ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message
         return ReadResult::error;
     }
 
-    auto result = parse(json);
+    auto result = readCommand(json);
+
+    if (json.find("callback") != json.end() && json["callback"] != 0)
+    {
+        readCallback(json["callback"]);
+    }
 
     if (result == ReadResult::success)
     {
@@ -791,6 +767,36 @@ ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message
         Log::error("Data: ", stringMessage);
     }
     return result;
+}
+
+void ClientAPI::readCallback(boost::json::value callback)
+{
+    uint64_t cb;
+    if (callback.if_uint64())
+    {
+        cb = callback.as_uint64();
+    }
+    else if (callback.if_int64())
+    {
+        cb = static_cast<uint64_t>(callback.as_int64());
+    }
+    else
+    {
+        cb = 0;
+    }
+
+    Log::debug("Callback id: ", cb);
+
+    // Calling callback.
+    for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
+    {
+        if (it->first == cb)
+        {
+            it->second();
+            it = m_callbacks.erase(it);
+            break;
+        }
+    }
 }
 
 ClientAPI::Room& ClientAPI::roomWhereClientIs(uint64_t clientId)
@@ -806,6 +812,19 @@ ClientAPI::Room& ClientAPI::roomWhereClientIs(uint64_t clientId)
         }
     }
     return m_defaultRoom;
+}
+
+std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promise)
+{
+    return [&promise, this]()
+    {
+        // Because all the rooms are created as once, we basically check if the rooms exist.
+        while (getActiveRooms().size() < 1)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        promise.set_value();
+    };
 }
 
 } // namespace nexilis

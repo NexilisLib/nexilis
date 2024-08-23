@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <future>
 #include <string>
 #include <vector>
 
@@ -571,6 +572,9 @@ public:
         return m_defaultRoom;
     }
 
+    /// Let the program wait until nexilis has created all the rooms.
+    std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
+
 private:
     /// Setters.
     void setClientId(size_t id)
@@ -581,8 +585,11 @@ private:
     /// Hacky shit that does not work!
     Room& roomWhereClientIs(uint64_t clientId);
 
-    /// Parse clientside data.
-    ReadResult parse(boost::json::object json);
+    /// Read the command part of the message.
+    ReadResult readCommand(boost::json::object json);
+
+    /// Read the callback part of the message.
+    void readCallback(boost::json::value callback);
 
 private:
     /// The initialization data for the ClientAPI.
