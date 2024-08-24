@@ -20,14 +20,14 @@ public:
         m_maxClients = amount;
     }
 
-    static size_t getMaxAmountOfClients()
+    static uint64_t getMaxAmountOfClients()
     {
         return m_maxClients;
     }
 
 private:
     /// Max amount of clients in the server, default 1000.
-    static size_t m_maxClients;
+    static uint64_t m_maxClients;
 };
 
 } // namespace nexilis

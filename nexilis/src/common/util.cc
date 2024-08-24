@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 #include <nexilis/log.hh>
@@ -19,6 +18,25 @@ std::string Util::convertToString(std::vector<uint8_t> bytes)
         result += static_cast<char>(b);
     }
     return result;
+}
+
+Vec2f Util::convertToVector2(const std::vector<uint8_t>& bytes)
+{
+    // Ensure the vector has enough bytes for two floats
+    if (bytes.size() < sizeof(float) * 2)
+    {
+        throw std::invalid_argument("The input vector does not contain enough bytes for two floats.");
+    }
+
+    // Variables to hold the float values
+    float float1, float2;
+
+    // Copy the first 4 bytes.
+    memcpy(&float1, bytes.data(), sizeof(float));
+    // Copy the next 4 bytes.
+    memcpy(&float2, bytes.data() + sizeof(float), sizeof(float));
+
+    return Vec2f(float1, float2);
 }
 
 uint16_t Util::uint8PairToUint16(uint8_t lowByte, uint8_t highByte)
@@ -51,6 +69,21 @@ std::vector<uint8_t> Util::convertToByteVector(uint64_t value)
         }
     }
     return result;
+}
+
+std::vector<uint8_t> Util::convertToByteVector(float value)
+{
+    std::vector<uint8_t> bytes(sizeof(float));
+    memcpy(bytes.data(), &value, sizeof(float));
+    return bytes;
+}
+
+std::vector<uint8_t> Util::convertToByteVector(Vec2f value)
+{
+    auto vec1 = convertToByteVector(value.x);
+    auto vec2 = convertToByteVector(value.y);
+    vec1.insert(vec1.end(), vec2.begin(), vec2.end());
+    return vec1;
 }
 
 uint64_t Util::getRandomSizeUint64(uint64_t from, uint64_t to)

@@ -2,6 +2,7 @@
 #define NEXILIS_PACKET_HH
 
 #include <nexilis/client_api.hh>
+#include <nexilis/vector2.hh>
 
 namespace nexilis
 {
@@ -48,6 +49,12 @@ public:
         static std::vector<uint8_t> join(uint64_t roomId);
         static std::vector<uint8_t> leave();
         static std::vector<uint8_t> create(const std::string& roomName);
+    };
+
+    class Position
+    {
+    public:
+        static std::vector<uint8_t> vector2(Vec2f position);
     };
 
 private:

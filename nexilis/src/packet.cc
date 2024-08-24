@@ -175,4 +175,18 @@ std::vector<uint8_t> Packet::clientIdentification()
     return clientIdVector;
 }
 
+std::vector<uint8_t> Packet::Position::vector2(Vec2f position)
+{
+    auto id = clientIdentification();
+    id.emplace_back(11);
+    id.emplace_back(0);
+
+    auto positionVector = Util::convertToByteVector(position);
+    for (const auto& byte : positionVector)
+    {
+        id.emplace_back(byte);
+    }
+    return id;
+}
+
 } // namespace nexilis

@@ -1,6 +1,7 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
+#include "nexilis/vector2.hh"
 #include <nexilis/config.hh>
 #include <nexilis/logger/log_level.hh>
 
@@ -48,6 +49,9 @@ public:
     /// Convert std::vector<uint8_t> to string.
     static std::string convertToString(std::vector<uint8_t> bytes);
 
+    /// Convert std::vector<uint8_t> to Vec2f.
+    static Vec2f convertToVector2(const std::vector<uint8_t>& bytes);
+
     /// Return uint16_t from two bytes.
     static uint16_t uint8PairToUint16(uint8_t lowByte, uint8_t highByte);
 
@@ -74,6 +78,8 @@ public:
     static std::vector<uint8_t> convertToByteVector(const char* command_data, uint64_t length);
     static std::vector<uint8_t> convertToByteVector(uint64_t value);
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
+    static std::vector<uint8_t> convertToByteVector(float value);
+    static std::vector<uint8_t> convertToByteVector(Vec2f value);
 
     /// Logging.
     static std::string getColorMessage(logger::LogLevel logLevel, const std::string& data);

@@ -4,6 +4,6 @@
 namespace nexilis
 {
 
-size_t ServerManager::m_maxClients = NEXILIS_DEFAULT_MAX_CLIENTS;
+uint64_t ServerManager::m_maxClients = NEXILIS_DEFAULT_MAX_CLIENTS;
 
 }

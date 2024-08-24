@@ -44,7 +44,9 @@ enum class MainCommand : uint8_t
 
     error = 9,
 
-    room = 10
+    room = 10,
+
+    position = 11
 };
 
 }

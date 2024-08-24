@@ -113,30 +113,27 @@ bool BoostTCPClient::connectToServer()
 
 bool BoostTCPClient::send(const std::vector<uint8_t>& data)
 {
-    if (m_socket.is_open())
-    {
-        // Asynchronously send data to the server.
-        boost::asio::async_write(m_socket, boost::asio::buffer(data),
-                                 [](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
-                                 {
-                                     if (!error)
-                                     {
-                                         Log::info("Message sent successfully.");
-                                         return true;
-                                     }
-                                     else
-                                     {
-                                         Log::error("Send error: " + error.message());
-                                         return false;
-                                     }
-                                 });
-        return false;
-    }
-    else
+    if (!m_socket.is_open())
     {
         Log::error("TCPClient socket is not open SOCKET SEND");
         return false;
     }
+
+    boost::asio::async_write(m_socket, boost::asio::buffer(data),
+        [this](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+        {
+            if (!error)
+            {
+                Log::info("Message sent successfully.");
+            }
+            else
+            {
+                Log::error("Send error: " + error.message());
+                m_socket.close();
+            }
+        });
+
+    return true;
 }
 
 bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)

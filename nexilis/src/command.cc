@@ -514,6 +514,33 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
+        case MainCommand::position:
+        {
+            switch (command[1])
+            {
+                case 0:
+                {
+                    Log::debug("MainCommand position (vector2)");
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    auto vector = Util::convertToVector2(payload);
+                    Log::debug("Position x:", vector.x, " y:", vector.y);
+
+                    std::map<std::string, boost::json::value> data{
+                            {"nexilis_status", boost::json::value(1)},
+                            {"command", boost::json::value("position")},
+                            {"type", boost::json::value("vector2")},
+                            {"positionX", boost::json::value(vector.x)},
+                            {"positionY", boost::json::value(vector.y)}};
+
+                    auto json = Json::createJSON(data);
+                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+                    sendMessageToClient(message, user, protocol);
+                    return Result::success;
+                }
+                default: return Result::not_found;
+            }
+        }
+
         default:
             return Result::not_found;
     }

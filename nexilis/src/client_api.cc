@@ -727,6 +727,23 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 return ReadResult::success;
             }
         }
+        else if (command == "position")
+        {
+            if (type == "vector2")
+            {
+                float vectorX, vectorY;
+                if (json.at("positionX").if_double())
+                {
+                    vectorX = json.at("positionX").as_double();
+                }
+                if (json.at("positionY").if_double())
+                {
+                    vectorY = json.at("positionY").as_double();
+                }
+                Log::info("Received position X:", vectorX, " Y: ", vectorY);
+                return ReadResult::success;
+            }
+        }
         else
         {
             Log::error("UNDEFINED TYPE");
