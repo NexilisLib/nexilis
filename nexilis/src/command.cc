@@ -215,8 +215,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     auto json = Json::createJSON(header);
                     Json::emplace(json, Json::getRoomData());
-                    std::vector<uint8_t> data = Util::convertToByteVector(json);
-
+                    auto data = Util::convertToByteVector(json);
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::roomInfo");
                     return Result::success;
@@ -435,6 +434,12 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     }
                     else
                     {
+                        if (RoomStorage::getRoomById(roomId)->contains(user))
+                        {
+                            Log::error("Cannot join room where the client already is!");
+                            return Result::failure;
+                        }
+
                         room->joinRoom(user);
                         user.setRoomId(roomId);
 

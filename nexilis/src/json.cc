@@ -208,6 +208,7 @@ boost::json::array Json::clientsToJSON(const std::vector<User>& clients)
 boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
 {
     boost::json::array resultingArray;
+    resultingArray.reserve(rooms.size());
 
     for (const auto& room : rooms)
     {
@@ -228,6 +229,7 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
 
         // Get data from clients in a room.
         boost::json::array clientArray;
+        clientArray.reserve(room.getClients().size());
         auto clients = room.getClients();
 
         // Currently just id but will be adding stuff.
@@ -243,7 +245,6 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
         {
             roomObj["clients"] = std::move(clientArray);
         }
-
         resultingArray.emplace_back(std::move(roomObj));
     }
     return resultingArray;
