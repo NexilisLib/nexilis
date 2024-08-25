@@ -458,9 +458,8 @@ uint64_t ClientAPI::getNewMessageId()
     }
 }
 
-void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()>&>& callback)
+void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()>>& callback)
 {
-    Log::warning("Added callback with id: ", callback.first);
     m_callbacks.emplace_back(callback);
 }
 
@@ -482,13 +481,12 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "username")
             {
-                std::string a = json.at("set_username").as_string().data();
+                std::string a = json.at("username").as_string().data();
 
                 // Set own m_data.
                 m_data.setUserName(a);
                 return ReadResult::success;
 
-                /*
                 for (const auto& rooms : m_currentlyActiveRooms)
                 {
                     for (auto& client : rooms.getClients())
@@ -501,7 +499,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     }
                 }
                 return ReadResult::not_found;
-                */
             }
             else
             {
@@ -511,19 +508,19 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
         else if (command == "get")
         {
-            if (type == "set_client_id")
+            if (type == "client_id")
             {
-                if (json["set_client_id"].if_uint64())
+                if (json["client_id"].if_uint64())
                 {
-                    uint64_t id = json["set_client_id"].as_uint64();
+                    uint64_t id = json["client_id"].as_uint64();
                     setClientId(id);
                     Packet::_initialize(*this);
                     return ReadResult::success;
                 }
                 // boost::json::value is so bad.
-                else if (json["set_client_id"].if_int64())
+                else if (json["client_id"].if_int64())
                 {
-                    int64_t id = json["set_client_id"].as_int64();
+                    int64_t id = json["client_id"].as_int64();
                     uint64_t u_id = id;
 
                     assert(sizeof(id) == sizeof(u_id));
@@ -535,7 +532,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else
                 {
-                    Log::error("The value of set_client_id is not convertible to as_uint64");
+                    Log::error("The value of get_client_id is not convertible to as_uint64");
                     return ReadResult::error;
                 }
             }
@@ -793,8 +790,6 @@ void ClientAPI::readCallback(boost::json::value callback)
     {
         cb = 0;
     }
-
-    Log::debug("Callback id: ", cb);
 
     // Calling callback.
     for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)

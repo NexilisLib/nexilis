@@ -91,7 +91,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 {"command", boost::json::value("set")},
                                 {"type", boost::json::value("username")},
                                 {"callback", boost::json::value(messageId)},
-                                {"set_username", boost::json::value(username)}};
+                                {"username", boost::json::value(username)}};
 
                     auto data = Util::convertToByteVector(Json::createJSON(header));
                     sendMessageToClient(data, user, protocol);
@@ -116,8 +116,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("get")},
-                            {"type", boost::json::value("set_client_id")},
-                            {"set_client_id", boost::json::value(user.getId())}};
+                            {"type", boost::json::value("client_id")},
+                            {"client_id", boost::json::value(user.getId())}};
+
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
                     sendMessageToClient(message, user, protocol);
@@ -130,42 +131,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        // this should be renamed connection management.
-        case MainCommand::ping:
-        {
-            switch (command[1])
-            {
-                // Send ping.
-                case 0:
-                {
-                    // TODO create pong message, I mean this is kinda stupid.
-                    return Result::not_found;
-                }
-
-                // Receive ping.
-                case 1:
-                {
-                    return Result::not_found;
-                }
-
-                // Start listening
-                case 2:
-                {
-                    return Result::not_found;
-                }
-
-                // Stop listening
-                case 3:
-                {
-                    return Result::not_found;
-                }
-
-                default:
-                {
-                    return Result::not_found;
-                }
-            }
-        }
         case MainCommand::info:
         {
             switch (command[1])

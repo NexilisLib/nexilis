@@ -477,7 +477,7 @@ public:
     /// Message id stuff.
     uint64_t getNewMessageId();
 
-    void addCallback(const std::pair<uint64_t, const std::function<void()>&>& callback);
+    void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
 public:
     /// Getters.
 

@@ -11,21 +11,20 @@ enum class MainCommand : uint8_t
     setting = 0,
 
     getting = 1,
-    ping = 2,
 
     // Get information from the server
-    info = 3,
-    authentication = 4,
+    info = 2,
+    authentication = 3,
 
     // Server management
-    server_management = 5,
+    server_management = 4,
     /*
     Start
     Stop
     Restart
     */
 
-    player_management = 6,
+    player_management = 5,
     /*
     kick = 0x10,
     ban = 0x20,
@@ -34,19 +33,17 @@ enum class MainCommand : uint8_t
     unmute = 0x50,
     */
 
-    communicate = 7,
+    communicate = 6,
     /*
     say = 0x10,
     whisper = 0x20
     */
 
-    update = 8,
+    error = 7,
 
-    error = 9,
+    room = 8,
 
-    room = 10,
-
-    position = 11
+    position = 9
 };
 
 }
