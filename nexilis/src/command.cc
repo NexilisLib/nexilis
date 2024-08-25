@@ -417,7 +417,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
         {
             switch (command[1])
             {
-                // Join room x.
+                // Join room.
                 case 0:
                 {
                     Log::debug("Called Room::Join()");
@@ -425,7 +425,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     uint64_t roomId = Util::convertToType<uint64_t>(payload);
 
-                    auto room = RoomStorage::getRoomById(roomId);
+                    auto* room = RoomStorage::getRoomById(roomId);
 
                     if (!room)
                     {
@@ -444,16 +444,30 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         user.setRoomId(roomId);
 
                         assert(RoomStorage::getRoomById(roomId)->contains(user));
+                        assert(user.getRoomId() == roomId);
+                        auto roomId = user.getRoomId();
 
-                        std::map<std::string, boost::json::value> data{
+                        std::map<std::string, boost::json::value> header{
                                 {"nexilis_status", boost::json::value(1)},
-                                {"command", boost::json::value("room")},
-                                {"type", boost::json::value("join")},
+                                {"command", boost::json::value("info")},
+                                {"type", boost::json::value("room_data")},
                                 {"callback", boost::json::value(messageId)}};
 
-                        auto json = Json::createJSON(data);
-                        std::vector<uint8_t> message = Util::convertToByteVector(json);
-                        sendMessageToClient(message, user, protocol);
+                        auto json = Json::createJSON(header);
+                        Json::emplace(json, Json::getRoomData());
+                        auto data = Util::convertToByteVector(json);
+
+                        // Accessing server side clients.
+                        auto& clients = ClientStorage::getAllClients();
+
+                        for (auto& c : clients)
+                        {
+                            /// If the client has the same room id as the sender of the message.
+                            if (c.getRoomId() == roomId)
+                            {
+                                sendMessageToClient(data, c, protocol);
+                            }
+                        }
 
                         return Result::success;
                     }
@@ -474,6 +488,29 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     currentRoom->leaveRoom(user);
                     assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user));
                     user.setRoomId(0);
+
+                    std::map<std::string, boost::json::value> header{
+                            {"nexilis_status", boost::json::value(1)},
+                            {"command", boost::json::value("info")},
+                            {"type", boost::json::value("room_data")},
+                            {"callback", boost::json::value(messageId)}};
+
+                    auto json = Json::createJSON(header);
+                    Json::emplace(json, Json::getRoomData());
+                    auto data = Util::convertToByteVector(json);
+
+                    // Accessing server side clients.
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto& c : clients)
+                    {
+                        // Send message to all clients existing in this room.
+                        if (c.getRoomId() == currentRoom->getId())
+                        {
+                            sendMessageToClient(data, c, protocol);
+                        }
+                    }
+
                     return Result::success;
                 }
 

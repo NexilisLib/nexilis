@@ -719,14 +719,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 return ReadResult::not_implemented;
             }
         }
-        else if (command == "room")
-        {
-            if (type == "join")
-            {
-                // This is a valid command, but there is nothing to do.
-                return ReadResult::success;
-            }
-        }
         else if (command == "position")
         {
             if (type == "vector2")
