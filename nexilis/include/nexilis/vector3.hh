@@ -18,8 +18,12 @@ public:
     /// \param z The z value of the vector3.
     explicit Vector3(float x, float y, float z);
 
+    Vector3() : m_x(0), m_y(0), m_z(0)
+    {
+    }
+
     std::vector<uint8_t> serialize() const;
-    // static Vector3 deserialize(const std::vector<uint8_t>& data);
+    static Vector3 deserialize(const std::vector<uint8_t>& data);
 
 private:
     float m_x;

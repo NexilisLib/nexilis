@@ -1,3 +1,4 @@
+#include "nexilis/authentication.hh"
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -13,6 +14,7 @@ namespace nexilis
 ClientAPI::ServerData::ServerData(ServerData&& other)
     : m_password(std::move(other.m_password)),
       m_username(std::move(other.m_username)),
+      m_applicationType(std::move(other.m_applicationType)),
       m_inetUDPServerAddress(std::move(other.m_inetUDPServerAddress)),
       m_inetUDPPort(std::move(other.m_inetUDPPort)),
       m_inetTCPServerAddress(std::move(other.m_inetTCPServerAddress)),
@@ -29,6 +31,7 @@ ClientAPI::ServerData::ServerData(ServerData&& other)
 ClientAPI::ServerData::ServerData(const ServerData& other)
     : m_password(other.m_password),
       m_username(other.m_username),
+      m_applicationType(other.m_applicationType),
       m_inetUDPServerAddress(other.m_inetUDPServerAddress),
       m_inetUDPPort(other.m_inetUDPPort),
       m_inetTCPServerAddress(other.m_inetTCPServerAddress),
@@ -48,6 +51,7 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(ServerData&& other)
     {
         m_password = std::move(other.m_password);
         m_username = std::move(other.m_username);
+        m_applicationType = std::move(other.m_applicationType);
         m_inetUDPServerAddress = std::move(other.m_inetUDPServerAddress);
         m_inetUDPPort = std::move(other.m_inetUDPPort);
         m_inetTCPServerAddress = std::move(other.m_inetTCPServerAddress);
@@ -68,6 +72,7 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     {
         m_password = other.m_password;
         m_username = other.m_username;
+        m_applicationType = other.m_applicationType;
         m_inetUDPServerAddress = other.m_inetUDPServerAddress;
         m_inetUDPPort = other.m_inetUDPPort;
         m_inetTCPServerAddress = other.m_inetTCPServerAddress;
@@ -81,6 +86,8 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     }
     return *this;
 }
+
+
 
 // ClientAPI::Room::Communication
 ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::Room::Client* client) :
@@ -137,30 +144,17 @@ bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room
 // ClientAPI::Room::Client
 ClientAPI::Room::Client::Client(uint64_t id, const std::string& name)
     : m_id(id),
-      m_name(name)
-{
-}
-
-ClientAPI::Room::Client::Client(const Client& other)
-    : m_id(other.m_id),
-      m_name(other.m_name)
+      m_name(name),
+      // TODO FIX
+      m_position(createPosition(ApplicationType::_2D))
 {
 }
 
 ClientAPI::Room::Client::Client(Client&& other)
     : m_id(std::move(other.m_id)),
-      m_name(std::move(other.m_name))
+      m_name(std::move(other.m_name)),
+      m_position(std::move(other.m_position))
 {
-}
-
-ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(const Client& other)
-{
-    if (this != &other)
-    {
-        m_id = other.m_id;
-        m_name = other.m_name;
-    }
-    return *this;
 }
 
 ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
@@ -169,8 +163,25 @@ ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
     {
         m_id = std::move(other.m_id);
         m_name = std::move(other.m_name);
+        m_position = std::move(other.m_position);
     }
     return *this;
+}
+
+std::unique_ptr<ClientAPI::Position> ClientAPI::Room::Client::createPosition(ApplicationType applicationType)
+{
+    switch (applicationType)
+    {
+        case ApplicationType::_2D:
+        {
+            return std::make_unique<_2DPosition>();
+        }
+        case ApplicationType::_3D:
+        {
+            return std::make_unique<_3DPosition>();
+        }
+        default: return nullptr;
+    }
 }
 
 bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Client& rhs)
@@ -180,16 +191,6 @@ bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Clien
 }
 
 // ClientAPI::Room
-ClientAPI::Room::Room(const Room& other) :
-    m_name(other.m_name),
-    m_creatorId(other.m_creatorId),
-    m_roomId(other.m_roomId),
-    m_maxSize(other.m_maxSize),
-    m_clients(other.m_clients),
-    m_roomMessages(other.m_roomMessages)
-{
-}
-
 ClientAPI::Room::Room(Room&& other) :
     m_name(std::move(other.m_name)),
     m_creatorId(std::move(other.m_creatorId)),
@@ -198,20 +199,6 @@ ClientAPI::Room::Room(Room&& other) :
     m_clients(std::move(other.m_clients)),
     m_roomMessages(std::move(other.m_roomMessages))
 {
-}
-
-ClientAPI::Room& ClientAPI::Room::operator=(const Room& other)
-{
-    if (this != &other)
-    {
-        m_name = other.m_name;
-        m_creatorId = other.m_creatorId;
-        m_roomId = other.m_roomId;
-        m_maxSize = other.m_maxSize;
-        m_clients = other.m_clients;
-        m_roomMessages = other.m_roomMessages;
-    }
-    return *this;
 }
 
 ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
@@ -228,12 +215,12 @@ ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
     return *this;
 }
 
-ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Client>& clients)
+ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<Client>&& clients)
     : m_name(name),
       m_creatorId(creatorId),
       m_roomId(roomId),
       m_maxSize(maxSize),
-      m_clients(clients)
+      m_clients(std::move(clients))
 {
 }
 
@@ -294,32 +281,6 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
         m_callbacks = std::move(other.m_callbacks);
-    }
-    return *this;
-}
-
-ClientAPI::ClientAPI(const ClientAPI& other)
-    : m_data(other.m_data),
-      m_clientId(other.m_clientId),
-      m_currentMessage(other.m_currentMessage),
-      m_defaultRoom(other.m_defaultRoom),
-      m_currentlyActiveRooms(other.m_currentlyActiveRooms),
-      m_messageIds(other.m_messageIds),
-      m_callbacks(other.m_callbacks)
-{
-}
-
-ClientAPI& ClientAPI::operator=(const ClientAPI& other)
-{
-    if (this != &other)
-    {
-        m_data = other.m_data;
-        m_clientId = other.m_clientId;
-        m_currentMessage = other.m_currentMessage;
-        m_defaultRoom = other.m_defaultRoom;
-        m_currentlyActiveRooms = other.m_currentlyActiveRooms;
-        m_messageIds = other.m_messageIds;
-        m_callbacks = other.m_callbacks;
     }
     return *this;
 }
@@ -408,11 +369,11 @@ void ClientAPI::waitUntilUnixStreamReady()
 
 bool ClientAPI::clientInRoom()
 {
-    auto rooms = getActiveRooms();
+    auto& rooms = getActiveRooms();
 
     for (auto r = rooms.begin(); r != rooms.end(); r++)
     {
-        auto clients = r->getClients();
+        auto& clients = r->getClients();
         for (auto c = clients.begin(); c != clients.end(); c++)
         {
             if (c->getId() == m_clientId)
@@ -426,11 +387,11 @@ bool ClientAPI::clientInRoom()
 
 uint64_t ClientAPI::clientRoomId()
 {
-    auto rooms = getActiveRooms();
+    auto& rooms = getActiveRooms();
 
     for (auto r = rooms.begin(); r != rooms.end(); r++)
     {
-        auto clients = r->getClients();
+        auto& clients = r->getClients();
         for (auto c = clients.begin(); c != clients.end(); c++)
         {
             if (c->getId() == m_clientId)
@@ -487,9 +448,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 m_data.setUserName(a);
                 return ReadResult::success;
 
-                for (const auto& rooms : m_currentlyActiveRooms)
+                for (auto&& rooms : m_currentlyActiveRooms)
                 {
-                    for (auto& client : rooms.getClients())
+                    for (auto&& client : rooms.getClients())
                     {
                         if (client.getId() == m_clientId)
                         {
@@ -620,9 +581,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
-                        newRooms.emplace_back(Room(name, creatorId, id, maxSize, roomClients));
+                        newRooms.emplace_back(Room(name, creatorId, id, maxSize, std::move(roomClients)));
                     }
-                    m_currentlyActiveRooms = newRooms;
+                    m_currentlyActiveRooms = std::move(newRooms);
                     return ReadResult::success;
                 }
             }
@@ -720,16 +681,51 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "vector2")
             {
+                uint64_t id;
+                if (json.at("id").if_uint64())
+                {
+                    id = json.at("id").as_uint64();
+                }
+                else if (json.at("id").if_int64())
+                {
+                    id = static_cast<uint64_t>(json.at("id").as_int64());
+                }
+                else
+                {
+                    id = 0;
+                }
+
                 float vectorX, vectorY;
                 if (json.at("positionX").if_double())
                 {
                     vectorX = json.at("positionX").as_double();
                 }
+                else
+                {
+                    vectorX = 0.f;
+                }
                 if (json.at("positionY").if_double())
                 {
                     vectorY = json.at("positionY").as_double();
                 }
+                else
+                {
+                    vectorY = 0.f;
+                }
+                assert(vectorX != 0.f && vectorY != 0.f);
                 Log::info("Received position X:", vectorX, " Y: ", vectorY);
+
+                for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                {
+                    for (auto& client : room->getClients())
+                    {
+                        if (client.getId() == id)
+                        {
+                            client.setPosition(vectorX, vectorY);
+                        }
+                    }
+                }
+
                 return ReadResult::success;
             }
         }

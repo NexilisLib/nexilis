@@ -532,16 +532,37 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto vector = Util::convertToVector2(payload);
                     Log::debug("Position x:", vector.x, " y:", vector.y);
 
+                    auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+
+                    if (!currentRoom)
+                    {
+                        Log::warning("Client not currently in room so cannot leave current room.");
+                        return Result::failure;
+                    }
+
                     std::map<std::string, boost::json::value> data{
                             {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("position")},
                             {"type", boost::json::value("vector2")},
+                            {"id", boost::json::value(user.getId())},
                             {"positionX", boost::json::value(vector.x)},
                             {"positionY", boost::json::value(vector.y)}};
 
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
-                    sendMessageToClient(message, user, protocol);
+
+                    // Accessing server side clients.
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto& c : clients)
+                    {
+                        /// This message is implicitly in room context.
+                        if (c.getRoomId() == currentRoom->getId())
+                        {
+                            sendMessageToClient(message, c, protocol);
+                        }
+                    }
+
                     return Result::success;
                 }
                 default: return Result::not_found;

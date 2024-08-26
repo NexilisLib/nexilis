@@ -2,6 +2,8 @@
 #define NEXILIS_CLIENT_API_HH
 
 #include <nexilis/common/util.hh>
+#include <nexilis/log.hh>
+#include <nexilis/vector3.hh>
 
 #include <boost/json/object.hpp>
 
@@ -10,6 +12,7 @@
 #include <cstdint>
 #include <future>
 #include <string>
+#include <optional>
 #include <vector>
 
 namespace nexilis
@@ -18,6 +21,12 @@ namespace nexilis
 class ClientAPI
 {
 public:
+    enum class ApplicationType
+    {
+        _2D,
+        _3D
+    };
+
     class ServerData
     {
     public:
@@ -54,6 +63,16 @@ public:
         void setPassword(const std::string& password)
         {
             m_password = password;
+        }
+
+        ApplicationType getApplicationType() const
+        {
+            return m_applicationType;
+        }
+
+        void setApplicationType(ApplicationType applicationType)
+        {
+            m_applicationType = applicationType;
         }
 
         /// af_inet UDP
@@ -150,6 +169,7 @@ public:
         /// Client data.
         std::string m_password;
         std::string m_username;
+        ApplicationType m_applicationType;
 
         /// af_inet UDP
         std::string m_inetUDPServerAddress;
@@ -174,6 +194,70 @@ public:
         std::string m_unixStreamServerPath;
     };
 
+    class Position
+    {
+    public:
+        virtual ~Position() = default;
+        virtual void setPosition(float x, float y) = 0;
+        virtual void setPosition(float x, float y, float z) = 0;
+        virtual std::optional<Vec2f> getPosition2D() = 0;
+        virtual std::optional<Vector3> getPosition3D() = 0;
+    };
+
+    class _2DPosition : public Position
+    {
+    public:
+        void setPosition(float x, float y) override
+        {
+            m_position = Vec2f(x, y);
+        }
+
+        void setPosition(float x, float y, float z) override
+        {
+            (void)x, (void)y, (void)z;
+            Log::critical("Cannot set 2D position with 3D coordinates");
+        }
+
+        std::optional<Vec2f> getPosition2D() override
+        {
+            return m_position;
+        }
+
+        std::optional<Vector3> getPosition3D() override
+        {
+            return std::nullopt;
+        }
+    private:
+        Vec2f m_position;
+    };
+
+    class _3DPosition : public Position
+    {
+    public:
+        void setPosition(float x, float y) override
+        {
+            (void)x, (void)y;
+            Log::critical("Cannot set 3D position with 2D coordinates");
+        }
+
+        void setPosition(float x, float y, float z) override
+        {
+            m_position = Vector3(x, y, z);
+        }
+
+        std::optional<Vec2f> getPosition2D() override
+        {
+            return std::nullopt;
+        }
+
+        std::optional<Vector3> getPosition3D() override
+        {
+            return m_position;
+        }
+    private:
+        Vector3 m_position;
+    };
+
     class Room
     {
     public:
@@ -184,11 +268,11 @@ public:
             /// Constuctor.
             Client(uint64_t id, const std::string& name = "UNDEFINED");
 
-            /// Copy constructor.
-            Client(const Client& other);
+            /// Deleted copy constructor.
+            Client(const Client& other) = delete;
 
-            /// Copy assignment operator.
-            Client& operator=(const Client& other);
+            /// Deleted copy assignment operator.
+            Client& operator=(const Client& other) = delete;
 
             /// Move constructor.
             Client(Client&& other);
@@ -222,12 +306,36 @@ public:
                 m_name = username;
             }
 
+            void setPosition(float x, float y)
+            {
+                m_position->setPosition(x, y);
+            }
+
+            void setPosition(float x, float y, float z)
+            {
+                m_position->setPosition(x, y, z);
+            }
+
+            std::optional<Vec2f> getPosition2D()
+            {
+                return m_position->getPosition2D();
+            }
+
+            std::optional<Vector3> getPosition3D()
+            {
+                return m_position->getPosition3D();
+            }
+        private:
+            std::unique_ptr<Position> createPosition(ApplicationType applicationType);
         private:
             /// The id of the client.
             uint64_t m_id;
 
             /// The name of the client.
             std::string m_name;
+
+            /// The position of the client.
+            std::unique_ptr<Position> m_position;
         };
 
         /// Communication type for communications in a room.
@@ -290,16 +398,16 @@ public:
         Room() = default;
 
         /// Constructor.
-        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, const std::vector<Room::Client>& clients);
+        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<Room::Client>&& clients);
 
-        /// Copy constructor.
-        Room(const Room& other);
+        /// Deleted copy constructor.
+        Room(const Room& other) = delete;
 
         /// Move constructor.
         Room(Room&& other);
 
-        /// Copy assignment operator.
-        Room& operator=(const Room& other);
+        /// Deleted copy assignment operator.
+        Room& operator=(const Room& other) = delete;
 
         /// Move assignment operator.
         Room& operator=(Room&& other);
@@ -338,7 +446,12 @@ public:
             m_clients.emplace_back(std::move(client));
         }
 
-        std::vector<Room::Client> getClients() const
+        std::vector<Room::Client>& getClients()
+        {
+            return m_clients;
+        }
+
+        const std::vector<Room::Client>& getClients() const
         {
             return m_clients;
         }
@@ -416,11 +529,11 @@ public:
     /// Move assignment operator.
     ClientAPI& operator=(ClientAPI&& other);
 
-    /// Copy constructor.
-    ClientAPI(const ClientAPI& other);
+    /// Deleted copy constructor.
+    ClientAPI(const ClientAPI& other) = delete;
 
-    /// Copy assignment operator.
-    ClientAPI& operator=(const ClientAPI& other);
+    /// Deleted copy assignment operator.
+    ClientAPI& operator=(const ClientAPI& other) = delete;
 
     /// Stuff related to specific connnections.
 public:
@@ -495,6 +608,11 @@ public:
     std::string getClientUserName() const
     {
         return m_data.getUsername();
+    }
+
+    ApplicationType getApplicationType() const
+    {
+        return m_data.getApplicationType();
     }
 
     /// af_inet UDP.
@@ -577,7 +695,7 @@ public:
 
 private:
     /// Setters.
-    void setClientId(size_t id)
+    void setClientId(uint64_t id)
     {
         m_clientId = id;
     }
