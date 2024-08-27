@@ -250,6 +250,36 @@ uint64_t Util::extractUint64FromVector(const std::vector<uint8_t>& data)
     return result;
 }
 
+uint64_t Util::getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec)
+{
+    if (vec.size() < 8)
+    {
+        // Not enough data to read 8 bytes
+        return 0;
+    }
+
+    uint64_t value = 0;
+
+    if (Config::getBigEndian())
+    {
+        // Big-endian: Most significant byte is at the lowest address
+        for (int i = 0; i < 8; ++i)
+        {
+            value |= static_cast<uint64_t>(vec[i]) << ((7 - i) * 8);
+        }
+    }
+    else
+    {
+        // Little-endian: Least significant byte is at the lowest address
+        for (int i = 0; i < 8; ++i)
+        {
+            value |= static_cast<uint64_t>(vec[i]) << (i * 8);
+        }
+    }
+
+    return value;
+}
+
 std::vector<uint8_t> Util::removeItemsUntilFF(const std::vector<uint8_t>& data)
 {
     auto ffPosition = std::find(data.begin(), data.end(), 0xFF);
@@ -262,18 +292,6 @@ std::vector<uint8_t> Util::removeItemsUntilFF(const std::vector<uint8_t>& data)
     {
         return {};
     }
-}
-
-bool Util::containsFF(const std::vector<uint8_t>& data)
-{
-    for (auto byte : data)
-    {
-        if (byte == 0xFF)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 uint64_t Util::getMessageIdFromNexilisMessage(const std::vector<uint8_t>& data)

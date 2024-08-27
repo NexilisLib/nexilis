@@ -12,54 +12,34 @@
 namespace nexilis
 {
 
+// Payload handled by this class:
+// Client id 8 bytes
+// Marker byte 0xFF
+// Message id 8 bytes
+// Second marker byte 0xFF
+// Command bytes (at least 2 bytes), second parameter of MessageHandler::Message.
+
 MessageHandler::Message MessageHandler::readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Authentication* authentication)
 {
     Log::debug("Payload size: ", payload.size());
-
-    // Create a new client.
-    User user(address);
 
     // TODO
     // Error Messages.
     std::vector<uint8_t> errordata = {9, 0, 0};
     Message errorMessage("", errordata, -1, nullptr, 0);
 
-    // If the message contains 0xFF byte we consider this message nexilis message.
-    bool normalMessage = Util::containsFF(payload);
-    User* realUser = nullptr;
-    if (normalMessage)
+    auto clientId = Util::getFirstEightBytesAsUInt64(payload);
+    auto user = ClientStorage::getClientById(clientId);
+    bool userAlreadyExists = true;
+
+    if (!user)
     {
-        uint64_t id = Util::extractUint64FromVector(payload);
-
-        // Id extraction is successfull.
-        if (id != 0)
-        {
-            Log::debug("Message from client: ", id);
-            auto existingUser = ClientStorage::getClientById(id);
-
-            if (existingUser)
-            {
-                Log::debug("Existing client: ", id);
-
-                // Valid state to enter switch (authentication->getMode()).
-                realUser = existingUser;
-            }
-            else
-            {
-                Log::error("Trying to send messages without id");
-                Log::error("TODO send error message");
-            }
-        }
-        else
-        {
-            Log::error("Trying to send messages without id");
-            Log::error("TODO send error message");
-        }
+        // Create a new user.
+        User newUser(address);
+        user = &newUser;
+        userAlreadyExists = false;
     }
-    else
-    {
-        Log::debug("First message of the client, we are expecting this message to be the password");
-    }
+    assert(user);
 
     switch (authentication->getMode())
     {
@@ -75,21 +55,26 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
         }
         case Authentication::Mode::passwordProtected:
         {
-            if (realUser)
+            if (userAlreadyExists)
             {
-                if (realUser->hasCommonAccess())
+                if (user->hasCommonAccess())
                 {
                     Log::info("Known client sends a message!");
 
-                    auto a = Util::removeItemsUntilFF(payload);
-                    uint64_t messageId = Util::extractUint64FromVector(a);
-                    auto b = Util::removeItemsUntilFF(a);
+                    // Vector without client id (8 bytes) + marker byte (0xFF).
+                    auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 9);
+
+                    // Next eight bytes is the message id.
+                    uint64_t messageId = Util::getFirstEightBytesAsUInt64(vectorWithoutClientId);
+
+                    // Vector without message id (8 bytes) + marker byte (0xFF).
+                    auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 9);
 
                     return Message(
                             address,
-                            b,
+                            messageVector,
                             port,
-                            realUser,
+                            user,
                             messageId);
                 }
                 // Message from verified client that has no access.
@@ -105,23 +90,23 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 // Normally string conversion is avoided throughout nexilis, but this one stays for obvious reasons.
                 if (authentication->isPassphrase(Util::convertToString(payload)))
                 {
-                    Log::info("Correct password by user ", user.getId());
-                    user.setCommonAccess(true);
+                    Log::info("Correct password by user ", user->getId());
+                    user->setCommonAccess(true);
 
-                    uint64_t newClientId = user.getId();
-                    ClientStorage::add(std::move(user));
+                    uint64_t newClientId = user->getId();
+                    ClientStorage::add(std::move(*user));
                     auto realNewClient = ClientStorage::getClientById(newClientId);
 
                     // Checking successfull client creation.
                     assert(realNewClient);
-                    assert(user.getId() == realNewClient->getId());
+                    assert(user->getId() == realNewClient->getId());
 
                     // This message is equal to Packet::getId (without client id).
                     std::vector<uint8_t> message{1, 0};
-                    std::vector<uint8_t> idBytes = Util::convertToByteVector(user.getId());
+                    std::vector<uint8_t> idBytes = Util::convertToByteVector(user->getId());
                     for (uint64_t i = 0; i < idBytes.size(); i++)
                     {
-                        message.push_back(idBytes[i]);
+                        message.emplace_back(idBytes[i]);
                     }
 
                     return Message(
@@ -134,19 +119,6 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 else
                 {
                     Log::error("NEW MESSAGE WHICH IS IS NOT PASSWORD");
-                    Log::error("PRINTING ERROR SEQUENCE as CHARS:");
-
-                    for (auto i : payload)
-                    {
-                        Log::info(static_cast<char>(i));
-                    }
-
-                    Log::error("PRINTING ERROR SEQUENCE as INTEGERS:");
-                    for (auto i : payload)
-                    {
-                        Log::info(static_cast<int>(i));
-                    }
-
                     return errorMessage;
                 }
             }
