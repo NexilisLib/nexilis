@@ -2,82 +2,83 @@
 #define NEXILIS_VECTOR2_HH
 
 #include <cmath>
+#include <cstdint>
 
 namespace nexilis
 {
 
 template <typename T>
-struct Vec2
+struct Vector2
 {
     T x;
     T y;
 
-    Vec2() : x(0), y(0) {}
-    Vec2(T x, T y) : x(x), y(y) {}
+    Vector2() : x(0), y(0) {}
+    Vector2(T x, T y) : x(x), y(y) {}
 
-    bool operator!=(const Vec2<T>& rhs) const { return x != rhs.x || y != rhs.y; }
-    bool operator==(const Vec2<T>& rhs) const { return x == rhs.x && y == rhs.y; }
+    bool operator!=(const Vector2<T>& rhs) const { return x != rhs.x || y != rhs.y; }
+    bool operator==(const Vector2<T>& rhs) const { return x == rhs.x && y == rhs.y; }
 
-    bool operator<=(const Vec2<T>& rhs) const { return x <= rhs.x && y <= rhs.y; }
-    bool operator>=(const Vec2<T>& rhs) const { return x >= rhs.x && y >= rhs.y; }
-    bool operator<(const Vec2<T>& rhs) const { return x < rhs.x && y < rhs.y; }
-    bool operator>(const Vec2<T>& rhs) const { return x > rhs.x && y > rhs.y; }
+    bool operator<=(const Vector2<T>& rhs) const { return x <= rhs.x && y <= rhs.y; }
+    bool operator>=(const Vector2<T>& rhs) const { return x >= rhs.x && y >= rhs.y; }
+    bool operator<(const Vector2<T>& rhs) const { return x < rhs.x && y < rhs.y; }
+    bool operator>(const Vector2<T>& rhs) const { return x > rhs.x && y > rhs.y; }
 
-    template <typename V> Vec2<T> operator/(const Vec2<V>& rhs) const
+    template <typename V> Vector2<T> operator/(const Vector2<V>& rhs) const
     {
-        return Vec2<T>(x / rhs.x, y / rhs.y);
+        return Vector2<T>(x / rhs.x, y / rhs.y);
     }
-    template <typename V> Vec2<T> operator*(const Vec2<V>& rhs) const
+    template <typename V> Vector2<T> operator*(const Vector2<V>& rhs) const
     {
-        return Vec2<T>(x * rhs.x, y * rhs.y);
+        return Vector2<T>(x * rhs.x, y * rhs.y);
     }
-    template <typename V> Vec2<T> operator+(const Vec2<V>& rhs) const
+    template <typename V> Vector2<T> operator+(const Vector2<V>& rhs) const
     {
-        return Vec2<T>(x + rhs.x, y + rhs.y);
+        return Vector2<T>(x + rhs.x, y + rhs.y);
     }
-    template <typename V> Vec2<T> operator-(const Vec2<V>& rhs) const
+    template <typename V> Vector2<T> operator-(const Vector2<V>& rhs) const
     {
-        return Vec2<T>(x - rhs.x, y - rhs.y);
+        return Vector2<T>(x - rhs.x, y - rhs.y);
     }
 
-    Vec2<T> operator/(const T rhs) const { return Vec2<T>(x / rhs, y / rhs); }
-    Vec2<T> operator*(const T rhs) const { return Vec2<T>(x * rhs, y * rhs); }
+    Vector2<T> operator/(const T rhs) const { return Vector2<T>(x / rhs, y / rhs); }
+    Vector2<T> operator*(const T rhs) const { return Vector2<T>(x * rhs, y * rhs); }
 
-    template <typename V> Vec2<T> operator*=(const Vec2<V>& rhs)
+    template <typename V> Vector2<T> operator*=(const Vector2<V>& rhs)
     {
         x *= rhs.x;
         y *= rhs.y;
         return *this;
     }
-    template <typename V> Vec2<T> operator/=(const Vec2<V>& rhs)
+    template <typename V> Vector2<T> operator/=(const Vector2<V>& rhs)
     {
         x /= rhs.x;
         y /= rhs.y;
         return *this;
     }
-    template <typename V> Vec2<T> operator+=(const Vec2<V>& rhs)
+    template <typename V> Vector2<T> operator+=(const Vector2<V>& rhs)
     {
         x += rhs.x;
         y += rhs.y;
         return *this;
     }
-    template <typename V> Vec2<T> operator-=(const Vec2<V>& rhs)
+    template <typename V> Vector2<T> operator-=(const Vector2<V>& rhs)
     {
         x -= rhs.x;
         y -= rhs.y;
         return *this;
     }
 
-    template <typename N> Vec2<N> as() const
+    template <typename N> Vector2<N> as() const
     {
-        return Vec2<N>(static_cast<N>(x), static_cast<N>(y));
+        return Vector2<N>(static_cast<N>(x), static_cast<N>(y));
     }
-    Vec2<T> abs() const { return Vec2<T>(std::abs(x), std::abs(y)); }
+    Vector2<T> abs() const { return Vector2<T>(std::abs(x), std::abs(y)); }
 };
 
-using Vec2f = Vec2<float>;
-using Vec2s = Vec2<size_t>;
-using Vec2i = Vec2<int>;
+using Vector2f = Vector2<float>;
+using Vector2u = Vector2<uint64_t>;
+using Vector2i = Vector2<int>;
 
 }
 

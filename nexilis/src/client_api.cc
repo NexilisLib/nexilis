@@ -1,4 +1,3 @@
-#include "nexilis/authentication.hh"
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -87,8 +86,6 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     return *this;
 }
 
-
-
 // ClientAPI::Room::Communication
 ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::Room::Client* client) :
     m_payload(payload),
@@ -142,11 +139,10 @@ bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room
 }
 
 // ClientAPI::Room::Client
-ClientAPI::Room::Client::Client(uint64_t id, const std::string& name)
+ClientAPI::Room::Client::Client(uint64_t id, ApplicationType applicationType, const std::string& name)
     : m_id(id),
       m_name(name),
-      // TODO FIX
-      m_position(createPosition(ApplicationType::_2D))
+      m_position(createPosition(applicationType))
 {
 }
 
@@ -329,6 +325,7 @@ void ClientAPI::waitUntilInetUDPReady()
 {
     while (!IsInetUDPReady())
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -336,6 +333,7 @@ void ClientAPI::waitUntilInetTCPReady()
 {
     while (!isInetTCPReady())
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -343,6 +341,7 @@ void ClientAPI::waitUntilBoostTCPReady()
 {
     while (!isBoostTCPReady())
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -350,6 +349,7 @@ void ClientAPI::waitUntilBoostUDPReady()
 {
     while (!isBoostUDPReady())
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -357,6 +357,7 @@ void ClientAPI::waitUntilUnixDgramReady()
 {
     while (!isUnixDgramReady())
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -364,6 +365,7 @@ void ClientAPI::waitUntilUnixStreamReady()
 {
     while (!isUnixStreamReady())
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -577,7 +579,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                     clientName = "NO NAME!";
                                 }
 
-                                ClientAPI::Room::Client newClient(id, clientName);
+                                ClientAPI::Room::Client newClient(id, getApplicationType(), clientName);
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
@@ -713,8 +715,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     vectorY = 0.f;
                 }
                 assert(vectorX != 0.f && vectorY != 0.f);
-                Log::info("Received position X:", vectorX, " Y: ", vectorY);
-
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
                     for (auto& client : room->getClients())

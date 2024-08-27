@@ -54,7 +54,7 @@ public:
     class Position
     {
     public:
-        static std::vector<uint8_t> vector2(Vec2f position);
+        static std::vector<uint8_t> vector2(Vector2f position);
     };
 
 private:

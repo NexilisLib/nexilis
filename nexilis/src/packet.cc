@@ -134,7 +134,7 @@ std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
     return id;
 }
 
-std::vector<uint8_t> Packet::Position::vector2(Vec2f position)
+std::vector<uint8_t> Packet::Position::vector2(Vector2f position)
 {
     auto id = clientIdentification();
     id.emplace_back(9);

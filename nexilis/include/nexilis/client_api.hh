@@ -200,7 +200,7 @@ public:
         virtual ~Position() = default;
         virtual void setPosition(float x, float y) = 0;
         virtual void setPosition(float x, float y, float z) = 0;
-        virtual std::optional<Vec2f> getPosition2D() = 0;
+        virtual std::optional<Vector2f> getPosition2D() = 0;
         virtual std::optional<Vector3> getPosition3D() = 0;
     };
 
@@ -209,7 +209,7 @@ public:
     public:
         void setPosition(float x, float y) override
         {
-            m_position = Vec2f(x, y);
+            m_position = Vector2f(x, y);
         }
 
         void setPosition(float x, float y, float z) override
@@ -218,7 +218,7 @@ public:
             Log::critical("Cannot set 2D position with 3D coordinates");
         }
 
-        std::optional<Vec2f> getPosition2D() override
+        std::optional<Vector2f> getPosition2D() override
         {
             return m_position;
         }
@@ -228,7 +228,7 @@ public:
             return std::nullopt;
         }
     private:
-        Vec2f m_position;
+        Vector2f m_position;
     };
 
     class _3DPosition : public Position
@@ -245,7 +245,7 @@ public:
             m_position = Vector3(x, y, z);
         }
 
-        std::optional<Vec2f> getPosition2D() override
+        std::optional<Vector2f> getPosition2D() override
         {
             return std::nullopt;
         }
@@ -266,7 +266,7 @@ public:
         {
         public:
             /// Constuctor.
-            Client(uint64_t id, const std::string& name = "UNDEFINED");
+            Client(uint64_t id, ApplicationType applicationType, const std::string& name = "UNDEFINED");
 
             /// Deleted copy constructor.
             Client(const Client& other) = delete;
@@ -316,7 +316,7 @@ public:
                 m_position->setPosition(x, y, z);
             }
 
-            std::optional<Vec2f> getPosition2D()
+            std::optional<Vector2f> getPosition2D()
             {
                 return m_position->getPosition2D();
             }

@@ -20,7 +20,7 @@ std::string Util::convertToString(std::vector<uint8_t> bytes)
     return result;
 }
 
-Vec2f Util::convertToVector2(const std::vector<uint8_t>& bytes)
+Vector2f Util::convertToVector2(const std::vector<uint8_t>& bytes)
 {
     // Ensure the vector has enough bytes for two floats
     if (bytes.size() < sizeof(float) * 2)
@@ -36,7 +36,7 @@ Vec2f Util::convertToVector2(const std::vector<uint8_t>& bytes)
     // Copy the next 4 bytes.
     memcpy(&float2, bytes.data() + sizeof(float), sizeof(float));
 
-    return Vec2f(float1, float2);
+    return Vector2f(float1, float2);
 }
 
 uint16_t Util::uint8PairToUint16(uint8_t lowByte, uint8_t highByte)
@@ -78,7 +78,7 @@ std::vector<uint8_t> Util::convertToByteVector(float value)
     return bytes;
 }
 
-std::vector<uint8_t> Util::convertToByteVector(Vec2f value)
+std::vector<uint8_t> Util::convertToByteVector(Vector2f value)
 {
     auto vec1 = convertToByteVector(value.x);
     auto vec2 = convertToByteVector(value.y);
