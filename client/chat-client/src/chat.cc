@@ -41,13 +41,13 @@ void Chat::update(Window& window, int& highlight, State& state)
 void Chat::showRooms(Window& window, int& highlight)
 {
     // Update new rooms.
-    auto newRooms = m_clientApi->getActiveRooms();
-    if (m_rooms != newRooms)
+    auto& newRooms = m_clientApi->getActiveRooms();
+    if (m_rooms != &newRooms)
     {
-        m_rooms = newRooms;
+        m_rooms = &newRooms;
     }
 
-    if (m_rooms.empty() && newRooms.empty())
+    if (m_rooms->empty() && newRooms.empty())
     {
         mvwprintw(window.getWindow(), 0, 0, "Nothing to show");
     }
@@ -55,24 +55,24 @@ void Chat::showRooms(Window& window, int& highlight)
     {
         int startX = 0;
         int startY = 0;
-        if (!m_rooms.empty())
+        if (!m_rooms->empty())
         {
             // Calculate position for room display
-            startY = ((window.getWinSize().second - static_cast<int>(m_rooms.size())) / 2);
-            startX = (window.getWinSize().first - static_cast<int>(m_rooms[0].getName().length())) / 2;
+            startY = ((window.getWinSize().second - static_cast<int>(m_rooms->size())) / 2);
+            startX = (window.getWinSize().first - static_cast<int>(m_rooms->at(0).getName().length())) / 2;
 
-            for (size_t i = 0; i < m_rooms.size(); i++)
+            for (size_t i = 0; i < m_rooms->size(); i++)
             {
                 if (highlight == static_cast<int>(i))
                 {
                     wattron(window.getWindow(), A_REVERSE);
-                    mvwprintw(window.getWindow(), startY + static_cast<int>(i), startX, "%s", roomData(m_rooms[i]).c_str());
+                    mvwprintw(window.getWindow(), startY + static_cast<int>(i), startX, "%s", roomData(m_rooms->at(i)).c_str());
                     wrefresh(window.getWindow());
                     wattroff(window.getWindow(), A_REVERSE);
                 }
                 else
                 {
-                    mvwprintw(window.getWindow(), startY + static_cast<int>(i), startX, "%s", roomData(m_rooms[i]).c_str());
+                    mvwprintw(window.getWindow(), startY + static_cast<int>(i), startX, "%s", roomData(m_rooms->at(i)).c_str());
                     wrefresh(window.getWindow());
                 }
             }
@@ -138,37 +138,37 @@ void Chat::updateChat(Window& window, State& programState)
         else
         {
             // Update new rooms.
-            auto newRooms = m_clientApi->getActiveRooms();
-            if (m_rooms != newRooms)
+            auto& newRooms = m_clientApi->getActiveRooms();
+            if (*m_rooms != newRooms)
             {
-                m_rooms = newRooms;
+                m_rooms = &newRooms;
             }
 
             uint64_t clientId = m_clientApi->getClientId();
 
             assert(clientId);
-            assert(!m_rooms.empty());
+            assert(!m_rooms->empty());
 
             /// Get the room that client is currently in.
-            nexilis::ClientAPI::Room clientRoom;
-            for (auto& room : m_rooms)
+            nexilis::ClientAPI::Room* clientRoom;
+            for (auto& room : *m_rooms)
             {
                 for (auto& client : room.getClients())
                 {
                     if (client.getId() == clientId)
                     {
-                        clientRoom = room;
+                        clientRoom = &room;
                     }
                 }
             }
-            assert(clientRoom != m_clientApi->getDefaultRoom());
+            assert(*clientRoom != m_clientApi->getDefaultRoom());
 
             std::vector<nexilis::ClientAPI::Room::Communication> messages;
 
-            for (auto r = m_rooms.begin(); r != m_rooms.end(); r++)
+            for (auto r = m_rooms->begin(); r != m_rooms->end(); r++)
             {
                 /// List room messages.
-                if (*r == clientRoom)
+                if (*r == *clientRoom)
                 {
                     messages = r->getMessages();
                 }
@@ -228,7 +228,7 @@ std::string Chat::roomData(const nexilis::ClientAPI::Room& room)
     std::stringstream ss;
     ss << room.getName() << " ";
 
-    auto clients = room.getClients();
+    auto& clients = room.getClients();
     for (auto c = clients.begin(); c != clients.end(); c++)
     {
         ss << c->getUsername() << "(" << c->getId() << ")";
