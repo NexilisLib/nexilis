@@ -536,7 +536,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     if (!currentRoom)
                     {
-                        Log::warning("Client not currently in room so cannot leave current room.");
+                        Log::warning("Client not currently in room.");
                         return Result::failure;
                     }
 

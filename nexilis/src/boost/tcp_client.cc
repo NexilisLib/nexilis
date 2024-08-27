@@ -138,8 +138,6 @@ bool BoostTCPClient::send(const std::vector<uint8_t>& data)
 
 bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)
 {
-    assert(buffer.size() == 0);
-
     std::lock_guard<std::mutex> lock(*m_mutex);
 
     boost::asio::streambuf receiveBuffer;
@@ -159,20 +157,16 @@ bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)
         return false; // Some other error occurred
     }
 
-    if (receiveBuffer.data().size() <= 0)
+    uint64_t size = receiveBuffer.size();
+    if (size == 0)
     {
         return false;
     }
 
-    // Extract data from the receive buffer and copy it into the buffer vector
-    std::vector<uint8_t> result;
-    for (auto it = boost::asio::buffers_begin(receiveBuffer.data()); it != boost::asio::buffers_end(receiveBuffer.data()); ++it)
-    {
-        result.emplace_back(*it);
-    }
-
-    assert(buffer != result);
-    buffer = result;
+    // Allocate enough space in the buffer vector and copy data.
+    buffer.resize(size);
+    std::istream is(&receiveBuffer);
+    is.read(reinterpret_cast<char*>(buffer.data()), size);
 
     return true;
 }
@@ -232,8 +226,6 @@ void BoostTCPClient::receiveLoop()
             Log::info("Error receiving from server");
             break;
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 

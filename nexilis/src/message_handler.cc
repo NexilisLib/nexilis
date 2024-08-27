@@ -12,7 +12,6 @@
 namespace nexilis
 {
 
-// NEXILIS_ERROR("myfilename", ErrorType::NOT_IMPLEMENTED);
 MessageHandler::Message MessageHandler::readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Authentication* authentication)
 {
     Log::debug("Payload size: ", payload.size());
@@ -33,7 +32,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
         uint64_t id = Util::extractUint64FromVector(payload);
 
         // Id extraction is successfull.
-        if (id)
+        if (id != 0)
         {
             Log::debug("Message from client: ", id);
             auto existingUser = ClientStorage::getClientById(id);
@@ -59,7 +58,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     }
     else
     {
-        Log::debug("NO ID IN THE MESSAGE");
+        Log::debug("First message of the client, we are expecting this message to be the password");
     }
 
     switch (authentication->getMode())

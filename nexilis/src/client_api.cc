@@ -698,13 +698,14 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
 
                 float vectorX, vectorY;
+                bool vectorsGood = true;
                 if (json.at("positionX").if_double())
                 {
                     vectorX = json.at("positionX").as_double();
                 }
                 else
                 {
-                    vectorX = 0.f;
+                    vectorsGood = false;
                 }
                 if (json.at("positionY").if_double())
                 {
@@ -712,9 +713,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else
                 {
-                    vectorY = 0.f;
+                    vectorsGood = false;
                 }
-                assert(vectorX != 0.f && vectorY != 0.f);
+                assert(vectorsGood && id != 0);
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
                     for (auto& client : room->getClients())
