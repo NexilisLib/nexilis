@@ -43,7 +43,9 @@ enum class MainCommand : uint8_t
 
     room = 8,
 
-    position = 9
+    position = 9,
+
+    dimensions = 10
 };
 
 }

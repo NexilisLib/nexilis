@@ -24,7 +24,7 @@ public:
     class Set
     {
     public:
-        static std::vector<uint8_t> userName(const std::string& name);
+        static std::vector<uint8_t> username(const std::string& name);
     };
 
     class Info
@@ -55,6 +55,12 @@ public:
     {
     public:
         static std::vector<uint8_t> vector2(Vector2f position);
+    };
+
+    class Dimensions
+    {
+    public:
+        static std::vector<uint8_t> vector2(Vector2f dimensions);
     };
 
 private:

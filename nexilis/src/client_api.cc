@@ -1,4 +1,3 @@
-#include <memory>
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -765,11 +764,87 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     {
                         if (client.getId() == id)
                         {
-                            client.getObject2D()->setPosition(vectorX, vectorY);
+                            if (overlappingAllowed())
+                            {
+                                client.getObject2D()->setPosition(vectorX, vectorY);
+                            }
+                            else
+                            {
+                                for (auto& otherClient : room->getClients())
+                                {
+                                    if (otherClient.getId() != id)
+                                    {
+                                        auto dimensions = client.getObject2D()->getDimensions();
+                                        auto otherPosition = otherClient.getObject2D()->getPosition();
+                                        auto otherdimensions = otherClient.getObject2D()->getDimensions();
+
+                                        if (
+                                            vectorX + dimensions.x >= otherPosition.x - otherdimensions.x &&
+                                            vectorX - dimensions.x <= otherPosition.x + otherdimensions.x &&
+                                            vectorY + dimensions.y >= otherPosition.y - otherdimensions.y &&
+                                            vectorY - dimensions.y <= otherPosition.y + otherdimensions.y
+                                           )
+                                        {
+                                            return ReadResult::failure;
+                                        }
+                                    }
+                                }
+                                client.getObject2D()->setPosition(vectorX, vectorY);
+                           }
                         }
                     }
                 }
 
+                return ReadResult::success;
+            }
+        }
+        else if (command == "dimensions")
+        {
+            if (type == "vector2")
+            {
+                uint64_t id;
+                if (json.at("id").if_uint64())
+                {
+                    id = json.at("id").as_uint64();
+                }
+                else if (json.at("id").if_int64())
+                {
+                    id = static_cast<uint64_t>(json.at("id").as_int64());
+                }
+                else
+                {
+                    id = 0;
+                }
+
+                float vectorX, vectorY;
+                bool vectorsGood = true;
+                if (json.at("x").if_double())
+                {
+                    vectorX = json.at("x").as_double();
+                }
+                else
+                {
+                    vectorsGood = false;
+                }
+                if (json.at("y").if_double())
+                {
+                    vectorY = json.at("y").as_double();
+                }
+                else
+                {
+                    vectorsGood = false;
+                }
+                assert(vectorsGood && id != 0);
+                for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                {
+                    for (auto& client : room->getClients())
+                    {
+                        if (client.getId() == id)
+                        {
+                            client.getObject2D()->setDimensions(vectorX, vectorY);
+                        }
+                    }
+                }
                 return ReadResult::success;
             }
         }
@@ -805,6 +880,10 @@ ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message
     if (result == ReadResult::success)
     {
         m_currentMessage = json;
+    }
+    else if (result == ReadResult::failure)
+    {
+        Log::warning("Failure in command");
     }
     else
     {

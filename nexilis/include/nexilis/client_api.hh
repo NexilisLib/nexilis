@@ -218,8 +218,16 @@ public:
 
         Vector2f getPosition() const { return m_position; }
 
+        void setDimensions(float width, float height)
+        {
+            m_dimensions = Vector2f(width, height);
+        }
+
+        Vector2f getDimensions() const { return m_dimensions; }
+
     private:
         Vector2f m_position;
+        Vector2f m_dimensions;
     };
 
     class Object3D
@@ -652,6 +660,16 @@ public:
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 
+    void setOverlapStatus(bool status)
+    {
+        m_overlappingAllowed = status;
+    }
+
+    bool overlappingAllowed() const
+    {
+        return m_overlappingAllowed;
+    }
+
 private:
     /// Setters.
     void setClientId(uint64_t id)
@@ -689,6 +707,9 @@ private:
 
     /// Currently existing callbacks.
     std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
+
+    /// Can the elements overlap each other.
+    bool m_overlappingAllowed = false;
 };
 
 } // namespace nexilis

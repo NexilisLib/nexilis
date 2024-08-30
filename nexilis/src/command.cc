@@ -569,6 +569,53 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
+        case MainCommand::dimensions:
+        {
+            switch (command[1])
+            {
+                case 0:
+                {
+                    Log::debug("MainCommand dimensions (vector2)");
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    auto vector = Util::convertToVector2(payload);
+                    Log::debug("Dimension x:", vector.x, " y:", vector.y);
+
+                    auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+
+                    if (!currentRoom)
+                    {
+                        Log::warning("Client not currently in room.");
+                        return Result::failure;
+                    }
+
+                    std::map<std::string, boost::json::value> data{
+                            {"nexilis_status", boost::json::value(1)},
+                            {"command", boost::json::value("dimensions")},
+                            {"type", boost::json::value("vector2")},
+                            {"id", boost::json::value(user.getId())},
+                            {"x", boost::json::value(vector.x)},
+                            {"y", boost::json::value(vector.y)}};
+
+                    auto json = Json::createJSON(data);
+                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+
+                    // Accessing server side clients.
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto& c : clients)
+                    {
+                        /// This message is implicitly in room context.
+                        if (c.getRoomId() == currentRoom->getId())
+                        {
+                            sendMessageToClient(message, c, protocol);
+                        }
+                    }
+                    return Result::success;
+                }
+                default: return Result::not_found;
+            }
+        }
+
         default:
             return Result::not_found;
     }
