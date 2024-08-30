@@ -1,8 +1,7 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
-#include <nexilis/common/util.hh>
-#include <nexilis/log.hh>
+#include <nexilis/vector2.hh>
 #include <nexilis/vector3.hh>
 
 #include <boost/json/object.hpp>
@@ -194,68 +193,37 @@ public:
         std::string m_unixStreamServerPath;
     };
 
-    class Position
+    class Object2D
     {
     public:
-        virtual ~Position() = default;
-        virtual void setPosition(float x, float y) = 0;
-        virtual void setPosition(float x, float y, float z) = 0;
-        virtual std::optional<Vector2f> getPosition2D() = 0;
-        virtual std::optional<Vector3> getPosition3D() = 0;
-    };
+        /// Default constructor.
+        Object2D() = default;
 
-    class _2DPosition : public Position
-    {
-    public:
-        void setPosition(float x, float y) override
+        /// Move constructor.
+        Object2D(Object2D&& other);
+
+        /// Move assignment operator.
+        Object2D& operator=(Object2D&& other);
+
+        /// Deleted copy constructor.
+        Object2D(const Object2D& other) = delete;
+
+        /// Deleted copy assignment operator.
+        Object2D& operator=(const Object2D other) = delete;
+
+        void setPosition(float x, float y)
         {
             m_position = Vector2f(x, y);
         }
 
-        void setPosition(float x, float y, float z) override
-        {
-            (void)x, (void)y, (void)z;
-            Log::critical("Cannot set 2D position with 3D coordinates");
-        }
+        Vector2f getPosition() const { return m_position; }
 
-        std::optional<Vector2f> getPosition2D() override
-        {
-            return m_position;
-        }
-
-        std::optional<Vector3> getPosition3D() override
-        {
-            return std::nullopt;
-        }
     private:
         Vector2f m_position;
     };
 
-    class _3DPosition : public Position
+    class Object3D
     {
-    public:
-        void setPosition(float x, float y) override
-        {
-            (void)x, (void)y;
-            Log::critical("Cannot set 3D position with 2D coordinates");
-        }
-
-        void setPosition(float x, float y, float z) override
-        {
-            m_position = Vector3(x, y, z);
-        }
-
-        std::optional<Vector2f> getPosition2D() override
-        {
-            return std::nullopt;
-        }
-
-        std::optional<Vector3> getPosition3D() override
-        {
-            return m_position;
-        }
-    private:
-        Vector3 m_position;
     };
 
     class Room
@@ -266,7 +234,7 @@ public:
         {
         public:
             /// Constuctor.
-            Client(uint64_t id, ApplicationType applicationType, const std::string& name = "UNDEFINED");
+            Client(uint64_t id, ClientAPI* clientAPI, const std::string& name = "UNDEFINED");
 
             /// Deleted copy constructor.
             Client(const Client& other) = delete;
@@ -306,36 +274,27 @@ public:
                 m_name = username;
             }
 
-            void setPosition(float x, float y)
-            {
-                m_position->setPosition(x, y);
-            }
+            /// Get pointer to 2D properties of the client.
+            Object2D* getObject2D() const;
 
-            void setPosition(float x, float y, float z)
-            {
-                m_position->setPosition(x, y, z);
-            }
+            /// Get pointer to 3D properties of the client.
+            Object3D* getObject3D() const;
 
-            std::optional<Vector2f> getPosition2D()
-            {
-                return m_position->getPosition2D();
-            }
-
-            std::optional<Vector3> getPosition3D()
-            {
-                return m_position->getPosition3D();
-            }
-        private:
-            std::unique_ptr<Position> createPosition(ApplicationType applicationType);
         private:
             /// The id of the client.
             uint64_t m_id;
 
+            /// This ClientAPI instance.
+            ClientAPI* const m_clientAPI = nullptr;
+
             /// The name of the client.
             std::string m_name;
 
-            /// The position of the client.
-            std::unique_ptr<Position> m_position;
+            /// The 2D properties of the client.
+            std::unique_ptr<Object2D> m_object2D = nullptr;
+
+            /// The 3D properties of the client.
+            std::unique_ptr<Object3D> m_object3D = nullptr;
         };
 
         /// Communication type for communications in a room.

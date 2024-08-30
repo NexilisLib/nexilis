@@ -105,6 +105,18 @@ uint64_t Util::getRandomUint64()
     return randomValue;
 }
 
+int Util::getRandomInt(int from, int to)
+{
+    std::random_device rand_dev;
+    std::mt19937_64 generator(rand_dev());
+    std::uniform_int_distribution<uint64_t> dist(from, to);
+    int randomValue = dist(generator);
+
+    assert(randomValue >= from);
+    assert(randomValue <= to);
+    return randomValue;
+}
+
 std::string Util::getRandomString(uint64_t charAmount)
 {
     std::random_device rand_dev;

@@ -1,4 +1,5 @@
 #include <nexilis/af_unix/sock_dgram/client.hh>
+#include <nexilis/common/util.hh>
 
 #include <sys/socket.h>
 #include <unistd.h>

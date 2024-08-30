@@ -68,18 +68,40 @@ public:
     /// \return The updated vector.
     static std::vector<uint8_t> removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount);
 
-    /// Get random size_t value between 0 and max uint64.
-    static size_t getRandomUint64();
+    /// \defgroup RandFunctions Functions that generate random values.
+
+    /// Get random uint64_t value between 0 and max uint64.
+    /// \ingroup RandFunctions
+    static uint64_t getRandomUint64();
+
+    /// Get random integer between values.
+    /// \param from The smallest possible value.
+    /// \param to The biggest possible value.
+    /// \return The random integer.
+    /// \ingroup RandFunctions
+    static int getRandomInt(int from, int to);
 
     /// Get random characters from 'A' to 'Z'.
     /// \param charAmount The amount of characters in the string.
+    /// \ingroup RandFunctions
     static std::string getRandomString(uint64_t charAmount);
 
+    /// \defgroup BytevectorConversions Functions that converts items to byte vectors.
+
     /// Byte vector conversions.
+    /// \ingroup BytevectorConversions
     static std::vector<uint8_t> convertToByteVector(const char* command_data, uint64_t length);
+
+    /// \ingroup BytevectorConversions
     static std::vector<uint8_t> convertToByteVector(uint64_t value);
+
+    /// \ingroup BytevectorConversions
     static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
+
+    /// \ingroup BytevectorConversions
     static std::vector<uint8_t> convertToByteVector(float value);
+
+    /// \ingroup BytevectorConversions
     static std::vector<uint8_t> convertToByteVector(Vector2f value);
 
     /// Logging.

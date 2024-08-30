@@ -1,3 +1,4 @@
+#include <memory>
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -86,6 +87,95 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     return *this;
 }
 
+// ClientAPI::Object2D
+ClientAPI::Object2D::Object2D(Object2D&& other)
+    : m_position(std::move(other.m_position))
+{
+}
+
+ClientAPI::Object2D& ClientAPI::Object2D::operator=(Object2D&& other)
+{
+    if (this != &other)
+    {
+        m_position = std::move(other.m_position);
+    }
+    return *this;
+}
+
+// ClientAPI::Room::Client
+ClientAPI::Room::Client::Client(uint64_t id, ClientAPI* clientAPI, const std::string& name)
+    : m_id(id),
+      m_clientAPI(clientAPI),
+      m_name(name)
+{
+    switch (m_clientAPI->getApplicationType())
+    {
+        case ApplicationType::_2D:
+        {
+            m_object2D = std::make_unique<Object2D>();
+            break;
+        }
+        case ApplicationType::_3D:
+        {
+            m_object3D = std::make_unique<Object3D>();
+            break;
+        }
+    }
+}
+
+ClientAPI::Room::Client::Client(Client&& other)
+    : m_id(std::move(other.m_id)),
+      m_clientAPI(std::move(other.m_clientAPI)),
+      m_name(std::move(other.m_name)),
+      m_object2D(std::move(other.m_object2D)),
+      m_object3D(std::move(other.m_object3D))
+{
+}
+
+ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
+{
+    if (this != &other)
+    {
+        m_id = std::move(other.m_id);
+        m_name = std::move(other.m_name);
+        m_object2D = std::move(other.m_object2D);
+        m_object3D = std::move(other.m_object3D);
+    }
+    return *this;
+}
+
+bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Client& rhs)
+{
+    return lhs.getId() == rhs.getId() &&
+        lhs.getUsername() == rhs.getUsername();
+}
+
+ClientAPI::Object2D* ClientAPI::Room::Client::getObject2D() const
+{
+    if (m_object2D)
+    {
+        return m_object2D.get();
+    }
+    else
+    {
+        Log::error("The application not running in 2D mode");
+        return nullptr;
+    }
+}
+
+ClientAPI::Object3D* ClientAPI::Room::Client::getObject3D() const
+{
+    if (m_object3D)
+    {
+        return m_object3D.get();
+    }
+    else
+    {
+        Log::error("The application not running in 3D mode");
+        return nullptr;
+    }
+}
+
 // ClientAPI::Room::Communication
 ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::Room::Client* client) :
     m_payload(payload),
@@ -138,53 +228,6 @@ bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room
            lhs.getId() == rhs.getId();
 }
 
-// ClientAPI::Room::Client
-ClientAPI::Room::Client::Client(uint64_t id, ApplicationType applicationType, const std::string& name)
-    : m_id(id),
-      m_name(name),
-      m_position(createPosition(applicationType))
-{
-}
-
-ClientAPI::Room::Client::Client(Client&& other)
-    : m_id(std::move(other.m_id)),
-      m_name(std::move(other.m_name)),
-      m_position(std::move(other.m_position))
-{
-}
-
-ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
-{
-    if (this != &other)
-    {
-        m_id = std::move(other.m_id);
-        m_name = std::move(other.m_name);
-        m_position = std::move(other.m_position);
-    }
-    return *this;
-}
-
-std::unique_ptr<ClientAPI::Position> ClientAPI::Room::Client::createPosition(ApplicationType applicationType)
-{
-    switch (applicationType)
-    {
-        case ApplicationType::_2D:
-        {
-            return std::make_unique<_2DPosition>();
-        }
-        case ApplicationType::_3D:
-        {
-            return std::make_unique<_3DPosition>();
-        }
-        default: return nullptr;
-    }
-}
-
-bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Client& rhs)
-{
-    return lhs.getId() == rhs.getId() &&
-        lhs.getUsername() == rhs.getUsername();
-}
 
 // ClientAPI::Room
 ClientAPI::Room::Room(Room&& other) :
@@ -579,7 +622,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                     clientName = "NO NAME!";
                                 }
 
-                                ClientAPI::Room::Client newClient(id, getApplicationType(), clientName);
+                                ClientAPI::Room::Client newClient(id, this, clientName);
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
@@ -722,7 +765,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     {
                         if (client.getId() == id)
                         {
-                            client.setPosition(vectorX, vectorY);
+                            client.getObject2D()->setPosition(vectorX, vectorY);
                         }
                     }
                 }
