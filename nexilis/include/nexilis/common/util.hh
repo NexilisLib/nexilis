@@ -68,9 +68,6 @@ public:
     /// \return The updated vector.
     static std::vector<uint8_t> removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount);
 
-    /// Get random uint64_t between two values.
-    static size_t getRandomSizeUint64(uint64_t from, uint64_t to);
-
     /// Get random size_t value between 0 and max uint64.
     static size_t getRandomUint64();
 
@@ -90,14 +87,8 @@ public:
     static void printColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
     static void debugUint8Vector(const std::vector<uint8_t>& vector);
 
+    /// Other
     static std::string getDateAndTime();
-
-    /// Message parsing functions
-    /// Extract uint64_t before hitting 0xFF.
-    static uint64_t extractUint64FromVector(const std::vector<uint8_t>& data);
-    static std::vector<uint8_t> removeItemsUntilFF(const std::vector<uint8_t>& data);
-
-    static uint64_t getMessageIdFromNexilisMessage(const std::vector<uint8_t>& data);
 };
 
 } // namespace nexilis

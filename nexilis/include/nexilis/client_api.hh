@@ -679,7 +679,7 @@ public:
 
 public:
     /// Room stuff.
-    /// Return a copy of the currently active rooms.
+    /// Return a reference of the currently active rooms.
     std::vector<Room>& getActiveRooms()
     {
         return m_currentlyActiveRooms;

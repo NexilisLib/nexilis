@@ -92,7 +92,12 @@ void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message)
 
 void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
 {
-    uint64_t messageId = Util::getMessageIdFromNexilisMessage(message);
+    // Vector without client id (8 bytes) + marker byte (0xFF).
+    auto messageWithoutClientId = Util::removeAmountOfBytesFromVector(message, 9);
+
+    // Next eight bytes is the message id.
+    uint64_t messageId = Util::getFirstEightBytesAsUInt64(messageWithoutClientId);
+
     std::pair<uint64_t, std::function<void()>> pair = std::make_pair(messageId, callback);
     ClientProtocol::getClientAPI()->addCallback(pair);
     send(message);

@@ -4,6 +4,7 @@
 
 #include <boost/json/serialize.hpp>
 
+#include <bitset>
 #include <iomanip>
 #include <random>
 
@@ -86,40 +87,22 @@ std::vector<uint8_t> Util::convertToByteVector(Vector2f value)
     return vec1;
 }
 
-uint64_t Util::getRandomSizeUint64(uint64_t from, uint64_t to)
-{
-    std::random_device rand_dev;
-    std::mt19937_64 generator(rand_dev());
-    std::uniform_int_distribution<size_t> dist(from, to);
-    uint64_t randomValue = dist(generator);
-
-    if (randomValue != 0)
-    {
-        return randomValue;
-    }
-    else
-    {
-        return getRandomSizeUint64(from, to);
-    }
-}
-
 uint64_t Util::getRandomUint64()
 {
     std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
     std::uniform_int_distribution<uint64_t> dist(0, NEXILIS_MAX);
-    uint64_t randomValue = dist(generator);
 
-    assert(typeid(randomValue) == typeid(uint64_t));
+    uint64_t randomValue;
+    do
+    {
+        randomValue = dist(generator);
+    }
+    while (std::bitset<64>(randomValue).count() < 32); // Ensure at least 32 bits are set
 
-    if (randomValue != 0)
-    {
-        return randomValue;
-    }
-    else
-    {
-        return getRandomUint64();
-    }
+    assert((std::is_same<decltype(randomValue), uint64_t>::value));
+
+    return randomValue;
 }
 
 std::string Util::getRandomString(uint64_t charAmount)
@@ -203,53 +186,6 @@ void Util::debugUint8Vector(const std::vector<uint8_t>& vector)
     }
 }
 
-std::string Util::getDateAndTime()
-{
-    // Get the current time.
-    auto now = std::chrono::system_clock::now();
-
-    // Convert to time_t.
-    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
-
-    // Convert to local time struct.
-    std::tm* localTime = std::localtime(&currentTime);
-
-    // Format the time.
-    std::stringstream ss;
-    ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
-    return ss.str();
-}
-
-uint64_t Util::extractUint64FromVector(const std::vector<uint8_t>& data)
-{
-    uint64_t result = 0;
-
-    if (Config::getBigEndian())
-    {
-        for (auto byte : data)
-        {
-            if (byte == 0xFF)
-            {
-                break;
-            }
-            result = (result << 8) | byte;
-        }
-    }
-    else
-    {
-        for (uint64_t i = 0; i < data.size(); ++i)
-        {
-            if (data[i] == 0xFF)
-            {
-                break;
-            }
-            result |= static_cast<uint64_t>(data[i]) << (i * 8);
-        }
-    }
-
-    return result;
-}
-
 uint64_t Util::getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec)
 {
     if (vec.size() < 8)
@@ -280,24 +216,22 @@ uint64_t Util::getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec)
     return value;
 }
 
-std::vector<uint8_t> Util::removeItemsUntilFF(const std::vector<uint8_t>& data)
+std::string Util::getDateAndTime()
 {
-    auto ffPosition = std::find(data.begin(), data.end(), 0xFF);
+    // Get the current time.
+    auto now = std::chrono::system_clock::now();
 
-    if (ffPosition != data.end())
-    {
-        return std::vector<uint8_t>(ffPosition + 1, data.end());
-    }
-    else
-    {
-        return {};
-    }
+    // Convert to time_t.
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+    // Convert to local time struct.
+    std::tm* localTime = std::localtime(&currentTime);
+
+    // Format the time.
+    std::stringstream ss;
+    ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
+    return ss.str();
 }
 
-uint64_t Util::getMessageIdFromNexilisMessage(const std::vector<uint8_t>& data)
-{
-    auto a = removeItemsUntilFF(data);
-    return extractUint64FromVector(a);
-}
 
 } // namespace nexilis
