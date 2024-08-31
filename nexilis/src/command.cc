@@ -21,11 +21,12 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
     Log::debug("Command: Nexilis command sequence");
     Util::debugUint8Vector(command);
 
-    switch (static_cast<MainCommand>(command.front()))
+    auto arg = command[1];
+    switch (static_cast<CommandType>(command.front()))
     {
-        case MainCommand::setting:
+        case CommandType::setting:
         {
-            switch (command[1])
+            switch (arg)
             {
                 /// Reset your client id.
                 /// requires privileges.
@@ -52,7 +53,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         }
                     }
 
-                    Log::error("Error in MainCommand::set::clientID");
+                    Log::error("Error in CommandType::set::clientID");
                     return Result::error;
 
                 }
@@ -105,9 +106,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             return Result::not_found;
         }
 
-        case MainCommand::getting:
+        case CommandType::getting:
         {
-            switch (command[1])
+            switch (arg)
             {
                 // Get client id.
                 case 0:
@@ -131,9 +132,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case MainCommand::info:
+        case CommandType::info:
         {
-            switch (command[1])
+            switch (arg)
             {
                 // Get all public information from a server.
                 case 0:
@@ -190,9 +191,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             return Result::not_found;
         }
 
-        case MainCommand::authentication:
+        case CommandType::authentication:
         {
-            switch (command[1])
+            switch (arg)
             {
                 // Setup authentication.
                 case 0:
@@ -261,20 +262,20 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case MainCommand::server_management:
+        case CommandType::server_management:
         {
             return Result::not_found;
         }
 
-        case MainCommand::player_management:
+        case CommandType::player_management:
         {
             return Result::not_found;
         }
 
-        case MainCommand::communicate:
+        case CommandType::communicate:
         {
             /// 0, and 1 need some work, running 2 as default.
-            switch (command[1])
+            switch (arg)
             {
                 /// Send message to every client using the server version of client protocol.
                 case 0:
@@ -362,10 +363,10 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             return Result::not_found;
         }
 
-        case MainCommand::error:
+        case CommandType::error:
         {
             // Internal server error
-            switch (command[1])
+            switch (arg)
             {
                 // Classname X
                 case 0:
@@ -378,9 +379,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case MainCommand::room:
+        case CommandType::room:
         {
-            switch (command[1])
+            switch (arg)
             {
                 // Join room.
                 case 0:
@@ -482,7 +483,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 /// Create room.
                 case 2:
                 {
-                    Log::debug("MainCommand room (create)");
+                    Log::debug("CommandType room (create)");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string roomName = Util::convertToString(payload);
 
@@ -521,13 +522,13 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case MainCommand::position:
+        case CommandType::position:
         {
-            switch (command[1])
+            switch (arg)
             {
                 case 0:
                 {
-                    Log::debug("MainCommand position (vector2)");
+                    Log::debug("CommandType position (vector2)");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     auto vector = Util::convertToVector2(payload);
                     Log::debug("Position x:", vector.x, " y:", vector.y);
@@ -569,13 +570,13 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case MainCommand::dimensions:
+        case CommandType::dimensions:
         {
-            switch (command[1])
+            switch (arg)
             {
                 case 0:
                 {
-                    Log::debug("MainCommand dimensions (vector2)");
+                    Log::debug("CommandType dimensions (vector2)");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     auto vector = Util::convertToVector2(payload);
                     Log::debug("Dimension x:", vector.x, " y:", vector.y);

@@ -1,6 +1,7 @@
+#include <nexilis/packet.hh>
+#include <nexilis/command_type.hh>
 #include <nexilis/common/util.hh>
 #include <nexilis/log.hh>
-#include <nexilis/packet.hh>
 
 namespace nexilis
 {
@@ -10,7 +11,7 @@ ClientAPI* Packet::m_clientApi = nullptr;
 std::vector<uint8_t> Packet::Set::username(const std::string& name)
 {
     auto id = clientIdentification();
-    id.emplace_back(0);
+    id.emplace_back(static_cast<uint8_t>(CommandType::setting));
     id.emplace_back(1);
 
     auto nameVector = Util::convertToByteVector(name.c_str(), name.size());
@@ -24,7 +25,7 @@ std::vector<uint8_t> Packet::Set::username(const std::string& name)
 std::vector<uint8_t> Packet::Get::clientId()
 {
     auto id = clientIdentification();
-    id.emplace_back(1);
+    id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(0);
     return id;
 }
@@ -32,7 +33,7 @@ std::vector<uint8_t> Packet::Get::clientId()
 std::vector<uint8_t> Packet::Info::general()
 {
     auto id = clientIdentification();
-    id.emplace_back(2);
+    id.emplace_back(static_cast<uint8_t>(CommandType::info));
     id.emplace_back(0);
     return id;
 }
@@ -40,7 +41,7 @@ std::vector<uint8_t> Packet::Info::general()
 std::vector<uint8_t> Packet::Info::clients()
 {
     auto id = clientIdentification();
-    id.emplace_back(2);
+    id.emplace_back(static_cast<uint8_t>(CommandType::info));
     id.emplace_back(1);
     return id;
 }
@@ -48,7 +49,7 @@ std::vector<uint8_t> Packet::Info::clients()
 std::vector<uint8_t> Packet::Info::rooms()
 {
     auto id = clientIdentification();
-    id.emplace_back(2);
+    id.emplace_back(static_cast<uint8_t>(CommandType::info));
     id.emplace_back(2);
     return id;
 }
@@ -56,7 +57,7 @@ std::vector<uint8_t> Packet::Info::rooms()
 std::vector<uint8_t> Packet::Communicate::broadcast(const std::string& message)
 {
     auto id = clientIdentification();
-    id.emplace_back(6);
+    id.emplace_back(static_cast<uint8_t>(CommandType::communicate));
     id.emplace_back(0);
 
     auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
@@ -64,14 +65,13 @@ std::vector<uint8_t> Packet::Communicate::broadcast(const std::string& message)
     {
         id.emplace_back(elem);
     }
-
     return id;
 }
 
 std::vector<uint8_t> Packet::Communicate::multicast(const std::string& message)
 {
     auto id = clientIdentification();
-    id.emplace_back(6);
+    id.emplace_back(static_cast<uint8_t>(CommandType::communicate));
     id.emplace_back(1);
 
     auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
@@ -79,14 +79,13 @@ std::vector<uint8_t> Packet::Communicate::multicast(const std::string& message)
     {
         id.emplace_back(elem);
     }
-
     return id;
 }
 
 std::vector<uint8_t> Packet::Communicate::roomMessage(const std::string& message)
 {
     auto id = clientIdentification();
-    id.emplace_back(6);
+    id.emplace_back(static_cast<uint8_t>(CommandType::communicate));
     id.emplace_back(2);
 
     auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
@@ -94,14 +93,13 @@ std::vector<uint8_t> Packet::Communicate::roomMessage(const std::string& message
     {
         id.emplace_back(elem);
     }
-
     return id;
 }
 
 std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
 {
     auto id = clientIdentification();
-    id.emplace_back(8);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(0);
 
     auto roomIdVector = Util::convertToByteVector(roomId);
@@ -109,14 +107,13 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
     {
         id.emplace_back(elem);
     }
-
     return id;
 }
 
 std::vector<uint8_t> Packet::Room::leave()
 {
     auto id = clientIdentification();
-    id.emplace_back(8);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(1);
     return id;
 }
@@ -124,7 +121,7 @@ std::vector<uint8_t> Packet::Room::leave()
 std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
 {
     auto id = clientIdentification();
-    id.emplace_back(8);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(2);
 
     for (const char r : roomName)
@@ -137,7 +134,7 @@ std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
 std::vector<uint8_t> Packet::Position::vector2(Vector2f position)
 {
     auto id = clientIdentification();
-    id.emplace_back(9);
+    id.emplace_back(static_cast<uint8_t>(CommandType::position));
     id.emplace_back(0);
 
     auto positionVector = Util::convertToByteVector(position);
@@ -151,7 +148,7 @@ std::vector<uint8_t> Packet::Position::vector2(Vector2f position)
 std::vector<uint8_t> Packet::Dimensions::vector2(Vector2f dimensions)
 {
     auto id = clientIdentification();
-    id.emplace_back(10);
+    id.emplace_back(static_cast<uint8_t>(CommandType::dimensions));
     id.emplace_back(0);
 
     auto dimensionVector = Util::convertToByteVector(dimensions);
