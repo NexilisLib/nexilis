@@ -121,7 +121,12 @@ public:
     /// If the room contains certain user.
     bool contains(User& user);
 
-    std::vector<User*> getClients() const
+    std::vector<User*>& getClients()
+    {
+        return m_clients;
+    }
+
+    const std::vector<User*>& getClients() const
     {
         return m_clients;
     }

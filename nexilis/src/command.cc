@@ -557,6 +557,11 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     for (auto& c : clients)
                     {
+                        if (c.getId() == user.getId())
+                        {
+                            c.getObject2D().setPosition(vector.x, vector.y);
+                        }
+
                         /// This message is implicitly in room context.
                         if (c.getRoomId() == currentRoom->getId())
                         {
@@ -605,6 +610,11 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     for (auto& c : clients)
                     {
+                        if (c.getId() == user.getId())
+                        {
+                            c.getObject2D().setDimensions(vector.x, vector.y);
+                        }
+
                         /// This message is implicitly in room context.
                         if (c.getRoomId() == currentRoom->getId())
                         {

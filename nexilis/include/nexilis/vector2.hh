@@ -16,6 +16,13 @@ struct Vector2
     Vector2() : x(0), y(0) {}
     Vector2(T x, T y) : x(x), y(y) {}
 
+    template <typename U>
+    Vector2(const Vector2<U>& vec) :
+        x(static_cast<T>(vec.x)),
+        y(static_cast<T>(vec.y))
+    {
+    }
+
     bool operator!=(const Vector2<T>& rhs) const { return x != rhs.x || y != rhs.y; }
     bool operator==(const Vector2<T>& rhs) const { return x == rhs.x && y == rhs.y; }
 

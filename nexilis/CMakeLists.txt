@@ -36,6 +36,8 @@ set(SOURCES
 
     src/authentication.cc
     src/user.cc
+    src/object2d.cc
+    src/object3d.cc
     src/command.cc
     src/config.cc
     src/cmd_line_options.cc

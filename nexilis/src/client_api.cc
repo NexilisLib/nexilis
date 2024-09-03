@@ -86,21 +86,6 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     return *this;
 }
 
-// ClientAPI::Object2D
-ClientAPI::Object2D::Object2D(Object2D&& other)
-    : m_position(std::move(other.m_position))
-{
-}
-
-ClientAPI::Object2D& ClientAPI::Object2D::operator=(Object2D&& other)
-{
-    if (this != &other)
-    {
-        m_position = std::move(other.m_position);
-    }
-    return *this;
-}
-
 // ClientAPI::Room::Client
 ClientAPI::Room::Client::Client(uint64_t id, ClientAPI* clientAPI, const std::string& name)
     : m_id(id),
@@ -149,7 +134,7 @@ bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Clien
         lhs.getUsername() == rhs.getUsername();
 }
 
-ClientAPI::Object2D* ClientAPI::Room::Client::getObject2D() const
+Object2D* ClientAPI::Room::Client::getObject2D() const
 {
     if (m_object2D)
     {
@@ -162,7 +147,7 @@ ClientAPI::Object2D* ClientAPI::Room::Client::getObject2D() const
     }
 }
 
-ClientAPI::Object3D* ClientAPI::Room::Client::getObject3D() const
+Object3D* ClientAPI::Room::Client::getObject3D() const
 {
     if (m_object3D)
     {
@@ -621,7 +606,49 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                     clientName = "NO NAME!";
                                 }
 
+                                float object2DX;
+                                if (client.at("2dPosX").if_double())
+                                {
+                                    object2DX = client.at("2dPosX").as_double();
+                                }
+                                else
+                                {
+                                    object2DX = 0;
+                                }
+
+                                float object2DY;
+                                if (client.at("2dPosY").if_double())
+                                {
+                                    object2DY = client.at("2dPosY").as_double();
+                                }
+                                else
+                                {
+                                    object2DY = 0;
+                                }
+
+                                float dimension2DX;
+                                if (client.at("2dDimensionX").if_double())
+                                {
+                                    dimension2DX = client.at("2dDimensionX").as_double();
+                                }
+                                else
+                                {
+                                    dimension2DX = 0;
+                                }
+
+                                float dimension2DY;
+                                if (client.at("2dDimensionY").if_double())
+                                {
+                                    dimension2DY = client.at("2dDimensionY").as_double();
+                                }
+                                else
+                                {
+                                    dimension2DY = 0;
+                                }
+
                                 ClientAPI::Room::Client newClient(id, this, clientName);
+                                newClient.getObject2D()->setPosition(object2DX, object2DY);
+                                newClient.getObject2D()->setDimensions(dimension2DX, dimension2DY);
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
@@ -757,6 +784,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     vectorsGood = false;
                 }
+
                 assert(vectorsGood && id != 0);
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
@@ -777,13 +805,12 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                         auto dimensions = client.getObject2D()->getDimensions();
                                         auto otherPosition = otherClient.getObject2D()->getPosition();
                                         auto otherdimensions = otherClient.getObject2D()->getDimensions();
-
                                         if (
-                                            vectorX + dimensions.x >= otherPosition.x - otherdimensions.x &&
-                                            vectorX - dimensions.x <= otherPosition.x + otherdimensions.x &&
-                                            vectorY + dimensions.y >= otherPosition.y - otherdimensions.y &&
-                                            vectorY - dimensions.y <= otherPosition.y + otherdimensions.y
-                                           )
+                                            vectorX - dimensions.x / 2 < otherPosition.x + otherdimensions.x / 2 &&
+                                            vectorX + dimensions.x / 2 > otherPosition.x - otherdimensions.x / 2 &&
+                                            vectorY - dimensions.y / 2 < otherPosition.y + otherdimensions.y / 2 &&
+                                            vectorY + dimensions.y / 2 > otherPosition.y - otherdimensions.y / 2
+                                            )
                                         {
                                             return ReadResult::failure;
                                         }

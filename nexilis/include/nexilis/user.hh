@@ -3,6 +3,7 @@
 
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/object2d.hh>
 
 namespace nexilis
 {
@@ -93,6 +94,11 @@ public:
         return m_username;
     }
 
+    Object2D& getObject2D()
+    {
+        return m_object2D;
+    }
+
     /// Protocol specific stuff.
 
     // Boost TCP
@@ -136,6 +142,8 @@ private:
     uint64_t m_id = Util::getRandomUint64();
     uint64_t m_roomId = 0;
 
+    /// The 2D properties of the client.
+    Object2D m_object2D;
 private:
     std::function<void(std::vector<uint8_t>)> m_boostTCPSendToClient = nullptr;
     std::function<void(std::vector<uint8_t>)> m_boostUDPSendToClient = nullptr;

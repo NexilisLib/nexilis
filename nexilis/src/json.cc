@@ -230,14 +230,22 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
         // Get data from clients in a room.
         boost::json::array clientArray;
         clientArray.reserve(room.getClients().size());
-        auto clients = room.getClients();
+        auto& clients = room.getClients();
 
-        // Currently just id but will be adding stuff.
         for (auto client : clients)
         {
             boost::json::object clientObj;
             clientObj["id"] = client->getId();
             clientObj["name"] = client->getUsername();
+
+            auto pos2D = client->getObject2D().getPosition();
+            clientObj["2dPosX"] = pos2D.x;
+            clientObj["2dPosY"] = pos2D.y;
+
+            auto dimension2D = client->getObject2D().getDimensions();
+            clientObj["2dDimensionX"] = dimension2D.x;
+            clientObj["2dDimensionY"] = dimension2D.y;
+
             clientArray.emplace_back(std::move(clientObj));
         }
 
