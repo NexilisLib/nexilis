@@ -441,9 +441,6 @@ public:
         // The command usage is unauthorized.
         unauthorized,
 
-        // The nexilis_status is missing from the message.
-        missing_nexilis_status,
-
         // Not implemented.
         not_implemented
     };
@@ -638,15 +635,15 @@ private:
         m_clientId = id;
     }
 
-    /// Hacky shit that does not work!
-    Room& roomWhereClientIs(uint64_t clientId);
-
     /// Read the command part of the message.
     ReadResult readCommand(boost::json::object json);
 
     /// Read the callback part of the message.
     void readCallback(boost::json::value callback);
 
+    std::string readString(const boost::json::value& context, const std::string& key);
+    uint64_t readUint64(const boost::json::value& context, const std::string& key);
+    float readFloat(const boost::json::value& context, const std::string& key);
 private:
     /// The initialization data for the ClientAPI.
     ServerData m_data;

@@ -455,13 +455,6 @@ void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()
 
 ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 {
-    // Parsing message.
-    if (!json.contains("nexilis_status"))
-    {
-        Log::info("Running code without nexilis status");
-        return ReadResult::missing_nexilis_status;
-    }
-
     if (json.contains("command") && json.contains("type"))
     {
         auto command = json["command"];
@@ -471,10 +464,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "username")
             {
-                std::string a = json.at("username").as_string().data();
+                std::string username = readString(json, "username");
 
                 // Set own m_data.
-                m_data.setUserName(a);
+                m_data.setUserName(username);
                 return ReadResult::success;
 
                 for (auto&& rooms : m_currentlyActiveRooms)
@@ -483,7 +476,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     {
                         if (client.getId() == m_clientId)
                         {
-                            client.setUsername(a);
+                            client.setUsername(username);
                             return ReadResult::success;
                         }
                     }
@@ -500,31 +493,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "client_id")
             {
-                if (json["client_id"].if_uint64())
-                {
-                    uint64_t id = json["client_id"].as_uint64();
-                    setClientId(id);
-                    Packet::_initialize(*this);
-                    return ReadResult::success;
-                }
-                // boost::json::value is so bad.
-                else if (json["client_id"].if_int64())
-                {
-                    int64_t id = json["client_id"].as_int64();
-                    uint64_t u_id = id;
-
-                    assert(sizeof(id) == sizeof(u_id));
-                    assert(static_cast<uint64_t>(id) == u_id);
-
-                    setClientId(id);
-                    Packet::_initialize(*this);
-                    return ReadResult::success;
-                }
-                else
-                {
-                    Log::error("The value of get_client_id is not convertible to as_uint64");
-                    return ReadResult::error;
-                }
+                uint64_t clientId = readUint64(json, "client_id");
+                setClientId(clientId);
+                Packet::_initialize(*this);
+                return ReadResult::success;
             }
             else
             {
@@ -543,36 +515,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     std::vector<Room> newRooms;
                     for (const auto& room : rooms)
                     {
-                        std::string name = room.at("name").as_string().c_str();
+                        std::string name = readString(room, "name");
                         int maxSize = static_cast<int>(room.at("maxSize").as_int64());
 
-                        uint64_t creatorId;
-                        if (room.at("creatorId").if_uint64())
-                        {
-                            creatorId = room.at("creatorId").as_uint64();
-                        }
-                        else if (room.at("creatorId").if_int64())
-                        {
-                            creatorId = static_cast<uint64_t>(room.at("creatorId").as_int64());
-                        }
-                        else
-                        {
-                            creatorId = 0;
-                        }
-
-                        uint64_t id;
-                        if (room.at("id").if_uint64())
-                        {
-                            id = room.at("id").as_uint64();
-                        }
-                        else if (room.at("id").if_int64())
-                        {
-                            id = static_cast<uint64_t>(room.at("id").as_int64());
-                        }
-                        else
-                        {
-                            id = 0;
-                        }
+                        uint64_t creatorId = readUint64(room, "creatorId");
+                        uint64_t id = readUint64(room, "id");
 
                         std::vector<ClientAPI::Room::Client> roomClients;
 
@@ -582,69 +529,13 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                             for (const auto& client : clients)
                             {
-                                uint64_t id;
-                                if (client.at("id").if_uint64())
-                                {
-                                    id = client.at("id").as_uint64();
-                                }
-                                else if (client.at("id").if_int64())
-                                {
-                                    id = static_cast<uint64_t>(client.at("id").as_int64());
-                                }
-                                else
-                                {
-                                    id = 0;
-                                }
+                                uint64_t id = readUint64(client, "id");
+                                std::string clientName = readString(client, "name");
 
-                                std::string clientName;
-                                if (client.at("name").if_string())
-                                {
-                                    clientName = client.at("name").as_string();
-                                }
-                                else
-                                {
-                                    clientName = "NO NAME!";
-                                }
-
-                                float object2DX;
-                                if (client.at("2dPosX").if_double())
-                                {
-                                    object2DX = client.at("2dPosX").as_double();
-                                }
-                                else
-                                {
-                                    object2DX = 0;
-                                }
-
-                                float object2DY;
-                                if (client.at("2dPosY").if_double())
-                                {
-                                    object2DY = client.at("2dPosY").as_double();
-                                }
-                                else
-                                {
-                                    object2DY = 0;
-                                }
-
-                                float dimension2DX;
-                                if (client.at("2dDimensionX").if_double())
-                                {
-                                    dimension2DX = client.at("2dDimensionX").as_double();
-                                }
-                                else
-                                {
-                                    dimension2DX = 0;
-                                }
-
-                                float dimension2DY;
-                                if (client.at("2dDimensionY").if_double())
-                                {
-                                    dimension2DY = client.at("2dDimensionY").as_double();
-                                }
-                                else
-                                {
-                                    dimension2DY = 0;
-                                }
+                                float object2DX = readFloat(client, "2dPosX");
+                                float object2DY = readFloat(client, "2dPosY");
+                                float dimension2DX = readFloat(client, "2dDimensionX");
+                                float dimension2DY = readFloat(client, "2dDimensionY");
 
                                 ClientAPI::Room::Client newClient(id, this, clientName);
                                 newClient.getObject2D()->setPosition(object2DX, object2DY);
@@ -679,39 +570,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "room_message")
             {
-                uint64_t id;
-                if (json.at("id").if_uint64())
-                {
-                    id = json.at("id").as_uint64();
-                }
-                else if (json.at("id").if_int64())
-                {
-                    id = static_cast<uint64_t>(json.at("id").as_int64());
-                }
-                else
-                {
-                    id = 0;
-                }
-
-                uint64_t roomId;
-                if (json.at("roomId").if_uint64())
-                {
-                    roomId = json.at("roomId").as_uint64();
-                }
-                else if (json.at("roomId").if_int64())
-                {
-                    roomId = static_cast<uint64_t>(json.at("roomId").as_int64());
-                }
-                else
-                {
-                    roomId = 0;
-                }
-
-                std::string message = json.at("message").as_string().c_str();
-
-                assert(!message.empty());
-                assert(id != 0);
-                assert(roomId != 0);
+                uint64_t id = readUint64(json, "id");
+                uint64_t roomId = readUint64(json, "roomId");
+                std::string message = readString(json, "message");
 
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
@@ -752,40 +613,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "vector2")
             {
-                uint64_t id;
-                if (json.at("id").if_uint64())
-                {
-                    id = json.at("id").as_uint64();
-                }
-                else if (json.at("id").if_int64())
-                {
-                    id = static_cast<uint64_t>(json.at("id").as_int64());
-                }
-                else
-                {
-                    id = 0;
-                }
+                uint64_t id = readUint64(json, "id");
+                float vectorX = readFloat(json, "positionX");
+                float vectorY = readFloat(json, "positionY");
 
-                float vectorX, vectorY;
-                bool vectorsGood = true;
-                if (json.at("positionX").if_double())
-                {
-                    vectorX = json.at("positionX").as_double();
-                }
-                else
-                {
-                    vectorsGood = false;
-                }
-                if (json.at("positionY").if_double())
-                {
-                    vectorY = json.at("positionY").as_double();
-                }
-                else
-                {
-                    vectorsGood = false;
-                }
-
-                assert(vectorsGood && id != 0);
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
                     for (auto& client : room->getClients())
@@ -829,39 +660,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "vector2")
             {
-                uint64_t id;
-                if (json.at("id").if_uint64())
-                {
-                    id = json.at("id").as_uint64();
-                }
-                else if (json.at("id").if_int64())
-                {
-                    id = static_cast<uint64_t>(json.at("id").as_int64());
-                }
-                else
-                {
-                    id = 0;
-                }
+                uint64_t id = readUint64(json, "id");
+                float vectorX = readFloat(json, "x");
+                float vectorY = readFloat(json, "y");
 
-                float vectorX, vectorY;
-                bool vectorsGood = true;
-                if (json.at("x").if_double())
-                {
-                    vectorX = json.at("x").as_double();
-                }
-                else
-                {
-                    vectorsGood = false;
-                }
-                if (json.at("y").if_double())
-                {
-                    vectorY = json.at("y").as_double();
-                }
-                else
-                {
-                    vectorsGood = false;
-                }
-                assert(vectorsGood && id != 0);
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
                     for (auto& client : room->getClients())
@@ -949,19 +751,56 @@ void ClientAPI::readCallback(boost::json::value callback)
     }
 }
 
-ClientAPI::Room& ClientAPI::roomWhereClientIs(uint64_t clientId)
+std::string ClientAPI::readString(const boost::json::value& context, const std::string& key)
 {
-    for (auto& room : m_currentlyActiveRooms)
+    std::string item;
+    bool readGood = true;
+    if (context.at(key).if_string())
     {
-        for (auto& client : room.getClients())
-        {
-            if (client.getId() == clientId)
-            {
-                return room;
-            }
-        }
+        item = context.at(key).as_string();
     }
-    return m_defaultRoom;
+    else
+    {
+        readGood = false;
+    }
+    assert(readGood);
+    return item;
+}
+
+uint64_t ClientAPI::readUint64(const boost::json::value& context, const std::string& key)
+{
+    uint64_t item;
+    bool readGood = true;
+    if (context.at(key).if_uint64())
+    {
+        item = context.at(key).as_uint64();
+    }
+    else if (context.at(key).if_int64())
+    {
+        item = static_cast<uint64_t>(context.at(key).as_int64());
+    }
+    else
+    {
+        readGood = false;
+    }
+    assert(readGood);
+    return item;
+}
+
+float ClientAPI::readFloat(const boost::json::value& context, const std::string& key)
+{
+    float item;
+    bool readGood = true;
+    if (context.at(key).if_double())
+    {
+        item = context.at(key).as_double();
+    }
+    else
+    {
+        readGood = false;
+    }
+    assert(readGood);
+    return item;
 }
 
 std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promise)

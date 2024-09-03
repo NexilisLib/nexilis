@@ -88,7 +88,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     // Send data back to "this" client.
                     std::map<std::string, boost::json::value> header{
-                                {"nexilis_status", boost::json::value(1)},
                                 {"command", boost::json::value("set")},
                                 {"type", boost::json::value("username")},
                                 {"callback", boost::json::value(messageId)},
@@ -115,7 +114,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 {
                     Log::info("Client id before send: ", user.getId());
                     std::map<std::string, boost::json::value> data{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("get")},
                             {"type", boost::json::value("client_id")},
                             {"client_id", boost::json::value(user.getId())}};
@@ -140,7 +138,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 case 0:
                 {
                     std::map<std::string, boost::json::value> header{
-                                {"nexilis_status", boost::json::value(1)},
                                 {"command", boost::json::value("info")},
                                 {"type", boost::json::value("server_data")}};
 
@@ -157,7 +154,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 case 1:
                 {
                     std::map<std::string, boost::json::value> header{
-                                {"nexilis_status", boost::json::value(1)},
                                 {"command", boost::json::value("info")},
                                 {"type", boost::json::value("client_data")}};
 
@@ -174,7 +170,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 case 2:
                 {
                     std::map<std::string, boost::json::value> header{
-                                {"nexilis_status", boost::json::value(1)},
                                 {"command", boost::json::value("info")},
                                 {"type", boost::json::value("room_data")},
                                 {"callback", boost::json::value(messageId)}};
@@ -283,7 +278,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
 
                     std::map<std::string, boost::json::value> data{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("communicate")},
                             {"type", boost::json::value("broadcast")},
                             {"message", boost::json::value(Util::convertToString(payload))}};
@@ -305,7 +299,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
 
                     std::map<std::string, boost::json::value> data{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("communicate")},
                             {"type", boost::json::value("multicast")},
                             {"message", boost::json::value(Util::convertToString(payload))}};
@@ -336,7 +329,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     assert(roomId != 0);
 
                     std::map<std::string, boost::json::value> data{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("communicate")},
                             {"type", boost::json::value("room_message")},
                             {"id", boost::json::value(user.getId())},
@@ -414,7 +406,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         auto roomId = user.getRoomId();
 
                         std::map<std::string, boost::json::value> header{
-                                {"nexilis_status", boost::json::value(1)},
                                 {"command", boost::json::value("info")},
                                 {"type", boost::json::value("room_data")},
                                 {"callback", boost::json::value(messageId)}};
@@ -456,7 +447,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     user.setRoomId(0);
 
                     std::map<std::string, boost::json::value> header{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("info")},
                             {"type", boost::json::value("room_data")},
                             {"callback", boost::json::value(messageId)}};
@@ -542,7 +532,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     }
 
                     std::map<std::string, boost::json::value> data{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("position")},
                             {"type", boost::json::value("vector2")},
                             {"id", boost::json::value(user.getId())},
@@ -595,7 +584,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     }
 
                     std::map<std::string, boost::json::value> data{
-                            {"nexilis_status", boost::json::value(1)},
                             {"command", boost::json::value("dimensions")},
                             {"type", boost::json::value("vector2")},
                             {"id", boost::json::value(user.getId())},
