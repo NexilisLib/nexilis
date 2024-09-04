@@ -1,3 +1,4 @@
+#include "nexilis/base_client.hh"
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -86,9 +87,9 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     return *this;
 }
 
-// ClientAPI::Room::Client
-ClientAPI::Room::Client::Client(uint64_t id, ClientAPI* clientAPI, const std::string& name)
-    : m_id(id),
+// ClientAPI::ClientSession
+ClientAPI::ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI, const std::string& name)
+    : BaseClient(id),
       m_clientAPI(clientAPI),
       m_name(name)
 {
@@ -107,8 +108,8 @@ ClientAPI::Room::Client::Client(uint64_t id, ClientAPI* clientAPI, const std::st
     }
 }
 
-ClientAPI::Room::Client::Client(Client&& other)
-    : m_id(std::move(other.m_id)),
+ClientAPI::ClientSession::ClientSession(ClientSession&& other)
+    : BaseClient(std::move(other)),
       m_clientAPI(std::move(other.m_clientAPI)),
       m_name(std::move(other.m_name)),
       m_object2D(std::move(other.m_object2D)),
@@ -116,11 +117,11 @@ ClientAPI::Room::Client::Client(Client&& other)
 {
 }
 
-ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
+ClientAPI::ClientSession& ClientAPI::ClientSession::operator=(ClientSession&& other)
 {
     if (this != &other)
     {
-        m_id = std::move(other.m_id);
+        BaseClient(std::move(other));
         m_name = std::move(other.m_name);
         m_object2D = std::move(other.m_object2D);
         m_object3D = std::move(other.m_object3D);
@@ -128,13 +129,13 @@ ClientAPI::Room::Client& ClientAPI::Room::Client::operator=(Client&& other)
     return *this;
 }
 
-bool operator==(const ClientAPI::Room::Client& lhs, const ClientAPI::Room::Client& rhs)
+bool operator==(const ClientAPI::ClientSession& lhs, const ClientAPI::ClientSession& rhs)
 {
     return lhs.getId() == rhs.getId() &&
         lhs.getUsername() == rhs.getUsername();
 }
 
-Object2D* ClientAPI::Room::Client::getObject2D() const
+Object2D* ClientAPI::ClientSession::getObject2D() const
 {
     if (m_object2D)
     {
@@ -147,7 +148,7 @@ Object2D* ClientAPI::Room::Client::getObject2D() const
     }
 }
 
-Object3D* ClientAPI::Room::Client::getObject3D() const
+Object3D* ClientAPI::ClientSession::getObject3D() const
 {
     if (m_object3D)
     {
@@ -161,7 +162,7 @@ Object3D* ClientAPI::Room::Client::getObject3D() const
 }
 
 // ClientAPI::Room::Communication
-ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::Room::Client* client) :
+ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::ClientSession* client) :
     m_payload(payload),
     m_client(client),
     m_id(Util::getRandomUint64())
@@ -238,7 +239,7 @@ ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
     return *this;
 }
 
-ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<Client>&& clients)
+ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<ClientSession>&& clients)
     : m_name(name),
       m_creatorId(creatorId),
       m_roomId(roomId),
@@ -521,7 +522,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         uint64_t creatorId = readUint64(room, "creatorId");
                         uint64_t id = readUint64(room, "id");
 
-                        std::vector<ClientAPI::Room::Client> roomClients;
+                        std::vector<ClientAPI::ClientSession> roomClients;
 
                         if (room.as_object().find("clients") != room.as_object().end())
                         {
@@ -537,7 +538,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 float dimension2DX = readFloat(client, "2dDimensionX");
                                 float dimension2DY = readFloat(client, "2dDimensionY");
 
-                                ClientAPI::Room::Client newClient(id, this, clientName);
+                                ClientAPI::ClientSession newClient(id, this, clientName);
+                                Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
                                 newClient.getObject2D()->setPosition(object2DX, object2DY);
                                 newClient.getObject2D()->setDimensions(dimension2DX, dimension2DY);
                                 roomClients.emplace_back(std::move(newClient));
@@ -576,7 +578,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                 for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                 {
-                    Room::Client* sender = nullptr;
+                    ClientSession* sender = nullptr;
                     for (auto& client : room->getClients())
                     {
                         if (client.getId() == id)

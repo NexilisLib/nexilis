@@ -35,7 +35,8 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     if (!user)
     {
         // Create a new user.
-        User newUser(address);
+        uint64_t newId = Util::getRandomUint64();
+        User newUser(newId, address);
         user = &newUser;
         userAlreadyExists = false;
     }

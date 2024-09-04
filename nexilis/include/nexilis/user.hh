@@ -1,6 +1,7 @@
 #ifndef NEXILIS_USER_HH
 #define NEXILIS_USER_HH
 
+#include <nexilis/base_client.hh>
 #include <nexilis/common/util.hh>
 #include <nexilis/nexilis_macros.hh>
 #include <nexilis/object2d.hh>
@@ -10,11 +11,11 @@ namespace nexilis
 
 /// Internal client abstraction for server.
 
-class User
+class User : public BaseClient
 {
 public:
     /// Constructor.
-    User(std::string ip_address) noexcept;
+    User(uint64_t id, std::string ip_address) noexcept;
 
     /// Move constructor.
     User(User&& other);
@@ -66,12 +67,12 @@ public:
     void setId(uint64_t id)
     {
         assert(hasRootAccess());
-        m_id = id;
+        BaseClient::setId(id);
     }
 
     uint64_t getId() const
     {
-        return m_id;
+        return BaseClient::getId();
     }
 
     void setRoomId(uint64_t roomId)
@@ -139,7 +140,6 @@ private:
     // General
     std::string m_ip_address;
     std::string m_username;
-    uint64_t m_id = Util::getRandomUint64();
     uint64_t m_roomId = 0;
 
     /// The 2D properties of the client.

@@ -3,15 +3,16 @@
 namespace nexilis
 {
 
-User::User(std::string ip_address) noexcept
-    : m_ip_address(ip_address)
+User::User(uint64_t id, std::string ip_address) noexcept
+    : BaseClient(id),
+      m_ip_address(ip_address)
 {
 }
 
 User::User(User&& other)
-    : m_ip_address(std::move(other.m_ip_address)),
+    : BaseClient(std::move(other)),
+      m_ip_address(std::move(other.m_ip_address)),
       m_username(std::move(other.m_username)),
-      m_id(std::move(other.m_id)),
       m_roomId(std::move(other.m_roomId)),
       m_object2D(std::move(other.m_object2D)),
       m_boostTCPSendToClient(std::move(other.m_boostTCPSendToClient)),
@@ -25,9 +26,9 @@ User& User::operator=(User&& other)
 {
     if (this != &other)
     {
+        BaseClient::operator=(std::move(other));
         m_ip_address = std::move(other.m_ip_address);
         m_username = std::move(other.m_username);
-        m_id = std::move(other.m_id);
         m_roomId = std::move(other.m_roomId);
         //m_object2D = std::move(other.m_object2D);
         m_boostTCPSendToClient = std::move(other.m_boostTCPSendToClient);

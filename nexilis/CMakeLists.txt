@@ -57,6 +57,7 @@ set(SOURCES
     src/json.cc
     src/room.cc
     src/room_storage.cc
+    src/base_client.cc
 
     src/common/util.cc
     src/mysql/database.cc

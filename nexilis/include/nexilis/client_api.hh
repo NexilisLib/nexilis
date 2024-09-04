@@ -1,6 +1,7 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
+#include <nexilis/base_client.hh>
 #include <nexilis/vector2.hh>
 #include <nexilis/vector3.hh>
 #include <nexilis/object2d.hh>
@@ -14,7 +15,6 @@
 #include <future>
 #include <string>
 #include <optional>
-#include <vector>
 
 namespace nexilis
 {
@@ -195,84 +195,80 @@ public:
         std::string m_unixStreamServerPath;
     };
 
+    class ClientSession : public BaseClient
+    {
+    public:
+        /// Constuctor.
+        ClientSession(uint64_t id, ClientAPI* clientAPI, const std::string& name = "UNDEFINED");
+
+        /// Deleted copy constructor.
+        ClientSession(const ClientSession& other) = delete;
+
+        /// Deleted copy assignment operator.
+        ClientSession& operator=(const ClientSession& other) = delete;
+
+        /// Move constructor.
+        ClientSession(ClientSession&& other);
+
+        /// Move assignment operator.
+        ClientSession& operator=(ClientSession&& other);
+
+        /// Comparison operator overload.
+        friend bool operator==(const ClientSession& lhs, const ClientSession& rhs);
+
+        /// Non-comparison operator overload.
+        friend bool operator!=(const ClientSession& lhs, const ClientSession& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        /// Get the identifier of the client.
+        uint64_t getId() const
+        {
+            return BaseClient::getId();
+        }
+
+        /// Get the user name of the client.
+        std::string getUsername() const
+        {
+            return m_name;
+        }
+
+        void setUsername(const std::string& username)
+        {
+            m_name = username;
+        }
+
+        /// Get pointer to 2D properties of the client.
+        Object2D* getObject2D() const;
+
+        /// Get pointer to 3D properties of the client.
+        Object3D* getObject3D() const;
+
+    private:
+        /// This ClientAPI instance.
+        ClientAPI* const m_clientAPI = nullptr;
+
+        /// The name of the client.
+        std::string m_name;
+
+        /// The 2D properties of the client.
+        std::unique_ptr<Object2D> m_object2D = nullptr;
+
+        /// The 3D properties of the client.
+        std::unique_ptr<Object3D> m_object3D = nullptr;
+    };
+
     class Room
     {
     public:
-        /// Client type for clients in a room.
-        class Client
-        {
-        public:
-            /// Constuctor.
-            Client(uint64_t id, ClientAPI* clientAPI, const std::string& name = "UNDEFINED");
-
-            /// Deleted copy constructor.
-            Client(const Client& other) = delete;
-
-            /// Deleted copy assignment operator.
-            Client& operator=(const Client& other) = delete;
-
-            /// Move constructor.
-            Client(Client&& other);
-
-            /// Move assignment operator.
-            Client& operator=(Client&& other);
-
-            /// Comparison operator overload.
-            friend bool operator==(const Client& lhs, const Client& rhs);
-
-            /// Non-comparison operator overload.
-            friend bool operator!=(const Client& lhs, const Client& rhs)
-            {
-                return !(lhs == rhs);
-            }
-
-            /// Get the identifier of the client.
-            uint64_t getId() const
-            {
-                return m_id;
-            }
-
-            /// Get the user name of the client.
-            std::string getUsername() const
-            {
-                return m_name;
-            }
-
-            void setUsername(const std::string& username)
-            {
-                m_name = username;
-            }
-
-            /// Get pointer to 2D properties of the client.
-            Object2D* getObject2D() const;
-
-            /// Get pointer to 3D properties of the client.
-            Object3D* getObject3D() const;
-
-        private:
-            /// The id of the client.
-            uint64_t m_id;
-
-            /// This ClientAPI instance.
-            ClientAPI* const m_clientAPI = nullptr;
-
-            /// The name of the client.
-            std::string m_name;
-
-            /// The 2D properties of the client.
-            std::unique_ptr<Object2D> m_object2D = nullptr;
-
-            /// The 3D properties of the client.
-            std::unique_ptr<Object3D> m_object3D = nullptr;
-        };
-
         /// Communication type for communications in a room.
         class Communication
         {
         public:
             /// Constructor.
             /// \param payload The data for the Communication messages.
-            Communication(const std::string& payload, Client* sender);
+            Communication(const std::string& payload, ClientSession* sender);
 
             /// Copy constructor.
             Communication(const Communication& other);
@@ -302,7 +298,7 @@ public:
             }
 
             /// Get client identification.
-            const Client* getClient() const
+            const ClientSession* getClient() const
             {
                 return m_client;
             }
@@ -316,7 +312,7 @@ public:
             std::string m_payload;
 
             /// The id of the message.
-            const Client* m_client;
+            const ClientSession* m_client;
 
             /// The id of the message.
             uint64_t m_id;
@@ -326,7 +322,7 @@ public:
         Room() = default;
 
         /// Constructor.
-        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<Room::Client>&& clients);
+        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<ClientSession>&& clients);
 
         /// Deleted copy constructor.
         Room(const Room& other) = delete;
@@ -369,17 +365,17 @@ public:
             return m_maxSize;
         }
 
-        void addClient(Room::Client&& client)
+        void addClient(ClientSession&& client)
         {
             m_clients.emplace_back(std::move(client));
         }
 
-        std::vector<Room::Client>& getClients()
+        std::vector<ClientSession>& getClients()
         {
             return m_clients;
         }
 
-        const std::vector<Room::Client>& getClients() const
+        const std::vector<ClientSession>& getClients() const
         {
             return m_clients;
         }
@@ -411,40 +407,11 @@ public:
         int m_maxSize;
 
         /// All of the clients currently inside this room.
-        std::vector<Room::Client> m_clients;
+        std::vector<ClientSession> m_clients;
 
         /// All of the broadcasts that have been sent in this room.
         std::vector<Room::Communication> m_roomMessages;
     };
-
-    /// Result from ClientAPI::readMessage(const std::vector<uint8_t>&).
-    enum class ReadResult
-    {
-        // The payload does nothing with nexilis.
-        clean,
-
-        // Command success.
-        success,
-
-        // Logical failure in the command, failing is ok.
-        failure,
-
-        // Command is not found.
-        not_found,
-
-        // The input for command is not correct.
-        invalid_input,
-
-        // There is an error implementing command.
-        error,
-
-        // The command usage is unauthorized.
-        unauthorized,
-
-        // Not implemented.
-        not_implemented
-    };
-
     /// Constructor.
     ClientAPI(ServerData data);
 
@@ -499,9 +466,37 @@ public:
     void waitUntilUnixStreamReady();
 
 public:
+    /// Result from ClientAPI::readMessage(const std::vector<uint8_t>&).
+    enum class ReadResult
+    {
+        // The payload does nothing with nexilis.
+        clean,
+
+        // Command success.
+        success,
+
+        // Logical failure in the command, failing is ok.
+        failure,
+
+        // Command is not found.
+        not_found,
+
+        // The input for command is not correct.
+        invalid_input,
+
+        // There is an error implementing command.
+        error,
+
+        // The command usage is unauthorized.
+        unauthorized,
+
+        // Not implemented.
+        not_implemented
+    };
+
     /// Read incoming message to client.
     ReadResult readMessage(const std::vector<uint8_t>& message);
-
+    void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
 public:
     /// Room stuff
     /// Is client currently in a room.
@@ -512,12 +507,8 @@ public:
     uint64_t clientRoomId();
 
 public:
-    /// Message id stuff.
-    uint64_t getNewMessageId();
-
-    void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
-public:
     /// Getters.
+    uint64_t getNewMessageId();
 
     /// General.
     uint64_t getClientId() const

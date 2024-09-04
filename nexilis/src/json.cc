@@ -1,3 +1,4 @@
+#include <boost/system/detail/error_code.hpp>
 #include <nexilis/client_storage.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
@@ -271,7 +272,7 @@ boost::json::value Json::readJSONFromFile(const std::string& filename)
     std::string json_str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
 
-    boost::json::error_code ec;
+    boost::system::error_code ec;
     boost::json::value json_value = boost::json::parse(json_str, ec);
     if (ec)
     {
