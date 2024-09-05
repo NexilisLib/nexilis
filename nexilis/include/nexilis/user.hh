@@ -10,7 +10,6 @@ namespace nexilis
 {
 
 /// Internal client abstraction for server.
-
 class User : public BaseClient
 {
 public:
@@ -87,12 +86,12 @@ public:
 
     void setUsername(const std::string& username)
     {
-        m_username = username;
+        BaseClient::setUsername(username);
     }
 
     std::string getUsername() const
     {
-        return m_username;
+        return BaseClient::getUsername();
     }
 
     Object2D& getObject2D()

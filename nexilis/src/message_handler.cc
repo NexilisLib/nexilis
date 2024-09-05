@@ -37,7 +37,11 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
         // Create a new user.
         uint64_t newId = Util::getRandomUint64();
         User newUser(newId, address);
+        auto username = Util::getRandomString(10);
+        Log::error("Username of the new client: ", username);
+        newUser.setUsername(username);
         user = &newUser;
+        Log::error("Transfered username:", user->getUsername());
         userAlreadyExists = false;
     }
     assert(user);
@@ -104,12 +108,11 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
 
                     // This message is equal to Packet::getId (without client id).
                     std::vector<uint8_t> message{1, 0};
-                    std::vector<uint8_t> idBytes = Util::convertToByteVector(user->getId());
-                    for (uint64_t i = 0; i < idBytes.size(); i++)
+                    auto idBytes = Util::convertToByteVector(user->getId());
+                    for (auto&& byte : idBytes)
                     {
-                        message.emplace_back(idBytes[i]);
+                        message.emplace_back(byte);
                     }
-
                     return Message(
                             address,
                             message,

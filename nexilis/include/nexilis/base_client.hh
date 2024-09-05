@@ -2,10 +2,13 @@
 #define NEXILIS_BASE_CLIENT_HH
 
 #include <cstdint>
+#include <string>
+#include <cassert>
 
 namespace nexilis
 {
 
+/// BaseClient offers common functionality between server- and clientside client objects.
 class BaseClient
 {
 public:
@@ -24,7 +27,7 @@ public:
     /// Deleted copy assignment operator.
     BaseClient& operator=(const BaseClient& other) = delete;
 
-    /// Get the id of the client.
+protected:
     uint64_t getId() const
     {
         return m_id;
@@ -35,8 +38,19 @@ public:
         m_id = id;
     }
 
+    std::string getUsername() const
+    {
+        return m_username;
+    }
+
+    void setUsername(const std::string& username)
+    {
+        m_username = username;
+    }
+
 private:
     uint64_t m_id;
+    std::string m_username;
 };
 
 }

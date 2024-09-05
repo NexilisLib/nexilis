@@ -199,7 +199,7 @@ public:
     {
     public:
         /// Constuctor.
-        ClientSession(uint64_t id, ClientAPI* clientAPI, const std::string& name = "UNDEFINED");
+        ClientSession(uint64_t id, ClientAPI* clientAPI);
 
         /// Deleted copy constructor.
         ClientSession(const ClientSession& other) = delete;
@@ -231,12 +231,12 @@ public:
         /// Get the user name of the client.
         std::string getUsername() const
         {
-            return m_name;
+            return BaseClient::getUsername();
         }
 
         void setUsername(const std::string& username)
         {
-            m_name = username;
+            BaseClient::setUsername(username);
         }
 
         /// Get pointer to 2D properties of the client.
@@ -248,9 +248,6 @@ public:
     private:
         /// This ClientAPI instance.
         ClientAPI* const m_clientAPI = nullptr;
-
-        /// The name of the client.
-        std::string m_name;
 
         /// The 2D properties of the client.
         std::unique_ptr<Object2D> m_object2D = nullptr;

@@ -88,10 +88,9 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
 }
 
 // ClientAPI::ClientSession
-ClientAPI::ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI, const std::string& name)
+ClientAPI::ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI)
     : BaseClient(id),
-      m_clientAPI(clientAPI),
-      m_name(name)
+      m_clientAPI(clientAPI)
 {
     switch (m_clientAPI->getApplicationType())
     {
@@ -111,7 +110,6 @@ ClientAPI::ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI, const
 ClientAPI::ClientSession::ClientSession(ClientSession&& other)
     : BaseClient(std::move(other)),
       m_clientAPI(std::move(other.m_clientAPI)),
-      m_name(std::move(other.m_name)),
       m_object2D(std::move(other.m_object2D)),
       m_object3D(std::move(other.m_object3D))
 {
@@ -121,8 +119,7 @@ ClientAPI::ClientSession& ClientAPI::ClientSession::operator=(ClientSession&& ot
 {
     if (this != &other)
     {
-        BaseClient(std::move(other));
-        m_name = std::move(other.m_name);
+        BaseClient::operator=(std::move(other));
         m_object2D = std::move(other.m_object2D);
         m_object3D = std::move(other.m_object3D);
     }
@@ -495,6 +492,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             if (type == "client_id")
             {
                 uint64_t clientId = readUint64(json, "client_id");
+                Log::info("SET CLIENTID TO ", clientId);
                 setClientId(clientId);
                 Packet::_initialize(*this);
                 return ReadResult::success;
@@ -527,21 +525,23 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         if (room.as_object().find("clients") != room.as_object().end())
                         {
                             auto clients = room.at("clients").as_array();
+                            Log::info("Clients size: ", clients.size());
 
                             for (const auto& client : clients)
                             {
                                 uint64_t id = readUint64(client, "id");
-                                std::string clientName = readString(client, "name");
+                                std::string username = readString(client, "name");
 
                                 float object2DX = readFloat(client, "2dPosX");
                                 float object2DY = readFloat(client, "2dPosY");
                                 float dimension2DX = readFloat(client, "2dDimensionX");
                                 float dimension2DY = readFloat(client, "2dDimensionY");
 
-                                ClientAPI::ClientSession newClient(id, this, clientName);
+                                ClientAPI::ClientSession newClient(id, this);
                                 Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
                                 newClient.getObject2D()->setPosition(object2DX, object2DY);
                                 newClient.getObject2D()->setDimensions(dimension2DX, dimension2DY);
+                                newClient.setUsername(username);
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }

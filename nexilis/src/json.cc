@@ -1,4 +1,3 @@
-#include <boost/system/detail/error_code.hpp>
 #include <nexilis/client_storage.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
@@ -233,11 +232,20 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
         clientArray.reserve(room.getClients().size());
         auto& clients = room.getClients();
 
-        for (auto client : clients)
+        for (auto& client : clients)
         {
             boost::json::object clientObj;
             clientObj["id"] = client->getId();
-            clientObj["name"] = client->getUsername();
+
+            if (client->getUsername().empty())
+            {
+                Log::warning("Client has empty username!");
+                clientObj["name"] = "";
+            }
+            else
+            {
+                clientObj["name"] = client->getUsername();
+            }
 
             auto pos2D = client->getObject2D().getPosition();
             clientObj["2dPosX"] = pos2D.x;
