@@ -6,6 +6,7 @@
 #include <nexilis/message_handler.hh>
 #include <nexilis/packet.hh>
 #include <nexilis/log.hh>
+#include <nexilis/room_storage.hh>
 
 #include <nexilis/common/util.hh>
 
@@ -29,19 +30,18 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     Message errorMessage("", errordata, -1, nullptr, 0);
 
     auto clientId = Util::getFirstEightBytesAsUInt64(payload);
-    auto user = ClientStorage::getClientById(clientId);
+    auto* user = ClientStorage::getClientById(clientId);
     bool userAlreadyExists = true;
 
     if (!user)
     {
         // Create a new user.
+        Log::info("Creating new user");
         uint64_t newId = Util::getRandomUint64();
         User newUser(newId, address);
         auto username = Util::getRandomString(10);
-        Log::error("Username of the new client: ", username);
         newUser.setUsername(username);
         user = &newUser;
-        Log::error("Transfered username:", user->getUsername());
         userAlreadyExists = false;
     }
     assert(user);

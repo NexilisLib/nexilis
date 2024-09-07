@@ -7,6 +7,7 @@
 #include <bitset>
 #include <iomanip>
 #include <random>
+#include <sstream>
 
 namespace nexilis
 {
@@ -191,11 +192,13 @@ void Util::printColorMessageToConsole(logger::LogLevel logLevel, const std::stri
 
 void Util::debugUint8Vector(const std::vector<uint8_t>& vector)
 {
+    std::stringstream ss;
     for (uint8_t byte : vector)
     {
-        Log::debug("Commandbyte hex: ", std::hex, static_cast<int>(byte));
-        Log::debug("Commandbyte char: ", static_cast<char>(byte));
+        ss << std::hex << static_cast<int>(byte) << " " << static_cast<char>(byte) << "\t";
     }
+    ss << std::dec << std::endl;
+    Log::debug(ss.str());
 }
 
 uint64_t Util::getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec)

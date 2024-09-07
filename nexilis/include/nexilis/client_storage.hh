@@ -3,8 +3,6 @@
 
 #include <nexilis/user.hh>
 
-#include <vector>
-
 namespace nexilis
 {
 

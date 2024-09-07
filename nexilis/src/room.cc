@@ -61,7 +61,7 @@ Room::Room(const Data& data)
 
 Room::Room(Room&& other)
     : m_data(std::move(other.m_data)),
-      m_clients(std::move(other.m_clients))
+      m_clientIds(std::move(other.m_clientIds))
 {
 }
 
@@ -70,16 +70,16 @@ Room& Room::operator=(Room&& other)
     if (this != &other)
     {
         m_data = std::move(other.m_data);
-        m_clients = std::move(other.m_clients);
+        m_clientIds = std::move(other.m_clientIds);
     }
     return *this;
 }
 
-bool Room::contains(User& user)
+bool Room::contains(uint64_t userId)
 {
-    for (auto c = m_clients.begin(); c != m_clients.end(); c++)
+    for (auto& client : m_clientIds)
     {
-        if (*c == &user)
+        if (client == userId)
         {
             return true;
         }
@@ -87,24 +87,23 @@ bool Room::contains(User& user)
     return false;
 }
 
-void Room::joinRoom(User& user)
+void Room::joinRoom(uint64_t userId)
 {
-    if (contains(user))
+    if (contains(userId))
     {
         Log::warning("User already in this room!");
     }
     else
     {
-        m_clients.emplace_back(std::move(&user));
-        Log::info("New user in room: ", getId(), " user: ", user.getId());
+        m_clientIds.emplace_back(userId);
+        Log::info("New user in room: ", getId(), " user: ", userId);
     }
 }
 
-void Room::leaveRoom(User& user)
+void Room::leaveRoom(uint64_t userId)
 {
-    auto userId = user.getId();
-    m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
-        [&userId](const User* user) { return userId == user->getId(); }), m_clients.end());
+    m_clientIds.erase(std::remove_if(m_clientIds.begin(), m_clientIds.end(),
+        [&userId](uint64_t id) { return userId == id; }), m_clientIds.end());
 }
 
 } // namespace nexilis

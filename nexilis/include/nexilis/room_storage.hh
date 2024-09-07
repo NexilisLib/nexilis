@@ -1,7 +1,9 @@
 #ifndef NEXILIS_ROOM_STORAGE_HH
 #define NEXILIS_ROOM_STORAGE_HH
 
+#include <cstdint>
 #include <nexilis/room.hh>
+#include <nexilis/user.hh>
 
 #include <vector>
 
@@ -21,6 +23,7 @@ public:
 
     /// Check if room exists.
     /// \param id The id of the room.
+    /// TODO change the name to containsRoom
     static bool contains(uint64_t id);
 
     /// Get all the rooms in the server.

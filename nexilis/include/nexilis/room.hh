@@ -112,28 +112,30 @@ public:
     }
 
     /// User joins the room context.
-    /// \param user The user that joins the room.
-    void joinRoom(User& user);
+    /// \param userId The id of the user that joins the room.
+    void joinRoom(uint64_t userId);
 
     /// User leaves the room.
-    void leaveRoom(User& user);
+    /// \param userId The id the user that leaves the room.
+    void leaveRoom(uint64_t userId);
 
     /// If the room contains certain user.
-    bool contains(User& user);
+    /// \param userId The id of the user we are checking.
+    bool contains(uint64_t userId);
 
-    std::vector<User*>& getClients()
+    std::vector<uint64_t>& getClients()
     {
-        return m_clients;
+        return m_clientIds;
     }
 
-    const std::vector<User*>& getClients() const
+    const std::vector<uint64_t>& getClients() const
     {
-        return m_clients;
+        return m_clientIds;
     }
 
 private:
     Data m_data;
-    std::vector<User*> m_clients;
+    std::vector<uint64_t> m_clientIds;
 };
 
 } // namespace nexilis

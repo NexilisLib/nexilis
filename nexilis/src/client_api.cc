@@ -785,6 +785,7 @@ uint64_t ClientAPI::readUint64(const boost::json::value& context, const std::str
     {
         readGood = false;
     }
+    Log::info("Read Uint64 item:  ", item, " key: ", key);
     assert(readGood);
     return item;
 }

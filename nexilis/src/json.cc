@@ -230,35 +230,41 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
         // Get data from clients in a room.
         boost::json::array clientArray;
         clientArray.reserve(room.getClients().size());
-        auto& clients = room.getClients();
 
-        for (auto& client : clients)
+        auto& roomClients = room.getClients();
+
+        for (auto& client : roomClients)
         {
-            boost::json::object clientObj;
-            clientObj["id"] = client->getId();
+            auto* clientPointer = ClientStorage::getClientById(client);
 
-            if (client->getUsername().empty())
+            if (clientPointer)
             {
-                Log::warning("Client has empty username!");
-                clientObj["name"] = "";
+                boost::json::object clientObj;
+                clientObj["id"] = clientPointer->getId();
+
+                if (clientPointer->getUsername().empty())
+                {
+                    Log::warning("Client has empty username!");
+                    clientObj["name"] = "";
+                }
+                else
+                {
+                    clientObj["name"] = clientPointer->getUsername();
+                }
+
+                auto pos2D = clientPointer->getObject2D().getPosition();
+                clientObj["2dPosX"] = pos2D.x;
+                clientObj["2dPosY"] = pos2D.y;
+
+                auto dimension2D = clientPointer->getObject2D().getDimensions();
+                clientObj["2dDimensionX"] = dimension2D.x;
+                clientObj["2dDimensionY"] = dimension2D.y;
+
+                clientArray.emplace_back(std::move(clientObj));
             }
-            else
-            {
-                clientObj["name"] = client->getUsername();
-            }
-
-            auto pos2D = client->getObject2D().getPosition();
-            clientObj["2dPosX"] = pos2D.x;
-            clientObj["2dPosY"] = pos2D.y;
-
-            auto dimension2D = client->getObject2D().getDimensions();
-            clientObj["2dDimensionX"] = dimension2D.x;
-            clientObj["2dDimensionY"] = dimension2D.y;
-
-            clientArray.emplace_back(std::move(clientObj));
         }
 
-        if (clients.size() > 0)
+        if (roomClients.size() > 0)
         {
             roomObj["clients"] = std::move(clientArray);
         }

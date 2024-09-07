@@ -112,7 +112,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                 // Get client id.
                 case 0:
                 {
-                    Log::info("Client id before send: ", user.getId());
                     std::map<std::string, boost::json::value> data{
                             {"command", boost::json::value("get")},
                             {"type", boost::json::value("client_id")},
@@ -392,16 +391,16 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     }
                     else
                     {
-                        if (RoomStorage::getRoomById(roomId)->contains(user))
+                        if (RoomStorage::getRoomById(roomId)->contains(user.getId()))
                         {
                             Log::error("Cannot join room where the client already is!");
                             return Result::failure;
                         }
 
-                        room->joinRoom(user);
-                        user.setRoomId(roomId);
+                        room->joinRoom(user.getId());
+                        user.setRoomId(room->getId());
 
-                        assert(RoomStorage::getRoomById(roomId)->contains(user));
+                        assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
                         assert(user.getRoomId() == roomId);
                         auto roomId = user.getRoomId();
 
@@ -414,15 +413,24 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         Json::emplace(json, Json::getRoomData());
                         auto data = Util::convertToByteVector(json);
 
-                        // Accessing server side clients.
-                        auto& clients = ClientStorage::getAllClients();
-
-                        for (auto& c : clients)
+                        auto& rooms = RoomStorage::getAllRooms();
+                        for (auto& room : rooms)
                         {
-                            /// If the client has the same room id as the sender of the message.
-                            if (c.getRoomId() == roomId)
+                            if (room.getId() == roomId)
                             {
-                                sendMessageToClient(data, c, protocol);
+                                for (auto& roomClient : room.getClients())
+                                {
+                                    auto* client = ClientStorage::getClientById(roomClient);
+                                    if (!client)
+                                    {
+                                        Log::warning("THIS CLIENT NOT FOUND");
+                                    }
+                                    else
+                                    {
+                                        Log::warning("THIS CLIENT FOUND");
+                                    }
+                                    sendMessageToClient(data, *client, protocol);
+                                }
                             }
                         }
 
@@ -442,8 +450,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         return Result::failure;
                     }
 
-                    currentRoom->leaveRoom(user);
-                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user));
+                    currentRoom->leaveRoom(user.getId());
+                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
                     user.setRoomId(0);
 
                     std::map<std::string, boost::json::value> header{
@@ -518,6 +526,12 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             {
                 case 0:
                 {
+                    if (user.getRoomId() == 0)
+                    {
+                        Log::error("User not in room!");
+                        return Result::error;
+                    }
+
                     Log::debug("CommandType position (vector2)");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     auto vector = Util::convertToVector2(payload);
@@ -542,19 +556,21 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
 
                     // Accessing server side clients.
-                    auto& clients = ClientStorage::getAllClients();
-
-                    for (auto& c : clients)
+                    auto& rooms = RoomStorage::getAllRooms();
+                    for (auto& room : rooms)
                     {
-                        if (c.getId() == user.getId())
+                        if (room.getId() == user.getRoomId())
                         {
-                            c.getObject2D().setPosition(vector.x, vector.y);
-                        }
+                            for (auto& roomClient : room.getClients())
+                            {
+                                auto* client = ClientStorage::getClientById(roomClient);
 
-                        /// This message is implicitly in room context.
-                        if (c.getRoomId() == currentRoom->getId())
-                        {
-                            sendMessageToClient(message, c, protocol);
+                                if (client->getId() == user.getId())
+                                {
+                                    client->getObject2D().setPosition(vector.x, vector.y);
+                                }
+                                sendMessageToClient(message, *client, protocol);
+                            }
                         }
                     }
 
@@ -593,22 +609,20 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto json = Json::createJSON(data);
                     std::vector<uint8_t> message = Util::convertToByteVector(json);
 
-                    // Accessing server side clients.
-                    auto& clients = ClientStorage::getAllClients();
-
-                    for (auto& c : clients)
+                    auto& rooms = RoomStorage::getAllRooms();
+                    for (auto& room : rooms)
                     {
-                        if (c.getId() == user.getId())
+                        if (room.getId() == user.getRoomId())
                         {
-                            c.getObject2D().setDimensions(vector.x, vector.y);
-                        }
-
-                        /// This message is implicitly in room context.
-                        if (c.getRoomId() == currentRoom->getId())
-                        {
-                            sendMessageToClient(message, c, protocol);
+                            auto* client = ClientStorage::getClientById(user.getId());
+                            if (client->getId() == user.getId())
+                            {
+                                client->getObject2D().setDimensions(vector.x, vector.y);
+                            }
+                            sendMessageToClient(message, *client, protocol);
                         }
                     }
+
                     return Result::success;
                 }
                 default: return Result::not_found;
