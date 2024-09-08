@@ -69,11 +69,6 @@ public:
         BaseClient::setId(id);
     }
 
-    uint64_t getId() const
-    {
-        return BaseClient::getId();
-    }
-
     void setRoomId(uint64_t roomId)
     {
         m_roomId = roomId;
@@ -87,16 +82,6 @@ public:
     void setUsername(const std::string& username)
     {
         BaseClient::setUsername(username);
-    }
-
-    std::string getUsername() const
-    {
-        return BaseClient::getUsername();
-    }
-
-    Object2D& getObject2D()
-    {
-        return m_object2D;
     }
 
     /// Protocol specific stuff.
@@ -140,9 +125,6 @@ private:
     std::string m_ip_address;
     std::string m_username;
     uint64_t m_roomId = 0;
-
-    /// The 2D properties of the client.
-    Object2D m_object2D;
 private:
     std::function<void(std::vector<uint8_t>)> m_boostTCPSendToClient = nullptr;
     std::function<void(std::vector<uint8_t>)> m_boostUDPSendToClient = nullptr;

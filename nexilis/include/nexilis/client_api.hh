@@ -222,38 +222,14 @@ public:
             return !(lhs == rhs);
         }
 
-        /// Get the identifier of the client.
-        uint64_t getId() const
-        {
-            return BaseClient::getId();
-        }
-
-        /// Get the user name of the client.
-        std::string getUsername() const
-        {
-            return BaseClient::getUsername();
-        }
-
         void setUsername(const std::string& username)
         {
             BaseClient::setUsername(username);
         }
 
-        /// Get pointer to 2D properties of the client.
-        Object2D* getObject2D() const;
-
-        /// Get pointer to 3D properties of the client.
-        Object3D* getObject3D() const;
-
     private:
         /// This ClientAPI instance.
         ClientAPI* const m_clientAPI = nullptr;
-
-        /// The 2D properties of the client.
-        std::unique_ptr<Object2D> m_object2D = nullptr;
-
-        /// The 3D properties of the client.
-        std::unique_ptr<Object3D> m_object3D = nullptr;
     };
 
     class Room

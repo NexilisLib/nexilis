@@ -1,4 +1,3 @@
-#include "nexilis/base_client.hh"
 #include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
@@ -92,26 +91,11 @@ ClientAPI::ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI)
     : BaseClient(id),
       m_clientAPI(clientAPI)
 {
-    switch (m_clientAPI->getApplicationType())
-    {
-        case ApplicationType::_2D:
-        {
-            m_object2D = std::make_unique<Object2D>();
-            break;
-        }
-        case ApplicationType::_3D:
-        {
-            m_object3D = std::make_unique<Object3D>();
-            break;
-        }
-    }
 }
 
 ClientAPI::ClientSession::ClientSession(ClientSession&& other)
     : BaseClient(std::move(other)),
-      m_clientAPI(std::move(other.m_clientAPI)),
-      m_object2D(std::move(other.m_object2D)),
-      m_object3D(std::move(other.m_object3D))
+      m_clientAPI(std::move(other.m_clientAPI))
 {
 }
 
@@ -120,8 +104,6 @@ ClientAPI::ClientSession& ClientAPI::ClientSession::operator=(ClientSession&& ot
     if (this != &other)
     {
         BaseClient::operator=(std::move(other));
-        m_object2D = std::move(other.m_object2D);
-        m_object3D = std::move(other.m_object3D);
     }
     return *this;
 }
@@ -130,32 +112,6 @@ bool operator==(const ClientAPI::ClientSession& lhs, const ClientAPI::ClientSess
 {
     return lhs.getId() == rhs.getId() &&
         lhs.getUsername() == rhs.getUsername();
-}
-
-Object2D* ClientAPI::ClientSession::getObject2D() const
-{
-    if (m_object2D)
-    {
-        return m_object2D.get();
-    }
-    else
-    {
-        Log::error("The application not running in 2D mode");
-        return nullptr;
-    }
-}
-
-Object3D* ClientAPI::ClientSession::getObject3D() const
-{
-    if (m_object3D)
-    {
-        return m_object3D.get();
-    }
-    else
-    {
-        Log::error("The application not running in 3D mode");
-        return nullptr;
-    }
 }
 
 // ClientAPI::Room::Communication
@@ -539,8 +495,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                                 ClientAPI::ClientSession newClient(id, this);
                                 Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
-                                newClient.getObject2D()->setPosition(object2DX, object2DY);
-                                newClient.getObject2D()->setDimensions(dimension2DX, dimension2DY);
+                                newClient.getObject2D().setPosition(object2DX, object2DY);
+                                newClient.getObject2D().setDimensions(dimension2DX, dimension2DY);
                                 newClient.setUsername(username);
                                 roomClients.emplace_back(std::move(newClient));
                             }
@@ -627,7 +583,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         {
                             if (overlappingAllowed())
                             {
-                                client.getObject2D()->setPosition(vectorX, vectorY);
+                                client.getObject2D().setPosition(vectorX, vectorY);
                             }
                             else
                             {
@@ -635,9 +591,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 {
                                     if (otherClient.getId() != id)
                                     {
-                                        auto dimensions = client.getObject2D()->getDimensions();
-                                        auto otherPosition = otherClient.getObject2D()->getPosition();
-                                        auto otherdimensions = otherClient.getObject2D()->getDimensions();
+                                        auto dimensions = client.getObject2D().getDimensions();
+                                        auto otherPosition = otherClient.getObject2D().getPosition();
+                                        auto otherdimensions = otherClient.getObject2D().getDimensions();
+
                                         if (
                                             vectorX - dimensions.x / 2 < otherPosition.x + otherdimensions.x / 2 &&
                                             vectorX + dimensions.x / 2 > otherPosition.x - otherdimensions.x / 2 &&
@@ -649,7 +606,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                         }
                                     }
                                 }
-                                client.getObject2D()->setPosition(vectorX, vectorY);
+                                client.getObject2D().setPosition(vectorX, vectorY);
                            }
                         }
                     }
@@ -672,11 +629,12 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     {
                         if (client.getId() == id)
                         {
-                            client.getObject2D()->setDimensions(vectorX, vectorY);
+                            client.getObject2D().setDimensions(vectorX, vectorY);
+                            return ReadResult::success;
                         }
                     }
                 }
-                return ReadResult::success;
+                return ReadResult::failure;
             }
         }
         else

@@ -14,7 +14,6 @@ User::User(User&& other)
       m_ip_address(std::move(other.m_ip_address)),
       m_username(std::move(other.m_username)),
       m_roomId(std::move(other.m_roomId)),
-      m_object2D(std::move(other.m_object2D)),
       m_boostTCPSendToClient(std::move(other.m_boostTCPSendToClient)),
       m_hasRootAccess(std::move(other.m_hasRootAccess)),
       m_hasCommonAccess(std::move(other.m_hasCommonAccess))
@@ -30,7 +29,6 @@ User& User::operator=(User&& other)
         m_ip_address = std::move(other.m_ip_address);
         m_username = std::move(other.m_username);
         m_roomId = std::move(other.m_roomId);
-        //m_object2D = std::move(other.m_object2D);
         m_boostTCPSendToClient = std::move(other.m_boostTCPSendToClient);
         m_hasRootAccess = std::move(other.m_hasRootAccess);
         m_hasCommonAccess = std::move(other.m_hasCommonAccess);

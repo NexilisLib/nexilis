@@ -129,62 +129,157 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case CommandType::info:
+        case CommandType::room:
         {
             switch (arg)
             {
-                // Get all public information from a server.
+                // Join room.
                 case 0:
                 {
-                    std::map<std::string, boost::json::value> header{
-                                {"command", boost::json::value("info")},
-                                {"type", boost::json::value("server_data")}};
+                    Log::debug("Called Room::Join()");
 
-                    auto json = Json::createJSON(header);
-                    Json::emplace(json, Json::getServerData());
-                    std::vector<uint8_t> data = Util::convertToByteVector(json);
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    uint64_t roomId = Util::convertToType<uint64_t>(payload);
 
-                    sendMessageToClient(data, user, protocol);
-                    Log::info("Used Info::generalInfo");
-                    return Result::success;
-                }
+                    auto* room = RoomStorage::getRoomById(roomId);
 
-                // Get data from the clients existing on the server.
-                case 1:
-                {
-                    std::map<std::string, boost::json::value> header{
-                                {"command", boost::json::value("info")},
-                                {"type", boost::json::value("client_data")}};
+                    if (!room)
+                    {
+                        Log::error("Cannot find room with specified id!");
+                        return Result::invalid_input;
+                    }
+                    else
+                    {
+                        if (RoomStorage::getRoomById(roomId)->contains(user.getId()))
+                        {
+                            Log::error("Cannot join room where the client already is!");
+                            return Result::failure;
+                        }
 
-                    auto json = Json::createJSON(header);
-                    Json::emplace(json, Json::getClientData());
-                    std::vector<uint8_t> data = Util::convertToByteVector(json);
+                        room->joinRoom(user.getId());
+                        user.setRoomId(room->getId());
 
-                    sendMessageToClient(data, user, protocol);
-                    Log::info("Used Info::clientInfo");
-                    return Result::success;
-                }
+                        assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
+                        assert(user.getRoomId() == roomId);
+                        auto roomId = user.getRoomId();
 
-                // Get data from the rooms existing on the server.
-                case 2:
-                {
-                    std::map<std::string, boost::json::value> header{
+                        std::map<std::string, boost::json::value> header{
                                 {"command", boost::json::value("info")},
                                 {"type", boost::json::value("room_data")},
                                 {"callback", boost::json::value(messageId)}};
 
+                        auto json = Json::createJSON(header);
+                        Json::emplace(json, Json::getRoomData());
+                        auto data = Util::convertToByteVector(json);
+
+                        auto& rooms = RoomStorage::getAllRooms();
+                        for (auto& room : rooms)
+                        {
+                            if (room.getId() == roomId)
+                            {
+                                for (auto& roomClient : room.getClients())
+                                {
+                                    auto* client = ClientStorage::getClientById(roomClient);
+                                    if (!client)
+                                    {
+                                        Log::warning("THIS CLIENT NOT FOUND");
+                                    }
+                                    else
+                                    {
+                                        Log::warning("THIS CLIENT FOUND");
+                                    }
+                                    sendMessageToClient(data, *client, protocol);
+                                }
+                            }
+                        }
+
+                        return Result::success;
+                    }
+                }
+
+                // Leave current room.
+                case 1:
+                {
+                    Log::debug("Called Room::leave()");
+                    auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+
+                    if (!currentRoom)
+                    {
+                        Log::warning("Client not currently in room so cannot leave current room.");
+                        return Result::failure;
+                    }
+
+                    currentRoom->leaveRoom(user.getId());
+                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
+                    user.setRoomId(0);
+
+                    std::map<std::string, boost::json::value> header{
+                            {"command", boost::json::value("info")},
+                            {"type", boost::json::value("room_data")},
+                            {"callback", boost::json::value(messageId)}};
+
                     auto json = Json::createJSON(header);
                     Json::emplace(json, Json::getRoomData());
                     auto data = Util::convertToByteVector(json);
-                    sendMessageToClient(data, user, protocol);
-                    Log::info("Used Info::roomInfo");
+
+                    // Accessing server side clients.
+                    auto& clients = ClientStorage::getAllClients();
+
+                    for (auto& c : clients)
+                    {
+                        // Send message to all clients existing in this room.
+                        if (c.getRoomId() == currentRoom->getId())
+                        {
+                            sendMessageToClient(data, c, protocol);
+                        }
+                    }
+
                     return Result::success;
                 }
+
+                /// Create room.
+                case 2:
+                {
+                    Log::debug("CommandType room (create)");
+                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                    std::string roomName = Util::convertToString(payload);
+
+                    if (roomName.empty())
+                    {
+                        Log::error("Room name cannot be empty");
+                        return Result::invalid_input;
+                    }
+                    else if (roomName == "")
+                    {
+                        Log::error("Room name cannot be an empty string");
+                        return Result::invalid_input;
+                    }
+                    else if (roomName == " ")
+                    {
+                        Log::error("Room name cannot be equal to \" \" ");
+                        return Result::invalid_input;
+                    }
+                    else if (roomName.length() > 20)
+                    {
+                        Log::error("Too long room name");
+                        return Result::invalid_input;
+                    }
+                    else
+                    {
+                        auto newRoom = Room(Room::Data(user.getId(), roomName));
+
+                        auto newRoomId = newRoom.getId();
+                        RoomStorage::add(std::move(newRoom));
+                        Log::debug("Added room ", newRoomId, " to persistent storage");
+                        return Result::success;
+                    }
+                }
+
                 default: return Result::not_found;
             }
-            return Result::not_found;
         }
 
+        
         case CommandType::authentication:
         {
             switch (arg)
@@ -370,154 +465,60 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
             }
         }
 
-        case CommandType::room:
+        case CommandType::info:
         {
             switch (arg)
             {
-                // Join room.
+                // Get all public information from a server.
                 case 0:
                 {
-                    Log::debug("Called Room::Join()");
+                    std::map<std::string, boost::json::value> header{
+                                {"command", boost::json::value("info")},
+                                {"type", boost::json::value("server_data")}};
 
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    uint64_t roomId = Util::convertToType<uint64_t>(payload);
+                    auto json = Json::createJSON(header);
+                    Json::emplace(json, Json::getServerData());
+                    std::vector<uint8_t> data = Util::convertToByteVector(json);
 
-                    auto* room = RoomStorage::getRoomById(roomId);
+                    sendMessageToClient(data, user, protocol);
+                    Log::info("Used Info::generalInfo");
+                    return Result::success;
+                }
 
-                    if (!room)
-                    {
-                        Log::error("Cannot find room with specified id!");
-                        return Result::invalid_input;
-                    }
-                    else
-                    {
-                        if (RoomStorage::getRoomById(roomId)->contains(user.getId()))
-                        {
-                            Log::error("Cannot join room where the client already is!");
-                            return Result::failure;
-                        }
+                // Get data from the clients existing on the server.
+                case 1:
+                {
+                    std::map<std::string, boost::json::value> header{
+                                {"command", boost::json::value("info")},
+                                {"type", boost::json::value("client_data")}};
 
-                        room->joinRoom(user.getId());
-                        user.setRoomId(room->getId());
+                    auto json = Json::createJSON(header);
+                    Json::emplace(json, Json::getClientData());
+                    std::vector<uint8_t> data = Util::convertToByteVector(json);
 
-                        assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
-                        assert(user.getRoomId() == roomId);
-                        auto roomId = user.getRoomId();
+                    sendMessageToClient(data, user, protocol);
+                    Log::info("Used Info::clientInfo");
+                    return Result::success;
+                }
 
-                        std::map<std::string, boost::json::value> header{
+                // Get data from the rooms existing on the server.
+                case 2:
+                {
+                    std::map<std::string, boost::json::value> header{
                                 {"command", boost::json::value("info")},
                                 {"type", boost::json::value("room_data")},
                                 {"callback", boost::json::value(messageId)}};
 
-                        auto json = Json::createJSON(header);
-                        Json::emplace(json, Json::getRoomData());
-                        auto data = Util::convertToByteVector(json);
-
-                        auto& rooms = RoomStorage::getAllRooms();
-                        for (auto& room : rooms)
-                        {
-                            if (room.getId() == roomId)
-                            {
-                                for (auto& roomClient : room.getClients())
-                                {
-                                    auto* client = ClientStorage::getClientById(roomClient);
-                                    if (!client)
-                                    {
-                                        Log::warning("THIS CLIENT NOT FOUND");
-                                    }
-                                    else
-                                    {
-                                        Log::warning("THIS CLIENT FOUND");
-                                    }
-                                    sendMessageToClient(data, *client, protocol);
-                                }
-                            }
-                        }
-
-                        return Result::success;
-                    }
-                }
-
-                // Leave current room.
-                case 1:
-                {
-                    Log::debug("Called Room::leave()");
-                    auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-
-                    if (!currentRoom)
-                    {
-                        Log::warning("Client not currently in room so cannot leave current room.");
-                        return Result::failure;
-                    }
-
-                    currentRoom->leaveRoom(user.getId());
-                    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
-                    user.setRoomId(0);
-
-                    std::map<std::string, boost::json::value> header{
-                            {"command", boost::json::value("info")},
-                            {"type", boost::json::value("room_data")},
-                            {"callback", boost::json::value(messageId)}};
-
                     auto json = Json::createJSON(header);
                     Json::emplace(json, Json::getRoomData());
                     auto data = Util::convertToByteVector(json);
-
-                    // Accessing server side clients.
-                    auto& clients = ClientStorage::getAllClients();
-
-                    for (auto& c : clients)
-                    {
-                        // Send message to all clients existing in this room.
-                        if (c.getRoomId() == currentRoom->getId())
-                        {
-                            sendMessageToClient(data, c, protocol);
-                        }
-                    }
-
+                    sendMessageToClient(data, user, protocol);
+                    Log::info("Used Info::roomInfo");
                     return Result::success;
                 }
-
-                /// Create room.
-                case 2:
-                {
-                    Log::debug("CommandType room (create)");
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    std::string roomName = Util::convertToString(payload);
-
-                    if (roomName.empty())
-                    {
-                        Log::error("Room name cannot be empty");
-                        return Result::invalid_input;
-                    }
-                    else if (roomName == "")
-                    {
-                        Log::error("Room name cannot be an empty string");
-                        return Result::invalid_input;
-                    }
-                    else if (roomName == " ")
-                    {
-                        Log::error("Room name cannot be equal to \" \" ");
-                        return Result::invalid_input;
-                    }
-                    else if (roomName.length() > 20)
-                    {
-                        Log::error("Too long room name");
-                        return Result::invalid_input;
-                    }
-                    else
-                    {
-                        auto newRoom = Room(Room::Data(user.getId(), roomName));
-
-                        auto newRoomId = newRoom.getId();
-                        RoomStorage::add(std::move(newRoom));
-                        Log::debug("Added room ", newRoomId, " to persistent storage");
-                        return Result::success;
-                    }
-                }
-
                 default: return Result::not_found;
             }
+            return Result::not_found;
         }
 
         case CommandType::position:
