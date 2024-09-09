@@ -448,7 +448,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             if (type == "client_id")
             {
                 uint64_t clientId = readUint64(json, "client_id");
-                Log::info("SET CLIENTID TO ", clientId);
                 setClientId(clientId);
                 Packet::_initialize(*this);
                 return ReadResult::success;
@@ -457,6 +456,47 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 Log::error("Unused path");
                 return ReadResult::not_found;
+            }
+        }
+
+        else if (command == "room")
+        {
+            uint64_t roomId = readUint64(json, "roomId");
+            uint64_t clientId = readUint64(json, "clientId");
+
+            if (type == "join")
+            {
+                for (auto& room : m_currentlyActiveRooms)
+                {
+                    if (room.getRoomId() == roomId)
+                    {
+                        ClientSession session(clientId, this);
+                        room.addClient(std::move(session));
+                        return ReadResult::success;
+                    }
+                }
+                return ReadResult::error;
+            }
+            else if (type == "leave")
+            {
+                for (auto& room : m_currentlyActiveRooms)
+                {
+                    if (room.getRoomId() == roomId)
+                    {
+                        room.removeClient(clientId);
+                        return ReadResult::success;
+                    }
+                }
+                return ReadResult::failure;
+            }
+            else if (type == "create")
+            {
+                auto room = ClientAPI::Room();
+            }
+            else
+            {
+                Log::error("No such room command!");
+                return ReadResult::failure;
             }
         }
 

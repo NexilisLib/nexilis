@@ -51,7 +51,7 @@ protected:
         m_id = id;
     }
 
-       void setUsername(const std::string& username)
+    void setUsername(const std::string& username)
     {
         m_username = username;
     }

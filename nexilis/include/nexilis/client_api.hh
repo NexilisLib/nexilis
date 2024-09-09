@@ -1,6 +1,7 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
+#include <algorithm>
 #include <nexilis/base_client.hh>
 #include <nexilis/vector2.hh>
 #include <nexilis/vector3.hh>
@@ -341,6 +342,12 @@ public:
         void addClient(ClientSession&& client)
         {
             m_clients.emplace_back(std::move(client));
+        }
+
+        void removeClient(uint64_t clientId)
+        {
+            m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
+                [&clientId](const ClientSession& session) { return clientId == session.getId(); }), m_clients.end());
         }
 
         std::vector<ClientSession>& getClients()
