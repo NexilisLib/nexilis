@@ -35,37 +35,23 @@ public:
         static std::vector<uint8_t> rooms();
     };
 
-    class Communicate
-    {
-    public:
-        static std::vector<uint8_t> broadcast(const std::string& message);
-        static std::vector<uint8_t> multicast(const std::string& message);
-        static std::vector<uint8_t> roomMessage(const std::string& message);
-    };
-
     class Room
     {
     public:
+        class Object2D
+        {
+        public:
+            static std::vector<uint8_t> position(Vector2f position);
+            static std::vector<uint8_t> dimensions(Vector2f dimensions);
+        };
+
         static std::vector<uint8_t> join(uint64_t roomId);
         static std::vector<uint8_t> leave();
         static std::vector<uint8_t> create(const std::string& roomName);
     };
 
-    class Position
-    {
-    public:
-        static std::vector<uint8_t> vector2(Vector2f position);
-    };
-
-    class Dimensions
-    {
-    public:
-        static std::vector<uint8_t> vector2(Vector2f dimensions);
-    };
-
 private:
     static std::vector<uint8_t> clientIdentification();
-
     static ClientAPI* m_clientApi;
 };
 

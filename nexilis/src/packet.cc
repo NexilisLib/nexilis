@@ -54,44 +54,46 @@ std::vector<uint8_t> Packet::Info::rooms()
     return id;
 }
 
-std::vector<uint8_t> Packet::Communicate::broadcast(const std::string& message)
+/**
+ *  2:0      Management
+ *  2:0:0    Join room; uint64_t roomId
+ *  2:0:1    Leave room; void
+ *  2:0:2    Create room; string roomName
+ *
+ *  2:1      Object2D
+ *  2:1:0    Set position; Vec2f position
+ *  2:1:1    Set dimensions; Vec2f dimensions
+ *
+ *  2:2    Communication.
+ *  2:2:0
+ */
+
+std::vector<uint8_t> Packet::Room::Object2D::position(Vector2f position)
 {
     auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::communicate));
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(1);
     id.emplace_back(0);
 
-    auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
-    for (const auto& elem : messageVector)
+    auto positionVector = Util::convertToByteVector(position);
+    for (const auto& byte : positionVector)
     {
-        id.emplace_back(elem);
+        id.emplace_back(byte);
     }
     return id;
 }
 
-std::vector<uint8_t> Packet::Communicate::multicast(const std::string& message)
+std::vector<uint8_t> Packet::Room::Object2D::dimensions(Vector2f dimensions)
 {
     auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::communicate));
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(1);
     id.emplace_back(1);
 
-    auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
-    for (const auto& elem : messageVector)
+    auto dimensionVector = Util::convertToByteVector(dimensions);
+    for (const auto& byte : dimensionVector)
     {
-        id.emplace_back(elem);
-    }
-    return id;
-}
-
-std::vector<uint8_t> Packet::Communicate::roomMessage(const std::string& message)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::communicate));
-    id.emplace_back(2);
-
-    auto messageVector = Util::convertToByteVector(message.c_str(), message.size());
-    for (const auto& elem : messageVector)
-    {
-        id.emplace_back(elem);
+        id.emplace_back(byte);
     }
     return id;
 }
@@ -100,6 +102,7 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(0);
     id.emplace_back(0);
 
     auto roomIdVector = Util::convertToByteVector(roomId);
@@ -114,6 +117,7 @@ std::vector<uint8_t> Packet::Room::leave()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(0);
     id.emplace_back(1);
     return id;
 }
@@ -122,39 +126,12 @@ std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(0);
     id.emplace_back(2);
 
     for (const char r : roomName)
     {
         id.emplace_back(static_cast<uint8_t>(r));
-    }
-    return id;
-}
-
-std::vector<uint8_t> Packet::Position::vector2(Vector2f position)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::position));
-    id.emplace_back(0);
-
-    auto positionVector = Util::convertToByteVector(position);
-    for (const auto& byte : positionVector)
-    {
-        id.emplace_back(byte);
-    }
-    return id;
-}
-
-std::vector<uint8_t> Packet::Dimensions::vector2(Vector2f dimensions)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::dimensions));
-    id.emplace_back(0);
-
-    auto dimensionVector = Util::convertToByteVector(dimensions);
-    for (const auto& byte : dimensionVector)
-    {
-        id.emplace_back(byte);
     }
     return id;
 }

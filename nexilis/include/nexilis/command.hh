@@ -23,6 +23,9 @@ public:
     /// Result for reading the Nexilis command sequence.
     enum class Result
     {
+        /// Unimplemented actions.
+        unimplemented,
+
         // Command success.
         success,
 

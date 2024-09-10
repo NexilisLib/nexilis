@@ -1,7 +1,6 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
-#include <algorithm>
 #include <nexilis/base_client.hh>
 #include <nexilis/vector2.hh>
 #include <nexilis/vector3.hh>
