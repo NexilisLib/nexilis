@@ -1,9 +1,9 @@
-#include <nexilis/room_storage.hh>
 #include <nexilis/client_api.hh>
 #include <nexilis/common/util.hh>
 #include <nexilis/json.hh>
-#include <nexilis/packet.hh>
 #include <nexilis/log.hh>
+#include <nexilis/packet.hh>
+#include <nexilis/room_storage.hh>
 
 #include <thread>
 
@@ -111,21 +111,21 @@ ClientAPI::ClientSession& ClientAPI::ClientSession::operator=(ClientSession&& ot
 bool operator==(const ClientAPI::ClientSession& lhs, const ClientAPI::ClientSession& rhs)
 {
     return lhs.getId() == rhs.getId() &&
-        lhs.getUsername() == rhs.getUsername();
+           lhs.getUsername() == rhs.getUsername();
 }
 
 // ClientAPI::Room::Communication
-ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::ClientSession* client) :
-    m_payload(payload),
-    m_client(client),
-    m_id(Util::getRandomUint64())
+ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::ClientSession* client)
+    : m_payload(payload),
+      m_client(client),
+      m_id(Util::getRandomUint64())
 {
 }
 
-ClientAPI::Room::Communication::Communication(const Communication& other) :
-    m_payload(other.m_payload),
-    m_client(other.m_client),
-    m_id(other.m_id)
+ClientAPI::Room::Communication::Communication(const Communication& other)
+    : m_payload(other.m_payload),
+      m_client(other.m_client),
+      m_id(other.m_id)
 {
 }
 
@@ -140,10 +140,10 @@ ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(const 
     return *this;
 }
 
-ClientAPI::Room::Communication::Communication(Communication&& other) :
-    m_payload(std::move(other.m_payload)),
-    m_client(std::move(other.m_client)),
-    m_id(std::move(other.m_id))
+ClientAPI::Room::Communication::Communication(Communication&& other)
+    : m_payload(std::move(other.m_payload)),
+      m_client(std::move(other.m_client)),
+      m_id(std::move(other.m_id))
 
 {
 }
@@ -166,15 +166,14 @@ bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room
            lhs.getId() == rhs.getId();
 }
 
-
 // ClientAPI::Room
-ClientAPI::Room::Room(Room&& other) :
-    m_name(std::move(other.m_name)),
-    m_creatorId(std::move(other.m_creatorId)),
-    m_roomId(std::move(other.m_roomId)),
-    m_maxSize(std::move(other.m_maxSize)),
-    m_clients(std::move(other.m_clients)),
-    m_roomMessages(std::move(other.m_roomMessages))
+ClientAPI::Room::Room(Room&& other)
+    : m_name(std::move(other.m_name)),
+      m_creatorId(std::move(other.m_creatorId)),
+      m_roomId(std::move(other.m_roomId)),
+      m_maxSize(std::move(other.m_maxSize)),
+      m_clients(std::move(other.m_clients)),
+      m_roomMessages(std::move(other.m_roomMessages))
 {
 }
 
@@ -204,11 +203,11 @@ ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t room
 bool operator==(const ClientAPI::Room& lhs, const ClientAPI::Room& rhs)
 {
     return lhs.getName() == rhs.getName() &&
-       lhs.getCreatorId() == rhs.getCreatorId() &&
-       lhs.getRoomId() == rhs.getRoomId() &&
-       lhs.getMaxSize() == rhs.getMaxSize() &&
-       lhs.getClients() == rhs.getClients() &&
-       lhs.getMessages() == rhs.getMessages();
+           lhs.getCreatorId() == rhs.getCreatorId() &&
+           lhs.getRoomId() == rhs.getRoomId() &&
+           lhs.getMaxSize() == rhs.getMaxSize() &&
+           lhs.getClients() == rhs.getClients() &&
+           lhs.getMessages() == rhs.getMessages();
 }
 
 bool ClientAPI::Room::containsCommunication(const Room::Communication& communication)
@@ -222,10 +221,8 @@ bool ClientAPI::Room::containsCommunication(uint64_t communicationId)
     {
         return item.getId() == communicationId;
     };
-
     return std::find_if(m_roomMessages.begin(), m_roomMessages.end(), idComparator) != m_roomMessages.end();
 }
-
 
 ///
 /// ClientAPI
@@ -514,6 +511,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 if (overlappingAllowed())
                                 {
                                     client.getObject2D().setPosition(vectorX, vectorY);
+                                    return ReadResult::success;
                                 }
                                 else
                                 {
@@ -526,11 +524,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                             auto otherdimensions = otherClient.getObject2D().getDimensions();
 
                                             if (
-                                                vectorX - dimensions.x / 2 < otherPosition.x + otherdimensions.x / 2 &&
-                                                vectorX + dimensions.x / 2 > otherPosition.x - otherdimensions.x / 2 &&
-                                                vectorY - dimensions.y / 2 < otherPosition.y + otherdimensions.y / 2 &&
-                                                vectorY + dimensions.y / 2 > otherPosition.y - otherdimensions.y / 2
-                                                )
+                                                    vectorX - dimensions.x / 2 < otherPosition.x + otherdimensions.x / 2 &&
+                                                    vectorX + dimensions.x / 2 > otherPosition.x - otherdimensions.x / 2 &&
+                                                    vectorY - dimensions.y / 2 < otherPosition.y + otherdimensions.y / 2 &&
+                                                    vectorY + dimensions.y / 2 > otherPosition.y - otherdimensions.y / 2)
                                             {
                                                 return ReadResult::failure;
                                             }
@@ -538,154 +535,153 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                     }
                                     client.getObject2D().setPosition(vectorX, vectorY);
                                     return ReadResult::success;
-                               }
+                                }
                             }
                         }
-                    return ReadResult::clean;
+                        return ReadResult::clean;
+                    }
+                }
+                else if (roomAction == "dimensions2D")
+                {
+                    float vectorX = readFloat(json, "x");
+                    float vectorY = readFloat(json, "y");
+
+                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    {
+                        for (auto& client : room->getClients())
+                        {
+                            if (client.getId() == clientId)
+                            {
+                                client.getObject2D().setDimensions(vectorX, vectorY);
+                                return ReadResult::success;
+                            }
+                        }
+                    }
+                    return ReadResult::failure;
+                }
+                else
+                {
+                    return ReadResult::failure;
                 }
             }
-            else if (roomAction == "dimensions2D")
+            else if (type == "communicate")
             {
-                uint64_t id = readUint64(json, "id");
-                float vectorX = readFloat(json, "x");
-                float vectorY = readFloat(json, "y");
-
-                for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                if (roomAction == "room_message")
                 {
-                    for (auto& client : room->getClients())
+                    uint64_t id = readUint64(json, "id");
+                    uint64_t roomId = readUint64(json, "roomId");
+                    std::string message = readString(json, "message");
+
+                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                     {
-                        if (client.getId() == id)
+                        ClientSession* sender = nullptr;
+                        for (auto& client : room->getClients())
                         {
-                            client.getObject2D().setDimensions(vectorX, vectorY);
+                            if (client.getId() == id)
+                            {
+                                sender = &client;
+                            }
+                        }
+
+                        if (room->getRoomId() == roomId)
+                        {
+                            Room::Communication newMessage(message, sender);
+                            room->addMessage(std::move(newMessage));
+
+                            assert(room->containsCommunication(newMessage.getId()));
+                            Log::info("Added new message in room: ", roomId);
                             return ReadResult::success;
                         }
                     }
+                    Log::info("Client not in the room it's targetting!");
+                    return ReadResult::failure;
                 }
-                return ReadResult::failure;
-            }
-            else
-            {
-                return ReadResult::failure;
+                else if (roomAction == "broadcast")
+                {
+                    Log::error("Not implemented");
+                    return ReadResult::not_implemented;
+                }
+                else if (roomAction == "multicast")
+                {
+                    Log::error("Not implemented");
+                    return ReadResult::not_implemented;
+                }
+                else
+                {
+                    Log::error("No such room command!");
+                    return ReadResult::failure;
+                }
             }
         }
-        else if (type == "communicate")
+        else if (command == "info")
         {
-            if (roomAction == "room_message")
+            if (type == "room_data")
             {
-                uint64_t id = readUint64(json, "id");
-                uint64_t roomId = readUint64(json, "roomId");
-                std::string message = readString(json, "message");
-
-                for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                if (json.find("rooms") != json.end())
                 {
-                    ClientSession* sender = nullptr;
-                    for (auto& client : room->getClients())
+                    auto rooms = json.at("rooms").as_array();
+                    std::vector<Room> newRooms;
+                    for (const auto& room : rooms)
                     {
-                        if (client.getId() == id)
+                        std::string name = readString(room, "name");
+                        int maxSize = static_cast<int>(room.at("maxSize").as_int64());
+
+                        uint64_t creatorId = readUint64(room, "creatorId");
+                        uint64_t id = readUint64(room, "id");
+
+                        std::vector<ClientAPI::ClientSession> roomClients;
+
+                        if (room.as_object().find("clients") != room.as_object().end())
                         {
-                            sender = &client;
+                            auto clients = room.at("clients").as_array();
+                            Log::info("Clients size: ", clients.size());
+
+                            for (const auto& client : clients)
+                            {
+                                uint64_t id = readUint64(client, "id");
+                                std::string username = readString(client, "name");
+
+                                float object2DX = readFloat(client, "roomPositionX");
+                                float object2DY = readFloat(client, "roomPositionY");
+                                float dimension2DX = readFloat(client, "roomDimensionX");
+                                float dimension2DY = readFloat(client, "roomDimensionY");
+
+                                ClientAPI::ClientSession newClient(id, this);
+                                Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
+                                newClient.getObject2D().setPosition(object2DX, object2DY);
+                                newClient.getObject2D().setDimensions(dimension2DX, dimension2DY);
+                                newClient.setUsername(username);
+                                roomClients.emplace_back(std::move(newClient));
+                            }
                         }
+                        newRooms.emplace_back(Room(name, creatorId, id, maxSize, std::move(roomClients)));
                     }
-
-                    if (room->getRoomId() == roomId)
-                    {
-                        Room::Communication newMessage(message, sender);
-                        room->addMessage(std::move(newMessage));
-
-                        assert(room->containsCommunication(newMessage.getId()));
-                        Log::info("Added new message in room: ", roomId);
-                        return ReadResult::success;
-                    }
+                    m_currentlyActiveRooms = std::move(newRooms);
+                    return ReadResult::success;
                 }
-                Log::info("Client not in the room it's targetting!");
-                return ReadResult::failure;
             }
-            else if (roomAction == "broadcast")
+            else if (type == "client_data")
             {
                 Log::error("Not implemented");
                 return ReadResult::not_implemented;
             }
-            else if (roomAction == "multicast")
+            else if (type == "server_data")
             {
                 Log::error("Not implemented");
                 return ReadResult::not_implemented;
             }
             else
             {
-                Log::error("No such room command!");
-                return ReadResult::failure;
+                Log::error("Wrong type!");
+                return ReadResult::not_implemented;
             }
-        }
-    }
-    else if (command == "info")
-    {
-        if (type == "room_data")
-        {
-            if (json.find("rooms") != json.end())
-            {
-                auto rooms = json.at("rooms").as_array();
-                std::vector<Room> newRooms;
-                for (const auto& room : rooms)
-                {
-                    std::string name = readString(room, "name");
-                    int maxSize = static_cast<int>(room.at("maxSize").as_int64());
-
-                    uint64_t creatorId = readUint64(room, "creatorId");
-                    uint64_t id = readUint64(room, "id");
-
-                    std::vector<ClientAPI::ClientSession> roomClients;
-
-                    if (room.as_object().find("clients") != room.as_object().end())
-                    {
-                        auto clients = room.at("clients").as_array();
-                        Log::info("Clients size: ", clients.size());
-
-                        for (const auto& client : clients)
-                        {
-                            uint64_t id = readUint64(client, "id");
-                            std::string username = readString(client, "name");
-
-                            float object2DX = readFloat(client, "2dPosX");
-                            float object2DY = readFloat(client, "2dPosY");
-                            float dimension2DX = readFloat(client, "2dDimensionX");
-                            float dimension2DY = readFloat(client, "2dDimensionY");
-
-                            ClientAPI::ClientSession newClient(id, this);
-                            Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
-                            newClient.getObject2D().setPosition(object2DX, object2DY);
-                            newClient.getObject2D().setDimensions(dimension2DX, dimension2DY);
-                            newClient.setUsername(username);
-                            roomClients.emplace_back(std::move(newClient));
-                        }
-                    }
-                    newRooms.emplace_back(Room(name, creatorId, id, maxSize, std::move(roomClients)));
-                }
-                m_currentlyActiveRooms = std::move(newRooms);
-                return ReadResult::success;
-            }
-        }
-        else if (type == "client_data")
-        {
-            Log::error("Not implemented");
-            return ReadResult::not_implemented;
-        }
-        else if (type == "server_data")
-        {
-            Log::error("Not implemented");
-            return ReadResult::not_implemented;
         }
         else
         {
-            Log::error("Wrong type!");
-            return ReadResult::not_implemented;
+            Log::error("UNDEFINED COMMAND");
+            return ReadResult::not_found;
         }
     }
-    else
-    {
-        Log::error("UNDEFINED COMMAND");
-        return ReadResult::not_found;
-    }
-}
     return ReadResult::not_found;
 }
 

@@ -212,7 +212,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                         case 2:
                         {
                             Log::debug("Command Room::create()");
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 2);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                             std::string roomName = Util::convertToString(payload);
 
                             if (roomName.empty())
@@ -296,7 +296,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 Log::debug("Dimension x:", vector.x, " y:", vector.y);
 
                                 auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-
                                 if (!currentRoom)
                                 {
                                     Log::warning("Client not currently in room.");
@@ -522,41 +521,28 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
 
 Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protocol, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
 {
-    // "type", the first argument to the rooms.
-    std::string roomCommandType;
-    // "action", the second argument to the rooms.
-    std::string roomCommandAction;
+    RoomType roomType = static_cast<RoomType>(messageData[1]);
+    auto action = messageData[2];
 
-    switch (messageData[1])
+    std::string roomCommandAction;
+    switch (roomType)
     {
-        case 0:
+        case RoomType::management:
         {
-            roomCommandType = "management";
-            switch (messageData[2])
-            {
-                case 0: roomCommandAction = "join"; break;
-                case 1: roomCommandAction = "leave"; break;
-                case 2: roomCommandAction = "create"; break;
-                default: return Result::not_found;
-            }
+            roomCommandAction = ManagementTypeToString(static_cast<ManagementOptions>(action));
+            break;
         }
-        case 1:
+        case RoomType::object2D:
         {
-            roomCommandType = "object2D";
-            switch (messageData[2])
-            {
-                case 0: roomCommandAction = "position"; break;
-                case 1: roomCommandAction = "dimensions"; break;
-                default: return Result::not_found;
-            }
+            roomCommandAction = Object2DTypeToString(static_cast<Object2DOptions>(action));
+            break;
         }
-        /// Communicate
-        case 2:
+        case RoomType::communication:
         {
-            roomCommandType = "communicate";
-            return Result::error;
+            return Result::unimplemented;
         }
     }
+    std::string roomCommandType = RoomTypeToString(roomType);
     assert(!roomCommandType.empty());
     assert(!roomCommandAction.empty());
 

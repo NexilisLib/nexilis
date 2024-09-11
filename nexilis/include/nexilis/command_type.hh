@@ -2,6 +2,7 @@
 #define NEXILIX_COMMAND_TYPE_HH
 
 #include <cstdint>
+#include <string>
 
 namespace nexilis
 {
@@ -32,6 +33,35 @@ enum class CommandType : uint8_t
     error = 7,
     info = 8,
 };
+
+enum class RoomType : uint8_t
+{
+    management = 0,
+    object2D = 1,
+    communication = 2
+};
+
+enum class ManagementOptions : uint8_t
+{
+    join = 0,
+    leave = 1,
+    create = 2
+};
+
+enum class Object2DOptions : uint8_t
+{
+    position = 0,
+    dimensions = 1
+};
+
+enum class CommunicationOptions : uint8_t
+{
+    broadcast
+};
+
+std::string RoomTypeToString(RoomType type);
+std::string ManagementTypeToString(ManagementOptions management);
+std::string Object2DTypeToString(Object2DOptions object2D);
 
 }
 

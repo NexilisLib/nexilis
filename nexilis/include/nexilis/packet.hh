@@ -45,9 +45,13 @@ public:
             static std::vector<uint8_t> dimensions(Vector2f dimensions);
         };
 
-        static std::vector<uint8_t> join(uint64_t roomId);
-        static std::vector<uint8_t> leave();
-        static std::vector<uint8_t> create(const std::string& roomName);
+        class Management
+        {
+        public:
+            static std::vector<uint8_t> join(uint64_t roomId);
+            static std::vector<uint8_t> leave();
+            static std::vector<uint8_t> create(const std::string& roomName);
+        };
     };
 
 private:

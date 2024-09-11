@@ -1,3 +1,5 @@
+#include "nexilis/object2d.hh"
+#include "nexilis/vector2.hh"
 #include <nexilis/client_storage.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
@@ -252,13 +254,13 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
                     clientObj["name"] = clientPointer->getUsername();
                 }
 
-                auto pos2D = clientPointer->getObject2D().getPosition();
-                clientObj["2dPosX"] = pos2D.x;
-                clientObj["2dPosY"] = pos2D.y;
+                auto position2D = clientPointer->getObject2D().getPosition();
+                clientObj["roomPositionX"] = position2D.x;
+                clientObj["roomPositionY"] = position2D.y;
 
                 auto dimension2D = clientPointer->getObject2D().getDimensions();
-                clientObj["2dDimensionX"] = dimension2D.x;
-                clientObj["2dDimensionY"] = dimension2D.y;
+                clientObj["roomDimensionX"] = dimension2D.x;
+                clientObj["roomDimensionY"] = dimension2D.y;
 
                 clientArray.emplace_back(std::move(clientObj));
             }

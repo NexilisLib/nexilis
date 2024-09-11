@@ -72,8 +72,8 @@ std::vector<uint8_t> Packet::Room::Object2D::position(Vector2f position)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(1);
-    id.emplace_back(0);
+    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
+    id.emplace_back(static_cast<uint8_t>(Object2DOptions::position));
 
     auto positionVector = Util::convertToByteVector(position);
     for (const auto& byte : positionVector)
@@ -87,8 +87,8 @@ std::vector<uint8_t> Packet::Room::Object2D::dimensions(Vector2f dimensions)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(1);
-    id.emplace_back(1);
+    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
+    id.emplace_back(static_cast<uint8_t>(Object2DOptions::dimensions));
 
     auto dimensionVector = Util::convertToByteVector(dimensions);
     for (const auto& byte : dimensionVector)
@@ -98,12 +98,12 @@ std::vector<uint8_t> Packet::Room::Object2D::dimensions(Vector2f dimensions)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
+std::vector<uint8_t> Packet::Room::Management::join(uint64_t roomId)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(0);
-    id.emplace_back(0);
+    id.emplace_back(static_cast<uint8_t>(RoomType::management));
+    id.emplace_back(static_cast<uint8_t>(ManagementOptions::join));
 
     auto roomIdVector = Util::convertToByteVector(roomId);
     for (const auto& elem : roomIdVector)
@@ -113,21 +113,21 @@ std::vector<uint8_t> Packet::Room::join(uint64_t roomId)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::leave()
+std::vector<uint8_t> Packet::Room::Management::leave()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(0);
-    id.emplace_back(1);
+    id.emplace_back(static_cast<uint8_t>(RoomType::management));
+    id.emplace_back(static_cast<uint8_t>(ManagementOptions::leave));
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::create(const std::string& roomName)
+std::vector<uint8_t> Packet::Room::Management::create(const std::string& roomName)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(0);
-    id.emplace_back(2);
+    id.emplace_back(static_cast<uint8_t>(RoomType::management));
+    id.emplace_back(static_cast<uint8_t>(ManagementOptions::create));
 
     for (const char r : roomName)
     {
