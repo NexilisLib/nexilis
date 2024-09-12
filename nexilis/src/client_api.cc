@@ -236,7 +236,6 @@ ClientAPI::ClientAPI(ServerData data)
 ClientAPI::ClientAPI(ClientAPI&& other)
     : m_data(std::move(other.m_data)),
       m_clientId(std::move(other.m_clientId)),
-      m_currentMessage(std::move(other.m_currentMessage)),
       m_defaultRoom(std::move(other.m_defaultRoom)),
       m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
       m_messageIds(std::move(other.m_messageIds)),
@@ -250,7 +249,6 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
     {
         m_data = std::move(other.m_data);
         m_clientId = std::move(other.m_clientId);
-        m_currentMessage = std::move(other.m_currentMessage);
         m_defaultRoom = std::move(other.m_defaultRoom);
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
@@ -541,7 +539,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         return ReadResult::clean;
                     }
                 }
-                else if (roomAction == "dimensions2D")
+                else if (roomAction == "dimensions")
                 {
                     float vectorX = readFloat(json, "x");
                     float vectorY = readFloat(json, "y");
@@ -707,11 +705,11 @@ ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message
 
     if (result == ReadResult::success)
     {
-        m_currentMessage = json;
+        return result;
     }
     else if (result == ReadResult::failure)
     {
-        Log::warning("Failure in command");
+        Log::warning("Failure in command: ", Util::convertToString(message));
     }
     else
     {

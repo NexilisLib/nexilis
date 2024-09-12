@@ -1,12 +1,8 @@
-#include "nexilis/object2d.hh"
-#include "nexilis/vector2.hh"
 #include <nexilis/client_storage.hh>
 #include <nexilis/json.hh>
 #include <nexilis/log.hh>
 #include <nexilis/room_storage.hh>
 
-#include <boost/json/object.hpp>
-#include <boost/json/value.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
 

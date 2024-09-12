@@ -566,12 +566,6 @@ public:
         return m_data.getUnixStreamServerPath();
     }
 
-    /// Get the currently read received message.
-    boost::json::object getCurrentMessage() const
-    {
-        return m_currentMessage;
-    }
-
 public:
     /// Room stuff.
     /// Return a reference of the currently active rooms.
@@ -620,9 +614,6 @@ private:
 
     /// The client id for the user of the client API.
     uint64_t m_clientId = 0;
-
-    /// Last TCP message received, bad lol.
-    boost::json::object m_currentMessage;
 
     /// Default room that as compared against.
     ClientAPI::Room m_defaultRoom;
