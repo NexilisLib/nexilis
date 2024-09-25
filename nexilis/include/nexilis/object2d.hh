@@ -22,7 +22,7 @@ public:
     Object2D(const Object2D& other) = delete;
 
     /// Deleted copy assignment operator.
-    Object2D& operator=(const Object2D other) = delete;
+    Object2D& operator=(const Object2D& other) = delete;
 
     void setPosition(float x, float y)
     {

@@ -57,9 +57,9 @@ protected:
     }
 
 private:
-    Object2D m_object2D;
     uint64_t m_id;
     std::string m_username;
+    Object2D m_object2D;
 };
 
 }

@@ -251,12 +251,12 @@ boost::json::array Json::roomsToJSON(const std::vector<Room>& rooms)
                 }
 
                 auto position2D = clientPointer->getObject2D().getPosition();
-                clientObj["roomPositionX"] = position2D.x;
-                clientObj["roomPositionY"] = position2D.y;
+                clientObj["roomPositionX"] = std::move(position2D.x);
+                clientObj["roomPositionY"] = std::move(position2D.y);
 
                 auto dimension2D = clientPointer->getObject2D().getDimensions();
-                clientObj["roomDimensionX"] = dimension2D.x;
-                clientObj["roomDimensionY"] = dimension2D.y;
+                clientObj["roomDimensionX"] = std::move(dimension2D.x);
+                clientObj["roomDimensionY"] = std::move(dimension2D.y);
 
                 clientArray.emplace_back(std::move(clientObj));
             }

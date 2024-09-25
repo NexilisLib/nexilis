@@ -201,17 +201,17 @@ public:
         /// Constuctor.
         ClientSession(uint64_t id, ClientAPI* clientAPI);
 
-        /// Deleted copy constructor.
-        ClientSession(const ClientSession& other) = delete;
-
-        /// Deleted copy assignment operator.
-        ClientSession& operator=(const ClientSession& other) = delete;
-
         /// Move constructor.
         ClientSession(ClientSession&& other);
 
         /// Move assignment operator.
         ClientSession& operator=(ClientSession&& other);
+
+        /// Deleted copy constructor.
+        ClientSession(const ClientSession& other) = delete;
+
+        /// Deleted copy assignment operator.
+        ClientSession& operator=(const ClientSession& other) = delete;
 
         /// Comparison operator overload.
         friend bool operator==(const ClientSession& lhs, const ClientSession& rhs);
