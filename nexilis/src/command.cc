@@ -568,11 +568,10 @@ Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protoco
                 auto* client = ClientStorage::getClientById(roomClient);
                 assert(*client == user);
                 sendMessageToClient(data, *client, protocol);
-                return Result::success;
             }
         }
     }
-    return Result::failure;
+    return Result::success;
 }
 
 } // namespace nexilis
