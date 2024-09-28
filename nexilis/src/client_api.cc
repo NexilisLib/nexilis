@@ -557,6 +557,23 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     }
                     return ReadResult::failure;
                 }
+                else if (roomAction == "movement")
+                {
+                    float vectorX = readFloat(json, "x");
+                    float vectorY = readFloat(json, "y");
+
+                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    {
+                        for (auto& client : room->getClients())
+                        {
+                            if (client.getId() == clientId)
+                            {
+                                client.getObject2D().setMovement(vectorX, vectorY);
+                                return ReadResult::success;
+                            }
+                        }
+                    }
+                }
                 else
                 {
                     return ReadResult::failure;

@@ -43,6 +43,7 @@ public:
         public:
             static std::vector<uint8_t> position(Vector2f position);
             static std::vector<uint8_t> dimensions(Vector2f dimensions);
+            static std::vector<uint8_t> movement(Vector2f movement);
         };
 
         class Management

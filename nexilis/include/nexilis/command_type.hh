@@ -22,6 +22,7 @@ enum class CommandType : uint8_t
          *  2:1      Object2D
          *  2:1:0    Set position; Vec2f position
          *  2:1:1    Set dimensions; Vec2f dimensions
+         *  2:1:2    2D movement vector; Vec2f movement
          *
          *  2:2    Communication.
          *  2:2:0  broadcast, send to all; string
@@ -51,7 +52,8 @@ enum class ManagementOptions : uint8_t
 enum class Object2DOptions : uint8_t
 {
     position = 0,
-    dimensions = 1
+    dimensions = 1,
+    movement = 2
 };
 
 enum class CommunicationOptions : uint8_t

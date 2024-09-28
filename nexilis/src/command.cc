@@ -298,7 +298,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
                                 if (!currentRoom)
                                 {
-                                    Log::warning("Client not currently in room.");
+                                    Log::error("Client not currently in room.");
                                     return Result::failure;
                                 }
 
@@ -309,6 +309,29 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 user.getObject2D().setDimensions(vector.x, vector.y);
                                 return useRooms(user.getRoomId(), user, protocol, command, params, messageId);
                             }
+
+                            // Movement 2D
+                            case 2:
+                            {
+                                Log::debug("Command Room::movement(vector2)");
+                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto vector = Util::convertToVector2(payload);
+                                Log::debug("Movement x: ", vector.x, " y: ", vector.y);
+
+                                auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+                                if (!currentRoom)
+                                {
+                                    Log::error("Client not currently in room");
+                                    return Result::failure;
+                                }
+
+                                std::map<std::string, boost::json::value> params{
+                                    {"x", boost::json::value(vector.x)},
+                                    {"y", boost::json::value(vector.y)}
+                                };
+                                return useRooms(user.getRoomId(), user, protocol, command, params, messageId);
+                            }
+
                             default: return Result::not_found;
                         }
                     }

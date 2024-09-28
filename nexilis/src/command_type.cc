@@ -35,6 +35,7 @@ std::string Object2DTypeToString(Object2DOptions object2D)
     {
         case Object2DOptions::position: return "position";
         case Object2DOptions::dimensions: return "dimensions";
+        case Object2DOptions::movement: return "movement";
         default:
             Log::error("Object2DTypeToString no type found!");
             return "";
