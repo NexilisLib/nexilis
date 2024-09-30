@@ -561,6 +561,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     float vectorX = readFloat(json, "x");
                     float vectorY = readFloat(json, "y");
+                    float posX = readFloat(json, "newPosX");
+                    float posY = readFloat(json, "newPosY");
 
                     for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                     {
@@ -569,6 +571,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                             if (client.getId() == clientId)
                             {
                                 client.getObject2D().setMovement(vectorX, vectorY);
+                                client.getObject2D().setPosition(posX, posY);
                                 return ReadResult::success;
                             }
                         }

@@ -325,10 +325,28 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                     return Result::failure;
                                 }
 
+                                auto& rooms = RoomStorage::getAllRooms();
+                                Vector2f newPos;
+                                for (auto& room : rooms)
+                                {
+                                    if (room.getId() == user.getRoomId())
+                                    {
+                                        for (auto& roomClient : room.getClients())
+                                        {
+                                            auto* client = ClientStorage::getClientById(roomClient);
+                                            newPos = calculatePosition(user.getObject2D().getPosition(), vector);
+                                            client->getObject2D().setPosition(newPos.x, newPos.y);
+                                        }
+                                    }
+                                }
+
                                 std::map<std::string, boost::json::value> params{
                                     {"x", boost::json::value(vector.x)},
-                                    {"y", boost::json::value(vector.y)}
+                                    {"y", boost::json::value(vector.y)},
+                                    {"newPosX", boost::json::value(newPos.x)},
+                                    {"newPosY", boost::json::value(newPos.y)}
                                 };
+
                                 return useRooms(user.getRoomId(), user, protocol, command, params, messageId);
                             }
 
@@ -595,6 +613,15 @@ Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protoco
         }
     }
     return Result::success;
+}
+
+nexilis::Vector2f Command::calculatePosition(nexilis::Vector2f currentPosition, nexilis::Vector2f velocity)
+{
+    float deltaTime = 1.0f;
+    return {
+        currentPosition.x + velocity.x * deltaTime,
+        currentPosition.y + velocity.y * deltaTime
+    };
 }
 
 } // namespace nexilis

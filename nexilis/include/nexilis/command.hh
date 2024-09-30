@@ -82,6 +82,7 @@ private:
     /// Use CommandType::room
     static Result useRooms(uint64_t roomId, User& user, Protocol& protocol, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
 
+    static Vector2f calculatePosition(nexilis::Vector2f currentPosition, nexilis::Vector2f velocity);
 private:
     /// Pointer to the authentication.
     static Authentication* m_authentication;
