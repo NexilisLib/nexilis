@@ -10,9 +10,6 @@ namespace nexilis
 class Packet
 {
 public:
-    // Internal initilization function.
-    static void _initialize(ClientAPI& clientApi);
-
     class Get
     {
     public:
@@ -43,7 +40,7 @@ public:
         public:
             static std::vector<uint8_t> position(Vector2f position);
             static std::vector<uint8_t> dimensions(Vector2f dimensions);
-            static std::vector<uint8_t> movement(Vector2f movement);
+            static std::vector<uint8_t> movement(Vector2f movement, float deltaTime);
         };
 
         class Management
@@ -55,6 +52,8 @@ public:
         };
     };
 
+    // Internal initilization function.
+    static void _initialize(ClientAPI& clientApi);
 private:
     static std::vector<uint8_t> clientIdentification();
     static ClientAPI* m_clientApi;

@@ -61,8 +61,14 @@ public:
     /// \param hightByte The created high byte.
     static void uint16ToUint8Pair(uint16_t value, uint8_t& lowByte, uint8_t& highByte);
 
+    /// \defgroup FrontConversions Functions that convert the first bytes of std::vector<uint8_t> into type.
+
     /// Get the first eight bytes of vector and return it as uint64_t.
-    static uint64_t getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec);
+    /// \ingroup FrontConversions
+    static uint64_t uint64FromFront(const std::vector<uint8_t>& vec);
+
+    /// Get the first four bytes from vector and return it as float.
+    static float floatFromFront(const std::vector<uint8_t>& vec);
 
     /// Remove amount of bytes from the beginning of the vector.
     /// \return The updated vector.

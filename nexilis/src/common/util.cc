@@ -201,11 +201,12 @@ void Util::debugUint8Vector(const std::vector<uint8_t>& vector)
     Log::debug(ss.str());
 }
 
-uint64_t Util::getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec)
+uint64_t Util::uint64FromFront(const std::vector<uint8_t>& vec)
 {
     if (vec.size() < 8)
     {
         // Not enough data to read 8 bytes
+        Log::error("Not enough data to read 8 bytes");
         return 0;
     }
 
@@ -227,8 +228,20 @@ uint64_t Util::getFirstEightBytesAsUInt64(const std::vector<uint8_t>& vec)
             value |= static_cast<uint64_t>(vec[i]) << (i * 8);
         }
     }
-
     return value;
+}
+
+float Util::floatFromFront(const std::vector<uint8_t>& vec)
+{
+    if (vec.size() < 4)
+    {
+        Log::error("Not enough data to read 4 bytes");
+        return 0.f;
+    }
+
+    float result;
+    std::memcpy(&result, vec.data(), sizeof(float));
+    return result;
 }
 
 std::string Util::getDateAndTime()

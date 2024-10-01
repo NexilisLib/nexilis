@@ -29,7 +29,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     std::vector<uint8_t> errordata = {9, 0, 0};
     Message errorMessage("", errordata, -1, nullptr, 0);
 
-    auto clientId = Util::getFirstEightBytesAsUInt64(payload);
+    auto clientId = Util::uint64FromFront(payload);
     auto* user = ClientStorage::getClientById(clientId);
     bool userAlreadyExists = true;
 
@@ -70,7 +70,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                     auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 9);
 
                     // Next eight bytes is the message id.
-                    uint64_t messageId = Util::getFirstEightBytesAsUInt64(vectorWithoutClientId);
+                    uint64_t messageId = Util::uint64FromFront(vectorWithoutClientId);
 
                     // Vector without message id (8 bytes) + marker byte (0xFF).
                     auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 9);

@@ -134,7 +134,7 @@ std::vector<uint8_t> Packet::Room::Object2D::dimensions(Vector2f dimensions)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Object2D::movement(Vector2f movement)
+std::vector<uint8_t> Packet::Room::Object2D::movement(Vector2f movement, float deltaTime)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -143,6 +143,11 @@ std::vector<uint8_t> Packet::Room::Object2D::movement(Vector2f movement)
 
     auto movementVector = Util::convertToByteVector(movement);
     for (const auto& byte : movementVector)
+    {
+        id.emplace_back(byte);
+    }
+    auto deltaVector = Util::convertToByteVector(deltaTime);
+    for (const auto& byte : deltaVector)
     {
         id.emplace_back(byte);
     }

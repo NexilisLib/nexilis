@@ -315,8 +315,15 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             {
                                 Log::debug("Command Room::movement(vector2)");
                                 auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto vector = Util::convertToVector2(payload);
-                                Log::debug("Movement x: ", vector.x, " y: ", vector.y);
+
+                                auto vecX = Util::floatFromFront(payload);
+                                auto afterVecX = Util::removeAmountOfBytesFromVector(payload, 4);
+                                auto vecY = Util::floatFromFront(afterVecX);
+                                auto afterVecY = Util::removeAmountOfBytesFromVector(afterVecX, 4);
+                                auto delta = Util::floatFromFront(afterVecY);
+                                auto vector = Vector2f(vecX, vecY);
+
+                                Log::debug("Movement x: ", vector.x, " y: ", vector.y, " with delta: ", delta);
 
                                 auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
                                 if (!currentRoom)
@@ -325,20 +332,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                     return Result::failure;
                                 }
 
-                                auto& rooms = RoomStorage::getAllRooms();
-                                Vector2f newPos;
-                                for (auto& room : rooms)
-                                {
-                                    if (room.getId() == user.getRoomId())
-                                    {
-                                        for (auto& roomClient : room.getClients())
-                                        {
-                                            auto* client = ClientStorage::getClientById(roomClient);
-                                            newPos = calculatePosition(user.getObject2D().getPosition(), vector);
-                                            client->getObject2D().setPosition(newPos.x, newPos.y);
-                                        }
-                                    }
-                                }
+                                auto newPos = calculatePosition(user.getObject2D().getPosition(), vector);
+                                user.getObject2D().setPosition(newPos.x, newPos.y);
 
                                 std::map<std::string, boost::json::value> params{
                                     {"x", boost::json::value(vector.x)},
@@ -560,6 +555,7 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
     }
 }
 
+// TODO return created room command
 Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protocol, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
 {
     RoomType roomType = static_cast<RoomType>(messageData[1]);
