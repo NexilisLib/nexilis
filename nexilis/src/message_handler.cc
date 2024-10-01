@@ -66,14 +66,14 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                 {
                     Log::info("Known client sends a message!");
 
-                    // Vector without client id (8 bytes) + marker byte (0xFF).
-                    auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 9);
+                    // Vector without client id (8 bytes).
+                    auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 8);
 
                     // Next eight bytes is the message id.
                     uint64_t messageId = Util::uint64FromFront(vectorWithoutClientId);
 
-                    // Vector without message id (8 bytes) + marker byte (0xFF).
-                    auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 9);
+                    // Vector without message id (8 bytes).
+                    auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 8);
 
                     return Message(
                             address,

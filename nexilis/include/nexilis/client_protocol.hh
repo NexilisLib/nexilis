@@ -44,6 +44,9 @@ public:
         return m_api;
     }
 
+    /// Create pair that contains the id of the message and the callback itself.
+    std::pair<uint64_t, std::function<void()>> createCallback(const std::vector<uint8_t>& message, const std::function<void()>& callback);
+
 private:
     ClientAPI* m_api;
 };

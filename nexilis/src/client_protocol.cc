@@ -1,4 +1,5 @@
 #include <nexilis/client_protocol.hh>
+#include <nexilis/common/util.hh>
 
 namespace nexilis
 {
@@ -23,5 +24,17 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     }
     return *this;
 }
+
+std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+{
+    // Vector without client id (8 bytes).
+    auto messageWithoutClientId = Util::removeAmountOfBytesFromVector(message, 8);
+
+    // Next eight bytes is the message id.
+    uint64_t messageId = Util::uint64FromFront(messageWithoutClientId);
+
+    return std::make_pair(messageId, callback);
+}
+
 
 } // namespace nexilis

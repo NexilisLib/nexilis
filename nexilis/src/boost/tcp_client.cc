@@ -92,16 +92,7 @@ void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message)
 
 void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
 {
-    // TODO this should be handled by ClientProtocol completely, except "send(message)".
-
-    // Vector without client id (8 bytes) + marker byte (0xFF).
-    auto messageWithoutClientId = Util::removeAmountOfBytesFromVector(message, 9);
-
-    // Next eight bytes is the message id.
-    uint64_t messageId = Util::uint64FromFront(messageWithoutClientId);
-
-    std::pair<uint64_t, std::function<void()>> pair = std::make_pair(messageId, callback);
-    ClientProtocol::getClientAPI()->addCallback(pair);
+    ClientProtocol::getClientAPI()->addCallback(ClientProtocol::createCallback(message, callback));
     send(message);
 }
 

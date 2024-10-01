@@ -179,18 +179,11 @@ std::vector<uint8_t> Packet::clientIdentification()
     assert(!clientIdVector.empty());
     assert(Util::convertToType<uint64_t>(clientIdVector) != 0);
 
-    clientIdVector.emplace_back(0xFF);
-    assert(clientIdVector.back() == 0xFF);
-
     auto messageIdVector = Util::convertToByteVector(m_clientApi->getNewMessageId());
-
     for (const auto& byte : messageIdVector)
     {
         clientIdVector.emplace_back(byte);
     }
-
-    clientIdVector.emplace_back(0xFF);
-    assert(clientIdVector.back() == 0xFF);
 
     return clientIdVector;
 }
