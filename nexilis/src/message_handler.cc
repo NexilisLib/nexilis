@@ -15,9 +15,7 @@ namespace nexilis
 
 // Payload handled by this class:
 // Client id 8 bytes
-// Marker byte 0xFF
 // Message id 8 bytes
-// Second marker byte 0xFF
 // Command bytes (at least 2 bytes), second parameter of MessageHandler::Message.
 
 MessageHandler::Message MessageHandler::readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Authentication* authentication)

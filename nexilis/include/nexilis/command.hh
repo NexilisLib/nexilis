@@ -79,10 +79,13 @@ private:
     /// Send message to every protocol that is avainable for a client;
     static void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
 
-    /// Use CommandType::room
-    static Result useRooms(uint64_t roomId, User& user, Protocol& protocol, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
+    static std::vector<uint8_t> createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
+    static Result sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol);
 
-    static Vector2f calculatePosition(Vector2f currentPosition, Vector2f velocity);
+    /// Send multiple messages with specified tickrate.
+    static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
+    static double easing(double progress, double totalDistance);
+    static Vector2f calculatePosition(Vector2f currentPosition, Vector2f velocity, float deltaTime);
 private:
     /// Pointer to the authentication.
     static Authentication* m_authentication;

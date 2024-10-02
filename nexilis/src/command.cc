@@ -4,6 +4,8 @@
 #include <nexilis/room_storage.hh>
 #include <nexilis/log.hh>
 
+#include <thread>
+
 namespace nexilis
 {
 
@@ -184,7 +186,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                                 auto roomId = user.getRoomId();
                                 std::map<std::string, boost::json::value> params;
-                                return useRooms(roomId, user, protocol, command, params, arg);
+                                auto roomCommand = createRoomCommand(roomId, user, command, params, messageId);
+                                return sendRoomCommand(roomCommand, user, protocol);
                             }
                         }
 
@@ -205,7 +208,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             user.setRoomId(0);
 
                             std::map<std::string, boost::json::value> params;
-                            return useRooms(currentRoom->getId(), user, protocol, command, params, messageId);
+                            auto roomCommand = createRoomCommand(currentRoom->getId(), user, command, params, messageId);
+                            return sendRoomCommand(roomCommand, user, protocol);
                         }
 
                         /// Create room.
@@ -243,10 +247,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 RoomStorage::add(std::move(newRoom));
 
                                 std::map<std::string, boost::json::value> params;
-                                return useRooms(newRoomId, user, protocol, command, params, messageId);
-
-                                Log::debug("Added room ", newRoomId, " to persistent storage");
-                                return Result::success;
+                                auto roomCommand = createRoomCommand(newRoomId, user, command, params, messageId);
+                                return sendRoomCommand(roomCommand, user, protocol);
                             }
                         }
                     }
@@ -284,7 +286,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                         {"x", boost::json::value(vector.x)},
                                         {"y", boost::json::value(vector.y)}};
 
-                                return useRooms(user.getRoomId(), user, protocol, command, params, messageId);
+                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                return sendRoomCommand(roomCommand, user, protocol);
                             }
 
                             // Dimensions 2D
@@ -307,7 +310,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                         {"y", boost::json::value(vector.y)}};
 
                                 user.getObject2D().setDimensions(vector.x, vector.y);
-                                return useRooms(user.getRoomId(), user, protocol, command, params, messageId);
+
+                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                return sendRoomCommand(roomCommand, user, protocol);
                             }
 
                             // Movement 2D
@@ -332,17 +337,22 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                     return Result::failure;
                                 }
 
-                                auto newPos = calculatePosition(user.getObject2D().getPosition(), vector);
+                                runWithTickrate(60.f, delta, [vector, &user, &command, &protocol, &messageId](double progress) {
+                                    double easedX = easing(progress, vector.x);
+                                    double easedY = easing(progress, vector.y);
+
+                                    std::map<std::string, boost::json::value> params{
+                                        {"x", boost::json::value(easedX)},
+                                        {"y", boost::json::value(easedY)},
+                                    };
+
+                                    auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                    sendRoomCommand(roomCommand, user, protocol);
+                                });
+
+                                auto newPos = calculatePosition(user.getObject2D().getPosition(), vector, delta);
                                 user.getObject2D().setPosition(newPos.x, newPos.y);
-
-                                std::map<std::string, boost::json::value> params{
-                                    {"x", boost::json::value(vector.x)},
-                                    {"y", boost::json::value(vector.y)},
-                                    {"newPosX", boost::json::value(newPos.x)},
-                                    {"newPosY", boost::json::value(newPos.y)}
-                                };
-
-                                return useRooms(user.getRoomId(), user, protocol, command, params, messageId);
+                                return Result::success;
                             }
 
                             default: return Result::not_found;
@@ -555,8 +565,7 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
     }
 }
 
-// TODO return created room command
-Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protocol, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
+std::vector<uint8_t> Command::createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
 {
     RoomType roomType = static_cast<RoomType>(messageData[1]);
     auto action = messageData[2];
@@ -576,7 +585,8 @@ Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protoco
         }
         case RoomType::communication:
         {
-            return Result::unimplemented;
+            Log::error("Unimplemented!");
+            return std::vector<uint8_t>();
         }
     }
     std::string roomCommandType = RoomTypeToString(roomType);
@@ -593,12 +603,15 @@ Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protoco
         {"callback", boost::json::value(messageId)}};
     header.insert(params.begin(), params.end());
     auto json = Json::createJSON(header);
-    auto data = Util::convertToByteVector(json);
+    return Util::convertToByteVector(json);
+}
 
+Command::Result Command::sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol)
+{
     auto& rooms = RoomStorage::getAllRooms();
     for (auto& room : rooms)
     {
-        if (room.getId() == roomId)
+        if (room.getId() == user.getRoomId())
         {
             for (auto& roomClient : room.getClients())
             {
@@ -611,13 +624,39 @@ Command::Result Command::useRooms(uint64_t roomId, User& user, Protocol& protoco
     return Result::success;
 }
 
-nexilis::Vector2f Command::calculatePosition(nexilis::Vector2f currentPosition, nexilis::Vector2f velocity)
+void Command::runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction)
 {
-    float deltaTime = 1.0f;
+    using namespace std::chrono;
+
+    auto interval = duration_cast<milliseconds>(milliseconds(static_cast<int>(1000 / tickrate)));
+    auto startTime = steady_clock::now();
+    auto endTime = startTime + duration_cast<milliseconds>(milliseconds(static_cast<int>(durationSeconds * 1000)));
+
+    double totalTicks = tickrate * durationSeconds;
+
+    for (int tick = 1; steady_clock::now() <= endTime && tick <= totalTicks; ++tick)
+    {
+        auto loopStart = steady_clock::now();
+        double progress = static_cast<double>(tick) / totalTicks;
+        tickFunction(progress);
+        std::this_thread::sleep_until(loopStart + interval);
+    }
+}
+
+Vector2f Command::calculatePosition(Vector2f currentPosition, Vector2f velocity, float deltaTime)
+{
     return {
         currentPosition.x + velocity.x * deltaTime,
         currentPosition.y + velocity.y * deltaTime
     };
+}
+
+double Command::easing(double progress, double totalDistance)
+{
+    double easedValue = progress * progress;
+    double messageValue = totalDistance * easedValue;
+    Log::warning("The value would be: ", messageValue, " here");
+    return messageValue;
 }
 
 } // namespace nexilis
