@@ -66,13 +66,13 @@ public:
     /// /// \param authentication The object than contains authentication rules.
     static void setAuthentication(Authentication& authentication)
     {
-        m_authentication = &authentication;
+        s_authentication = &authentication;
     }
 
     /// Get authentication details.
     static Authentication* getAuthentication()
     {
-        return m_authentication;
+        return s_authentication;
     }
 
 private:
@@ -80,7 +80,7 @@ private:
     static void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
 
     static std::vector<uint8_t> createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
-    static Result sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol);
+    static void sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol);
 
     /// Send multiple messages with specified tickrate.
     static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
@@ -88,7 +88,8 @@ private:
     static Vector2f calculatePosition(Vector2f currentPosition, Vector2f velocity, float deltaTime);
 private:
     /// Pointer to the authentication.
-    static Authentication* m_authentication;
+    static Authentication* s_authentication;
+    static float s_tickrate;
 };
 
 } // namespace nexilis

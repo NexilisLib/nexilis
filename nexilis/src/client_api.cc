@@ -495,7 +495,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             }
             else if (type == "object2D")
             {
-                if (roomAction == "position")
+                if (roomAction == "position" || roomAction == "movement")
                 {
                     float vectorX = readFloat(json, "x");
                     float vectorY = readFloat(json, "y");
@@ -556,23 +556,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         }
                     }
                     return ReadResult::failure;
-                }
-                else if (roomAction == "movement")
-                {
-                    float vectorX = readFloat(json, "x");
-                    float vectorY = readFloat(json, "y");
-
-                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
-                    {
-                        for (auto& client : room->getClients())
-                        {
-                            if (client.getId() == clientId)
-                            {
-                                client.getObject2D().setPosition(vectorX, vectorY);
-                                return ReadResult::success;
-                            }
-                        }
-                    }
                 }
                 else
                 {
