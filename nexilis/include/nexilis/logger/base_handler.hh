@@ -1,8 +1,8 @@
 #ifndef NEXILIS_LOGGER_BASE_HANDLER_HH
 #define NEXILIS_LOGGER_BASE_HANDLER_HH
 
-#include <nexilis/logger/log_level.hh>
 #include <nexilis/common/util.hh>
+#include <nexilis/logger/log_level.hh>
 
 #include <cstdint>
 #include <string>
@@ -26,7 +26,10 @@ public:
     // \param data The data of the given message.
     virtual void emit(LogLevel logLevel, const std::string& data) = 0;
 
-    uint64_t getId() { return m_id; }
+    uint64_t getId()
+    {
+        return m_id;
+    }
 
 private:
     uint64_t m_id = Util::getRandomUint64();

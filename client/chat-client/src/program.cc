@@ -17,13 +17,9 @@ Program::Program(const nexilis::CmdLineOptions& options)
       m_menu(),
       m_nexilisClient("192.168.1.8", m_optionUserName),
       m_sendTCPMessage([this](const std::vector<uint8_t>& payload)
-          {
-              m_nexilisClient.getTCPClient().sendMessage(payload);
-          }),
+                       { m_nexilisClient.getTCPClient().sendMessage(payload); }),
       m_sendTCPMessageWithCallback([this](const std::vector<uint8_t>& message, const std::function<void()>& callback)
-          {
-            m_nexilisClient.getTCPClient().sendMessage(message, callback);
-          }),
+                                   { m_nexilisClient.getTCPClient().sendMessage(message, callback); }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
 }
@@ -165,7 +161,8 @@ void Program::inputHandler(Window& window)
                     {
                         break;
                     }
-                    m_sendTCPMessageWithCallback(nexilis::Packet::Room::join(roomId), [this](){ m_state = State::chat; });
+                    m_sendTCPMessageWithCallback(nexilis::Packet::Room::join(roomId), [this]()
+                                                 { m_state = State::chat; });
                     updateRooms = true;
                     break;
                 }
@@ -203,7 +200,8 @@ void Program::inputHandler(Window& window)
                     break;
                 }
 
-                default: break;
+                default:
+                    break;
             }
             break;
         }

@@ -14,7 +14,7 @@ namespace nexilis
 {
 
 class BoostUDPServer : public Protocol,
-                  public ServerProtocol
+                       public ServerProtocol
 {
 public:
     /// Constructor.

@@ -58,7 +58,7 @@ public:
             return m_creatorId;
         }
 
-       private:
+    private:
         /// Id of the creator of this room.
         uint64_t m_creatorId;
 

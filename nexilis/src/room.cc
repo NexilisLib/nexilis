@@ -1,6 +1,6 @@
 #include <nexilis/common/util.hh>
-#include <nexilis/room.hh>
 #include <nexilis/log.hh>
+#include <nexilis/room.hh>
 #include <sys/types.h>
 
 namespace nexilis
@@ -103,7 +103,9 @@ void Room::joinRoom(uint64_t userId)
 void Room::leaveRoom(uint64_t userId)
 {
     m_clientIds.erase(std::remove_if(m_clientIds.begin(), m_clientIds.end(),
-        [&userId](uint64_t id) { return userId == id; }), m_clientIds.end());
+                                     [&userId](uint64_t id)
+                                     { return userId == id; }),
+                      m_clientIds.end());
 }
 
 } // namespace nexilis

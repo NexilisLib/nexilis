@@ -38,7 +38,6 @@ private:
     std::vector<std::string> m_infoTexts{
             "Here we have information regarding this program",
             "Here is another line displaying information"};
-
 };
 
 #endif

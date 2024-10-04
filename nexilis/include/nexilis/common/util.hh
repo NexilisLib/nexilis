@@ -1,9 +1,9 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
-#include <nexilis/vector2.hh>
 #include <nexilis/config.hh>
 #include <nexilis/logger/log_level.hh>
+#include <nexilis/vector2.hh>
 
 #include <boost/json/object.hpp>
 

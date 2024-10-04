@@ -1,10 +1,10 @@
 #include <nexilis/boost/tcp_client.hh>
 
-#include <boost/asio/connect.hpp>
-#include <boost/asio/streambuf.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/asio/write.hpp>
 #include <boost/asio/buffers_iterator.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/streambuf.hpp>
+#include <boost/asio/write.hpp>
 
 namespace nexilis
 {
@@ -118,18 +118,18 @@ bool BoostTCPClient::send(const std::vector<uint8_t>& data)
     }
 
     boost::asio::async_write(m_socket, boost::asio::buffer(data),
-        [this](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
-        {
-            if (!error)
-            {
-                Log::info("Message sent successfully.");
-            }
-            else
-            {
-                Log::error("Send error: " + error.message());
-                m_socket.close();
-            }
-        });
+                             [this](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+                             {
+                                 if (!error)
+                                 {
+                                     Log::info("Message sent successfully.");
+                                 }
+                                 else
+                                 {
+                                     Log::error("Send error: " + error.message());
+                                     m_socket.close();
+                                 }
+                             });
 
     return true;
 }

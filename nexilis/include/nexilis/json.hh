@@ -1,8 +1,8 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
-#include <nexilis/user.hh>
 #include <nexilis/room.hh>
+#include <nexilis/user.hh>
 
 #include <boost/json/object.hpp>
 

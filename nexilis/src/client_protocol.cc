@@ -36,5 +36,4 @@ std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const 
     return std::make_pair(messageId, callback);
 }
 
-
 } // namespace nexilis

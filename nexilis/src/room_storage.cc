@@ -1,5 +1,5 @@
-#include <nexilis/room_storage.hh>
 #include <nexilis/log.hh>
+#include <nexilis/room_storage.hh>
 
 namespace nexilis
 {

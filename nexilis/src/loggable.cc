@@ -5,16 +5,16 @@
 namespace nexilis
 {
 
-Loggable::Loggable(const std::string& name, const char* file) :
-    m_name(name),
-    m_file(std::string(file))
+Loggable::Loggable(const std::string& name, const char* file)
+    : m_name(name),
+      m_file(std::string(file))
 {
 }
 
 /// Move constructor.
-Loggable::Loggable(Loggable&& other) :
-    m_name(std::move(other.m_name)),
-    m_file(std::move(other.m_file))
+Loggable::Loggable(Loggable&& other)
+    : m_name(std::move(other.m_name)),
+      m_file(std::move(other.m_file))
 {
 }
 
@@ -125,6 +125,4 @@ void Loggable::printFromLogger(logger::LogLevel logLevel, const std::string& mes
     }
 }
 
-
-
-}
+} // namespace nexilis

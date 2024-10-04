@@ -2,10 +2,10 @@
 #define NEXILIS_CLIENT_API_HH
 
 #include <nexilis/base_client.hh>
-#include <nexilis/vector2.hh>
-#include <nexilis/vector3.hh>
 #include <nexilis/object2d.hh>
 #include <nexilis/object3d.hh>
+#include <nexilis/vector2.hh>
+#include <nexilis/vector3.hh>
 
 #include <boost/json/object.hpp>
 
@@ -13,8 +13,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <future>
-#include <string>
 #include <optional>
+#include <string>
 
 namespace nexilis
 {
@@ -280,6 +280,7 @@ public:
             {
                 return m_id;
             }
+
         private:
             /// The data of the communication.
             std::string m_payload;
@@ -346,7 +347,9 @@ public:
         void removeClient(uint64_t clientId)
         {
             m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
-                [&clientId](const ClientSession& session) { return clientId == session.getId(); }), m_clients.end());
+                                           [&clientId](const ClientSession& session)
+                                           { return clientId == session.getId(); }),
+                            m_clients.end());
         }
 
         std::vector<ClientSession>& getClients()
@@ -476,6 +479,7 @@ public:
     /// Read incoming message to client.
     ReadResult readMessage(const std::vector<uint8_t>& message);
     void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
+
 public:
     /// Room stuff
     /// Is client currently in a room.
@@ -608,6 +612,7 @@ private:
     std::string readString(const boost::json::value& context, const std::string& key);
     uint64_t readUint64(const boost::json::value& context, const std::string& key);
     float readFloat(const boost::json::value& context, const std::string& key);
+
 private:
     /// The initialization data for the ClientAPI.
     ServerData m_data;

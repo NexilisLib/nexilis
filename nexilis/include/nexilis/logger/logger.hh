@@ -47,7 +47,7 @@ public:
     /// Remove all handlers.
     void clearHandlers();
 
-     /// Check if there are no handlers for the logger.
+    /// Check if there are no handlers for the logger.
     /// \return True if there are no handlers.
     bool noHandlers();
 

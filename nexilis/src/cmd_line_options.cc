@@ -133,4 +133,4 @@ const CmdLineOptions::Argument* CmdLineOptions::getArgument(const std::string& n
     return nullptr;
 }
 
-}
+} // namespace nexilis

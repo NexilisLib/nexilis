@@ -125,6 +125,7 @@ private:
     std::string m_ip_address;
     std::string m_username;
     uint64_t m_roomId = 0;
+
 private:
     std::function<void(std::vector<uint8_t>)> m_boostTCPSendToClient = nullptr;
     std::function<void(std::vector<uint8_t>)> m_boostUDPSendToClient = nullptr;

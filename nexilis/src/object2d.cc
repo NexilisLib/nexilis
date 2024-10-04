@@ -19,4 +19,4 @@ Object2D& Object2D::operator=(Object2D&& other)
     return *this;
 }
 
-}
+} // namespace nexilis

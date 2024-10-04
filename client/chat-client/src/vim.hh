@@ -1,8 +1,8 @@
 #ifndef CHAT_CLIENT_VIM_HH
 #define CHAT_CLIENT_VIM_HH
 
-#include "window.hh"
 #include "program_state.hh"
+#include "window.hh"
 
 #include <cstdint>
 #include <functional>

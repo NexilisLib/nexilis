@@ -4,8 +4,8 @@
 #include <nexilis/client_api.hh>
 
 #include <cstdint>
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace nexilis

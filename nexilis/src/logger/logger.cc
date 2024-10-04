@@ -39,4 +39,4 @@ void Logger::setLogLevel(uint8_t logLevel)
     m_logLevel = logLevel;
 }
 
-}
+} // namespace nexilis::logger

@@ -8,10 +8,10 @@
 #include <sstream>
 #include <thread>
 
-Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback) :
-    m_clientApi(clientApi),
-    m_sendTCP(sendTCP),
-    m_sendTCPWithCallback(sendTCPWithCallback)
+Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback)
+    : m_clientApi(clientApi),
+      m_sendTCP(sendTCP),
+      m_sendTCPWithCallback(sendTCPWithCallback)
 {
 }
 
@@ -209,7 +209,8 @@ void Chat::updateChat(Window& window, State& programState)
         if (userString == "/quit")
         {
             m_sendTCP(nexilis::Packet::Room::leave());
-            m_sendTCPWithCallback(nexilis::Packet::Info::rooms(), [&programState](){ programState = State::rooms; });
+            m_sendTCPWithCallback(nexilis::Packet::Info::rooms(), [&programState]()
+                                  { programState = State::rooms; });
         }
         else
         {

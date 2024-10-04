@@ -29,21 +29,30 @@ public:
         m_position = Vector2f(x, y);
     }
 
-    Vector2f getPosition() const { return m_position; }
+    Vector2f getPosition() const
+    {
+        return m_position;
+    }
 
     void setDimensions(float width, float height)
     {
         m_dimensions = Vector2f(width, height);
     }
 
-    Vector2f getDimensions() const { return m_dimensions; }
+    Vector2f getDimensions() const
+    {
+        return m_dimensions;
+    }
 
     void setMovement(float width, float height)
     {
         m_movement = Vector2f(width, height);
     }
 
-    Vector2f getMovement() const { return m_movement; }
+    Vector2f getMovement() const
+    {
+        return m_movement;
+    }
 
 private:
     Vector2f m_position;
@@ -51,6 +60,6 @@ private:
     Vector2f m_movement;
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -1,6 +1,6 @@
 #include <nexilis/common/util.hh>
-#include <nexilis/nexilis_macros.hh>
 #include <nexilis/log.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <boost/json/serialize.hpp>
 
@@ -98,8 +98,7 @@ uint64_t Util::getRandomUint64()
     do
     {
         randomValue = dist(generator);
-    }
-    while (std::bitset<64>(randomValue).count() < 32); // Ensure at least 32 bits are set
+    } while (std::bitset<64>(randomValue).count() < 32); // Ensure at least 32 bits are set
 
     assert((std::is_same<decltype(randomValue), uint64_t>::value));
 
@@ -163,7 +162,7 @@ std::vector<uint8_t> Util::convertToByteVector(const boost::json::object& obj)
     return byteStream;
 }
 
-std::string Util::getColorMessage(logger::LogLevel logLevel, const std::string &data)
+std::string Util::getColorMessage(logger::LogLevel logLevel, const std::string& data)
 {
     std::string color;
     switch (logLevel)
@@ -260,6 +259,5 @@ std::string Util::getDateAndTime()
     ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
     return ss.str();
 }
-
 
 } // namespace nexilis

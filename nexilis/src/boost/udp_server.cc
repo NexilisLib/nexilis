@@ -1,8 +1,8 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/system/system_error.hpp>
 #include <nexilis/boost/udp_server.hh>
-#include <nexilis/log.hh>
 #include <nexilis/command.hh>
+#include <nexilis/log.hh>
 
 namespace nexilis
 {
@@ -94,12 +94,11 @@ void BoostUDPServer::receiveFromClients()
             if (!handledMessage.getClient()->isBoostUDPSet())
             {
                 handledMessage.getClient()->setBoostUDPSend([this](const std::vector<uint8_t>& bytes)
-                {
+                                                            {
                     if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
                     {
                         Log::error("Failed to send message to client");
-                    }
-                });
+                    } });
             }
 
             Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
@@ -108,11 +107,11 @@ void BoostUDPServer::receiveFromClients()
             {
                 case Command::Result::success:
                     Log::info("UDPServer: Passed");
-                break;
+                    break;
 
-                default: Log::error("UDPServer: Something FAILED");
+                default:
+                    Log::error("UDPServer: Something FAILED");
             }
-
         }
         catch (const boost::system::system_error& e)
         {

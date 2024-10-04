@@ -35,7 +35,9 @@ int main()
     std::cout << "nexilis boost UDP ready" << std::endl;
 
     std::cout << "SERVER READY, looping main thread" << std::endl;
-    while (true) {}
+    while (true)
+    {
+    }
 
     return 0;
 }

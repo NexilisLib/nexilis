@@ -54,6 +54,7 @@ public:
 
     // Internal initilization function.
     static void _initialize(ClientAPI& clientApi);
+
 private:
     static std::vector<uint8_t> clientIdentification();
     static ClientAPI* m_clientApi;

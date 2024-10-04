@@ -3,10 +3,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace nexilis
 {
@@ -26,7 +26,10 @@ public:
     class Value : public IValue
     {
     public:
-        Value(const T& val) : value(val) {}
+        Value(const T& val)
+            : value(val)
+        {
+        }
         T value;
     };
 
@@ -127,6 +130,6 @@ private:
     std::vector<Argument> m_arguments;
 };
 
-}
+} // namespace nexilis
 
 #endif

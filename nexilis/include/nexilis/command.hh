@@ -3,8 +3,8 @@
 
 #include <nexilis/authentication.hh>
 #include <nexilis/command_type.hh>
-#include <nexilis/protocol.hh>
 #include <nexilis/json.hh>
+#include <nexilis/protocol.hh>
 
 #include <cstddef>
 #include <cstdint>
@@ -85,7 +85,7 @@ private:
     /// Send multiple messages with specified tickrate.
     static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
     static double easing(double progress, double totalDistance);
-    static Vector2f calculatePosition(Vector2f currentPosition, Vector2f velocity, float deltaTime);
+
 private:
     /// Pointer to the authentication.
     static Authentication* s_authentication;

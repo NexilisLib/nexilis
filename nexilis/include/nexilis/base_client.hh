@@ -1,9 +1,9 @@
 #ifndef NEXILIS_BASE_CLIENT_HH
 #define NEXILIS_BASE_CLIENT_HH
 
+#include <cassert>
 #include <cstdint>
 #include <string>
-#include <cassert>
 
 #include <nexilis/object2d.hh>
 #include <nexilis/object3d.hh>
@@ -62,6 +62,6 @@ private:
     Object2D m_object2D;
 };
 
-}
+} // namespace nexilis
 
 #endif

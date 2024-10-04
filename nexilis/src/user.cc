@@ -56,6 +56,4 @@ bool User::boostUDPSend(std::vector<uint8_t> data)
     return false;
 }
 
-
-
-}
+} // namespace nexilis

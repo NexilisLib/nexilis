@@ -1,10 +1,10 @@
 #ifndef CHAT_CLIENT_CHAT_HH
 #define CHAT_CLIENT_CHAT_HH
 
-#include "menu.hh"
-#include "window.hh"
 #include "debug.hh"
+#include "menu.hh"
 #include "program_state.hh"
+#include "window.hh"
 
 #include <nexilis/client_api.hh>
 

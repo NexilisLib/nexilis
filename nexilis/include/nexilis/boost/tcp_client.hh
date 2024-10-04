@@ -14,7 +14,7 @@ namespace nexilis
 {
 
 class BoostTCPClient : public Protocol,
-                  public ClientProtocol
+                       public ClientProtocol
 {
 public:
     /// Constructor.

@@ -14,8 +14,8 @@ namespace nexilis
 {
 
 class BoostUDPClient : public Protocol,
-                  public ClientProtocol,
-                  public Loggable
+                       public ClientProtocol,
+                       public Loggable
 {
 public:
     /// Constructor.

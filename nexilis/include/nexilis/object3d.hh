@@ -8,6 +8,6 @@ class Object3D
 {
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -15,8 +15,8 @@ namespace nexilis
 {
 
 class BoostTCPServer : public Protocol,
-                  public ServerProtocol,
-                  public Loggable
+                       public ServerProtocol,
+                       public Loggable
 {
 public:
     /// Constructor.

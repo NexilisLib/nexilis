@@ -1,6 +1,6 @@
 #include <nexilis/boost/udp_client.hh>
-#include <nexilis/nexilis_macros.hh>
 #include <nexilis/log.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <boost/asio/ip/address.hpp>
 
@@ -75,7 +75,8 @@ BoostUDPClient& BoostUDPClient::operator=(BoostUDPClient&& other)
 
 void BoostUDPClient::start()
 {
-    m_ioContextThread = std::thread([this](){ m_ioContext->run(); });
+    m_ioContextThread = std::thread([this]()
+                                    { m_ioContext->run(); });
     m_socket.open(boost::asio::ip::udp::v4());
     m_receiveMessageThread = std::thread(&BoostUDPClient::receiveLoop, this);
 }
@@ -104,6 +105,5 @@ void BoostUDPClient::sendMessage(const std::vector<uint8_t>& payload)
         Log::error("UDPClient::send(): boost::UDPClient socket is not open");
     }
 }
-
 
 } // namespace nexilis

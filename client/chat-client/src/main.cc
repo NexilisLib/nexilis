@@ -1,8 +1,8 @@
 #include "debug.hh"
 #include "program.hh"
 
-#include <nexilis/logger/file_handler.hh>
 #include <nexilis/cmd_line_options.hh>
+#include <nexilis/logger/file_handler.hh>
 
 int main(int argc, char** argv)
 {

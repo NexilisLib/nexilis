@@ -49,7 +49,7 @@ VimCommand createCommand(Window& window)
                         // User entered space, so command is ready.
                         if (commandCh == 10)
                         {
-                            return VimCommand{ VimFeature::escape, command};
+                            return VimCommand{VimFeature::escape, command};
                         }
                     }
                     else if (commandCh == 27)
@@ -64,7 +64,7 @@ VimCommand createCommand(Window& window)
             return VimCommand{VimFeature::no_feature, command};
         }
     }
-    return VimCommand{ VimFeature::no_feature, command};
+    return VimCommand{VimFeature::no_feature, command};
 }
 
 void useVimMode(State& programState, Window& window, const std::function<void(const std::vector<uint8_t>&)>& sendTCPMessage)
@@ -115,4 +115,3 @@ void useVimMode(int trigger, State& programState, Window& window, const std::fun
         }
     }
 }
-

@@ -3,9 +3,9 @@
 #include <nexilis/command.hh>
 #include <nexilis/config.hh>
 #include <nexilis/json.hh>
+#include <nexilis/log.hh>
 #include <nexilis/message_handler.hh>
 #include <nexilis/packet.hh>
-#include <nexilis/log.hh>
 #include <nexilis/room_storage.hh>
 
 #include <nexilis/common/util.hh>

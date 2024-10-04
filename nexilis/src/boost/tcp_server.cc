@@ -3,8 +3,8 @@
 #include <nexilis/common/util.hh>
 
 #include <boost/asio/buffer.hpp>
-#include <boost/asio/streambuf.hpp>
 #include <boost/asio/read.hpp>
+#include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
 
 namespace nexilis
@@ -54,15 +54,15 @@ BoostTCPServer::~BoostTCPServer()
 
 void BoostTCPServer::start()
 {
-    m_ioContextThread = std::thread([this]() { m_ioContext->run(); });
+    m_ioContextThread = std::thread([this]()
+                                    { m_ioContext->run(); });
 
     m_listenThread = std::thread([this]()
-    {
+                                 {
         if (startListening())
         {
             acceptClients();
-        }
-    });
+        } });
 }
 
 void BoostTCPServer::stop()
@@ -99,12 +99,12 @@ bool BoostTCPServer::acceptClients()
         if (accept_error)
         {
             Log::error("Error accepting client connection: ", accept_error.message());
-            continue;  // Proceed to accept the next client
+            continue; // Proceed to accept the next client
         }
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-        {
+                    {
             try
             {
                 std::string clientAddress;
@@ -200,8 +200,8 @@ bool BoostTCPServer::acceptClients()
             catch (const std::exception& e)
             {
                 Log::error("Exception in client thread: ", e.what());
-            }
-        }).detach();
+            } })
+                .detach();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
