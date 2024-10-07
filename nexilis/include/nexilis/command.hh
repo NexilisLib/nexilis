@@ -17,6 +17,7 @@ namespace nexilis
 /// Nexilis Server-side API.
 /// Command contains static reading functions for the nexilis byte sequence.
 /// These bytes have been cleared from MessageHandler and contains vector<uint8>& which triggers all the actions of nexilis.
+/// TODO this class should be not static and inherited by ServerProtocol
 class Command
 {
 public:
