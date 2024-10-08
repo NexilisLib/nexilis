@@ -1,5 +1,3 @@
-#include "nexilis/loggable.hh"
-#include <cstdint>
 #include <nexilis/af_inet/udp_server.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
@@ -49,6 +47,7 @@ void UDPServer::start()
         while (true)
         {
             BaseUDPServer::Message msg;
+
             // TODO fix
             std::vector<uint8_t> data;
 

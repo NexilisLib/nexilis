@@ -7,6 +7,12 @@
 namespace nexilis
 {
 
+/// Note:
+// 1. Luokan nimi?
+// 2. Luokan sisältö verrattuna nimeen?
+//
+
+
 /// Nexilis Server-side API.
 class Authentication
 {

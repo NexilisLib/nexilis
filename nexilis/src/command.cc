@@ -336,7 +336,8 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 return Result::success;
                             }
 
-                            // Movement 2D
+                            // Movement 2D, creates a thread that sends the new position with time of delta.
+                            // In 16 thread CPU: when delta = 0.1f -> ~6 updates.
                             case 2:
                             {
                                 Log::debug("Command Room::movement(vector2 movementVector, float delta)");
@@ -347,15 +348,13 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 auto vecY = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
                                 auto delta = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
                                 auto movementVector = Vector2f(vecX, vecY);
-
                                 auto mtx = std::make_shared<std::mutex>();
-                                auto movedPosition = std::make_shared<Vector2f>();
 
-                                std::thread([this, mtx, movedPosition, movementVector, &user, command, &protocol, &messageId, delta]()
+                                std::thread([this, mtx, movementVector, &user, command, &protocol, &messageId, delta]()
                                 {
                                     try
                                     {
-                                        runWithTickrate(m_authentication.getTickrate(), delta, [this, &mtx, movedPosition, movementVector, &user, command, &protocol, &messageId](double progress)
+                                        runWithTickrate(m_authentication.getTickrate(), delta, [this, &mtx, movementVector, &user, command, &protocol, &messageId](double progress)
                                         {
                                             auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
                                             assert(clientRoom);
@@ -367,6 +366,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                             Vector2f dimensions = user.getObject2D().getDimensions();
 
                                             auto newMovedPosition = Vector2f(easedX + currentPosition.x, easedY + currentPosition.y);
+                                            bool limitedMovement = false;
                                             for (auto& c : clientRoom->getClients())
                                             {
                                                 User* roomClient = ClientStorage::getClientById(c);
@@ -389,22 +389,25 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                                             newMovedPosition.y + dimensions.y / 2 > roomClientPosition.y - roomClientDimensions.y / 2
                                                        )
                                                     {
-                                                        Log::warning("Players tried to hit each other!");
+                                                        Log::info("Players tried to hit each other!");
+                                                        limitedMovement = true;
+                                                        return;
                                                     }
                                                 }
                                             }
 
-                                            std::map<std::string, boost::json::value> params
+                                            if (!limitedMovement)
                                             {
-                                                {"x", boost::json::value(newMovedPosition.x)},
-                                                {"y", boost::json::value(newMovedPosition.y)},
-                                            };
-
-                                            {
-                                                std::lock_guard<std::mutex> lock(*mtx);
-                                                *movedPosition = newMovedPosition;
-                                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                                sendRoomCommand(roomCommand, user, protocol);
+                                                {
+                                                    std::lock_guard<std::mutex> lock(*mtx);
+                                                    user.getObject2D().setPosition(newMovedPosition.x, newMovedPosition.y);
+                                                    std::map<std::string, boost::json::value> params = {
+                                                        {"x", boost::json::value(newMovedPosition.x)},
+                                                        {"y", boost::json::value(newMovedPosition.y)},
+                                                    };
+                                                    auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                                    sendRoomCommand(roomCommand, user, protocol);
+                                                }
                                             }
                                         });
                                     }
@@ -414,21 +417,6 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                     } })
                                         .detach();
 
-                                // Last movement is zero, implying successfull movement.
-                                if (*movedPosition.get() == Vector2f())
-                                {
-                                    auto currentPosition = user.getObject2D().getPosition();
-                                    auto newPosition = movementVector + currentPosition;
-                                    Log::debug("Movement x: ", newPosition.x, " y: ", newPosition.y, " with delta: ", delta);
-                                    user.getObject2D().setPosition(newPosition.x, newPosition.y);
-                                }
-                                // Moving client as much as possible.
-                                else
-                                {
-                                    Log::debug("Limited movement x: ", movedPosition->x, " y: ", movedPosition->y, " with delta: ", delta);
-                                    auto currentPosition = user.getObject2D().getPosition();
-                                    user.getObject2D().setPosition(currentPosition.x + movedPosition->x, currentPosition.y + movedPosition->y);
-                                }
                                 return Result::success;
                             }
 
