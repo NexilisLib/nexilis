@@ -1,5 +1,3 @@
-#include "nexilis/vector2.hh"
-#include <cstdint>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
 #include <nexilis/command_type.hh>
@@ -11,8 +9,24 @@
 namespace nexilis
 {
 
-Authentication* Command::s_authentication = nullptr;
-float Command::s_tickrate = 60.f;
+Command::Command(const Authentication& authentication)
+    : m_authentication(authentication)
+{
+}
+
+Command::Command(Command&& other)
+    : m_authentication(std::move(other.m_authentication))
+{
+}
+
+Command& Command::operator=(Command&& other)
+{
+    if (this != &other)
+    {
+        m_authentication = std::move(other.m_authentication);
+    }
+    return *this;
+}
 
 Command::Result Command::read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId)
 {
@@ -337,11 +351,11 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                                 auto mtx = std::make_shared<std::mutex>();
                                 auto movedPosition = std::make_shared<Vector2f>();
 
-                                std::thread([mtx, movedPosition, movementVector, &user, command, &protocol, &messageId, delta]()
+                                std::thread([this, mtx, movedPosition, movementVector, &user, command, &protocol, &messageId, delta]()
                                 {
                                     try
                                     {
-                                        runWithTickrate(s_tickrate, delta, [&mtx, movedPosition, movementVector, &user, command, &protocol, &messageId](double progress)
+                                        runWithTickrate(m_authentication.getTickrate(), delta, [this, &mtx, movedPosition, movementVector, &user, command, &protocol, &messageId](double progress)
                                         {
                                             auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
                                             assert(clientRoom);
@@ -451,9 +465,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string password = Util::convertToString(payload);
 
-                    if (s_authentication)
+                    if (m_authentication.hasPassphrase())
                     {
-                        if (s_authentication->isRootPassword(password))
+                        if (m_authentication.isRootPassword(password))
                         {
                             user.setRootAccess(true);
                             Log::info("Client ", user.getIPAddress(), " has root access!");
@@ -479,9 +493,9 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string password = Util::convertToString(payload);
 
-                    if (s_authentication)
+                    if (m_authentication.hasPassphrase())
                     {
-                        if (s_authentication->isPassphrase(password))
+                        if (m_authentication.isPassphrase(password))
                         {
                             user.setCommonAccess(true);
                             Log::info("Client ", user.getIPAddress(), " has common access!");

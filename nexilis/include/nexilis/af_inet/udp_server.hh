@@ -1,20 +1,22 @@
 #ifndef NEXILIS_AF_INET_UDP_SERVER_HH
 #define NEXILIS_AF_INET_UDP_SERVER_HH
 
-#include "nexilis/server_protocol.hh"
 #include <nexilis/af_inet/base_udp_server.hh>
+#include <nexilis/server_protocol.hh>
 #include <nexilis/message_handler.hh>
+#include <nexilis/command.hh>
+#include <nexilis/authentication.hh>
 
 namespace nexilis::af_inet
 {
 
-class UDPServer : public BaseUDPServer, public ServerProtocol
+class UDPServer : public BaseUDPServer, public Command, public ServerProtocol
 {
 public:
     /// Constructor.
     /// \param port The port we are assigning the udp server.
     /// This has been initialized the value of Port::UDP.
-    UDPServer(unsigned port = static_cast<unsigned>(Port::UDP));
+    UDPServer(const Authentication& authentication, unsigned port = static_cast<unsigned>(Port::UDP));
 
     /// Destructor.
     ~UDPServer();

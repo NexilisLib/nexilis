@@ -1,10 +1,12 @@
 #ifndef NEXILIS_BOOST_TCP_SERVER_HH
 #define NEXILIS_BOOST_TCP_SERVER_HH
 
-#include <nexilis/loggable.hh>
-#include <nexilis/message_handler.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
+#include <nexilis/command.hh>
+#include <nexilis/message_handler.hh>
+#include <nexilis/loggable.hh>
+#include <nexilis/authentication.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -16,11 +18,12 @@ namespace nexilis
 
 class BoostTCPServer : public Protocol,
                        public ServerProtocol,
+                       public Command,
                        public Loggable
 {
 public:
     /// Constructor.
-    BoostTCPServer(int serverPort);
+    BoostTCPServer(const Authentication& authentication, int serverPort);
 
     /// Destructor.
     ~BoostTCPServer();

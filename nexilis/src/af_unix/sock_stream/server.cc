@@ -1,8 +1,6 @@
-#include <cstdint>
 #include <nexilis/af_unix/sock_stream/server.hh>
 #include <nexilis/command.hh>
 #include <nexilis/nexilis_macros.hh>
-#include <nexilis/server_manager.hh>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -12,8 +10,9 @@
 namespace nexilis::af_unix::sock_stream
 {
 
-Server::Server(const std::string& socketPath)
-    : m_socketPath(socketPath),
+Server::Server(const Authentication& authentication, const std::string& socketPath)
+    : Command(authentication),
+      m_socketPath(socketPath),
       m_buffer(NEXILIS_BUFFER)
 {
     createSocket();
@@ -33,6 +32,7 @@ Server::~Server()
 Server::Server(Server&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      Command(std::move(other)),
       m_socketPath(std::move(other.m_socketPath)),
       m_serverSocket(std::move(other.m_serverSocket)),
       m_buffer(std::move(std::move(other.m_buffer))),
@@ -46,6 +46,7 @@ Server& Server::operator=(Server&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        Command::operator=(std::move(other));
         m_socketPath = std::move(other.m_socketPath);
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
@@ -90,7 +91,7 @@ void Server::bindSocket()
         close(m_serverSocket);
     }
 
-    if (listen(m_serverSocket, ServerManager::getMaxAmountOfClients()) == -1)
+    if (listen(m_serverSocket, 30) == -1)
     {
         Log::error("Failed to listen to socket");
         close(m_serverSocket);
@@ -172,7 +173,7 @@ void Server::handleMessages()
         else
         {
             std::vector<uint8_t> example;
-            auto msg = getMessageHandler().readMessage("localhost", example, -1, Command::getAuthentication());
+            auto msg = getMessageHandler().readMessage("localhost", example, -1, &Command::getAuthentication());
 
             if (msg.getClient())
             {

@@ -8,13 +8,15 @@
 namespace nexilis::af_inet
 {
 
-UDPServer::UDPServer(unsigned port)
-    : BaseUDPServer(port)
+UDPServer::UDPServer(const Authentication& authentication, unsigned port)
+    : BaseUDPServer(port),
+      Command(authentication)
 {
 }
 
 UDPServer::UDPServer(UDPServer&& other)
     : BaseUDPServer(std::move(other)),
+      Command(std::move(other)),
       m_receiveThread(std::move(other.m_receiveThread))
 {
 }
@@ -24,6 +26,7 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
     if (this != &other)
     {
         BaseUDPServer::operator=(std::move(other));
+        Command::operator=(std::move(other));
         m_receiveThread = std::move(other.m_receiveThread);
     }
     return *this;
@@ -51,7 +54,7 @@ void UDPServer::start()
 
             if (BaseUDPServer::getNextMessage(msg))
             {
-                auto message = getMessageHandler().readMessage(msg.address, data, msg.port, Command::getAuthentication());
+                auto message = getMessageHandler().readMessage(msg.address, data, msg.port, &Command::getAuthentication());
 
                 auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
                 {

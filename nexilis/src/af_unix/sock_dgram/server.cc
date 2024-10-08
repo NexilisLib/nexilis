@@ -18,8 +18,9 @@ namespace nexilis::af_unix::sock_dgram
 /// The file path we are reading messages from.
 static std::string path;
 
-Server::Server(const std::string& socketPath)
-    : m_buffer(NEXILIS_BUFFER)
+Server::Server(const Authentication& authentication, const std::string& socketPath)
+    :   Command(authentication),
+        m_buffer(NEXILIS_BUFFER)
 {
     path = socketPath;
 
@@ -31,6 +32,7 @@ Server::Server(const std::string& socketPath)
 
 Server::Server(Server&& other)
     : Protocol(std::move(other)),
+      Command(std::move(other)),
       ServerProtocol(std::move(other)),
       m_serverSocket(other.m_serverSocket),
       m_buffer(other.m_buffer)
@@ -42,6 +44,7 @@ Server& Server::operator=(Server&& other)
     if (this != &other)
     {
         Protocol::operator=(std::move(other));
+        Command::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
@@ -99,7 +102,7 @@ void Server::receiveMessage()
                 std::cout << "Send reply to client" << std::endl;
             }
 
-            auto message = getMessageHandler().readMessage(clientAddress.sun_path, m_buffer, -1, Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(clientAddress.sun_path, m_buffer, -1, &Command::getAuthentication());
 
             if (message.getClient())
             {

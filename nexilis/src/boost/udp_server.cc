@@ -7,8 +7,9 @@
 namespace nexilis
 {
 
-BoostUDPServer::BoostUDPServer(int port)
-    : m_ioContext(std::make_unique<boost::asio::io_context>()),
+BoostUDPServer::BoostUDPServer(const Authentication& authentication, int port)
+    : Command(authentication),
+      m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_remoteEndpoint(boost::asio::ip::udp::v4(), port),
       m_socket(*m_ioContext, m_remoteEndpoint),
@@ -38,6 +39,7 @@ BoostUDPServer::~BoostUDPServer()
 BoostUDPServer::BoostUDPServer(BoostUDPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      Command(std::move(other)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
@@ -54,6 +56,7 @@ BoostUDPServer& BoostUDPServer::operator=(BoostUDPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        Command::operator=(std::move(other));
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
@@ -89,7 +92,7 @@ void BoostUDPServer::receiveFromClients()
             uint16_t port = m_remoteEndpoint.port();
             Log::info("Received from ", address, " port ", port);
 
-            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, Command::getAuthentication());
+            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &Command::getAuthentication());
 
             if (!handledMessage.getClient()->isBoostUDPSet())
             {

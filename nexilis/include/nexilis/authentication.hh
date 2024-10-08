@@ -11,35 +11,42 @@ namespace nexilis
 class Authentication
 {
 public:
-    enum class Mode
+    // Normal password.
+    void setPassphrase(const std::string& password);
+    bool isPassphrase(const std::string& password);
+    bool hasPassphrase();
+
+    // Root password.
+    void setRootPassword(const std::string& password);
+    bool isRootPassword(const std::string& password);
+    bool hasRootPassword();
+
+    enum class AuthenticationMode
     {
         free,
         passwordProtected,
         whiteListed
     };
 
-    void setRootPassword(const std::string& password);
-
-    bool isRootPassword(const std::string& password);
-
-    void setPassphrase(const std::string& password);
-
-    bool isPassphrase(const std::string& password);
-
-    void setMode(Mode mode)
+    void setMode(AuthenticationMode mode)
     {
         m_mode = mode;
     }
 
-    Mode getMode() const
+    AuthenticationMode getMode() const
     {
         return m_mode;
     }
 
+    // Tickrate
+    void setTickrate(float tickrate);
+    float getTickrate() const { return m_tickrate; }
+
 private:
     std::string m_rootPassword;
     std::string m_password;
-    Mode m_mode = Mode::free;
+    AuthenticationMode m_mode = AuthenticationMode::free;
+    float m_tickrate = 60.f;
 };
 
 } // namespace nexilis

@@ -10,8 +10,9 @@
 namespace nexilis
 {
 
-BoostTCPServer::BoostTCPServer(int serverPort)
-    : Loggable(Protocol::typeToString(getType()), __FILE__),
+BoostTCPServer::BoostTCPServer(const Authentication& authentication, int serverPort)
+    : Command(authentication),
+      Loggable(Protocol::typeToString(getType()), __FILE__),
       m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
@@ -22,6 +23,7 @@ BoostTCPServer::BoostTCPServer(int serverPort)
 BoostTCPServer::BoostTCPServer(BoostTCPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      Command(std::move(other)),
       Loggable(std::move(other)),
       m_mutex(std::move(other.m_mutex)),
       m_ioContext(std::move(other.m_ioContext)),
@@ -37,6 +39,7 @@ BoostTCPServer& BoostTCPServer::operator=(BoostTCPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        Command::operator=(std::move(other));
         Loggable::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
@@ -104,7 +107,7 @@ bool BoostTCPServer::acceptClients()
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-                    {
+        {
             try
             {
                 std::string clientAddress;
@@ -163,7 +166,7 @@ bool BoostTCPServer::acceptClients()
                         data.insert(data.end(), bufferData, bufferData + bufferSize);
                     }
 
-                    auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, Command::getAuthentication());
+                    auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &Command::getAuthentication());
 
                     if (!handledMessage.getClient()->isBoostTCPSet())
                     {

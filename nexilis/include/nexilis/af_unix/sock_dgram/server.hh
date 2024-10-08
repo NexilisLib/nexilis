@@ -2,17 +2,19 @@
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
 #include <nexilis/protocol.hh>
+#include <nexilis/command.hh>
 #include <nexilis/server_protocol.hh>
 
 namespace nexilis::af_unix::sock_dgram
 {
 
 class Server : public Protocol,
+               public Command,
                public ServerProtocol
 {
 public:
     /// Constructor.
-    Server(const std::string& socketPath);
+    Server(const Authentication& authentication, const std::string& socketPath);
 
     /// Destructor.
     ~Server();

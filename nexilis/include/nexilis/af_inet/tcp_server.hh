@@ -1,8 +1,10 @@
 #ifndef NEXILIS_AF_INET_TCP_SERVER_HH
 #define NEXILIS_AF_INET_TCP_SERVER_HH
 
+#include <nexilis/authentication.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/command.hh>
 #include <nexilis/server_protocol.hh>
 
 #include <netinet/in.h>
@@ -14,7 +16,8 @@ namespace nexilis::af_inet
 {
 
 class TCPServer : public Protocol,
-                  public ServerProtocol
+                  public ServerProtocol,
+                  public Command
 {
 public:
     class Client
@@ -48,7 +51,7 @@ public:
     };
 
     /// Constructor.
-    TCPServer(int port);
+    TCPServer(const Authentication& authentication, int port);
 
     /// Destructor.
     ~TCPServer();

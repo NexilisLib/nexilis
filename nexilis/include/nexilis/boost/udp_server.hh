@@ -1,9 +1,11 @@
 #ifndef NEXILIS_BOOST_UDP_SERVER_HH
 #define NEXILIS_BOOST_UDP_SERVER_HH
 
+#include <nexilis/authentication.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
+#include <nexilis/command.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
@@ -14,11 +16,12 @@ namespace nexilis
 {
 
 class BoostUDPServer : public Protocol,
-                       public ServerProtocol
+                       public ServerProtocol,
+                       public Command
 {
 public:
     /// Constructor.
-    BoostUDPServer(int port);
+    BoostUDPServer(const Authentication& authentication, int port);
 
     /// Destructor.
     ~BoostUDPServer();

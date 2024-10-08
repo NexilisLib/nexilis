@@ -46,17 +46,17 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
 
     switch (authentication->getMode())
     {
-        case Authentication::Mode::free:
+        case Authentication::AuthenticationMode::free:
         {
             Log::error("Not implemented!");
             return errorMessage;
         }
-        case Authentication::Mode::whiteListed:
+        case Authentication::AuthenticationMode::whiteListed:
         {
             Log::error("Not implemented!");
             return errorMessage;
         }
-        case Authentication::Mode::passwordProtected:
+        case Authentication::AuthenticationMode::passwordProtected:
         {
             if (userAlreadyExists)
             {

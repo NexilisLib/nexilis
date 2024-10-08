@@ -15,9 +15,8 @@ namespace nexilis
 {
 
 /// Nexilis Server-side API.
-/// Command contains static reading functions for the nexilis byte sequence.
+/// Command contains functionality for reading nexilis byte sequence.
 /// These bytes have been cleared from MessageHandler and contains vector<uint8>& which triggers all the actions of nexilis.
-/// TODO this class should be not static and inherited by ServerProtocol
 class Command
 {
 public:
@@ -46,13 +45,30 @@ public:
         unauthorized
     };
 
+    /// Constructor.
+    /// \param authentication The settings of the server.
+    /// \param tickrate The tickrate of the server.
+    Command(const Authentication& authentication);
+
+    // Move constructor.
+    Command(Command&& other);
+
+    // Move assignment operator.
+    Command& operator=(Command&& other);
+
+    /// Deleted copy constructor.
+    Command(const Command& other) = delete;
+
+    /// Deleted copy assignment operator.
+    Command& operator=(const Command& other) = delete;
+
     /// Read the command from client.
     /// \param command The vector of bytes that is the command.
     /// \param user The user that sent the message.
     /// \param protocol The protocol that was used in receiving the message.
     /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    static Result read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId);
+    Result read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId);
 
     /// Read the command from client.
     /// \param command_data The data for the command
@@ -61,36 +77,32 @@ public:
     /// \param protocol The protocol that was used in receiving the message.
     /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    static Result read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
+    Result read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
 
-    /// Give server authentication details via Authentication object.
-    /// /// \param authentication The object than contains authentication rules.
-    static void setAuthentication(Authentication& authentication)
+protected:
+    Authentication& getAuthentication()
     {
-        s_authentication = &authentication;
+        return m_authentication;
     }
 
-    /// Get authentication details.
-    static Authentication* getAuthentication()
+    const Authentication& getAuthentication() const
     {
-        return s_authentication;
+        return m_authentication;
     }
-
 private:
     /// Send message to every protocol that is avainable for a client;
-    static void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
+    void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
 
-    static std::vector<uint8_t> createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
-    static void sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol);
+    std::vector<uint8_t> createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
+    void sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol);
 
     /// Send multiple messages with specified tickrate.
-    static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
-    static double easing(double progress, double totalDistance);
+    void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
+    double easing(double progress, double totalDistance);
 
 private:
-    /// Pointer to the authentication.
-    static Authentication* s_authentication;
-    static float s_tickrate;
+    /// The "settings" of the server protocol.
+    Authentication m_authentication;
 };
 
 } // namespace nexilis

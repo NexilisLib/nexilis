@@ -50,7 +50,6 @@ set(SOURCES
     src/log.cc
     src/loggable.cc
     src/message_handler.cc
-    src/server_manager.cc
     src/packet.cc
     src/protocol.cc
     src/protocol_manager.cc
@@ -72,6 +71,7 @@ set(SOURCES
     src/af_inet/udp_client.cc
     src/af_inet/base_udp_server.cc
     src/af_inet/udp_server.cc
+
     src/af_inet/tcp_client.cc
     src/af_inet/tcp_server.cc
 

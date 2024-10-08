@@ -1,9 +1,5 @@
-#include "nexilis/command.hh"
-#include "nexilis/server_protocol.hh"
-#include <cstdint>
 #include <nexilis/af_inet/tcp_server.hh>
 #include <nexilis/log.hh>
-#include <nexilis/server_manager.hh>
 
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -20,7 +16,8 @@ TCPServer::Client::Client(std::string address, uint16_t port, int socket)
 {
 }
 
-TCPServer::TCPServer(int serverPort)
+TCPServer::TCPServer(const Authentication& authentication, int serverPort)
+    : Command(authentication)
 {
     m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -74,6 +71,7 @@ TCPServer::~TCPServer()
 TCPServer::TCPServer(TCPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      Command(std::move(other)),
       m_serverSocket(std::move(other.m_serverSocket)),
       m_serverAddr(std::move(other.m_serverAddr)),
       m_operatingThread(std::move(other.m_operatingThread)),
@@ -87,6 +85,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        Command::operator=(std::move(other));
         m_serverSocket = std::move(other.m_serverSocket);
         m_serverAddr = std::move(other.m_serverAddr);
         m_operatingThread = std::move(other.m_operatingThread);
@@ -97,7 +96,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
 
 bool TCPServer::startListening()
 {
-    return listen(m_serverSocket, ServerManager::getMaxAmountOfClients()) != 1;
+    return listen(m_serverSocket, 30) != 1;
 }
 
 TCPServer::Client TCPServer::acceptClient()
@@ -138,7 +137,7 @@ void TCPServer::operatingLoop()
         char buffer[NEXILIS_BUFFER];
         auto client = acceptClient();
 
-        ssize_t bytesRead = read(client.getSocket(), buffer, sizeof(buffer));
+        ssize_t bytesRead = ::read(client.getSocket(), buffer, sizeof(buffer));
 
         // FIXME create std::vector<uint8_t> buffer
         buffer[bytesRead] = '\0';
@@ -149,7 +148,7 @@ void TCPServer::operatingLoop()
 
         if (bytesRead > 0)
         {
-            auto message = getMessageHandler().readMessage(client.getAddress(), _reveivedData, client.getPort(), Command::getAuthentication());
+            auto message = getMessageHandler().readMessage(client.getAddress(), _reveivedData, client.getPort(), &Command::getAuthentication());
 
             auto sendMsg = [this, &client](const std::vector<uint8_t> data)
             {

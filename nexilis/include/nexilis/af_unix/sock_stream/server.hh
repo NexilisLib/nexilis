@@ -1,23 +1,24 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
+#include <nexilis/authentication.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server_protocol.hh>
+#include <nexilis/command.hh>
 
-#include <cstdint>
-#include <string>
 #include <thread>
 
 namespace nexilis::af_unix::sock_stream
 {
 
 class Server : public Protocol,
-               public ServerProtocol
+               public ServerProtocol,
+               public Command
 {
 public:
     /// Constructor.
-    Server(const std::string& socketPath);
+    Server(const Authentication& authentication, const std::string& socketPath);
 
     /// Destructor.
     ~Server();

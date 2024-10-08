@@ -3,28 +3,34 @@
 namespace nexilis
 {
 
-void Authentication::setRootPassword(const std::string& password)
-{
-    assert(!password.empty());
-    m_rootPassword = password;
-}
-
-bool Authentication::isRootPassword(const std::string& password)
-{
-    assert(!m_rootPassword.empty());
-    return m_rootPassword == password;
-}
-
 void Authentication::setPassphrase(const std::string& password)
 {
-    assert(!password.empty());
     m_password = password;
 }
 
 bool Authentication::isPassphrase(const std::string& password)
 {
-    assert(!m_password.empty());
     return password == m_password;
+}
+
+bool Authentication::hasPassphrase()
+{
+    return !m_password.empty();
+}
+
+void Authentication::setRootPassword(const std::string& password)
+{
+    m_rootPassword = password;
+}
+
+bool Authentication::isRootPassword(const std::string& password)
+{
+    return m_rootPassword == password;
+}
+
+void Authentication::setTickrate(float tickrate)
+{
+    m_tickrate = tickrate;
 }
 
 } // namespace nexilis
