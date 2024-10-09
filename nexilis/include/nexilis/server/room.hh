@@ -5,7 +5,7 @@
 #include <nexilis/util.hh>
 #include <nexilis/nexilis_macros.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Nexilis Server-side API.
@@ -138,6 +138,6 @@ private:
     std::vector<uint64_t> m_clientIds;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

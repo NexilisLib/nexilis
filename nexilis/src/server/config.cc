@@ -1,8 +1,8 @@
 #include <nexilis/server/config.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 bool Config::m_bigEndian = true;
 
-}
+} // namespace nexilis::server

@@ -1,7 +1,7 @@
 #ifndef NEXILIS_CONFIG_HH
 #define NEXILIS_CONFIG_HH
 
-namespace nexilis
+namespace nexilis::server
 {
 
 class Config
@@ -26,6 +26,6 @@ private:
     static bool m_bigEndian;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

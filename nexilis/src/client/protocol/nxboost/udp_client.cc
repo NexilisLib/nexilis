@@ -1,4 +1,4 @@
-#include <nexilis/client/protocol/boost/udp_client.hh>
+#include <nexilis/client/protocol/nxboost/udp_client.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -6,10 +6,10 @@
 
 #include <mutex>
 
-namespace nexilis
+namespace nexilis::client::nxboost
 {
 
-BoostUDPClient::BoostUDPClient(ClientAPI& clientApi)
+UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
       Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
@@ -20,7 +20,7 @@ BoostUDPClient::BoostUDPClient(ClientAPI& clientApi)
 {
 }
 
-BoostUDPClient::~BoostUDPClient()
+UDPClient::~UDPClient()
 {
     m_socket.close();
     m_ioContext->stop();
@@ -36,7 +36,7 @@ BoostUDPClient::~BoostUDPClient()
     }
 }
 
-BoostUDPClient::BoostUDPClient(BoostUDPClient&& other)
+UDPClient::UDPClient(UDPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       Loggable(std::move(other)),
@@ -52,7 +52,7 @@ BoostUDPClient::BoostUDPClient(BoostUDPClient&& other)
     other.m_mutex = nullptr;
 }
 
-BoostUDPClient& BoostUDPClient::operator=(BoostUDPClient&& other)
+UDPClient& UDPClient::operator=(UDPClient&& other)
 {
     if (this != &other)
     {
@@ -73,15 +73,15 @@ BoostUDPClient& BoostUDPClient::operator=(BoostUDPClient&& other)
     return *this;
 }
 
-void BoostUDPClient::start()
+void UDPClient::start()
 {
     m_ioContextThread = std::thread([this]()
                                     { m_ioContext->run(); });
     m_socket.open(boost::asio::ip::udp::v4());
-    m_receiveMessageThread = std::thread(&BoostUDPClient::receiveLoop, this);
+    m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
 }
 
-void BoostUDPClient::receiveLoop()
+void UDPClient::receiveLoop()
 {
     while (m_socket.is_open())
     {
@@ -93,7 +93,7 @@ void BoostUDPClient::receiveLoop()
     }
 }
 
-void BoostUDPClient::sendMessage(const std::vector<uint8_t>& payload)
+void UDPClient::sendMessage(const std::vector<uint8_t>& payload)
 {
     if (m_socket.is_open())
     {

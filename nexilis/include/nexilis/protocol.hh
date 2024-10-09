@@ -1,8 +1,7 @@
 #ifndef NEXILIS_PROTOCOL_HH
 #define NEXILIS_PROTOCOL_HH
 
-#include <cstdint>
-#include <sstream>
+#include <string>
 
 namespace nexilis
 {

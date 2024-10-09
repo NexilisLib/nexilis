@@ -40,7 +40,6 @@ set(SOURCES
 
     # Server
     src/server/server_protocol.cc
-    src/server/protocol/boost/tcp_server.cc
     src/server/user.cc
     src/server/command.cc
     src/server/message_handler.cc
@@ -51,11 +50,16 @@ set(SOURCES
     src/server/client_storage.cc
     src/server/room_storage.cc
 
+    # Server protocols
+    src/server/protocol/nxboost/tcp_server.cc
+
     # Client
     src/client/client_api.cc
-    src/client/protocol/boost/tcp_client.cc
     src/client/client_protocol.cc
     src/client/packet.cc
+
+    # Client protocols
+    src/client/protocol/nxboost/tcp_client.cc
 
     # Logger
     src/logger/base_handler.cc

@@ -28,7 +28,7 @@ public:
 
         T result = 0;
 
-        if (Config::getBigEndian())
+        if (server::Config::getBigEndian())
         {
             for (uint64_t i = 0; i < sizeof(T); ++i)
             {

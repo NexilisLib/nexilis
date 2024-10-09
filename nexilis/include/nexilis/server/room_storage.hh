@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Nexilis-Server side API.
@@ -36,6 +36,6 @@ private:
     static std::vector<Room> m_rooms;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

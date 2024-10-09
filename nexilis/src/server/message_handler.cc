@@ -10,7 +10,7 @@
 
 #include <nexilis/util.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 // Payload handled by this class:
@@ -133,4 +133,4 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
     }
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

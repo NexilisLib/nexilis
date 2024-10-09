@@ -3,7 +3,7 @@
 #include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
 
-namespace nexilis
+namespace nexilis::client
 {
 
 ClientAPI* Packet::m_clientApi = nullptr;
@@ -188,4 +188,4 @@ std::vector<uint8_t> Packet::clientIdentification()
     return clientIdVector;
 }
 
-} // namespace nexilis
+} // namespace nexilis::client

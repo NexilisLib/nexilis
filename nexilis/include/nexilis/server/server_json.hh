@@ -6,10 +6,9 @@
 
 #include <boost/json/object.hpp>
 
-#include <map>
 #include <vector>
 
-namespace nexilis
+namespace nexilis::server
 {
 /// Boost abstraction for serverside clients and rooms.
 class ServerJson
@@ -35,6 +34,6 @@ private:
     static boost::json::array clientsToJSON(const std::vector<User>& clients);
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

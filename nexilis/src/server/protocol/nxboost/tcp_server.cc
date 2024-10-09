@@ -1,4 +1,4 @@
-#include <nexilis/server/protocol/boost/tcp_server.hh>
+#include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/util.hh>
 #include <nexilis/logger/loggable.hh>
@@ -8,19 +8,19 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
 
-namespace nexilis
+namespace nexilis::server::nxboost
 {
 
-BoostTCPServer::BoostTCPServer(const Settings& settings, int serverPort)
+TCPServer::TCPServer(const Settings& settings, int serverPort)
     : Command(settings),
       m_mutex(std::make_unique<std::mutex>()),
-      m_ioContext(std::make_unique<boost::asio::io_context>()),
+      m_ioContext(std::make_unique<::boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
-                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
+                 boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
 {
 }
 
-BoostTCPServer::BoostTCPServer(BoostTCPServer&& other)
+TCPServer::TCPServer(TCPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
       Command(std::move(other)),
@@ -32,7 +32,7 @@ BoostTCPServer::BoostTCPServer(BoostTCPServer&& other)
 {
 }
 
-BoostTCPServer& BoostTCPServer::operator=(BoostTCPServer&& other)
+TCPServer& TCPServer::operator=(TCPServer&& other)
 {
     if (this != &other)
     {
@@ -48,12 +48,12 @@ BoostTCPServer& BoostTCPServer::operator=(BoostTCPServer&& other)
     return *this;
 }
 
-BoostTCPServer::~BoostTCPServer()
+TCPServer::~TCPServer()
 {
     stop();
 }
 
-void BoostTCPServer::start()
+void TCPServer::start()
 {
     m_ioContextThread = std::thread([this]()
                                     { m_ioContext->run(); });
@@ -66,7 +66,7 @@ void BoostTCPServer::start()
         } });
 }
 
-void BoostTCPServer::stop()
+void TCPServer::stop()
 {
     m_ioContext->stop();
 
@@ -80,13 +80,13 @@ void BoostTCPServer::stop()
     }
 }
 
-bool BoostTCPServer::startListening()
+bool TCPServer::startListening()
 {
     m_acceptor.listen();
     return true;
 }
 
-bool BoostTCPServer::acceptClients()
+bool TCPServer::acceptClients()
 {
     while (true)
     {
@@ -208,7 +208,7 @@ bool BoostTCPServer::acceptClients()
     }
 }
 
-bool BoostTCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket)
+bool TCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket)
 {
     if (clientSocket.is_open())
     {
@@ -218,4 +218,4 @@ bool BoostTCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio:
     return false;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server::nxboost

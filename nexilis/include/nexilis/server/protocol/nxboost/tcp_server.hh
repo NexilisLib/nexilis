@@ -12,31 +12,31 @@
 
 #include <thread>
 
-namespace nexilis
+namespace nexilis::server::nxboost
 {
 
-class BoostTCPServer : public Protocol,
-                       public ServerProtocol,
-                       public Command
+class TCPServer : public Protocol,
+                  public ServerProtocol,
+                  public Command
 {
 public:
     /// Constructor.
-    BoostTCPServer(const Settings& settings, int serverPort);
+    TCPServer(const Settings& settings, int serverPort);
 
     /// Destructor.
-    ~BoostTCPServer();
+    ~TCPServer();
 
     /// Move constructor.
-    BoostTCPServer(BoostTCPServer&& other);
+    TCPServer(TCPServer&& other);
 
     /// Move assignment operator.
-    BoostTCPServer& operator=(BoostTCPServer&& other);
+    TCPServer& operator=(TCPServer&& other);
 
     /// Deleted move constructor.
-    BoostTCPServer(const BoostTCPServer&) = delete;
+    TCPServer(const TCPServer&) = delete;
 
     /// Deleted move assignment operator.
-    BoostTCPServer& operator=(const BoostTCPServer&) = delete;
+    TCPServer& operator=(const TCPServer&) = delete;
 
     /// Protocol::start() implementation.
     void start() override;

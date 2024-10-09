@@ -10,30 +10,30 @@
 
 #include <thread>
 
-namespace nexilis
+namespace nexilis::client::nxboost
 {
 
-class BoostTCPClient : public Protocol,
-                       public ClientProtocol
+class TCPClient : public Protocol,
+                  public ClientProtocol
 {
 public:
     /// Constructor.
-    BoostTCPClient(ClientAPI& api);
+    TCPClient(ClientAPI& api);
 
     /// Destructor.
-    ~BoostTCPClient();
+    ~TCPClient();
 
     /// Move constructor.
-    BoostTCPClient(BoostTCPClient&& other);
+    TCPClient(TCPClient&& other);
 
     /// Move assignment operator.
-    BoostTCPClient& operator=(BoostTCPClient&& other);
+    TCPClient& operator=(TCPClient&& other);
 
     /// Deleted copy constructor.
-    BoostTCPClient(const BoostTCPClient& other) = delete;
+    TCPClient(const TCPClient& other) = delete;
 
     /// Deleted copy assignment operator.
-    BoostTCPClient& operator=(const BoostTCPClient& other) = delete;
+    TCPClient& operator=(const TCPClient& other) = delete;
 
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
@@ -73,6 +73,6 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
 };
 
-} // namespace nexilis
+} // namespace nexilis::client::nxboost
 
 #endif

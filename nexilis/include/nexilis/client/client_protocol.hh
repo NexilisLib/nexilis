@@ -4,11 +4,9 @@
 #include <nexilis/client/client_api.hh>
 
 #include <cstdint>
-#include <memory>
-#include <string>
 #include <vector>
 
-namespace nexilis
+namespace nexilis::client
 {
 
 class ClientProtocol
@@ -51,6 +49,6 @@ private:
     ClientAPI* m_api;
 };
 
-} // namespace nexilis
+} // namespace nexilis::client
 
 #endif

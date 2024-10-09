@@ -1,6 +1,6 @@
 #include <nexilis/server/server_protocol.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 ServerProtocol::ServerProtocol(ServerProtocol&& other)
@@ -17,4 +17,4 @@ ServerProtocol& ServerProtocol::operator=(ServerProtocol&& other)
     return *this;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

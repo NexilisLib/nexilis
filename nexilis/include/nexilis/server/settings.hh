@@ -4,7 +4,7 @@
 #include <cassert>
 #include <string>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Nexilis Server-side API.
@@ -49,6 +49,6 @@ private:
     float m_tickrate = 60.f;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

@@ -1,6 +1,6 @@
 #include <nexilis/server/settings.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 void Settings::setPassphrase(const std::string& password)
@@ -33,4 +33,4 @@ void Settings::setTickrate(float tickrate)
     m_tickrate = tickrate;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

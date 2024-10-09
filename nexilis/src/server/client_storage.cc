@@ -2,7 +2,7 @@
 
 #include <nexilis/logger/log.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 std::vector<User> ClientStorage::m_clients = {};
@@ -60,4 +60,4 @@ std::vector<User*> ClientStorage::getClientsByIpAddress(const std::string& ip_ad
     return result;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

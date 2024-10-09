@@ -1,4 +1,4 @@
-#include <nexilis/client/protocol/boost/tcp_client.hh>
+#include <nexilis/client/protocol/nxboost/tcp_client.hh>
 
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/asio/connect.hpp>
@@ -6,10 +6,10 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
 
-namespace nexilis
+namespace nexilis::client::nxboost
 {
 
-BoostTCPClient::BoostTCPClient(ClientAPI& api)
+TCPClient::TCPClient(ClientAPI& api)
     : ClientProtocol(&api),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_socket(*m_ioContext),
@@ -20,7 +20,7 @@ BoostTCPClient::BoostTCPClient(ClientAPI& api)
 {
 }
 
-BoostTCPClient::BoostTCPClient(BoostTCPClient&& other)
+TCPClient::TCPClient(TCPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
@@ -36,7 +36,7 @@ BoostTCPClient::BoostTCPClient(BoostTCPClient&& other)
     other.m_mutex = nullptr;
 }
 
-BoostTCPClient& BoostTCPClient::operator=(BoostTCPClient&& other)
+TCPClient& TCPClient::operator=(TCPClient&& other)
 {
     if (this != &other)
     {
@@ -57,12 +57,12 @@ BoostTCPClient& BoostTCPClient::operator=(BoostTCPClient&& other)
     return *this;
 }
 
-BoostTCPClient::~BoostTCPClient()
+TCPClient::~TCPClient()
 {
     stop();
 }
 
-void BoostTCPClient::stop()
+void TCPClient::stop()
 {
     m_stopped = true;
 
@@ -85,18 +85,18 @@ void BoostTCPClient::stop()
     }
 }
 
-void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message)
+void TCPClient::sendMessage(const std::vector<uint8_t>& message)
 {
     send(message);
 }
 
-void BoostTCPClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+void TCPClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
 {
     ClientProtocol::getClientAPI()->addCallback(ClientProtocol::createCallback(message, callback));
     send(message);
 }
 
-bool BoostTCPClient::connectToServer()
+bool TCPClient::connectToServer()
 {
     try
     {
@@ -109,7 +109,7 @@ bool BoostTCPClient::connectToServer()
     return m_socket.is_open();
 }
 
-bool BoostTCPClient::send(const std::vector<uint8_t>& data)
+bool TCPClient::send(const std::vector<uint8_t>& data)
 {
     if (!m_socket.is_open())
     {
@@ -134,7 +134,7 @@ bool BoostTCPClient::send(const std::vector<uint8_t>& data)
     return true;
 }
 
-bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)
+bool TCPClient::receive(std::vector<uint8_t>& buffer)
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
 
@@ -169,7 +169,7 @@ bool BoostTCPClient::receive(std::vector<uint8_t>& buffer)
     return true;
 }
 
-void BoostTCPClient::start()
+void TCPClient::start()
 {
     if (connectToServer())
     {
@@ -179,7 +179,7 @@ void BoostTCPClient::start()
                                         { m_ioContext->run(); });
 
         // Start a separate thread to continuously receive messages.
-        m_receiveThread = std::thread(&BoostTCPClient::receiveLoop, this);
+        m_receiveThread = std::thread(&TCPClient::receiveLoop, this);
     }
     else
     {
@@ -187,7 +187,7 @@ void BoostTCPClient::start()
     }
 }
 
-void BoostTCPClient::receiveLoop()
+void TCPClient::receiveLoop()
 {
     while (!m_stopped)
     {

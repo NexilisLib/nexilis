@@ -1,5 +1,5 @@
-#include <nexilis/af_unix/sock_stream/server.hh>
-#include <nexilis/command.hh>
+#include <nexilis/server/protocol/af_unix/stream_server.hh>
+#include <nexilis/server/command.hh>
 #include <nexilis/nexilis_macros.hh>
 
 #include <sys/socket.h>
@@ -7,11 +7,11 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-namespace nexilis::af_unix::sock_stream
+namespace nexilis::server::af_unix
 {
 
-Server::Server(const Authentication& authentication, const std::string& socketPath)
-    : Command(authentication),
+StreamServer::StreamServer(const Settings& settings, const std::string& socketPath)
+    : Command(settings),
       m_socketPath(socketPath),
       m_buffer(NEXILIS_BUFFER)
 {
@@ -19,7 +19,7 @@ Server::Server(const Authentication& authentication, const std::string& socketPa
     bindSocket();
 }
 
-Server::~Server()
+StreamServer::~StreamServer()
 {
     if (m_receiveThread.joinable())
     {
@@ -29,7 +29,7 @@ Server::~Server()
     close(m_serverSocket);
 }
 
-Server::Server(Server&& other)
+StreamServer::StreamServer(StreamServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
       Command(std::move(other)),
@@ -40,7 +40,7 @@ Server::Server(Server&& other)
 {
 }
 
-Server& Server::operator=(Server&& other)
+StreamServer& StreamServer::operator=(StreamServer&& other)
 {
     if (this != &other)
     {
@@ -55,7 +55,7 @@ Server& Server::operator=(Server&& other)
     return *this;
 }
 
-void Server::start()
+void StreamServer::start()
 {
     m_receiveThread = std::thread([this]()
                                   {
@@ -65,7 +65,7 @@ void Server::start()
         } });
 }
 
-void Server::createSocket()
+void StreamServer::createSocket()
 {
     m_serverSocket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (m_serverSocket == -1)
@@ -74,7 +74,7 @@ void Server::createSocket()
     }
 }
 
-void Server::bindSocket()
+void StreamServer::bindSocket()
 {
     sockaddr_un serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -98,7 +98,7 @@ void Server::bindSocket()
     }
 }
 
-void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
+void StreamServer::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
 {
     ssize_t sentBytes = send(clientSocket, message.data(), sizeof(message), 0);
 
@@ -108,7 +108,7 @@ void Server::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
     }
 }
 
-std::string Server::receiveMessage(int socket)
+std::string StreamServer::receiveMessage(int socket)
 {
     std::string message;
     char buffer[NEXILIS_BUFFER];
@@ -151,7 +151,7 @@ std::string Server::receiveMessage(int socket)
     return "";
 }
 
-void Server::handleMessages()
+void StreamServer::handleMessages()
 {
     memset(m_buffer.data(), '\0', m_buffer.size());
 
@@ -173,7 +173,7 @@ void Server::handleMessages()
         else
         {
             std::vector<uint8_t> example;
-            auto msg = getMessageHandler().readMessage("localhost", example, -1, &Command::getAuthentication());
+            auto msg = getMessageHandler().readMessage("localhost", example, -1, &Command::getSettings());
 
             if (msg.getClient())
             {

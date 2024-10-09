@@ -1,39 +1,39 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
-#include <nexilis/authentication.hh>
-#include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/server/settings.hh>
+#include <nexilis/server/command.hh>
 #include <nexilis/server/server_protocol.hh>
-#include <nexilis/command.hh>
+#include <nexilis/logger/loggable.hh>
 
 #include <thread>
 
-namespace nexilis::af_unix::sock_stream
+namespace nexilis::server::af_unix
 {
 
-class Server : public Protocol,
-               public ServerProtocol,
-               public Command
+class StreamServer : public Protocol,
+                     public ServerProtocol,
+                     public Command
 {
 public:
     /// Constructor.
-    Server(const Authentication& authentication, const std::string& socketPath);
+    StreamServer(const Settings& settings, const std::string& socketPath);
 
     /// Destructor.
-    ~Server();
+    ~StreamServer();
 
     /// Move constructor.
-    Server(Server&& other);
+    StreamServer(StreamServer&& other);
 
     /// Move assignment operator.
-    Server& operator=(Server&& other);
+    StreamServer& operator=(StreamServer&& other);
 
     /// Deleted copy constructor.
-    Server(const Server& other) = delete;
+    StreamServer(const StreamServer& other) = delete;
 
     /// Deleted copy assignment.
-    Server& operator=(const Server& other) = delete;
+    StreamServer& operator=(const StreamServer& other) = delete;
 
     /// Protocol start() implementation.
     void start() override;
@@ -61,6 +61,6 @@ private:
     std::thread m_receiveThread;
 };
 
-} // namespace nexilis::af_unix::sock_stream
+} // namespace nexilis
 
 #endif

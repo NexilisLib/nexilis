@@ -1,15 +1,15 @@
-#include <nexilis/server/protocol/boost/udp_server.hh>
+#include <nexilis/server/protocol/nxboost/udp_server.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/logger/log.hh>
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/system/system_error.hpp>
 
-namespace nexilis
+namespace nexilis::server::nxboost
 {
 
-BoostUDPServer::BoostUDPServer(const Authentication& authentication, int port)
-    : Command(authentication),
+UDPServer::UDPServer(const Settings& settings, int port)
+    : Command(settings),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_remoteEndpoint(boost::asio::ip::udp::v4(), port),
@@ -21,7 +21,7 @@ BoostUDPServer::BoostUDPServer(const Authentication& authentication, int port)
     m_socket.set_option(reuse);
 }
 
-BoostUDPServer::~BoostUDPServer()
+UDPServer::~UDPServer()
 {
     m_socket.close();
     m_ioContext->stop();
@@ -37,7 +37,7 @@ BoostUDPServer::~BoostUDPServer()
     }
 }
 
-BoostUDPServer::BoostUDPServer(BoostUDPServer&& other)
+UDPServer::UDPServer(UDPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
       Command(std::move(other)),
@@ -51,7 +51,7 @@ BoostUDPServer::BoostUDPServer(BoostUDPServer&& other)
 {
 }
 
-BoostUDPServer& BoostUDPServer::operator=(BoostUDPServer&& other)
+UDPServer& UDPServer::operator=(UDPServer&& other)
 {
     if (this != &other)
     {
@@ -69,15 +69,15 @@ BoostUDPServer& BoostUDPServer::operator=(BoostUDPServer&& other)
     return *this;
 }
 
-void BoostUDPServer::start()
+void UDPServer::start()
 {
     m_ioContextThread = std::thread([this]()
                                     { m_ioContext->run(); });
 
-    m_receiveThread = std::thread(&BoostUDPServer::receiveFromClients, this);
+    m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
 }
 
-void BoostUDPServer::receiveFromClients()
+void UDPServer::receiveFromClients()
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
 
@@ -93,7 +93,7 @@ void BoostUDPServer::receiveFromClients()
             uint16_t port = m_remoteEndpoint.port();
             Log::info("Received from ", address, " port ", port);
 
-            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &Command::getAuthentication());
+            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &Command::getSettings());
 
             if (!handledMessage.getClient()->isBoostUDPSet())
             {

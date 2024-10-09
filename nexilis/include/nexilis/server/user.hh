@@ -6,7 +6,7 @@
 #include <nexilis/nexilis_macros.hh>
 #include <nexilis/object/object2d.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Internal client abstraction for server.
@@ -136,6 +136,6 @@ private:
     bool m_hasCommonAccess = false;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

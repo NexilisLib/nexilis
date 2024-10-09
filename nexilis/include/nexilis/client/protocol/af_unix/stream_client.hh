@@ -2,7 +2,7 @@
 #define NEXILIS_AF_UNIX_SOCK_STREAM_CLIENT_HH
 
 #include <nexilis/client/client_api.hh>
-#include <nexilis/client_protocol.hh>
+#include <nexilis/client/client_protocol.hh>
 #include <nexilis/protocol.hh>
 
 #include <sys/un.h>
@@ -10,29 +10,29 @@
 #include <mutex>
 #include <thread>
 
-namespace nexilis::af_unix::sock_stream
+namespace nexilis::client::af_unix
 {
 
-class Client : public Protocol, public ClientProtocol
+class StreamClient : public Protocol, public ClientProtocol
 {
 public:
     /// Constructor.
-    Client(ClientAPI& clientApi);
+    StreamClient(ClientAPI& clientApi);
 
     /// Destructor.
-    ~Client();
+    ~StreamClient();
 
     /// Move constructor.
-    Client(Client&& other);
+    StreamClient(StreamClient&& other);
 
     /// Move assignment operator.
-    Client& operator=(Client&& other);
+    StreamClient& operator=(StreamClient&& other);
 
     /// Deleted copy constructor.
-    Client(const Client& other) = delete;
+    StreamClient(const StreamClient& other) = delete;
 
     /// Deleted copy assignment operator.
-    Client& operator=(const Client& other) = delete;
+    StreamClient& operator=(const StreamClient& other) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -69,6 +69,6 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
 };
 
-} // namespace nexilis::af_unix::sock_stream
+} // namespace nexilis::client::af_unix
 
 #endif

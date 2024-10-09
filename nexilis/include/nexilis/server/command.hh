@@ -12,7 +12,7 @@
 #include <vector>
 #include <map>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Nexilis Server-side API.
@@ -105,6 +105,6 @@ private:
     Settings m_settings;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

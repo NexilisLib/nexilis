@@ -1,7 +1,7 @@
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/util.hh>
 
-namespace nexilis
+namespace nexilis::client
 {
 
 ClientProtocol::ClientProtocol(ClientAPI* api)
@@ -36,4 +36,4 @@ std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const 
     return std::make_pair(messageId, callback);
 }
 
-} // namespace nexilis
+} // namespace nexilis::client

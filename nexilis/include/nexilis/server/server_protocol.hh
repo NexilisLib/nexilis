@@ -4,7 +4,7 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/server/message_handler.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 class ServerProtocol
@@ -36,6 +36,6 @@ private:
     MessageHandler m_messageHandler;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

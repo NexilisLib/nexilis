@@ -1,15 +1,15 @@
-#include <nexilis/af_unix/sock_stream/client.hh>
-#include <nexilis/log.hh>
+#include <nexilis/client/protocol/af_unix/stream_client.hh>
+#include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_macros.hh>
 
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace nexilis::af_unix::sock_stream
+namespace nexilis::client::af_unix
 {
 
-Client::Client(ClientAPI& clientApi)
+StreamClient::StreamClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
       m_serverSocketPath(clientApi.getUnixStreamPath()),
       m_mutex(std::make_unique<std::mutex>())
@@ -18,7 +18,7 @@ Client::Client(ClientAPI& clientApi)
     connectToServer();
 }
 
-Client::~Client()
+StreamClient::~StreamClient()
 {
     if (m_clientSocket == -1)
     {
@@ -31,7 +31,7 @@ Client::~Client()
     }
 }
 
-Client::Client(Client&& other)
+StreamClient::StreamClient(StreamClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       m_serverSocketPath(std::move(other.m_serverSocketPath)),
@@ -42,7 +42,7 @@ Client::Client(Client&& other)
 {
 }
 
-Client& Client::operator=(Client&& other)
+StreamClient& StreamClient::operator=(StreamClient&& other)
 {
     if (this != &other)
     {
@@ -57,7 +57,7 @@ Client& Client::operator=(Client&& other)
     return *this;
 }
 
-void Client::createSocket()
+void StreamClient::createSocket()
 {
     m_clientSocket = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -68,7 +68,7 @@ void Client::createSocket()
     }
 }
 
-void Client::connectToServer()
+void StreamClient::connectToServer()
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
     m_serverAddr.sun_family = AF_UNIX;
@@ -82,7 +82,7 @@ void Client::connectToServer()
     }
 }
 
-void Client::sendMsg(const std::string& message)
+void StreamClient::sendMsg(const std::string& message)
 {
     Log::debug("Sending message to: ", m_serverAddr.sun_path);
 
@@ -95,13 +95,13 @@ void Client::sendMsg(const std::string& message)
     }
 }
 
-void Client::sendMessage(const std::vector<uint8_t>& message)
+void StreamClient::sendMessage(const std::vector<uint8_t>& message)
 {
     // TODO perform without string conversion.
     sendMsg(Util::convertToString(message));
 }
 
-void Client::start()
+void StreamClient::start()
 {
     m_receiveThread = std::thread([this]()
                                   {
@@ -112,12 +112,12 @@ void Client::start()
         } });
 }
 
-void Client::stop()
+void StreamClient::stop()
 {
     close(m_clientSocket);
 }
 
-std::vector<uint8_t> Client::receiveMessage()
+std::vector<uint8_t> StreamClient::receiveMessage()
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
     // Receive buffer.
@@ -137,4 +137,4 @@ std::vector<uint8_t> Client::receiveMessage()
     return receivedData;
 }
 
-} // namespace nexilis::af_unix::sock_stream
+} // namespace nexilis::client::af_unix

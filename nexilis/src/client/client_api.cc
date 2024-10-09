@@ -6,7 +6,7 @@
 
 #include <thread>
 
-namespace nexilis
+namespace nexilis::client
 {
 
 ClientAPI::ServerData::ServerData(ServerData&& other)

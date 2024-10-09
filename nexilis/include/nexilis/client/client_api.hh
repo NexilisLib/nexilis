@@ -10,13 +10,11 @@
 #include <boost/json/object.hpp>
 
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <future>
-#include <optional>
 #include <string>
 
-namespace nexilis
+namespace nexilis::client
 {
 
 class ClientAPI
@@ -636,6 +634,6 @@ private:
     bool m_overlappingAllowed = false;
 };
 
-} // namespace nexilis
+} // namespace nexilis::client
 
 #endif

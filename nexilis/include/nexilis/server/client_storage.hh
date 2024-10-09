@@ -3,7 +3,7 @@
 
 #include <nexilis/server/user.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Nexilis Server-side API.
@@ -25,6 +25,6 @@ private:
     static std::vector<User> m_clients;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

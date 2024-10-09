@@ -7,7 +7,7 @@
 
 #include <thread>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 Command::Command(const Settings& settings)
@@ -724,4 +724,4 @@ double Command::easing(double progress, double totalDistance)
     return messageValue;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

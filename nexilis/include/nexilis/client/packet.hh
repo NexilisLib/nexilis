@@ -4,7 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/types/vector2.hh>
 
-namespace nexilis
+namespace nexilis::client
 {
 
 class Packet
@@ -60,6 +60,6 @@ private:
     static ClientAPI* m_clientApi;
 };
 
-} // namespace nexilis
+} // namespace nexilis::client
 
 #endif

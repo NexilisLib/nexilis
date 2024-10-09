@@ -4,7 +4,7 @@
 
 #include <sys/types.h>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// Room::Data
@@ -109,4 +109,4 @@ void Room::leaveRoom(uint64_t userId)
                       m_clientIds.end());
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

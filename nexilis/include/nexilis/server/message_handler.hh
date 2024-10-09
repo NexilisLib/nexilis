@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 /// MessageHandler
@@ -74,6 +74,6 @@ public:
     Message readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Settings* authentication);
 };
 
-} // namespace nexilis
+} // namespace nexilis::server
 
 #endif

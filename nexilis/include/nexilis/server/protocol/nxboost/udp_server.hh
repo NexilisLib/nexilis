@@ -3,7 +3,7 @@
 
 #include <nexilis/server/server_protocol.hh>
 #include <nexilis/server/command.hh>
-#include <nexilis/authentication.hh>
+#include <nexilis/server/settings.hh>
 #include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
 
@@ -12,31 +12,31 @@
 
 #include <thread>
 
-namespace nexilis
+namespace nexilis::server::nxboost
 {
 
-class BoostUDPServer : public Protocol,
-                       public ServerProtocol,
-                       public Command
+class UDPServer : public Protocol,
+                  public ServerProtocol,
+                  public Command
 {
 public:
     /// Constructor.
-    BoostUDPServer(const Authentication& authentication, int port);
+    UDPServer(const Settings& settings, int port);
 
     /// Destructor.
-    ~BoostUDPServer();
+    ~UDPServer();
 
     /// Move constructor.
-    BoostUDPServer(BoostUDPServer&& other);
+    UDPServer(UDPServer&& other);
 
     /// Move assignment operator.
-    BoostUDPServer& operator=(BoostUDPServer&& other);
+    UDPServer& operator=(UDPServer&& other);
 
     /// Deleted copy constructor.
-    BoostUDPServer(const BoostUDPServer&) = delete;
+    UDPServer(const UDPServer&) = delete;
 
     /// Deleted copy assignment operator.
-    BoostUDPServer& operator=(const BoostUDPServer&) = delete;
+    UDPServer& operator=(const UDPServer&) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -66,6 +66,6 @@ private:
     std::thread m_receiveThread;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server::nxboost
 
 #endif

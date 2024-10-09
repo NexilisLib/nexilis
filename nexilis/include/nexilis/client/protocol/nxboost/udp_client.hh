@@ -1,8 +1,8 @@
 #ifndef NEXILIS_BOOST_UDP_CLIENT_HH
 #define NEXILIS_BOOST_UDP_CLIENT_HH
 
-#include <nexilis/client_protocol.hh>
-#include <nexilis/loggable.hh>
+#include <nexilis/client/client_protocol.hh>
+#include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
 
 #include <boost/asio/io_context.hpp>
@@ -10,31 +10,31 @@
 
 #include <thread>
 
-namespace nexilis
+namespace nexilis::client::nxboost
 {
 
-class BoostUDPClient : public Protocol,
-                       public ClientProtocol,
-                       public Loggable
+class UDPClient : public Protocol,
+                  public ClientProtocol,
+                  public Loggable
 {
 public:
     /// Constructor.
-    BoostUDPClient(ClientAPI& api);
+    UDPClient(ClientAPI& api);
 
     /// Destructor.
-    ~BoostUDPClient();
+    ~UDPClient();
 
     /// Move constructor.
-    BoostUDPClient(BoostUDPClient&& other);
+    UDPClient(UDPClient&& other);
 
     /// Move assignment operator.
-    BoostUDPClient& operator=(BoostUDPClient&& other);
+    UDPClient& operator=(UDPClient&& other);
 
     /// Deleted copy constructor.
-    BoostUDPClient(const BoostUDPClient&) = delete;
+    UDPClient(const UDPClient&) = delete;
 
     /// Deleted copy assignment operator.
-    BoostUDPClient& operator=(const BoostUDPClient&) = delete;
+    UDPClient& operator=(const UDPClient&) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -69,6 +69,6 @@ private:
     std::vector<char> m_receiveBuffer;
 };
 
-} // namespace nexilis
+} // namespace nexilis::client::nxboost
 
 #endif

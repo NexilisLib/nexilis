@@ -7,9 +7,7 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
 
-#include <fstream>
-
-namespace nexilis
+namespace nexilis::server
 {
 
 boost::json::object ServerJson::getRoomData()
@@ -152,4 +150,4 @@ boost::json::array ServerJson::roomsToJSON(const std::vector<Room>& rooms)
     return resultingArray;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

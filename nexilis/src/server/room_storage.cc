@@ -1,7 +1,7 @@
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/logger/log.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 std::vector<Room> RoomStorage::m_rooms = {};
@@ -45,4 +45,4 @@ Room* RoomStorage::getRoomById(uint64_t id)
     }
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

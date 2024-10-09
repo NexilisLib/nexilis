@@ -1,6 +1,6 @@
 #include <nexilis/server/user.hh>
 
-namespace nexilis
+namespace nexilis::server
 {
 
 User::User(uint64_t id, std::string ip_address) noexcept
@@ -56,4 +56,4 @@ bool User::boostUDPSend(std::vector<uint8_t> data)
     return false;
 }
 
-} // namespace nexilis
+} // namespace nexilis::server

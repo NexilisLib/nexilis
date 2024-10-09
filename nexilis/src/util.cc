@@ -56,7 +56,7 @@ std::vector<uint8_t> Util::convertToByteVector(uint64_t value)
 {
     std::vector<uint8_t> result(sizeof(uint64_t));
 
-    if (Config::getBigEndian())
+    if (server::Config::getBigEndian())
     {
         for (uint64_t i = 0; i < sizeof(uint64_t); ++i)
         {
@@ -211,7 +211,7 @@ uint64_t Util::uint64FromFront(const std::vector<uint8_t>& vec)
 
     uint64_t value = 0;
 
-    if (Config::getBigEndian())
+    if (server::Config::getBigEndian())
     {
         // Big-endian: Most significant byte is at the lowest address
         for (int i = 0; i < 8; ++i)
