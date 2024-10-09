@@ -2,7 +2,7 @@
 #define NEXILIS_COMMAND_HH
 
 #include <nexilis/server/settings.hh>
-#include <nexilis/server/json.hh>
+#include <nexilis/server/user.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/protocol.hh>
 
@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace nexilis
 {

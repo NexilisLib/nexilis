@@ -2,7 +2,7 @@
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/config.hh>
-#include <nexilis/server/json.hh>
+#include <nexilis/server/server_json.hh>
 #include <nexilis/server/message_handler.hh>
 #include <nexilis/server/room_storage.hh>
 

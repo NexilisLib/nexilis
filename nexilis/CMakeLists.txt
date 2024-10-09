@@ -36,6 +36,7 @@ set(SOURCES
     src/base_client.cc
     src/util.cc
     src/command_type.cc
+    src/json.cc
 
     # Server
     src/server/server_protocol.cc
@@ -43,7 +44,7 @@ set(SOURCES
     src/server/user.cc
     src/server/command.cc
     src/server/message_handler.cc
-    src/server/json.cc
+    src/server/server_json.cc
     src/server/room.cc
     src/server/config.cc
     src/server/settings.cc

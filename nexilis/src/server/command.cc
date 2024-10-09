@@ -1,8 +1,9 @@
-#include "nexilis/server/settings.hh"
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/server/server_json.hh>
+#include <nexilis/json.hh>
 
 #include <thread>
 
@@ -545,7 +546,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             {"type", boost::json::value("server_data")}};
 
                     auto json = Json::createJSON(header);
-                    Json::emplace(json, Json::getServerData());
+                    Json::emplace(json, ServerJson::getServerData());
                     std::vector<uint8_t> data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
@@ -561,7 +562,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             {"type", boost::json::value("client_data")}};
 
                     auto json = Json::createJSON(header);
-                    Json::emplace(json, Json::getClientData());
+                    Json::emplace(json, ServerJson::getClientData());
                     std::vector<uint8_t> data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
@@ -578,7 +579,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             {"callback", boost::json::value(messageId)}};
 
                     auto json = Json::createJSON(header);
-                    Json::emplace(json, Json::getRoomData());
+                    Json::emplace(json, ServerJson::getRoomData());
                     auto data = Util::convertToByteVector(json);
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::roomInfo");

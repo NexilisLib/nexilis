@@ -2,8 +2,7 @@
 #include <nexilis/client/packet.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/util.hh>
-// TODO Make used functionality common.
-#include <nexilis/server/json.hh>
+#include <nexilis/json.hh>
 
 #include <thread>
 
