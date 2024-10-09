@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <string>
 
-#include <nexilis/object2d.hh>
-#include <nexilis/object3d.hh>
+#include <nexilis/object/object2d.hh>
+#include <nexilis/object/object3d.hh>
 
 namespace nexilis
 {

@@ -30,55 +30,64 @@ add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pt
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
 set(SOURCES
+    src/cmd_line_options.cc
+    src/protocol.cc
+    src/protocol_manager.cc
+    src/base_client.cc
+    src/util.cc
+    src/command_type.cc
+
+    # Server
+    src/server/server_protocol.cc
+    src/server/protocol/boost/tcp_server.cc
+    src/server/user.cc
+    src/server/command.cc
+    src/server/message_handler.cc
+    src/server/json.cc
+    src/server/room.cc
+    src/server/config.cc
+    src/server/settings.cc
+    src/server/client_storage.cc
+    src/server/room_storage.cc
+
+    # Client
+    src/client/client_api.cc
+    src/client/protocol/boost/tcp_client.cc
+    src/client/client_protocol.cc
+    src/client/packet.cc
+
+    # Logger
     src/logger/base_handler.cc
     src/logger/console_handler.cc
     src/logger/logger.cc
+    src/logger/log.cc
+    src/logger/loggable.cc
 
-    src/authentication.cc
-    src/user.cc
-    src/object2d.cc
-    src/object3d.cc
-    src/command.cc
-    src/config.cc
-    src/cmd_line_options.cc
-    src/vector3.cc
-    src/ports.cc
-    src/client_storage.cc
-    src/client_protocol.cc
-    src/server_protocol.cc
-    src/client_api.cc
-    src/log.cc
-    src/loggable.cc
-    src/message_handler.cc
-    src/packet.cc
-    src/protocol.cc
-    src/protocol_manager.cc
-    src/json.cc
-    src/room.cc
-    src/room_storage.cc
-    src/base_client.cc
-    src/command_type.cc
+    # Types
+    src/types/vector3.cc
 
-    src/common/util.cc
+    # Object
+    src/object/object2d.cc
+    src/object/object3d.cc
+
+    # MySQL
     src/mysql/database.cc
 
-    src/af_unix/sock_dgram/server.cc
-    src/af_unix/sock_dgram/client.cc
+    #src/af_unix/sock_dgram/server.cc
+    #src/af_unix/sock_dgram/client.cc
 
-    src/af_unix/sock_stream/server.cc
-    src/af_unix/sock_stream/client.cc
+    #src/af_unix/sock_stream/server.cc
+    #src/af_unix/sock_stream/client.cc
 
-    src/af_inet/udp_client.cc
-    src/af_inet/base_udp_server.cc
-    src/af_inet/udp_server.cc
+    #src/af_inet/udp_client.cc
+    #src/af_inet/base_udp_server.cc
+    #src/af_inet/udp_server.cc
 
-    src/af_inet/tcp_client.cc
-    src/af_inet/tcp_server.cc
+    #src/af_inet/tcp_client.cc
+    #src/af_inet/tcp_server.cc
 
-    src/boost/tcp_client.cc
-    src/boost/tcp_server.cc
-    src/boost/udp_client.cc
-    src/boost/udp_server.cc
+    #src/boost/udp_client.cc
+    #src/boost/udp_server.cc
 )
 
 add_library(nexilis ${SOURCES})

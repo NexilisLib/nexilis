@@ -1,0 +1,65 @@
+#ifndef NEXILIS_PACKET_HH
+#define NEXILIS_PACKET_HH
+
+#include <nexilis/client/client_api.hh>
+#include <nexilis/types/vector2.hh>
+
+namespace nexilis
+{
+
+class Packet
+{
+public:
+    class Get
+    {
+    public:
+        // The server sends the client identification to server.
+        // This is mandatory packet to establish client connection.
+        static std::vector<uint8_t> clientId();
+    };
+
+    class Set
+    {
+    public:
+        static std::vector<uint8_t> username(const std::string& name);
+    };
+
+    class Info
+    {
+    public:
+        static std::vector<uint8_t> general();
+        static std::vector<uint8_t> clients();
+        static std::vector<uint8_t> rooms();
+    };
+
+    class Room
+    {
+    public:
+        class Object2D
+        {
+        public:
+            static std::vector<uint8_t> position(Vector2f position);
+            static std::vector<uint8_t> dimensions(Vector2f dimensions);
+            static std::vector<uint8_t> movement(Vector2f movement, float deltaTime);
+        };
+
+        class Management
+        {
+        public:
+            static std::vector<uint8_t> join(uint64_t roomId);
+            static std::vector<uint8_t> leave();
+            static std::vector<uint8_t> create(const std::string& roomName);
+        };
+    };
+
+    // Internal initilization function.
+    static void _initialize(ClientAPI& clientApi);
+
+private:
+    static std::vector<uint8_t> clientIdentification();
+    static ClientAPI* m_clientApi;
+};
+
+} // namespace nexilis
+
+#endif

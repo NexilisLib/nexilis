@@ -4,7 +4,7 @@
 #include <nexilis/authentication.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/server_protocol.hh>
+#include <nexilis/server/server_protocol.hh>
 #include <nexilis/command.hh>
 
 #include <thread>

@@ -1,5 +1,5 @@
 #include <nexilis/command_type.hh>
-#include <nexilis/log.hh>
+#include <nexilis/logger/log.hh>
 
 namespace nexilis
 {

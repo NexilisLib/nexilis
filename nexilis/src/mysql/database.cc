@@ -1,6 +1,6 @@
 #ifdef HAS_MYSQL_CLIENT_LIBRARY
 
-#include <nexilis/log.hh>
+#include <nexilis/logger/log.hh>
 #include <nexilis/mysql/database.hh>
 
 namespace nexilis::mysql

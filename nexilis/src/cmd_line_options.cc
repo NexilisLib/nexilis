@@ -1,5 +1,5 @@
 #include <nexilis/cmd_line_options.hh>
-#include <nexilis/log.hh>
+#include <nexilis/logger/log.hh>
 
 #include <algorithm>
 

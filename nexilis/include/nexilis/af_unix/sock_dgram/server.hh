@@ -2,8 +2,8 @@
 #define NEXILIS_UNIX_SOCKET_SERVER_HH
 
 #include <nexilis/protocol.hh>
-#include <nexilis/command.hh>
-#include <nexilis/server_protocol.hh>
+#include <nexilis/server/command.hh>
+#include <nexilis/server/server_protocol.hh>
 
 namespace nexilis::af_unix::sock_dgram
 {

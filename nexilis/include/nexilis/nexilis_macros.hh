@@ -6,6 +6,6 @@
 #define NEXILIS_BUFFER 1024
 #define NEXILIS_MAX std::numeric_limits<uint64_t>::max()
 #define NEXILIS_DEFAULT_MAX_CLIENTS 1024
-#define NEXILIS_ROOM_CLIENT_AMOUNT 30
+#define NEXILIS_DEFAULT_ROOM_CLIENT_AMOUNT 30
 
 #endif
