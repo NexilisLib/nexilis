@@ -109,6 +109,9 @@ public:
 
     /// \ingroup BytevectorConversions
     static std::vector<uint8_t> convertToByteVector(Vector2f value);
+    
+    /// \ingroup BytevectorConversions
+    static std::vector<uint8_t> convertToByteVector(const std::string& value);
 
     /// Logging.
     static std::string getColorMessage(logger::LogLevel logLevel, const std::string& data);

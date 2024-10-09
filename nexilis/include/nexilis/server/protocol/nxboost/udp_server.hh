@@ -2,7 +2,6 @@
 #define NEXILIS_BOOST_UDP_SERVER_HH
 
 #include <nexilis/server/server_protocol.hh>
-#include <nexilis/server/command.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
@@ -16,8 +15,7 @@ namespace nexilis::server::nxboost
 {
 
 class UDPServer : public Protocol,
-                  public ServerProtocol,
-                  public Command
+                  public ServerProtocol
 {
 public:
     /// Constructor.

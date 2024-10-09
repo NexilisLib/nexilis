@@ -88,6 +88,30 @@ std::vector<uint8_t> Util::convertToByteVector(Vector2f value)
     return vec1;
 }
 
+std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_t length)
+{
+    std::vector<uint8_t> result;
+    result.reserve(length);
+
+    for (size_t i = 0; i < length; i++)
+    {
+        result.emplace_back(static_cast<uint8_t>(command_data[i]));
+    }
+    return result;
+}
+
+std::vector<uint8_t> Util::convertToByteVector(const std::string& value)
+{
+    return convertToByteVector(value.c_str(), value.size());
+}
+
+std::vector<uint8_t> Util::convertToByteVector(const boost::json::object& obj)
+{
+    std::string jsonString = boost::json::serialize(obj);
+    std::vector<uint8_t> byteStream(jsonString.begin(), jsonString.end());
+    return byteStream;
+}
+
 uint64_t Util::getRandomUint64()
 {
     std::random_device rand_dev;
@@ -143,24 +167,7 @@ std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> or
     return std::vector<uint8_t>(original.begin() + amount, original.end());
 }
 
-std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_t length)
-{
-    std::vector<uint8_t> result;
-    result.reserve(length);
 
-    for (size_t i = 0; i < length; i++)
-    {
-        result.emplace_back(static_cast<uint8_t>(command_data[i]));
-    }
-    return result;
-}
-
-std::vector<uint8_t> Util::convertToByteVector(const boost::json::object& obj)
-{
-    std::string jsonString = boost::json::serialize(obj);
-    std::vector<uint8_t> byteStream(jsonString.begin(), jsonString.end());
-    return byteStream;
-}
 
 std::string Util::getColorMessage(logger::LogLevel logLevel, const std::string& data)
 {

@@ -1,3 +1,4 @@
+#include "nexilis/server/server_protocol.hh"
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/nexilis_macros.hh>
@@ -11,7 +12,7 @@ namespace nexilis::server::af_unix
 {
 
 StreamServer::StreamServer(const Settings& settings, const std::string& socketPath)
-    : Command(settings),
+    : ServerProtocol(settings),
       m_socketPath(socketPath),
       m_buffer(NEXILIS_BUFFER)
 {
@@ -32,7 +33,6 @@ StreamServer::~StreamServer()
 StreamServer::StreamServer(StreamServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
-      Command(std::move(other)),
       m_socketPath(std::move(other.m_socketPath)),
       m_serverSocket(std::move(other.m_serverSocket)),
       m_buffer(std::move(std::move(other.m_buffer))),
@@ -46,7 +46,6 @@ StreamServer& StreamServer::operator=(StreamServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
-        Command::operator=(std::move(other));
         m_socketPath = std::move(other.m_socketPath);
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
@@ -58,11 +57,12 @@ StreamServer& StreamServer::operator=(StreamServer&& other)
 void StreamServer::start()
 {
     m_receiveThread = std::thread([this]()
-                                  {
+    {
         while (true)
         {
             handleMessages();
-        } });
+        } 
+    });
 }
 
 void StreamServer::createSocket()
@@ -172,25 +172,31 @@ void StreamServer::handleMessages()
         }
         else
         {
-            std::vector<uint8_t> example;
-            auto msg = getMessageHandler().readMessage("localhost", example, -1, &Command::getSettings());
+            std::vector<uint8_t> payload = Util::convertToByteVector(message);
+            auto msg = getMessageHandler().readMessage("localhost", payload, -1, &getCommand().getSettings());
 
             if (msg.getClient())
             {
-                auto sendMsg = [this, &clientSocket](const std::vector<uint8_t>& message)
-                { sendMessage(clientSocket, message); };
-                (void)sendMsg;
+                    auto handledMessage = getMessageHandler().readMessage(msg.getAddress(), payload, msg.getPort(), &getCommand().getSettings());
 
-                Command::Result readCommand = Command::read(msg.getData(), *msg.getClient(), *this, msg.getMessageId());
+                    if (!handledMessage.getClient()->isUnixStreamSet())
+                    {
+                        handledMessage.getClient()->setUnixStreamSend([this, &clientSocket](const std::vector<uint8_t>& bytes)
+                        {
+                            sendMessage(clientSocket, bytes);
+                        });
+                    }
 
-                if (Command::Result::success == readCommand)
-                {
-                    Log::debug("Command read succesfully!");
-                }
-                else
-                {
-                    Log::error("Message reading error!");
-                }
+                    Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+
+                    if (passCommand == Command::Result::success)
+                    {
+                        Log::info("Passed");
+                    }
+                    else
+                    {
+                        Log::info("Failed");
+                    }
             }
             else
             {

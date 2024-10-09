@@ -79,7 +79,6 @@ public:
     /// \return Result from reading the command.
     Result read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
 
-protected:
     Settings& getSettings()
     {
         return m_settings;

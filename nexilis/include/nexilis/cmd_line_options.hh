@@ -1,10 +1,8 @@
 #ifndef NEXILIS_CMD_LINE_OPTIONS_HH
 #define NEXILIS_CMD_LINE_OPTIONS_HH
 
-#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 

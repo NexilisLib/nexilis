@@ -36,21 +36,31 @@ User& User::operator=(User&& other)
     return *this;
 }
 
-bool User::boostTCPSend(std::vector<uint8_t> data)
+bool User::boostTCPSend(const std::vector<uint8_t>& data)
 {
     if (m_boostTCPSendToClient)
     {
-        (m_boostTCPSendToClient)(std::move(data));
+        (m_boostTCPSendToClient)(data);
         return true;
     }
     return false;
 }
 
-bool User::boostUDPSend(std::vector<uint8_t> data)
+bool User::boostUDPSend(const std::vector<uint8_t>& data)
 {
     if (m_boostUDPSendToClient)
     {
-        (m_boostUDPSendToClient)(std::move(data));
+        (m_boostUDPSendToClient)(data);
+        return true;
+    }
+    return false;
+}
+
+bool User::unixStreamSend(const std::vector<uint8_t>& data)
+{
+    if (m_unixStreamSendToClient)
+    {
+        (m_boostTCPSendToClient)(data);
         return true;
     }
     return false;

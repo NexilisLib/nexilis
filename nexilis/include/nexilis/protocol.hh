@@ -56,7 +56,6 @@ public:
     /// \note New types to Protocol::Type.
     virtual Type getType() = 0;
 
-protected:
     /// Returns a string value of the Type.
     std::string typeToString(Type type);
 };

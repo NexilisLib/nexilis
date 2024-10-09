@@ -603,7 +603,7 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
         {
             if (!user.boostTCPSend(data))
             {
-                Log::error("Cannot send messages using this protocol (BOOST_TCP)");
+                Log::error("Cannot send messages using (BOOST_TCP)");
             }
             return;
         }
@@ -612,7 +612,16 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
         {
             if (!user.boostUDPSend(data))
             {
-                Log::error("Cannot send messages using this protocol (BOOST_UDP)");
+                Log::error("Cannot send messages using (BOOST_UDP)");
+            }
+            return;
+        }
+
+        case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
+        {
+            if (!user.unixStreamSend(data))
+            {
+                Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
             }
             return;
         }
@@ -628,7 +637,7 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
 
         default:
         {
-            Log::error("Unknown protocol");
+            Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
             return;
         }
     }

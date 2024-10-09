@@ -9,7 +9,7 @@ namespace nexilis::server::nxboost
 {
 
 UDPServer::UDPServer(const Settings& settings, int port)
-    : Command(settings),
+    : ServerProtocol(settings),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_remoteEndpoint(boost::asio::ip::udp::v4(), port),
@@ -40,7 +40,6 @@ UDPServer::~UDPServer()
 UDPServer::UDPServer(UDPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
-      Command(std::move(other)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
@@ -57,7 +56,6 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
-        Command::operator=(std::move(other));
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
@@ -93,7 +91,7 @@ void UDPServer::receiveFromClients()
             uint16_t port = m_remoteEndpoint.port();
             Log::info("Received from ", address, " port ", port);
 
-            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &Command::getSettings());
+            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &getCommand().getSettings());
 
             if (!handledMessage.getClient()->isBoostUDPSet())
             {
@@ -105,7 +103,7 @@ void UDPServer::receiveFromClients()
                     } });
             }
 
-            Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+            Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
             switch (passCommand)
             {

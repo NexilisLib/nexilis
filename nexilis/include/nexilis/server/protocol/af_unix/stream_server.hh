@@ -3,7 +3,6 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/server/settings.hh>
-#include <nexilis/server/command.hh>
 #include <nexilis/server/server_protocol.hh>
 #include <nexilis/logger/loggable.hh>
 
@@ -13,8 +12,7 @@ namespace nexilis::server::af_unix
 {
 
 class StreamServer : public Protocol,
-                     public ServerProtocol,
-                     public Command
+                     public ServerProtocol
 {
 public:
     /// Constructor.

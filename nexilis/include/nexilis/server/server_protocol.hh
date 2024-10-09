@@ -1,8 +1,10 @@
 #ifndef NEXILIS_SERVER_PROTOCOL_HH
 #define NEXILIS_SERVER_PROTOCOL_HH
 
-#include <nexilis/logger/log.hh>
+#include <nexilis/server/settings.hh>
 #include <nexilis/server/message_handler.hh>
+#include <nexilis/server/command.hh>
+#include <nexilis/logger/log.hh>
 
 namespace nexilis::server
 {
@@ -11,7 +13,7 @@ class ServerProtocol
 {
 public:
     // Default constructor.
-    ServerProtocol() = default;
+    ServerProtocol(const Settings& settings);
 
     /// Move constructor.
     ServerProtocol(ServerProtocol&& other);
@@ -32,8 +34,24 @@ protected:
         return m_messageHandler;
     }
 
+    const MessageHandler& getMessageHandler() const
+    {
+        return m_messageHandler;
+    }
+
+    Command& getCommand()
+    {
+        return m_command;
+    }
+
+    const Command& getCommand() const
+    {
+        return m_command;
+    }
+
 private:
     MessageHandler m_messageHandler;
+    Command m_command;
 };
 
 } // namespace nexilis::server

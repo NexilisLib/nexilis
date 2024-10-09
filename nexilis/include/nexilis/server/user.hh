@@ -1,6 +1,7 @@
 #ifndef NEXILIS_USER_HH
 #define NEXILIS_USER_HH
 
+#include <cstdint>
 #include <nexilis/base_client.hh>
 #include <nexilis/util.hh>
 #include <nexilis/nexilis_macros.hh>
@@ -86,39 +87,63 @@ public:
 
     /// Protocol specific stuff.
 
-    // Boost TCP
+    /// \defgroup UserBoostTCP Sending messages via Boost TCP.
 
     /// Is boost TCP send function set?
+    /// \ingroup UserBoostTCP
     bool isBoostTCPSet()
     {
         return m_boostTCPSendToClient != nullptr;
     }
 
     /// Set the boost TCP send function.
+    /// \ingroup UserBoostTCP
     void setBoostTCPSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
     {
         m_boostTCPSendToClient = sendFunction;
     }
 
     /// Send data using boost TCP.
-    bool boostTCPSend(std::vector<uint8_t> data);
+    /// \ingroup UserBoostTCP
+    bool boostTCPSend(const std::vector<uint8_t>& data);
 
-    // Boost UDP
+    ///\defgroup UserBoostUDP Sending messages via Boost UDP
 
     /// Is boost UDP send function set?
+    /// \ingroup UserBoostUDP
     bool isBoostUDPSet()
     {
         return m_boostUDPSendToClient != nullptr;
     }
 
     /// Set the boost UDP send function.
+    /// \ingroup UserBoostUDP
     void setBoostUDPSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
     {
         m_boostUDPSendToClient = sendFunction;
     }
 
     /// Send data using boost UDP.
-    bool boostUDPSend(std::vector<uint8_t> data);
+    /// \ingroup UserBoostUDP
+    bool boostUDPSend(const std::vector<uint8_t>& data);
+
+    /// \defgroup UserUnixStream Send data using unix stream soccets.
+
+    /// Is User unixstream send function set?
+    /// \ingroup UserUnixStream
+    bool isUnixStreamSet()
+    {
+        return m_unixStreamSendToClient != nullptr;
+    }
+
+    /// \ingroup UserUnixStream
+    void setUnixStreamSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
+    {
+        m_unixStreamSendToClient = sendFunction;
+    }
+
+    /// \ingroup UserUnixStream
+    bool unixStreamSend(const std::vector<uint8_t>& data);
 
 private:
     // General
@@ -129,6 +154,7 @@ private:
 private:
     std::function<void(std::vector<uint8_t>)> m_boostTCPSendToClient = nullptr;
     std::function<void(std::vector<uint8_t>)> m_boostUDPSendToClient = nullptr;
+    std::function<void(std::vector<uint8_t>)> m_unixStreamSendToClient = nullptr;
 
 private:
     /// Access area.

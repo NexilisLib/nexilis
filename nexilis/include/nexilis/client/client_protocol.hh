@@ -3,9 +3,6 @@
 
 #include <nexilis/client/client_api.hh>
 
-#include <cstdint>
-#include <vector>
-
 namespace nexilis::client
 {
 
@@ -30,12 +27,8 @@ public:
     /// Send nexilis message (std::vector<uint8_t>) to server.
     virtual void sendMessage(const std::vector<uint8_t>& message) = 0;
 
-    // TODO, this should be pure virtual.
-    virtual void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
-    {
-        (void)message;
-        (void)callback;
-    }
+    /// Send nexilis message with callback.
+    virtual void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback) = 0;
 
     ClientAPI* getClientAPI()
     {

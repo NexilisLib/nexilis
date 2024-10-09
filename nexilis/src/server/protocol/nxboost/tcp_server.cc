@@ -1,3 +1,4 @@
+#include "nexilis/server/server_protocol.hh"
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/util.hh>
@@ -12,7 +13,7 @@ namespace nexilis::server::nxboost
 {
 
 TCPServer::TCPServer(const Settings& settings, int serverPort)
-    : Command(settings),
+    : ServerProtocol(settings),
       m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<::boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
@@ -23,7 +24,6 @@ TCPServer::TCPServer(const Settings& settings, int serverPort)
 TCPServer::TCPServer(TCPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
-      Command(std::move(other)),
       m_mutex(std::move(other.m_mutex)),
       m_ioContext(std::move(other.m_ioContext)),
       m_acceptor(std::move(other.m_acceptor)),
@@ -38,7 +38,6 @@ TCPServer& TCPServer::operator=(TCPServer&& other)
     {
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
-        Command::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
@@ -164,7 +163,7 @@ bool TCPServer::acceptClients()
                         data.insert(data.end(), bufferData, bufferData + bufferSize);
                     }
 
-                    auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &Command::getSettings());
+                    auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
 
                     if (!handledMessage.getClient()->isBoostTCPSet())
                     {
@@ -181,7 +180,7 @@ bool TCPServer::acceptClients()
                         });
                     }
 
-                    Command::Result passCommand = Command::read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+                    Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
                     if (passCommand == Command::Result::success)
                     {
