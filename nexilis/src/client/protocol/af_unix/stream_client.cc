@@ -97,7 +97,12 @@ void StreamClient::sendMsg(const std::string& message)
 
 void StreamClient::sendMessage(const std::vector<uint8_t>& message)
 {
-    // TODO perform without string conversion.
+    sendMsg(Util::convertToString(message));
+}
+
+void StreamClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+{
+    ClientProtocol::getClientAPI()->addCallback(ClientProtocol::createCallback(message, callback));
     sendMsg(Util::convertToString(message));
 }
 

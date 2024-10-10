@@ -35,7 +35,7 @@ public:
     class Room
     {
     public:
-        class Object2D
+        class Player2D
         {
         public:
             static std::vector<uint8_t> position(Vector2f position);

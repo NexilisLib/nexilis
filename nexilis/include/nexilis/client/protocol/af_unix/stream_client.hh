@@ -46,9 +46,11 @@ public:
         return Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT;
     }
 
-    /// Send message to the server.
     /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
     void sendMessage(const std::vector<uint8_t>& message) override;
+
+    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&, const std::function<void()>&) implementation.
+    void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback) override;
 
 private:
     // Initialize sockets and stuff.

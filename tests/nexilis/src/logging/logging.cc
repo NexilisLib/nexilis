@@ -1,7 +1,7 @@
 #include <gtest/gtest-param-test.h>
 #include <gtest/gtest.h>
 
-#include <nexilis/log.hh>
+#include <nexilis/logger/log.hh>
 #include <nexilis/logger/console_handler.hh>
 #include <nexilis/logger/file_handler.hh>
 #include <nexilis/logger/logger.hh>

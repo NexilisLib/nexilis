@@ -662,9 +662,9 @@ std::vector<uint8_t> Command::createRoomCommand(uint64_t roomId, User& user, con
             roomCommandAction = ManagementTypeToString(static_cast<ManagementOptions>(action));
             break;
         }
-        case RoomType::object2D:
+        case RoomType::player2D:
         {
-            roomCommandAction = Object2DTypeToString(static_cast<Object2DOptions>(action));
+            roomCommandAction = Player2DTypeToString(static_cast<Player2DOptions>(action));
             break;
         }
         case RoomType::communication:

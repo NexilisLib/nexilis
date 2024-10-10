@@ -10,7 +10,7 @@ std::string RoomTypeToString(RoomType type)
     {
         case RoomType::management:
             return "management";
-        case RoomType::object2D:
+        case RoomType::player2D:
             return "object2D";
         case RoomType::communication:
             return "communication";
@@ -35,15 +35,15 @@ std::string ManagementTypeToString(ManagementOptions management)
             return "";
     }
 }
-std::string Object2DTypeToString(Object2DOptions object2D)
+std::string Player2DTypeToString(Player2DOptions player2D)
 {
-    switch (object2D)
+    switch (player2D)
     {
-        case Object2DOptions::position:
+        case Player2DOptions::position:
             return "position";
-        case Object2DOptions::dimensions:
+        case Player2DOptions::dimensions:
             return "dimensions";
-        case Object2DOptions::movement:
+        case Player2DOptions::movement:
             return "movement";
         default:
             Log::error("Object2DTypeToString no type found!");

@@ -99,17 +99,17 @@ std::vector<uint8_t> Packet::Room::Management::create(const std::string& roomNam
 }
 
 /**
- *  2:1      Object2D
+ *  2:1      Player2D
  *  2:1:0    Set position; Vec2f position
  *  2:1:1    Set dimensions; Vec2f dimensions
  *  2:1:2    2D movement vector; Vec2f movement
  */
-std::vector<uint8_t> Packet::Room::Object2D::position(Vector2f position)
+std::vector<uint8_t> Packet::Room::Player2D::position(Vector2f position)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
-    id.emplace_back(static_cast<uint8_t>(Object2DOptions::position));
+    id.emplace_back(static_cast<uint8_t>(RoomType::player2D));
+    id.emplace_back(static_cast<uint8_t>(Player2DOptions::position));
 
     auto positionVector = Util::convertToByteVector(position);
     for (const auto& byte : positionVector)
@@ -119,12 +119,12 @@ std::vector<uint8_t> Packet::Room::Object2D::position(Vector2f position)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Object2D::dimensions(Vector2f dimensions)
+std::vector<uint8_t> Packet::Room::Player2D::dimensions(Vector2f dimensions)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
-    id.emplace_back(static_cast<uint8_t>(Object2DOptions::dimensions));
+    id.emplace_back(static_cast<uint8_t>(RoomType::player2D));
+    id.emplace_back(static_cast<uint8_t>(Player2DOptions::dimensions));
 
     auto dimensionVector = Util::convertToByteVector(dimensions);
     for (const auto& byte : dimensionVector)
@@ -134,12 +134,12 @@ std::vector<uint8_t> Packet::Room::Object2D::dimensions(Vector2f dimensions)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Object2D::movement(Vector2f movement, float deltaTime)
+std::vector<uint8_t> Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
-    id.emplace_back(static_cast<uint8_t>(Object2DOptions::movement));
+    id.emplace_back(static_cast<uint8_t>(RoomType::player2D));
+    id.emplace_back(static_cast<uint8_t>(Player2DOptions::movement));
 
     auto movementVector = Util::convertToByteVector(movement);
     for (const auto& byte : movementVector)

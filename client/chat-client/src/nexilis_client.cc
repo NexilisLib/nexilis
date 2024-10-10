@@ -2,11 +2,12 @@
 #include "debug.hh"
 
 #include <nexilis/common/util.hh>
+#include <nexilis/client/client_api.hh>
 #include <nexilis/packet.hh>
 
-nexilis::ClientAPI::ServerData getServerData(const std::string& ipAddress, const std::string& userName)
+nexilis::client::ClientAPI::ServerData getServerData(const std::string& ipAddress, const std::string& userName)
 {
-    nexilis::ClientAPI::ServerData serverData;
+    nexilis::client::ClientAPI::ServerData serverData;
     serverData.setPassword("salasana");
     serverData.setUserName(userName);
     serverData.setBoostTCP(ipAddress, 12348);

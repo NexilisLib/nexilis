@@ -52,6 +52,7 @@ set(SOURCES
 
     # Server protocols
     src/server/protocol/nxboost/tcp_server.cc
+    src/server/protocol/af_unix/stream_server.cc
 
     # Client
     src/client/client_api.cc
@@ -60,6 +61,7 @@ set(SOURCES
 
     # Client protocols
     src/client/protocol/nxboost/tcp_client.cc
+    src/client/protocol/af_unix/stream_client.cc
 
     # Logger
     src/logger/base_handler.cc
@@ -80,9 +82,6 @@ set(SOURCES
 
     #src/af_unix/sock_dgram/server.cc
     #src/af_unix/sock_dgram/client.cc
-
-    #src/af_unix/sock_stream/server.cc
-    #src/af_unix/sock_stream/client.cc
 
     #src/af_inet/udp_client.cc
     #src/af_inet/base_udp_server.cc
