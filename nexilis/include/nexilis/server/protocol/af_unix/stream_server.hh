@@ -50,12 +50,12 @@ private:
     void bindSocket();
     void handleMessages();
     std::string receiveMessage(int socket);
-    void sendMessage(int clientSocket, const std::vector<uint8_t>& message);
+    void sendMessage(int clientSocket, const nx_data& message);
 
 private:
     std::string m_socketPath;
     int m_serverSocket;
-    std::vector<uint8_t> m_buffer;
+    nx_data m_buffer;
     std::thread m_receiveThread;
 };
 

@@ -44,8 +44,8 @@ public:
         return Type::AF_INET_UDP_CLIENT;
     }
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message) override;
+    /// ClientProtocol::sendMessage(const nx_data&) implementation.
+    void sendMessage(const nx_data& message) override;
 
 private:
     int createSocket();
@@ -55,7 +55,7 @@ private:
     void sendData(const char* data, size_t dataSize);
 
     /// Internal function for receiving data (recvfrom).
-    std::vector<uint8_t> receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
+    nx_data receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
 
 private:
     int m_clientSocket;

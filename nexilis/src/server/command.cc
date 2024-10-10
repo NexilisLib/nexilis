@@ -34,7 +34,7 @@ Command::Result Command::read(const char* command_data, size_t length, User& cli
     return Command::read(Util::convertToByteVector(command_data, length), client, protocol, messageId);
 }
 
-Command::Result Command::read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId)
+Command::Result Command::read(const nx_data& command, User& user, Protocol& protocol, uint64_t messageId)
 {
     assert(user.getId() != 0);
 
@@ -137,7 +137,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
                             {"client_id", boost::json::value(user.getId())}};
 
                     auto json = Json::createJSON(data);
-                    std::vector<uint8_t> message = Util::convertToByteVector(json);
+                    nx_data message = Util::convertToByteVector(json);
                     sendMessageToClient(message, user, protocol);
 
                     Log::info("sent message to client");
@@ -547,7 +547,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getServerData());
-                    std::vector<uint8_t> data = Util::convertToByteVector(json);
+                    nx_data data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
@@ -563,7 +563,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
 
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getClientData());
-                    std::vector<uint8_t> data = Util::convertToByteVector(json);
+                    nx_data data = Util::convertToByteVector(json);
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::clientInfo");
@@ -595,7 +595,7 @@ Command::Result Command::read(const std::vector<uint8_t>& command, User& user, P
     }
 }
 
-void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol)
+void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
 {
     switch (protocol.getType())
     {
@@ -643,12 +643,12 @@ void Command::sendMessageToClient(std::vector<uint8_t> data, User& user, Protoco
     }
 }
 
-std::vector<uint8_t> Command::createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
+nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
 {
     if (messageData.size() < 3)
     {
         Log::error("Insuffecient messageData");
-        return std::vector<uint8_t>();
+        return nx_data();
     }
 
     RoomType roomType = static_cast<RoomType>(messageData[1]);
@@ -670,7 +670,7 @@ std::vector<uint8_t> Command::createRoomCommand(uint64_t roomId, User& user, con
         case RoomType::communication:
         {
             Log::error("Unimplemented!");
-            return std::vector<uint8_t>();
+            return nx_data();
         }
     }
     std::string roomCommandType = RoomTypeToString(roomType);
@@ -690,7 +690,7 @@ std::vector<uint8_t> Command::createRoomCommand(uint64_t roomId, User& user, con
     return Util::convertToByteVector(json);
 }
 
-void Command::sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol)
+void Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)
 {
     auto& rooms = RoomStorage::getAllRooms();
     for (auto& room : rooms)

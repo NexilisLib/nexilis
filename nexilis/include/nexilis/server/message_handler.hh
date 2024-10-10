@@ -24,7 +24,7 @@ public:
     class Message
     {
     public:
-        Message(const std::string& address, const std::vector<uint8_t>& data, uint16_t port, User* user, uint64_t messageId)
+        Message(const std::string& address, const nx_data& data, uint16_t port, User* user, uint64_t messageId)
             : m_address(address),
               m_data(data),
               m_port(port),
@@ -38,7 +38,7 @@ public:
             return m_address;
         }
 
-        std::vector<uint8_t> getData()
+        nx_data getData()
         {
             return m_data;
         }
@@ -60,7 +60,7 @@ public:
 
     private:
         std::string m_address;
-        std::vector<uint8_t> m_data;
+        nx_data m_data;
         uint16_t m_port = 0;
         User* m_user = nullptr;
         uint64_t m_messageId;
@@ -71,7 +71,7 @@ public:
     /// \param message The incoming message data.
     /// \param port The incoming message sender port.
     /// \param authentication The server authentication levels.
-    Message readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Settings* authentication);
+    Message readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication);
 };
 
 } // namespace nexilis::server

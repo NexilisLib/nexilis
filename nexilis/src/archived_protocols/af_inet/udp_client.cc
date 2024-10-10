@@ -55,7 +55,7 @@ int UDPClient::createSocket()
     return socketFD;
 }
 
-void UDPClient::sendMessage(const std::vector<uint8_t>& message)
+void UDPClient::sendMessage(const nx_data& message)
 {
     /// TODO Remove string conversion.
     const char* data = reinterpret_cast<const char*>(message.data());
@@ -71,9 +71,9 @@ void UDPClient::sendData(const char* data, size_t dataSize)
     }
 }
 
-std::vector<uint8_t> UDPClient::receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen)
+nx_data UDPClient::receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen)
 {
-    std::vector<uint8_t> receivedData(NEXILIS_BUFFER);
+    nx_data receivedData(NEXILIS_BUFFER);
     ssize_t bytesRead = recvfrom(m_clientSocket, receivedData.data(), receivedData.size(), 0, srcAddr, srcAddrLen);
 
     if (bytesRead == -1)

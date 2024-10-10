@@ -25,7 +25,7 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     return *this;
 }
 
-std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const nx_data& message, const std::function<void()>& callback)
 {
     // Vector without client id (8 bytes).
     auto messageWithoutClientId = Util::removeAmountOfBytesFromVector(message, 8);

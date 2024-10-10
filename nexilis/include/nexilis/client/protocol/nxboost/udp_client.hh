@@ -51,8 +51,8 @@ public:
         return Type::BOOST_UDP_CLIENT;
     }
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>& message) implementation.
-    void sendMessage(const std::vector<uint8_t>& message) override;
+    /// ClientProtocol::sendMessage(const nx_data& message) implementation.
+    void sendMessage(const nx_data& message) override;
 
 private:
     void receiveLoop();

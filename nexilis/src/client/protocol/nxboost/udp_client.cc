@@ -93,7 +93,7 @@ void UDPClient::receiveLoop()
     }
 }
 
-void UDPClient::sendMessage(const std::vector<uint8_t>& payload)
+void UDPClient::sendMessage(const nx_data& payload)
 {
     if (m_socket.is_open())
     {

@@ -3,6 +3,7 @@
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/types/vector2.hh>
+#include <nexilis/nexilis_macros.hh>
 
 namespace nexilis::client
 {
@@ -15,21 +16,21 @@ public:
     public:
         // The server sends the client identification to server.
         // This is mandatory packet to establish client connection.
-        static std::vector<uint8_t> clientId();
+        static nx_data clientId();
     };
 
     class Set
     {
     public:
-        static std::vector<uint8_t> username(const std::string& name);
+        static nx_data username(const std::string& name);
     };
 
     class Info
     {
     public:
-        static std::vector<uint8_t> general();
-        static std::vector<uint8_t> clients();
-        static std::vector<uint8_t> rooms();
+        static nx_data general();
+        static nx_data clients();
+        static nx_data rooms();
     };
 
     class Room
@@ -38,17 +39,17 @@ public:
         class Player2D
         {
         public:
-            static std::vector<uint8_t> position(Vector2f position);
-            static std::vector<uint8_t> dimensions(Vector2f dimensions);
-            static std::vector<uint8_t> movement(Vector2f movement, float deltaTime);
+            static nx_data position(Vector2f position);
+            static nx_data dimensions(Vector2f dimensions);
+            static nx_data movement(Vector2f movement, float deltaTime);
         };
 
         class Management
         {
         public:
-            static std::vector<uint8_t> join(uint64_t roomId);
-            static std::vector<uint8_t> leave();
-            static std::vector<uint8_t> create(const std::string& roomName);
+            static nx_data join(uint64_t roomId);
+            static nx_data leave();
+            static nx_data create(const std::string& roomName);
         };
     };
 
@@ -56,7 +57,7 @@ public:
     static void _initialize(ClientAPI& clientApi);
 
 private:
-    static std::vector<uint8_t> clientIdentification();
+    static nx_data clientIdentification();
     static ClientAPI* m_clientApi;
 };
 

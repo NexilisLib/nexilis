@@ -50,8 +50,8 @@ public:
     /// ClientProtocol::sendMessage(const std::string&) implementation.
     void sendMessage(const std::string& message);
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message);
+    /// ClientProtocol::sendMessage(const nx_data&) implementation.
+    void sendMessage(const nx_data& message);
 
 private:
     bool connectToServer();

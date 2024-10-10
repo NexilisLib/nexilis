@@ -6,6 +6,7 @@
 #include <boost/json/serialize.hpp>
 
 #include <fstream>
+#include <iostream>
 
 namespace nexilis
 {
@@ -29,7 +30,7 @@ void Json::emplace(boost::json::object& first, const boost::json::object& second
     }
 }
 
-boost::json::object Json::convertToJSON(const std::vector<uint8_t>& bytes)
+boost::json::object Json::convertToJSON(const nx_data& bytes)
 {
     std::string jsonString(bytes.begin(), bytes.end());
     return boost::json::parse(jsonString).as_object();

@@ -4,6 +4,7 @@
 #include <nexilis/server/config.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/logger/log_level.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <boost/json/object.hpp>
 
@@ -16,9 +17,9 @@ namespace nexilis
 class Util
 {
 public:
-    /// Convert std::vector<uint8_t> to numeral type.
+    /// Convert nx_data to numeral type.
     template <typename T>
-    static T convertToType(std::vector<uint8_t> bytes)
+    static T convertToType(nx_data bytes)
     {
         if (bytes.size() < sizeof(T))
         {
@@ -46,11 +47,11 @@ public:
         return result;
     }
 
-    /// Convert std::vector<uint8_t> to string.
-    static std::string convertToString(std::vector<uint8_t> bytes);
+    /// Convert nx_data to string.
+    static std::string convertToString(nx_data bytes);
 
-    /// Convert std::vector<uint8_t> to Vec2f.
-    static Vector2f convertToVector2(const std::vector<uint8_t>& bytes);
+    /// Convert nx_data to Vec2f.
+    static Vector2f convertToVector2(const nx_data& bytes);
 
     /// Return uint16_t from two bytes.
     static uint16_t uint8PairToUint16(uint8_t lowByte, uint8_t highByte);
@@ -61,18 +62,18 @@ public:
     /// \param hightByte The created high byte.
     static void uint16ToUint8Pair(uint16_t value, uint8_t& lowByte, uint8_t& highByte);
 
-    /// \defgroup FrontConversions Functions that convert the first bytes of std::vector<uint8_t> into type.
+    /// \defgroup FrontConversions Functions that convert the first bytes of nx_data into type.
 
     /// Get the first eight bytes of vector and return it as uint64_t.
     /// \ingroup FrontConversions
-    static uint64_t uint64FromFront(const std::vector<uint8_t>& vec);
+    static uint64_t uint64FromFront(const nx_data& vec);
 
     /// Get the first four bytes from vector and return it as float.
-    static float floatFromFront(const std::vector<uint8_t>& vec);
+    static float floatFromFront(const nx_data& vec);
 
     /// Remove amount of bytes from the beginning of the vector.
     /// \return The updated vector.
-    static std::vector<uint8_t> removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount);
+    static nx_data removeAmountOfBytesFromVector(nx_data original, uint8_t amount);
 
     /// \defgroup RandFunctions Functions that generate random values.
 
@@ -96,27 +97,27 @@ public:
 
     /// Byte vector conversions.
     /// \ingroup BytevectorConversions
-    static std::vector<uint8_t> convertToByteVector(const char* command_data, uint64_t length);
+    static nx_data convertToByteVector(const char* command_data, uint64_t length);
 
     /// \ingroup BytevectorConversions
-    static std::vector<uint8_t> convertToByteVector(uint64_t value);
+    static nx_data convertToByteVector(uint64_t value);
 
     /// \ingroup BytevectorConversions
-    static std::vector<uint8_t> convertToByteVector(const boost::json::object& obj);
+    static nx_data convertToByteVector(const boost::json::object& obj);
 
     /// \ingroup BytevectorConversions
-    static std::vector<uint8_t> convertToByteVector(float value);
+    static nx_data convertToByteVector(float value);
 
     /// \ingroup BytevectorConversions
-    static std::vector<uint8_t> convertToByteVector(Vector2f value);
+    static nx_data convertToByteVector(Vector2f value);
     
     /// \ingroup BytevectorConversions
-    static std::vector<uint8_t> convertToByteVector(const std::string& value);
+    static nx_data convertToByteVector(const std::string& value);
 
     /// Logging.
     static std::string getColorMessage(logger::LogLevel logLevel, const std::string& data);
     static void printColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
-    static void debugUint8Vector(const std::vector<uint8_t>& vector);
+    static void debugUint8Vector(const nx_data& vector);
 
     /// Other
     static std::string getDateAndTime();

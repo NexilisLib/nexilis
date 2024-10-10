@@ -36,7 +36,7 @@ User& User::operator=(User&& other)
     return *this;
 }
 
-bool User::boostTCPSend(const std::vector<uint8_t>& data)
+bool User::boostTCPSend(const nx_data& data)
 {
     if (m_boostTCPSendToClient)
     {
@@ -46,7 +46,7 @@ bool User::boostTCPSend(const std::vector<uint8_t>& data)
     return false;
 }
 
-bool User::boostUDPSend(const std::vector<uint8_t>& data)
+bool User::boostUDPSend(const nx_data& data)
 {
     if (m_boostUDPSendToClient)
     {
@@ -56,7 +56,7 @@ bool User::boostUDPSend(const std::vector<uint8_t>& data)
     return false;
 }
 
-bool User::unixStreamSend(const std::vector<uint8_t>& data)
+bool User::unixStreamSend(const nx_data& data)
 {
     if (m_unixStreamSendToClient)
     {

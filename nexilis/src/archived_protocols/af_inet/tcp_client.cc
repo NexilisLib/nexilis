@@ -85,7 +85,7 @@ void TCPClient::sendMessage(const std::string& message)
     }
 }
 
-void TCPClient::sendMessage(const std::vector<uint8_t>& message)
+void TCPClient::sendMessage(const nx_data& message)
 {
     const char* data = reinterpret_cast<const char*>(message.data());
     bool sentMessage = send(data, message.size());

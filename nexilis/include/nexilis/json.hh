@@ -22,8 +22,8 @@ public:
     /// Read JSON data from file.
     static boost::json::value readJSONFromFile(const std::string& filename);
 
-    /// Convert std::vector<uint8_t> to boost::json::object.
-    static boost::json::object convertToJSON(const std::vector<uint8_t>& bytes);
+    /// Convert nx_data to boost::json::object.
+    static boost::json::object convertToJSON(const nx_data& bytes);
 
     /// Print the contents of boost::json::object.
     static void print(const boost::json::object& obj);

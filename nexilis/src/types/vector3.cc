@@ -7,9 +7,9 @@ Vector3::Vector3(float x, float y, float z)
 {
 }
 
-std::vector<uint8_t> Vector3::serialize() const
+nx_data Vector3::serialize() const
 {
-    std::vector<uint8_t> serializedData;
+    nx_data serializedData;
 
     // Convert each component into bytes.
     uint32_t xBytes = *reinterpret_cast<const uint32_t*>(&m_x);
@@ -27,7 +27,7 @@ std::vector<uint8_t> Vector3::serialize() const
     return serializedData;
 }
 
-static Vector3 deserialize(const std::vector<uint8_t>& data)
+static Vector3 deserialize(const nx_data& data)
 {
     if (data.size() != sizeof(uint32_t) * 3)
     {

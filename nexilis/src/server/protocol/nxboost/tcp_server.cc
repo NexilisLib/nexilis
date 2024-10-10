@@ -143,7 +143,7 @@ bool TCPServer::acceptClients()
                     }
 
                     // Create a vector to hold the data
-                    std::vector<uint8_t> data;
+                    nx_data data;
 
                     // Get the sequence of const buffers from the streambuf
                     const boost::asio::const_buffers_1& buffers = receiveBuffer.data();
@@ -167,7 +167,7 @@ bool TCPServer::acceptClients()
 
                     if (!handledMessage.getClient()->isBoostTCPSet())
                     {
-                        handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const std::vector<uint8_t>& bytes)
+                        handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
                         {
                             if (sendToClient(bytes, newSocket))
                             {
@@ -207,7 +207,7 @@ bool TCPServer::acceptClients()
     }
 }
 
-bool TCPServer::sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket)
+bool TCPServer::sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& clientSocket)
 {
     if (clientSocket.is_open())
     {

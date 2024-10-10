@@ -62,8 +62,8 @@ Websocket::Websocket(unsigned port)
 
         // We return false from message that is not understood by nexilis.
         // TODO
-        //auto sendMessage = [this](const std::vector<uint8_t>&){};
-        if (!Command::read(nexilisMessage, client, *this, [](const std::vector<uint8_t>&){}))
+        //auto sendMessage = [this](const nx_data&){};
+        if (!Command::read(nexilisMessage, client, *this, [](const nx_data&){}))
         {
             Log::error("Something went wrong with the reading of the command");
         } });

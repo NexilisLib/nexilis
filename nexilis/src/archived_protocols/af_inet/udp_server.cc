@@ -49,13 +49,13 @@ void UDPServer::start()
             BaseUDPServer::Message msg;
 
             // TODO fix
-            std::vector<uint8_t> data;
+            nx_data data;
 
             if (BaseUDPServer::getNextMessage(msg))
             {
                 auto message = getMessageHandler().readMessage(msg.address, data, msg.port, &Command::getAuthentication());
 
-                auto sendMsg = [this, &msg](const std::vector<uint8_t>& data)
+                auto sendMsg = [this, &msg](const nx_data& data)
                 {
                     sendDataToClient(data, msg.clientAddr, msg.clientAddrLen);
                 };
@@ -77,7 +77,7 @@ void UDPServer::start()
         } });
 }
 
-void UDPServer::sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen)
+void UDPServer::sendDataToClient(const nx_data& data, const sockaddr* clientAddr, socklen_t clientAddrLen)
 {
     sendto(BaseUDPServer::m_serverSocket, data.data(), data.size(), 0, clientAddr, clientAddrLen);
 }

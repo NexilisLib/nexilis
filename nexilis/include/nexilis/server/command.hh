@@ -68,7 +68,7 @@ public:
     /// \param protocol The protocol that was used in receiving the message.
     /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    Result read(const std::vector<uint8_t>& command, User& user, Protocol& protocol, uint64_t messageId);
+    Result read(const nx_data& command, User& user, Protocol& protocol, uint64_t messageId);
 
     /// Read the command from client.
     /// \param command_data The data for the command
@@ -90,10 +90,10 @@ public:
     }
 private:
     /// Send message to every protocol that is avainable for a client;
-    void sendMessageToClient(std::vector<uint8_t> data, User& user, Protocol& protocol);
+    void sendMessageToClient(nx_data data, User& user, Protocol& protocol);
 
-    std::vector<uint8_t> createRoomCommand(uint64_t roomId, User& user, const std::vector<uint8_t>& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
-    void sendRoomCommand(const std::vector<uint8_t>& data, User& user, Protocol& protocol);
+    nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
+    void sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
 
     /// Send multiple messages with specified tickrate.
     void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);

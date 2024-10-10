@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    bool sendToClient(const std::vector<uint8_t>& data, boost::asio::ip::tcp::socket& clientSocket);
+    bool sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& clientSocket);
     bool startListening();
     bool acceptClients();
 

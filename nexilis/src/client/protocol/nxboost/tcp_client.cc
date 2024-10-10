@@ -85,12 +85,12 @@ void TCPClient::stop()
     }
 }
 
-void TCPClient::sendMessage(const std::vector<uint8_t>& message)
+void TCPClient::sendMessage(const nx_data& message)
 {
     send(message);
 }
 
-void TCPClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+void TCPClient::sendMessage(const nx_data& message, const std::function<void()>& callback)
 {
     ClientProtocol::getClientAPI()->addCallback(ClientProtocol::createCallback(message, callback));
     send(message);
@@ -109,7 +109,7 @@ bool TCPClient::connectToServer()
     return m_socket.is_open();
 }
 
-bool TCPClient::send(const std::vector<uint8_t>& data)
+bool TCPClient::send(const nx_data& data)
 {
     if (!m_socket.is_open())
     {
@@ -134,7 +134,7 @@ bool TCPClient::send(const std::vector<uint8_t>& data)
     return true;
 }
 
-bool TCPClient::receive(std::vector<uint8_t>& buffer)
+bool TCPClient::receive(nx_data& buffer)
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
 
@@ -191,7 +191,7 @@ void TCPClient::receiveLoop()
 {
     while (!m_stopped)
     {
-        std::vector<uint8_t> buffer;
+        nx_data buffer;
 
         if (!m_stopped && receive(buffer))
         {

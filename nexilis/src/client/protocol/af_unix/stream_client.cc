@@ -95,12 +95,12 @@ void StreamClient::sendMsg(const std::string& message)
     }
 }
 
-void StreamClient::sendMessage(const std::vector<uint8_t>& message)
+void StreamClient::sendMessage(const nx_data& message)
 {
     sendMsg(Util::convertToString(message));
 }
 
-void StreamClient::sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback)
+void StreamClient::sendMessage(const nx_data& message, const std::function<void()>& callback)
 {
     ClientProtocol::getClientAPI()->addCallback(ClientProtocol::createCallback(message, callback));
     sendMsg(Util::convertToString(message));
@@ -122,11 +122,11 @@ void StreamClient::stop()
     close(m_clientSocket);
 }
 
-std::vector<uint8_t> StreamClient::receiveMessage()
+nx_data StreamClient::receiveMessage()
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
     // Receive buffer.
-    std::vector<uint8_t> receivedData(NEXILIS_BUFFER);
+    nx_data receivedData(NEXILIS_BUFFER);
 
     // Receive data into buffer.
     ssize_t bytesRead = recv(m_clientSocket, receivedData.data(), receivedData.size(), 0);

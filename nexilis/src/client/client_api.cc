@@ -682,7 +682,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
     return ReadResult::not_found;
 }
 
-ClientAPI::ReadResult ClientAPI::readMessage(const std::vector<uint8_t>& message)
+ClientAPI::ReadResult ClientAPI::readMessage(const nx_data& message)
 {
     boost::json::object json;
     try

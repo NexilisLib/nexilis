@@ -1,13 +1,12 @@
 #ifndef NEXILIS_VECTOR3_HH
 #define NEXILIS_VECTOR3_HH
 
-#include <cstdint>
-#include <vector>
+#include <nexilis/nexilis_macros.hh>
 
 /// Vector3 object to be used in update messages
 
 /// Create or receive one with 3 floats (12 bytes),
-/// or use with messages std::vector<uint8_t> (4 bytes).
+/// or use with messages nx_data (4 bytes).
 
 class Vector3
 {
@@ -23,8 +22,8 @@ public:
     {
     }
 
-    std::vector<uint8_t> serialize() const;
-    static Vector3 deserialize(const std::vector<uint8_t>& data);
+    nx_data serialize() const;
+    static Vector3 deserialize(const nx_data& data);
 
 private:
     float m_x;

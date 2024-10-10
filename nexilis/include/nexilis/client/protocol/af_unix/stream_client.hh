@@ -4,6 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <sys/un.h>
 
@@ -46,11 +47,11 @@ public:
         return Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT;
     }
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message) override;
+    /// ClientProtocol::sendMessage(const nx_data&) implementation.
+    void sendMessage(const nx_data& message) override;
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&, const std::function<void()>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback) override;
+    /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
+    void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
 private:
     // Initialize sockets and stuff.
@@ -61,7 +62,7 @@ private:
     void sendMsg(const std::string& message);
 
     /// Receive messages from the server.
-    std::vector<uint8_t> receiveMessage();
+    nx_data receiveMessage();
 
 private:
     std::string m_serverSocketPath;

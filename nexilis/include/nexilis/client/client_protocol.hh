@@ -2,6 +2,7 @@
 #define NEXILIS_CLIENT_PROTOCOL_HH
 
 #include <nexilis/client/client_api.hh>
+#include <nexilis/nexilis_macros.hh>
 
 namespace nexilis::client
 {
@@ -24,11 +25,11 @@ public:
     /// Deleted copy assignment operator.
     ClientProtocol& operator=(const ClientProtocol& other) = delete;
 
-    /// Send nexilis message (std::vector<uint8_t>) to server.
-    virtual void sendMessage(const std::vector<uint8_t>& message) = 0;
+    /// Send nexilis message (nx_data) to server.
+    virtual void sendMessage(const nx_data& message) = 0;
 
     /// Send nexilis message with callback.
-    virtual void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback) = 0;
+    virtual void sendMessage(const nx_data& message, const std::function<void()>& callback) = 0;
 
     ClientAPI* getClientAPI()
     {
@@ -36,7 +37,7 @@ public:
     }
 
     /// Create pair that contains the id of the message and the callback itself.
-    std::pair<uint64_t, std::function<void()>> createCallback(const std::vector<uint8_t>& message, const std::function<void()>& callback);
+    std::pair<uint64_t, std::function<void()>> createCallback(const nx_data& message, const std::function<void()>& callback);
 
 private:
     ClientAPI* m_api;

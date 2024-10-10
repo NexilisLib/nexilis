@@ -59,7 +59,7 @@ private:
     std::unique_ptr<std::mutex> m_mutex;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
     boost::asio::ip::udp::socket m_socket;
-    std::vector<uint8_t> m_receiveBuffer;
+    nx_data m_receiveBuffer;
     std::thread m_ioContextThread;
     std::thread m_receiveThread;
 };

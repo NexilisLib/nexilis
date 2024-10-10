@@ -57,7 +57,7 @@ public:
         return Type::AF_INET_UDP_SERVER;
     }
 
-    void sendDataToClient(const std::vector<uint8_t>& data, const sockaddr* clientAddr, socklen_t clientAddrLen);
+    void sendDataToClient(const nx_data& data, const sockaddr* clientAddr, socklen_t clientAddrLen);
 
 private:
     std::thread m_receiveThread;

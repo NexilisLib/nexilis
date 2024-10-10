@@ -98,14 +98,14 @@ public:
 
     /// Set the boost TCP send function.
     /// \ingroup UserBoostTCP
-    void setBoostTCPSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
+    void setBoostTCPSend(const std::function<void(const nx_data&)>& sendFunction)
     {
         m_boostTCPSendToClient = sendFunction;
     }
 
     /// Send data using boost TCP.
     /// \ingroup UserBoostTCP
-    bool boostTCPSend(const std::vector<uint8_t>& data);
+    bool boostTCPSend(const nx_data& data);
 
     ///\defgroup UserBoostUDP Sending messages via Boost UDP
 
@@ -118,14 +118,14 @@ public:
 
     /// Set the boost UDP send function.
     /// \ingroup UserBoostUDP
-    void setBoostUDPSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
+    void setBoostUDPSend(const std::function<void(const nx_data&)>& sendFunction)
     {
         m_boostUDPSendToClient = sendFunction;
     }
 
     /// Send data using boost UDP.
     /// \ingroup UserBoostUDP
-    bool boostUDPSend(const std::vector<uint8_t>& data);
+    bool boostUDPSend(const nx_data& data);
 
     /// \defgroup UserUnixStream Send data using unix stream soccets.
 
@@ -137,13 +137,13 @@ public:
     }
 
     /// \ingroup UserUnixStream
-    void setUnixStreamSend(const std::function<void(const std::vector<uint8_t>&)>& sendFunction)
+    void setUnixStreamSend(const std::function<void(const nx_data&)>& sendFunction)
     {
         m_unixStreamSendToClient = sendFunction;
     }
 
     /// \ingroup UserUnixStream
-    bool unixStreamSend(const std::vector<uint8_t>& data);
+    bool unixStreamSend(const nx_data& data);
 
 private:
     // General
@@ -152,9 +152,9 @@ private:
     uint64_t m_roomId = 0;
 
 private:
-    std::function<void(std::vector<uint8_t>)> m_boostTCPSendToClient = nullptr;
-    std::function<void(std::vector<uint8_t>)> m_boostUDPSendToClient = nullptr;
-    std::function<void(std::vector<uint8_t>)> m_unixStreamSendToClient = nullptr;
+    std::function<void(nx_data)> m_boostTCPSendToClient = nullptr;
+    std::function<void(nx_data)> m_boostUDPSendToClient = nullptr;
+    std::function<void(nx_data)> m_unixStreamSendToClient = nullptr;
 
 private:
     /// Access area.

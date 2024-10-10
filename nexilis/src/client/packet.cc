@@ -8,7 +8,7 @@ namespace nexilis::client
 
 ClientAPI* Packet::m_clientApi = nullptr;
 
-std::vector<uint8_t> Packet::Set::username(const std::string& name)
+nx_data Packet::Set::username(const std::string& name)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::setting));
@@ -22,7 +22,7 @@ std::vector<uint8_t> Packet::Set::username(const std::string& name)
     return id;
 }
 
-std::vector<uint8_t> Packet::Get::clientId()
+nx_data Packet::Get::clientId()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
@@ -30,7 +30,7 @@ std::vector<uint8_t> Packet::Get::clientId()
     return id;
 }
 
-std::vector<uint8_t> Packet::Info::general()
+nx_data Packet::Info::general()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::info));
@@ -38,7 +38,7 @@ std::vector<uint8_t> Packet::Info::general()
     return id;
 }
 
-std::vector<uint8_t> Packet::Info::clients()
+nx_data Packet::Info::clients()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::info));
@@ -46,7 +46,7 @@ std::vector<uint8_t> Packet::Info::clients()
     return id;
 }
 
-std::vector<uint8_t> Packet::Info::rooms()
+nx_data Packet::Info::rooms()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::info));
@@ -54,7 +54,7 @@ std::vector<uint8_t> Packet::Info::rooms()
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Management::join(uint64_t roomId)
+nx_data Packet::Room::Management::join(uint64_t roomId)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -75,7 +75,7 @@ std::vector<uint8_t> Packet::Room::Management::join(uint64_t roomId)
  *  2:0:1    Leave room; void
  *  2:0:2    Create room; string roomName
  */
-std::vector<uint8_t> Packet::Room::Management::leave()
+nx_data Packet::Room::Management::leave()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -84,7 +84,7 @@ std::vector<uint8_t> Packet::Room::Management::leave()
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Management::create(const std::string& roomName)
+nx_data Packet::Room::Management::create(const std::string& roomName)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -104,7 +104,7 @@ std::vector<uint8_t> Packet::Room::Management::create(const std::string& roomNam
  *  2:1:1    Set dimensions; Vec2f dimensions
  *  2:1:2    2D movement vector; Vec2f movement
  */
-std::vector<uint8_t> Packet::Room::Player2D::position(Vector2f position)
+nx_data Packet::Room::Player2D::position(Vector2f position)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -119,7 +119,7 @@ std::vector<uint8_t> Packet::Room::Player2D::position(Vector2f position)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Player2D::dimensions(Vector2f dimensions)
+nx_data Packet::Room::Player2D::dimensions(Vector2f dimensions)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -134,7 +134,7 @@ std::vector<uint8_t> Packet::Room::Player2D::dimensions(Vector2f dimensions)
     return id;
 }
 
-std::vector<uint8_t> Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
+nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
@@ -159,7 +159,7 @@ void Packet::_initialize(ClientAPI& clientAPI)
     m_clientApi = &clientAPI;
 }
 
-std::vector<uint8_t> Packet::clientIdentification()
+nx_data Packet::clientIdentification()
 {
     if (!m_clientApi)
     {

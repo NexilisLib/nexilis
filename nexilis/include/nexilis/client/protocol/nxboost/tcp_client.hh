@@ -35,11 +35,11 @@ public:
     /// Deleted copy assignment operator.
     TCPClient& operator=(const TCPClient& other) = delete;
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message) override;
+    /// ClientProtocol::sendMessage(const nx_data&) implementation.
+    void sendMessage(const nx_data& message) override;
 
-    /// ClientProtocol::sendMessage(const std::vector<uint8_t>&, const std::function<void()>&) implementation.
-    void sendMessage(const std::vector<uint8_t>& message, const std::function<void()>& callback) override;
+    /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
+    void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
     /// Protocol::start() implementation.
     void start() override;
@@ -60,8 +60,8 @@ protected:
 private:
     void receiveLoop();
     bool connectToServer();
-    bool send(const std::vector<uint8_t>& data);
-    bool receive(std::vector<uint8_t>& buffer);
+    bool send(const nx_data& data);
+    bool receive(nx_data& buffer);
 
 private:
     bool m_stopped = false;

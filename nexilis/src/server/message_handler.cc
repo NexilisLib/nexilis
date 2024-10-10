@@ -18,13 +18,13 @@ namespace nexilis::server
 // Message id 8 bytes
 // Command bytes (at least 2 bytes), second parameter of MessageHandler::Message.
 
-MessageHandler::Message MessageHandler::readMessage(std::string address, const std::vector<uint8_t>& payload, uint16_t port, Settings* authentication)
+MessageHandler::Message MessageHandler::readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication)
 {
     Log::debug("Payload size: ", payload.size());
 
     // TODO
     // Error Messages.
-    std::vector<uint8_t> errordata = {9, 0, 0};
+    nx_data errordata = {9, 0, 0};
     Message errorMessage("", errordata, -1, nullptr, 0);
 
     auto clientId = Util::uint64FromFront(payload);
@@ -105,7 +105,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const s
                     assert(user->getId() == realNewClient->getId());
 
                     // This message is equal to Packet::getId (without client id).
-                    std::vector<uint8_t> message{1, 0};
+                    nx_data message{1, 0};
                     auto idBytes = Util::convertToByteVector(user->getId());
                     for (auto&& byte : idBytes)
                     {

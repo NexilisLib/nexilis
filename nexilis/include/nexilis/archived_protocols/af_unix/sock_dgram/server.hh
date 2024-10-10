@@ -56,7 +56,7 @@ private:
 
 private:
     int m_serverSocket;
-    std::vector<uint8_t> m_buffer;
+    nx_data m_buffer;
 };
 
 } // namespace nexilis::af_unix::sock_dgram

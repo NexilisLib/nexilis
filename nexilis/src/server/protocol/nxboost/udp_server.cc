@@ -95,7 +95,7 @@ void UDPServer::receiveFromClients()
 
             if (!handledMessage.getClient()->isBoostUDPSet())
             {
-                handledMessage.getClient()->setBoostUDPSend([this](const std::vector<uint8_t>& bytes)
+                handledMessage.getClient()->setBoostUDPSend([this](const nx_data& bytes)
                                                             {
                     if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
                     {

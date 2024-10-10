@@ -139,18 +139,18 @@ void TCPServer::operatingLoop()
 
         ssize_t bytesRead = ::read(client.getSocket(), buffer, sizeof(buffer));
 
-        // FIXME create std::vector<uint8_t> buffer
+        // FIXME create nx_data buffer
         buffer[bytesRead] = '\0';
         std::string receivedData(buffer);
         receivedData.resize(bytesRead);
 
-        std::vector<uint8_t> _reveivedData;
+        nx_data _reveivedData;
 
         if (bytesRead > 0)
         {
             auto message = getMessageHandler().readMessage(client.getAddress(), _reveivedData, client.getPort(), &Command::getAuthentication());
 
-            auto sendMsg = [this, &client](const std::vector<uint8_t> data)
+            auto sendMsg = [this, &client](const nx_data data)
             {
                 auto charData = reinterpret_cast<const char*>(data.data());
                 sendToClient(client.getSocket(), charData, sizeof(charData));

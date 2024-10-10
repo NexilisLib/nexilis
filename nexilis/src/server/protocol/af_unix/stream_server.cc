@@ -98,7 +98,7 @@ void StreamServer::bindSocket()
     }
 }
 
-void StreamServer::sendMessage(int clientSocket, const std::vector<uint8_t>& message)
+void StreamServer::sendMessage(int clientSocket, const nx_data& message)
 {
     ssize_t sentBytes = send(clientSocket, message.data(), sizeof(message), 0);
 
@@ -172,7 +172,7 @@ void StreamServer::handleMessages()
         }
         else
         {
-            std::vector<uint8_t> payload = Util::convertToByteVector(message);
+            nx_data payload = Util::convertToByteVector(message);
             auto msg = getMessageHandler().readMessage("localhost", payload, -1, &getCommand().getSettings());
 
             if (msg.getClient())
@@ -181,7 +181,7 @@ void StreamServer::handleMessages()
 
                     if (!handledMessage.getClient()->isUnixStreamSet())
                     {
-                        handledMessage.getClient()->setUnixStreamSend([this, &clientSocket](const std::vector<uint8_t>& bytes)
+                        handledMessage.getClient()->setUnixStreamSend([this, &clientSocket](const nx_data& bytes)
                         {
                             sendMessage(clientSocket, bytes);
                         });

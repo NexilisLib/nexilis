@@ -3,6 +3,8 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/mysql/database.hh>
 
+#include <iostream>
+
 namespace nexilis::mysql
 {
 

@@ -6,6 +6,7 @@
 #include <nexilis/object/object3d.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/types/vector3.hh>
+#include <nexilis/nexilis_macros.hh>
 
 #include <boost/json/object.hpp>
 
@@ -446,7 +447,7 @@ public:
     void waitUntilUnixStreamReady();
 
 public:
-    /// Result from ClientAPI::readMessage(const std::vector<uint8_t>&).
+    /// Result from ClientAPI::readMessage(const nx_data&).
     enum class ReadResult
     {
         // The payload does nothing with nexilis.
@@ -475,7 +476,7 @@ public:
     };
 
     /// Read incoming message to client.
-    ReadResult readMessage(const std::vector<uint8_t>& message);
+    ReadResult readMessage(const nx_data& message);
     void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
 
 public:

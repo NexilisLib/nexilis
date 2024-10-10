@@ -8,11 +8,12 @@
 #include <iomanip>
 #include <random>
 #include <sstream>
+#include <iostream>
 
 namespace nexilis
 {
 
-std::string Util::convertToString(std::vector<uint8_t> bytes)
+std::string Util::convertToString(nx_data bytes)
 {
     std::string result;
     for (uint8_t b : bytes)
@@ -22,7 +23,7 @@ std::string Util::convertToString(std::vector<uint8_t> bytes)
     return result;
 }
 
-Vector2f Util::convertToVector2(const std::vector<uint8_t>& bytes)
+Vector2f Util::convertToVector2(const nx_data& bytes)
 {
     // Ensure the vector has enough bytes for two floats
     if (bytes.size() < sizeof(float) * 2)
@@ -52,9 +53,9 @@ void Util::uint16ToUint8Pair(uint16_t value, uint8_t& lowByte, uint8_t& highByte
     highByte = static_cast<uint8_t>((value >> 8) & 0xFF);
 }
 
-std::vector<uint8_t> Util::convertToByteVector(uint64_t value)
+nx_data Util::convertToByteVector(uint64_t value)
 {
-    std::vector<uint8_t> result(sizeof(uint64_t));
+    nx_data result(sizeof(uint64_t));
 
     if (server::Config::getBigEndian())
     {
@@ -73,14 +74,14 @@ std::vector<uint8_t> Util::convertToByteVector(uint64_t value)
     return result;
 }
 
-std::vector<uint8_t> Util::convertToByteVector(float value)
+nx_data Util::convertToByteVector(float value)
 {
-    std::vector<uint8_t> bytes(sizeof(float));
+    nx_data bytes(sizeof(float));
     memcpy(bytes.data(), &value, sizeof(float));
     return bytes;
 }
 
-std::vector<uint8_t> Util::convertToByteVector(Vector2f value)
+nx_data Util::convertToByteVector(Vector2f value)
 {
     auto vec1 = convertToByteVector(value.x);
     auto vec2 = convertToByteVector(value.y);
@@ -88,9 +89,9 @@ std::vector<uint8_t> Util::convertToByteVector(Vector2f value)
     return vec1;
 }
 
-std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_t length)
+nx_data Util::convertToByteVector(const char* command_data, uint64_t length)
 {
-    std::vector<uint8_t> result;
+    nx_data result;
     result.reserve(length);
 
     for (size_t i = 0; i < length; i++)
@@ -100,15 +101,15 @@ std::vector<uint8_t> Util::convertToByteVector(const char* command_data, uint64_
     return result;
 }
 
-std::vector<uint8_t> Util::convertToByteVector(const std::string& value)
+nx_data Util::convertToByteVector(const std::string& value)
 {
     return convertToByteVector(value.c_str(), value.size());
 }
 
-std::vector<uint8_t> Util::convertToByteVector(const boost::json::object& obj)
+nx_data Util::convertToByteVector(const boost::json::object& obj)
 {
     std::string jsonString = boost::json::serialize(obj);
-    std::vector<uint8_t> byteStream(jsonString.begin(), jsonString.end());
+    nx_data byteStream(jsonString.begin(), jsonString.end());
     return byteStream;
 }
 
@@ -155,7 +156,7 @@ std::string Util::getRandomString(uint64_t charAmount)
     return randomString;
 }
 
-std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> original, uint8_t amount)
+nx_data Util::removeAmountOfBytesFromVector(nx_data original, uint8_t amount)
 {
     // Return empty vector if the original vector has less elements than we want to remove.
     if (original.size() < amount)
@@ -164,7 +165,7 @@ std::vector<uint8_t> Util::removeAmountOfBytesFromVector(std::vector<uint8_t> or
         return {};
     }
 
-    return std::vector<uint8_t>(original.begin() + amount, original.end());
+    return nx_data(original.begin() + amount, original.end());
 }
 
 
@@ -196,7 +197,7 @@ void Util::printColorMessageToConsole(logger::LogLevel logLevel, const std::stri
     std::cout << getColorMessage(logLevel, data);
 }
 
-void Util::debugUint8Vector(const std::vector<uint8_t>& vector)
+void Util::debugUint8Vector(const nx_data& vector)
 {
     std::stringstream ss;
     for (uint8_t byte : vector)
@@ -207,7 +208,7 @@ void Util::debugUint8Vector(const std::vector<uint8_t>& vector)
     Log::debug(ss.str());
 }
 
-uint64_t Util::uint64FromFront(const std::vector<uint8_t>& vec)
+uint64_t Util::uint64FromFront(const nx_data& vec)
 {
     if (vec.size() < 8)
     {
@@ -237,7 +238,7 @@ uint64_t Util::uint64FromFront(const std::vector<uint8_t>& vec)
     return value;
 }
 
-float Util::floatFromFront(const std::vector<uint8_t>& vec)
+float Util::floatFromFront(const nx_data& vec)
 {
     if (vec.size() < 4)
     {
