@@ -1,10 +1,11 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
+#include <nexilis/nexilis_macros.hh>
+
 #include <boost/json/object.hpp>
 
 #include <map>
-#include <vector>
 
 namespace nexilis
 {

@@ -9,7 +9,6 @@
 #include <boost/json/object.hpp>
 
 #include <string>
-#include <vector>
 
 namespace nexilis
 {

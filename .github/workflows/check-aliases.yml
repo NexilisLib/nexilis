@@ -1,0 +1,32 @@
+name: Check correct alias usage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-example-script:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Run best_practises.py
+      run: |
+        cd scripts
+        output=$(python3 scripts/best_practises.py ../nexilis)
+        if [ "$output" = "0" ]; then
+          echo "Best practises successful."
+        else
+          exit 1
+        fi
