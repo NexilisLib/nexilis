@@ -24,7 +24,7 @@ jobs:
     - name: Run best_practises.py
       run: |
         cd scripts
-        output=$(python3 scripts/best_practises.py ../nexilis)
+        output=$(python3 best_practises.py ../nexilis)
         if [ "$output" = "0" ]; then
           echo "Best practises successful."
         else
