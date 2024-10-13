@@ -1,3 +1,5 @@
+#include "nexilis/nexilis_macros.hh"
+#include "nexilis/types/vector2.hh"
 #include <nexilis/client/packet.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/util.hh>
@@ -54,50 +56,6 @@ nx_data Packet::Info::rooms()
     return id;
 }
 
-nx_data Packet::Room::Management::join(uint64_t roomId)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::management));
-    id.emplace_back(static_cast<uint8_t>(ManagementOptions::join));
-
-    auto roomIdVector = Util::convertToByteVector(roomId);
-    for (const auto& elem : roomIdVector)
-    {
-        id.emplace_back(elem);
-    }
-    return id;
-}
-
-/**
- *  2:0      Management
- *  2:0:0    Join room; uint64_t roomId
- *  2:0:1    Leave room; void
- *  2:0:2    Create room; string roomName
- */
-nx_data Packet::Room::Management::leave()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::management));
-    id.emplace_back(static_cast<uint8_t>(ManagementOptions::leave));
-    return id;
-}
-
-nx_data Packet::Room::Management::create(const std::string& roomName)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::management));
-    id.emplace_back(static_cast<uint8_t>(ManagementOptions::create));
-
-    for (const char r : roomName)
-    {
-        id.emplace_back(static_cast<uint8_t>(r));
-    }
-    return id;
-}
-
 /**
  *  2:1      Player2D
  *  2:1:0    Set position; Vec2f position
@@ -150,6 +108,75 @@ nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
     for (const auto& byte : deltaVector)
     {
         id.emplace_back(byte);
+    }
+    return id;
+}
+
+nx_data Packet::Room::Object::create(Type type, Vector2f position, Vector2f dimensions, const std::string& filePath)
+{
+    assert(type == Type::Object2D);
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
+    id.emplace_back(static_cast<uint8_t>(Object2DOptions::create));
+
+    auto emplace = [&id](const nx_data& vector) {
+        for (const auto& byte : vector) {
+            id.emplace_back(byte);
+        }
+    };
+
+    emplace(Util::convertToByteVector(position));
+    emplace(Util::convertToByteVector(dimensions));
+    emplace(Util::convertToByteVector(filePath));
+    return id;
+}
+
+nx_data Packet::Room::Object2D::create(Vector2f position, Vector2f dimensions, const std::string filePath)
+{
+    return Object::create(Object::Type::Object2D, position, dimensions, filePath);
+}
+
+/**
+ *  2:0      Management
+ *  2:0:0    Join room; uint64_t roomId
+ *  2:0:1    Leave room; void
+ *  2:0:2    Create room; string roomName
+ */
+nx_data Packet::Room::Management::join(uint64_t roomId)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomType::management));
+    id.emplace_back(static_cast<uint8_t>(ManagementOptions::join));
+
+    auto roomIdVector = Util::convertToByteVector(roomId);
+    for (const auto& elem : roomIdVector)
+    {
+        id.emplace_back(elem);
+    }
+    return id;
+}
+
+nx_data Packet::Room::Management::leave()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomType::management));
+    id.emplace_back(static_cast<uint8_t>(ManagementOptions::leave));
+    return id;
+}
+
+nx_data Packet::Room::Management::create(const std::string& roomName)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomType::management));
+    id.emplace_back(static_cast<uint8_t>(ManagementOptions::create));
+
+    for (const char r : roomName)
+    {
+        id.emplace_back(static_cast<uint8_t>(r));
     }
     return id;
 }

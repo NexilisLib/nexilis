@@ -44,6 +44,25 @@ public:
             static nx_data movement(Vector2f movement, float deltaTime);
         };
 
+        class Object
+        {
+        protected:
+            enum class Type
+            {
+                Object2D,
+                Object3D
+            };
+            static nx_data create(Type type, Vector2f position, Vector2f dimensions, const std::string& filePath);
+            //static nx_data move(Type type, uint64_t objectId, Vector2f newPosition);
+        };
+
+        class Object2D : public Object
+        {
+        public:
+            static nx_data create(Vector2f position, Vector2f dimensions, const std::string filePath);
+            //static nx_data move(uint64_t objectId, Vector2f newPosition);
+        };
+
         class Management
         {
         public:

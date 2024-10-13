@@ -7,6 +7,7 @@
 #include <nexilis/types/vector2.hh>
 #include <nexilis/types/vector3.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/json.hh>
 
 #include <boost/json/object.hpp>
 
@@ -611,7 +612,7 @@ private:
     std::string readString(const boost::json::value& context, const std::string& key);
     uint64_t readUint64(const boost::json::value& context, const std::string& key);
     float readFloat(const boost::json::value& context, const std::string& key);
-
+    
 private:
     /// The initialization data for the ClientAPI.
     ServerData m_data;

@@ -1,3 +1,4 @@
+#include "nexilis/command_type.hh"
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/room_storage.hh>
@@ -260,7 +261,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
                             else
                             {
-                                auto newRoom = Room(Room::Data(user.getId(), roomName));
+                                auto newRoom = Room(RoomData(user.getId(), roomName));
 
                                 auto newRoomId = newRoom.getId();
                                 RoomStorage::add(std::move(newRoom));
@@ -273,7 +274,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         }
                     }
 
-                    // Object 2D
+                    // Player 2D
                     case 1:
                     {
                         switch (roomArg)
@@ -426,8 +427,33 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         }
                     }
 
-                    // Communicate
+                    // Object2D
                     case 2:
+                    {
+                        Log::debug("Command Room::Object2D(vector2 movementVector, float delta)");
+
+                        // Get messagedata
+                        auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                        auto position = Util::vector2fFromFront(payload);
+                        auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+                        auto filePath = Util::removeAmountOfBytesFromVector(payload, 16);
+                        auto filePathJson = Json::convertToJSON(filePath);
+                        
+                        std::map<std::string, boost::json::value> params {
+                            {"positionX",  boost::json::value(position.x)},
+                            {"positionY",  boost::json::value(position.y)},
+                            {"dimensionX", boost::json::value(dimensions.x)},
+                            {"dimensionY", boost::json::value(dimensions.y)},
+                            {"filePath",   boost::json::value(filePathJson)}
+                        };
+
+                        auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                        sendRoomCommand(roomCommand, user, protocol);
+                        return Result::success;
+                    }
+
+                    // Communicate
+                    case 3:
                     {
                         return Result::not_found;
                     }
@@ -665,6 +691,11 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
         case RoomType::player2D:
         {
             roomCommandAction = Player2DTypeToString(static_cast<Player2DOptions>(action));
+            break;
+        }
+        case RoomType::object2D:
+        {
+            roomCommandAction = Object2DTypeToString(static_cast<Object2DOptions>(action));
             break;
         }
         case RoomType::communication:

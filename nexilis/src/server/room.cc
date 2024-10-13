@@ -7,55 +7,7 @@
 namespace nexilis::server
 {
 
-/// Room::Data
-Room::Data::Data(uint64_t creatorId, const std::string& name, uint32_t maxSize)
-    : m_creatorId(creatorId),
-      m_name(name),
-      m_maxSize(maxSize)
-{
-}
-
-Room::Data::Data(const Data& other)
-    : m_creatorId(other.m_creatorId),
-      m_name(other.m_name),
-      m_maxSize(other.m_maxSize),
-      m_roomId(other.m_roomId)
-{
-}
-
-Room::Data::Data(Data&& other)
-    : m_creatorId(std::move(other.m_creatorId)),
-      m_name(std::move(other.m_name)),
-      m_maxSize(std::move(other.m_maxSize)),
-      m_roomId(std::move(other.m_roomId))
-{
-}
-
-Room::Data& Room::Data::operator=(const Data& other)
-{
-    if (this != &other)
-    {
-        m_creatorId = other.m_creatorId;
-        m_name = other.m_name;
-        m_maxSize = other.m_maxSize;
-        m_roomId = other.m_roomId;
-    }
-    return *this;
-}
-
-Room::Data& Room::Data::operator=(Data&& other)
-{
-    if (this != &other)
-    {
-        m_creatorId = std::move(other.m_creatorId);
-        m_name = std::move(other.m_name);
-        m_maxSize = std::move(other.m_maxSize);
-        m_roomId = std::move(other.m_roomId);
-    }
-    return *this;
-}
-
-Room::Room(const Data& data)
+Room::Room(const RoomData& data)
     : m_data(data)
 {
 }

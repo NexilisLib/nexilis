@@ -1,3 +1,4 @@
+#include <cstring>
 #include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_macros.hh>
@@ -247,7 +248,21 @@ float Util::floatFromFront(const nx_data& vec)
     }
 
     float result;
-    std::memcpy(&result, vec.data(), sizeof(float));
+    memcpy(&result, vec.data(), sizeof(float));
+    return result;
+}
+
+Vector2f Util::vector2fFromFront(const nx_data& vector2)
+{
+    if (vector2.size() < 8)
+    {
+        Log::error("Not enough data to read Vector2f");
+        return Vector2f();
+    }
+
+    Vector2f result;
+    memcpy(&result.x, vector2.data(), sizeof(float));
+    memcpy(&result.y, vector2.data() + sizeof(float), sizeof(float));
     return result;
 }
 

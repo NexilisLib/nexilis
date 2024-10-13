@@ -2,7 +2,7 @@
 #define NEXILIS_ROOM_HH
 
 #include <nexilis/server/user.hh>
-#include <nexilis/util.hh>
+#include <nexilis/room_data.hh>
 #include <nexilis/nexilis_macros.hh>
 
 namespace nexilis::server
@@ -13,67 +13,8 @@ namespace nexilis::server
 class Room
 {
 public:
-    /// The data and settings for the associated room.
-    class Data
-    {
-    public:
-        /// Constructor.
-        /// \param creatorId The identifier of the creator.
-        /// \param name 1-15 characters of text for the name of the room.
-        /// \param maxSize The maximum size of the room.
-        Data(uint64_t creatorId, const std::string& name, uint32_t maxSize = NEXILIS_DEFAULT_ROOM_CLIENT_AMOUNT);
-
-        /// Copy constructor.
-        Data(const Data& other);
-
-        /// Move constructor.
-        Data(Data&& other);
-
-        /// Copy assignment operator.
-        Data& operator=(const Data& other);
-
-        /// Move assignment operator.
-        Data& operator=(Data&& other);
-
-        /// Get the given name for the room.
-        std::string getName() const
-        {
-            return m_name;
-        }
-
-        /// Get the maximum amount of players in a room.
-        uint32_t getMaxSize() const
-        {
-            return m_maxSize;
-        }
-
-        /// Get the identifier of the room.
-        uint64_t getId() const
-        {
-            return m_roomId;
-        }
-
-        uint64_t getCreatorId() const
-        {
-            return m_creatorId;
-        }
-
-    private:
-        /// Id of the creator of this room.
-        uint64_t m_creatorId;
-
-        /// The name of this room.
-        std::string m_name;
-
-        /// The maximum amount of players in a room.
-        uint32_t m_maxSize;
-
-        /// The unique identifier of this room.
-        uint64_t m_roomId = Util::getRandomUint64();
-    };
-
     /// Constructor.
-    Room(const Data& settings);
+    Room(const RoomData& settings);
 
     /// Move constructor.
     Room(Room&& other);
@@ -134,7 +75,7 @@ public:
     }
 
 private:
-    Data m_data;
+    RoomData m_data;
     std::vector<uint64_t> m_clientIds;
 };
 

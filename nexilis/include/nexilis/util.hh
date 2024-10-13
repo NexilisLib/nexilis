@@ -68,7 +68,12 @@ public:
     static uint64_t uint64FromFront(const nx_data& vec);
 
     /// Get the first four bytes from vector and return it as float.
+    /// \ingroup FrontConversions
     static float floatFromFront(const nx_data& vec);
+
+    /// Get the first eight bytes from vector and return it as Vector2f.
+    /// \ingroup FrontConversions
+    static Vector2f vector2fFromFront(const nx_data& vector2);
 
     /// Remove amount of bytes from the beginning of the vector.
     /// \return The updated vector.

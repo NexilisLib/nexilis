@@ -1,3 +1,4 @@
+#include "nexilis/types/vector2.hh"
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/logger/log.hh>
@@ -559,6 +560,22 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 else
                 {
                     return ReadResult::failure;
+                }
+            }
+            else if (type == "object2D")
+            {
+                if (roomAction == "create")
+                {
+                    float positionX = readFloat(json, "positionX");
+                    float positionY = readFloat(json, "positionY");
+                    float dimensionX = readFloat(json, "dimensionX");
+                    float dimensionY = readFloat(json, "dimensionY");
+                    std::string filePath = readString(json, "filePath");
+
+                }
+                else if (roomAction == "move")
+                {
+                    return ReadResult::not_implemented;
                 }
             }
             else if (type == "communicate")

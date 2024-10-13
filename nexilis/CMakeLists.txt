@@ -37,6 +37,7 @@ set(SOURCES
     src/util.cc
     src/command_type.cc
     src/json.cc
+    src/room_data.cc
 
     # Server
     src/server/server_protocol.cc

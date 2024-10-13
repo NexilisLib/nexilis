@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <map>
 
 namespace nexilis::server

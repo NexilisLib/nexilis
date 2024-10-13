@@ -20,21 +20,6 @@ std::string RoomTypeToString(RoomType type)
     }
 }
 
-std::string ManagementTypeToString(ManagementOptions management)
-{
-    switch (management)
-    {
-        case ManagementOptions::join:
-            return "join";
-        case ManagementOptions::leave:
-            return "leave";
-        case ManagementOptions::create:
-            return "create";
-        default:
-            Log::error("ManagementTypeToString no type found!");
-            return "";
-    }
-}
 std::string Player2DTypeToString(Player2DOptions player2D)
 {
     switch (player2D)
@@ -50,5 +35,36 @@ std::string Player2DTypeToString(Player2DOptions player2D)
             return "";
     }
 }
+
+std::string Object2DTypeToString(Object2DOptions object2DOptions)
+{
+    switch (object2DOptions)
+    {
+        case Object2DOptions::create:
+            return "create";
+        case Object2DOptions::move:
+            return "move";
+        default:
+            Log::error("Object2DTypeToString no type found!");
+            return "";
+    }
+}
+
+std::string ManagementTypeToString(ManagementOptions management)
+{
+    switch (management)
+    {
+        case ManagementOptions::join:
+            return "join";
+        case ManagementOptions::leave:
+            return "leave";
+        case ManagementOptions::create:
+            return "create";
+        default:
+            Log::error("ManagementTypeToString no type found!");
+            return "";
+    }
+}
+
 
 } // namespace nexilis
