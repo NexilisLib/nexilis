@@ -1,5 +1,5 @@
-#include "nexilis/nexilis_macros.hh"
-#include "nexilis/types/vector2.hh"
+#include <nexilis/room_command_type.hh>
+#include <nexilis/types/vector2.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/util.hh>
@@ -66,8 +66,8 @@ nx_data Packet::Room::Player2D::position(Vector2f position)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::player2D));
-    id.emplace_back(static_cast<uint8_t>(Player2DOptions::position));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::position));
 
     auto positionVector = Util::convertToByteVector(position);
     for (const auto& byte : positionVector)
@@ -81,8 +81,8 @@ nx_data Packet::Room::Player2D::dimensions(Vector2f dimensions)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::player2D));
-    id.emplace_back(static_cast<uint8_t>(Player2DOptions::dimensions));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::dimensions));
 
     auto dimensionVector = Util::convertToByteVector(dimensions);
     for (const auto& byte : dimensionVector)
@@ -96,8 +96,8 @@ nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::player2D));
-    id.emplace_back(static_cast<uint8_t>(Player2DOptions::movement));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::movement));
 
     auto movementVector = Util::convertToByteVector(movement);
     for (const auto& byte : movementVector)
@@ -117,8 +117,8 @@ nx_data Packet::Room::Object::create(Type type, Vector2f position, Vector2f dime
     assert(type == Type::Object2D);
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::object2D));
-    id.emplace_back(static_cast<uint8_t>(Object2DOptions::create));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::create));
 
     auto emplace = [&id](const nx_data& vector) {
         for (const auto& byte : vector) {
@@ -147,8 +147,8 @@ nx_data Packet::Room::Management::join(uint64_t roomId)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::management));
-    id.emplace_back(static_cast<uint8_t>(ManagementOptions::join));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::join));
 
     auto roomIdVector = Util::convertToByteVector(roomId);
     for (const auto& elem : roomIdVector)
@@ -162,8 +162,8 @@ nx_data Packet::Room::Management::leave()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::management));
-    id.emplace_back(static_cast<uint8_t>(ManagementOptions::leave));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::leave));
     return id;
 }
 
@@ -171,8 +171,8 @@ nx_data Packet::Room::Management::create(const std::string& roomName)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomType::management));
-    id.emplace_back(static_cast<uint8_t>(ManagementOptions::create));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::create));
 
     for (const char r : roomName)
     {

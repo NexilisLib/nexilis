@@ -493,7 +493,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 return ReadResult::error;
             }
-            else if (type == "object2D")
+            else if (type == "player2D")
             {
                 if (roomAction == "position" || roomAction == "movement")
                 {

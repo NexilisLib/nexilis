@@ -1,9 +1,9 @@
-#include "nexilis/command_type.hh"
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/server/server_json.hh>
+#include <nexilis/room_command_type.hh>
 #include <nexilis/json.hh>
 
 #include <thread>
@@ -677,34 +677,34 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
         return nx_data();
     }
 
-    RoomType roomType = static_cast<RoomType>(messageData[1]);
+    auto roomType = static_cast<RoomCommandType::Root>(messageData[1]);
     auto action = messageData[2];
 
     std::string roomCommandAction;
     switch (roomType)
     {
-        case RoomType::management:
+        case RoomCommandType::Root::management:
         {
-            roomCommandAction = ManagementTypeToString(static_cast<ManagementOptions>(action));
+            roomCommandAction = RoomCommandType::ManagementTypeToString(static_cast<RoomCommandType::Management>(action));
             break;
         }
-        case RoomType::player2D:
+        case RoomCommandType::Root::player2D:
         {
-            roomCommandAction = Player2DTypeToString(static_cast<Player2DOptions>(action));
+            roomCommandAction = RoomCommandType::Player2DTypeToString(static_cast<RoomCommandType::Player2D>(action));
             break;
         }
-        case RoomType::object2D:
+        case RoomCommandType::Root::object2D:
         {
-            roomCommandAction = Object2DTypeToString(static_cast<Object2DOptions>(action));
+            roomCommandAction = RoomCommandType::Object2DTypeToString(static_cast<RoomCommandType::Object2D>(action));
             break;
         }
-        case RoomType::communication:
+        case RoomCommandType::Root::communication:
         {
             Log::error("Unimplemented!");
             return nx_data();
         }
     }
-    std::string roomCommandType = RoomTypeToString(roomType);
+    std::string roomCommandType = RoomCommandType::RoomTypeToString(roomType);
     assert(!roomCommandType.empty());
     assert(!roomCommandAction.empty());
 
