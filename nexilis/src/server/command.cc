@@ -301,7 +301,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     return Result::failure;
                                 }
 
-                                user.getObject2D().setPosition(vector.x, vector.y);
+                                user.getObject2D().setPosition(vector);
 
                                 std::map<std::string, boost::json::value> params{
                                         {"x", boost::json::value(vector.x)},
@@ -331,7 +331,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                         {"x", boost::json::value(vector.x)},
                                         {"y", boost::json::value(vector.y)}};
 
-                                user.getObject2D().setDimensions(vector.x, vector.y);
+                                user.getObject2D().setDimensions(vector);
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
@@ -402,7 +402,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                             {
                                                 {
                                                     std::lock_guard<std::mutex> lock(*mtx);
-                                                    user.getObject2D().setPosition(newMovedPosition.x, newMovedPosition.y);
+                                                    user.getObject2D().setPosition(newMovedPosition);
                                                     std::map<std::string, boost::json::value> params = {
                                                         {"x", boost::json::value(newMovedPosition.x)},
                                                         {"y", boost::json::value(newMovedPosition.y)},
@@ -449,8 +449,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                         // Add item to server storage.
                         auto object = Object2D();
-                        object.setPosition(position.x, position.y); 
-                        object.setDimensions(dimensions.x, dimensions.y);
+                        object.setPosition(position); 
+                        object.setDimensions(dimensions);
                         object.setFilepath(filepath);
                         auto room = RoomStorage::getRoomById(user.getRoomId());
                         room->addObject(std::move(object));

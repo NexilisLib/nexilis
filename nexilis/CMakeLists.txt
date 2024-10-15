@@ -74,10 +74,6 @@ set(SOURCES
     # Types
     src/types/vector3.cc
 
-    # Object
-    src/object/object2d.cc
-    src/object/object3d.cc
-
     # MySQL
     src/mysql/database.cc
 

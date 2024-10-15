@@ -3,8 +3,11 @@
 
 #include <nexilis/server/user.hh>
 #include <nexilis/object/object2d.hh>
+#include <nexilis/object/object3d.hh>
 #include <nexilis/room_data.hh>
 #include <nexilis/nexilis_macros.hh>
+
+#include <variant>
 
 namespace nexilis::server
 {
@@ -83,7 +86,7 @@ public:
 private:
     RoomData m_data;
     std::vector<uint64_t> m_clientIds;
-    std::vector<Object2D> m_objects;
+    std::vector<std::variant<Object2D, Object3D>> m_objects;
 };
 
 } // namespace nexilis::server

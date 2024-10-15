@@ -509,7 +509,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                             {
                                 if (overlappingAllowed())
                                 {
-                                    client.getObject2D().setPosition(vectorX, vectorY);
+                                    client.getObject2D().setPosition({vectorX, vectorY});
                                     return ReadResult::success;
                                 }
                                 else
@@ -532,7 +532,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                             }
                                         }
                                     }
-                                    client.getObject2D().setPosition(vectorX, vectorY);
+                                    client.getObject2D().setPosition({vectorX, vectorY});
                                     return ReadResult::success;
                                 }
                             }
@@ -551,7 +551,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         {
                             if (client.getId() == clientId)
                             {
-                                client.getObject2D().setDimensions(vectorX, vectorY);
+                                client.getObject2D().setDimensions({vectorX, vectorY});
                                 return ReadResult::success;
                             }
                         }
@@ -578,8 +578,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         if (room.getRoomId() == roomId)
                         {
                             auto object = Object2D();
-                            object.setPosition(positionX, positionY);
-                            object.setDimensions(dimensionX, dimensionY);
+                            object.setPosition({positionX, positionY});
+                            object.setDimensions({dimensionX, dimensionY});
                             object.setFilepath(filePath);
                             room.addObject(std::move(object));
                             return ReadResult::success;
@@ -676,8 +676,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                                 ClientAPI::ClientSession newClient(id, this);
                                 Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
-                                newClient.getObject2D().setPosition(object2DX, object2DY);
-                                newClient.getObject2D().setDimensions(dimension2DX, dimension2DY);
+                                newClient.getObject2D().setPosition({object2DX, object2DY});
+                                newClient.getObject2D().setDimensions({dimension2DX, dimension2DY});
                                 newClient.setUsername(username);
                                 roomClients.emplace_back(std::move(newClient));
                             }
