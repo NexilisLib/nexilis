@@ -430,22 +430,30 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     // Object2D
                     case 2:
                     {
-                        Log::debug("Command Room::Object2D(vector2 movementVector, float delta)");
+                        Log::debug("Command Room::Object2D(Vector2f position, Vector2f dimensions, std::string filepath)");
 
                         // Get messagedata
                         auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                         auto position = Util::vector2fFromFront(payload);
                         auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                        auto filePath = Util::removeAmountOfBytesFromVector(payload, 16);
-                        auto filePathJson = Json::convertToJSON(filePath);
-                        
+                        auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
+                        auto filepath = Util::convertToString(fileBytes);
+
                         std::map<std::string, boost::json::value> params {
                             {"positionX",  boost::json::value(position.x)},
                             {"positionY",  boost::json::value(position.y)},
                             {"dimensionX", boost::json::value(dimensions.x)},
                             {"dimensionY", boost::json::value(dimensions.y)},
-                            {"filePath",   boost::json::value(filePathJson)}
+                            {"filepath",   boost::json::value(filepath)}
                         };
+
+                        // Add item to server storage.
+                        auto object = Object2D();
+                        object.setPosition(position.x, position.y); 
+                        object.setDimensions(dimensions.x, dimensions.y);
+                        object.setFilepath(filepath);
+                        auto room = RoomStorage::getRoomById(user.getRoomId());
+                        room->addObject(std::move(object));
 
                         auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                         sendRoomCommand(roomCommand, user, protocol);

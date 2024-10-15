@@ -2,6 +2,7 @@
 #define NEXILIS_OBJECT2D_HH
 
 #include <nexilis/types/vector2.hh>
+#include <string>
 
 namespace nexilis
 {
@@ -54,10 +55,21 @@ public:
         return m_movement;
     }
 
+    void setFilepath(const std::string& filepath)
+    {
+        m_filepath = filepath;
+    }
+
+    std::string getFilepath() const
+    {
+        return m_filepath;
+    }
+
 private:
     Vector2f m_position;
     Vector2f m_dimensions;
     Vector2f m_movement;
+    std::string m_filepath;
 };
 
 } // namespace nexilis

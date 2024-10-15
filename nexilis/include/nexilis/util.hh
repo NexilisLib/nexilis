@@ -73,7 +73,7 @@ public:
 
     /// Get the first eight bytes from vector and return it as Vector2f.
     /// \ingroup FrontConversions
-    static Vector2f vector2fFromFront(const nx_data& vector2);
+    static Vector2f vector2fFromFront(const nx_data& vec);
 
     /// Remove amount of bytes from the beginning of the vector.
     /// \return The updated vector.

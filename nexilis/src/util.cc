@@ -169,8 +169,6 @@ nx_data Util::removeAmountOfBytesFromVector(nx_data original, uint8_t amount)
     return nx_data(original.begin() + amount, original.end());
 }
 
-
-
 std::string Util::getColorMessage(logger::LogLevel logLevel, const std::string& data)
 {
     std::string color;

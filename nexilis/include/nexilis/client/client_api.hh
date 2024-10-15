@@ -296,6 +296,7 @@ public:
         Room() = default;
 
         /// Constructor.
+        // TODO initialize with RoomData.
         explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<ClientSession>&& clients);
 
         /// Deleted copy constructor.
@@ -375,6 +376,16 @@ public:
         bool containsCommunication(const Room::Communication& communication);
         bool containsCommunication(uint64_t communicationId);
 
+        void addObject(Object2D&& object)
+        {
+            m_items.emplace_back(std::move(object));
+        }
+
+        std::vector<Object2D>& getObjects()
+        {
+            return m_items;
+        }
+
     private:
         /// The name of the room.
         std::string m_name;
@@ -393,6 +404,8 @@ public:
 
         /// All of the broadcasts that have been sent in this room.
         std::vector<Room::Communication> m_roomMessages;
+
+        std::vector<Object2D> m_items;
     };
     /// Constructor.
     ClientAPI(ServerData data);

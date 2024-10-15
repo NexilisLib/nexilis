@@ -1,3 +1,4 @@
+#include "nexilis/object/object2d.hh"
 #include "nexilis/types/vector2.hh"
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
@@ -570,7 +571,20 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     float positionY = readFloat(json, "positionY");
                     float dimensionX = readFloat(json, "dimensionX");
                     float dimensionY = readFloat(json, "dimensionY");
-                    std::string filePath = readString(json, "filePath");
+                    std::string filePath = readString(json, "filepath");
+
+                    for (auto& room : m_currentlyActiveRooms)
+                    {
+                        if (room.getRoomId() == roomId)
+                        {
+                            auto object = Object2D();
+                            object.setPosition(positionX, positionY);
+                            object.setDimensions(dimensionX, dimensionY);
+                            object.setFilepath(filePath);
+                            room.addObject(std::move(object));
+                            return ReadResult::success;
+                        }
+                    }
 
                 }
                 else if (roomAction == "move")

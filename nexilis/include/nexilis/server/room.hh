@@ -2,6 +2,7 @@
 #define NEXILIS_ROOM_HH
 
 #include <nexilis/server/user.hh>
+#include <nexilis/object/object2d.hh>
 #include <nexilis/room_data.hh>
 #include <nexilis/nexilis_macros.hh>
 
@@ -74,9 +75,15 @@ public:
         return m_clientIds;
     }
 
+    void addObject(Object2D&& object)
+    {
+        m_objects.emplace_back(std::move(object));
+    }
+
 private:
     RoomData m_data;
     std::vector<uint64_t> m_clientIds;
+    std::vector<Object2D> m_objects;
 };
 
 } // namespace nexilis::server
