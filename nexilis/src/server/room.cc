@@ -8,12 +8,12 @@ namespace nexilis::server
 {
 
 Room::Room(const RoomData& data)
-    : m_data(data)
+    : BaseRoom(data)
 {
 }
 
-Room::Room(Room&& other)
-    : m_data(std::move(other.m_data)),
+Room::Room(Room&& other) :
+      BaseRoom(std::move(other)),
       m_clientIds(std::move(other.m_clientIds))
 {
 }
@@ -22,7 +22,7 @@ Room& Room::operator=(Room&& other)
 {
     if (this != &other)
     {
-        m_data = std::move(other.m_data);
+        BaseRoom::operator=(std::move(other));
         m_clientIds = std::move(other.m_clientIds);
     }
     return *this;

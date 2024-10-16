@@ -8,6 +8,9 @@
 /// Create or receive one with 3 floats (12 bytes),
 /// or use with messages nx_data (4 bytes).
 
+namespace nexilis
+{
+
 class Vector3
 {
 public:
@@ -30,5 +33,7 @@ private:
     float m_y;
     float m_z;
 };
+
+} // namespace nexilis
 
 #endif

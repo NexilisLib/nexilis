@@ -14,7 +14,6 @@ namespace nexilis::client
 ClientAPI::ServerData::ServerData(ServerData&& other)
     : m_password(std::move(other.m_password)),
       m_username(std::move(other.m_username)),
-      m_applicationType(std::move(other.m_applicationType)),
       m_inetUDPServerAddress(std::move(other.m_inetUDPServerAddress)),
       m_inetUDPPort(std::move(other.m_inetUDPPort)),
       m_inetTCPServerAddress(std::move(other.m_inetTCPServerAddress)),
@@ -31,7 +30,6 @@ ClientAPI::ServerData::ServerData(ServerData&& other)
 ClientAPI::ServerData::ServerData(const ServerData& other)
     : m_password(other.m_password),
       m_username(other.m_username),
-      m_applicationType(other.m_applicationType),
       m_inetUDPServerAddress(other.m_inetUDPServerAddress),
       m_inetUDPPort(other.m_inetUDPPort),
       m_inetTCPServerAddress(other.m_inetTCPServerAddress),
@@ -51,7 +49,6 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(ServerData&& other)
     {
         m_password = std::move(other.m_password);
         m_username = std::move(other.m_username);
-        m_applicationType = std::move(other.m_applicationType);
         m_inetUDPServerAddress = std::move(other.m_inetUDPServerAddress);
         m_inetUDPPort = std::move(other.m_inetUDPPort);
         m_inetTCPServerAddress = std::move(other.m_inetTCPServerAddress);
@@ -72,7 +69,6 @@ ClientAPI::ServerData& ClientAPI::ServerData::operator=(const ServerData& other)
     {
         m_password = other.m_password;
         m_username = other.m_username;
-        m_applicationType = other.m_applicationType;
         m_inetUDPServerAddress = other.m_inetUDPServerAddress;
         m_inetUDPPort = other.m_inetUDPPort;
         m_inetTCPServerAddress = other.m_inetTCPServerAddress;
@@ -169,10 +165,7 @@ bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room
 
 // ClientAPI::Room
 ClientAPI::Room::Room(Room&& other)
-    : m_name(std::move(other.m_name)),
-      m_creatorId(std::move(other.m_creatorId)),
-      m_roomId(std::move(other.m_roomId)),
-      m_maxSize(std::move(other.m_maxSize)),
+    : BaseRoom(std::move(other)),
       m_clients(std::move(other.m_clients)),
       m_roomMessages(std::move(other.m_roomMessages))
 {
@@ -182,32 +175,21 @@ ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
 {
     if (this != &other)
     {
-        m_name = std::move(other.m_name);
-        m_creatorId = std::move(other.m_creatorId);
-        m_roomId = std::move(other.m_roomId);
-        m_maxSize = std::move(other.m_maxSize);
         m_clients = std::move(other.m_clients);
         m_roomMessages = std::move(other.m_roomMessages);
     }
     return *this;
 }
 
-ClientAPI::Room::Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<ClientSession>&& clients)
-    : m_name(name),
-      m_creatorId(creatorId),
-      m_roomId(roomId),
-      m_maxSize(maxSize),
+ClientAPI::Room::Room(const RoomData& roomData, std::vector<ClientSession>&& clients)
+    : BaseRoom(roomData),
       m_clients(std::move(clients))
 {
 }
 
 bool operator==(const ClientAPI::Room& lhs, const ClientAPI::Room& rhs)
 {
-    return lhs.getName() == rhs.getName() &&
-           lhs.getCreatorId() == rhs.getCreatorId() &&
-           lhs.getRoomId() == rhs.getRoomId() &&
-           lhs.getMaxSize() == rhs.getMaxSize() &&
-           lhs.getClients() == rhs.getClients() &&
+    return lhs.getClients() == rhs.getClients() &&
            lhs.getMessages() == rhs.getMessages();
 }
 
@@ -237,7 +219,6 @@ ClientAPI::ClientAPI(ServerData data)
 ClientAPI::ClientAPI(ClientAPI&& other)
     : m_data(std::move(other.m_data)),
       m_clientId(std::move(other.m_clientId)),
-      m_defaultRoom(std::move(other.m_defaultRoom)),
       m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
       m_messageIds(std::move(other.m_messageIds)),
       m_callbacks(std::move(other.m_callbacks))
@@ -250,7 +231,6 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
     {
         m_data = std::move(other.m_data);
         m_clientId = std::move(other.m_clientId);
-        m_defaultRoom = std::move(other.m_defaultRoom);
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
         m_callbacks = std::move(other.m_callbacks);
@@ -375,7 +355,7 @@ uint64_t ClientAPI::clientRoomId()
         {
             if (c->getId() == m_clientId)
             {
-                return r->getRoomId();
+                return r->getId();
             }
         }
     }
@@ -466,7 +446,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     for (auto& room : m_currentlyActiveRooms)
                     {
-                        if (room.getRoomId() == roomId)
+                        if (room.getId() == roomId)
                         {
                             ClientSession session(clientId, this);
                             room.addClient(std::move(session));
@@ -479,7 +459,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     for (auto& room : m_currentlyActiveRooms)
                     {
-                        if (room.getRoomId() == roomId)
+                        if (room.getId() == roomId)
                         {
                             room.removeClient(clientId);
                             return ReadResult::success;
@@ -575,7 +555,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                     for (auto& room : m_currentlyActiveRooms)
                     {
-                        if (room.getRoomId() == roomId)
+                        if (room.getId() == roomId)
                         {
                             auto object = Object2D();
                             object.setPosition({positionX, positionY});
@@ -611,7 +591,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                             }
                         }
 
-                        if (room->getRoomId() == roomId)
+                        if (room->getId() == roomId)
                         {
                             Room::Communication newMessage(message, sender);
                             room->addMessage(std::move(newMessage));
@@ -682,7 +662,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
-                        newRooms.emplace_back(Room(name, creatorId, id, maxSize, std::move(roomClients)));
+                        auto roomData = RoomData(creatorId, name, id, RoomData::Context::_2D, maxSize);
+                        newRooms.emplace_back(Room(roomData, std::move(roomClients)));
                     }
                     m_currentlyActiveRooms = std::move(newRooms);
                     return ReadResult::success;

@@ -2,6 +2,9 @@
 
 #include <stdexcept>
 
+namespace nexilis
+{
+
 Vector3::Vector3(float x, float y, float z)
     : m_x(x), m_y(y), m_z(z)
 {
@@ -45,4 +48,6 @@ static Vector3 deserialize(const nx_data& data)
     float z = *reinterpret_cast<const float*>(&zBytes);
 
     return Vector3(x, y, z);
+}
+
 }

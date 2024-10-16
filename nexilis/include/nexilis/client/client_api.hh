@@ -2,6 +2,7 @@
 #define NEXILIS_CLIENT_API_HH
 
 #include <nexilis/base_client.hh>
+#include <nexilis/base_room.hh>
 #include <nexilis/object/object2d.hh>
 #include <nexilis/object/object3d.hh>
 #include <nexilis/types/vector2.hh>
@@ -22,12 +23,6 @@ namespace nexilis::client
 class ClientAPI
 {
 public:
-    enum class ApplicationType
-    {
-        _2D,
-        _3D
-    };
-
     class ServerData
     {
     public:
@@ -64,16 +59,6 @@ public:
         void setPassword(const std::string& password)
         {
             m_password = password;
-        }
-
-        ApplicationType getApplicationType() const
-        {
-            return m_applicationType;
-        }
-
-        void setApplicationType(ApplicationType applicationType)
-        {
-            m_applicationType = applicationType;
         }
 
         /// af_inet UDP
@@ -170,7 +155,6 @@ public:
         /// Client data.
         std::string m_password;
         std::string m_username;
-        ApplicationType m_applicationType;
 
         /// af_inet UDP
         std::string m_inetUDPServerAddress;
@@ -232,7 +216,7 @@ public:
         ClientAPI* const m_clientAPI = nullptr;
     };
 
-    class Room
+    class Room : public BaseRoom
     {
     public:
         /// Communication type for communications in a room.
@@ -292,12 +276,8 @@ public:
             uint64_t m_id;
         };
 
-        /// Default constructor.
-        Room() = default;
-
         /// Constructor.
-        // TODO initialize with RoomData.
-        explicit Room(const std::string& name, uint64_t creatorId, uint64_t roomId, int maxSize, std::vector<ClientSession>&& clients);
+        explicit Room(const RoomData& roomData, std::vector<ClientSession>&& clients);
 
         /// Deleted copy constructor.
         Room(const Room& other) = delete;
@@ -318,26 +298,6 @@ public:
         friend bool operator!=(const Room& lhs, const Room& rhs)
         {
             return !(lhs == rhs);
-        }
-
-        std::string getName() const
-        {
-            return m_name;
-        }
-
-        uint64_t getCreatorId() const
-        {
-            return m_creatorId;
-        }
-
-        uint64_t getRoomId() const
-        {
-            return m_roomId;
-        }
-
-        int getMaxSize() const
-        {
-            return m_maxSize;
         }
 
         void addClient(ClientSession&& client)
@@ -376,36 +336,13 @@ public:
         bool containsCommunication(const Room::Communication& communication);
         bool containsCommunication(uint64_t communicationId);
 
-        void addObject(Object2D&& object)
-        {
-            m_items.emplace_back(std::move(object));
-        }
-
-        std::vector<Object2D>& getObjects()
-        {
-            return m_items;
-        }
-
     private:
-        /// The name of the room.
-        std::string m_name;
-
-        /// The id of the creator of this room.
-        uint64_t m_creatorId;
-
-        /// The identifier for this room.
-        uint64_t m_roomId;
-
-        /// The max amount of clients in this room.
-        int m_maxSize;
-
         /// All of the clients currently inside this room.
         std::vector<ClientSession> m_clients;
 
         /// All of the broadcasts that have been sent in this room.
         std::vector<Room::Communication> m_roomMessages;
 
-        std::vector<Object2D> m_items;
     };
     /// Constructor.
     ClientAPI(ServerData data);
@@ -522,11 +459,6 @@ public:
         return m_data.getUsername();
     }
 
-    ApplicationType getApplicationType() const
-    {
-        return m_data.getApplicationType();
-    }
-
     /// af_inet UDP.
     std::string getInetUDPServerAddress() const
     {
@@ -591,11 +523,6 @@ public:
         return m_currentlyActiveRooms;
     }
 
-    ClientAPI::Room& getDefaultRoom()
-    {
-        return m_defaultRoom;
-    }
-
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 
@@ -632,9 +559,6 @@ private:
 
     /// The client id for the user of the client API.
     uint64_t m_clientId = 0;
-
-    /// Default room that as compared against.
-    ClientAPI::Room m_defaultRoom;
 
     /// Rooms that client knows about.
     std::vector<ClientAPI::Room> m_currentlyActiveRooms;

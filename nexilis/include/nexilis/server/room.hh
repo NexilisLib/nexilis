@@ -1,24 +1,21 @@
 #ifndef NEXILIS_ROOM_HH
 #define NEXILIS_ROOM_HH
 
+#include <nexilis/base_room.hh>
 #include <nexilis/server/user.hh>
 #include <nexilis/object/object2d.hh>
 #include <nexilis/object/object3d.hh>
 #include <nexilis/room_data.hh>
-#include <nexilis/nexilis_macros.hh>
-
-#include <variant>
 
 namespace nexilis::server
 {
 
-/// Nexilis Server-side API.
 /// Room objects to be stored in the RoomStorage.
-class Room
+class Room : public BaseRoom
 {
 public:
     /// Constructor.
-    Room(const RoomData& settings);
+    Room(const RoomData& roomData);
 
     /// Move constructor.
     Room(Room&& other);
@@ -31,30 +28,6 @@ public:
 
     /// Deleted copy assignment operator.
     Room& operator=(const Room&) = delete;
-
-    /// Get the given name for the room.
-    std::string getName() const
-    {
-        return m_data.getName();
-    }
-
-    /// Get the maximum amount of players in a room.
-    uint32_t getMaxSize() const
-    {
-        return m_data.getMaxSize();
-    }
-
-    /// Get the identifier of the room.
-    uint64_t getId() const
-    {
-        return m_data.getId();
-    }
-
-    /// Get the identifier of the creator that created the room.
-    uint64_t getCreatorId() const
-    {
-        return m_data.getCreatorId();
-    }
 
     /// User joins the room context.
     /// \param userId The id of the user that joins the room.
@@ -78,15 +51,8 @@ public:
         return m_clientIds;
     }
 
-    void addObject(Object2D&& object)
-    {
-        m_objects.emplace_back(std::move(object));
-    }
-
 private:
-    RoomData m_data;
     std::vector<uint64_t> m_clientIds;
-    std::vector<std::variant<Object2D, Object3D>> m_objects;
 };
 
 } // namespace nexilis::server

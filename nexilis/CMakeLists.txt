@@ -34,6 +34,7 @@ set(SOURCES
     src/protocol.cc
     src/protocol_manager.cc
     src/base_client.cc
+    src/base_room.cc
     src/util.cc
     src/room_command_type.cc
     src/json.cc

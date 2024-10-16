@@ -261,7 +261,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
                             else
                             {
-                                auto newRoom = Room(RoomData(user.getId(), roomName));
+                                auto newRoom = Room(RoomData(user.getId(), roomName, Util::getRandomUint64(), RoomData::Context::_2D));
 
                                 auto newRoomId = newRoom.getId();
                                 RoomStorage::add(std::move(newRoom));
