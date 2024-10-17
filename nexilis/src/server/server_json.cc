@@ -103,6 +103,7 @@ boost::json::array ServerJson::roomsToJSON(const std::vector<Room>& rooms)
         roomObj["maxSize"] = room.getMaxSize();
         roomObj["id"] = room.getId();
         roomObj["creatorId"] = room.getCreatorId();
+        roomObj["context"] = static_cast<uint32_t>(room.getContext());
 
         // Get data from clients in a room.
         boost::json::array clientArray;

@@ -54,6 +54,12 @@ public:
         return m_roomData.getCreatorId();
     }
 
+    /// Get the 2D/3D context for the room.
+    RoomData::Context getContext() const
+    {
+        return m_roomData.getContext();
+    }
+
     /// Add an Object2D to the room (switch to 2D mode)
     void addObject(Object2D&& object)
     {

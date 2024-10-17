@@ -632,8 +632,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     for (const auto& room : rooms)
                     {
                         std::string name = readString(room, "name");
-                        int maxSize = static_cast<int>(room.at("maxSize").as_int64());
-
+                        uint64_t maxSize = readUint64(room, "maxSize");
+                        uint64_t context = readUint64(room, "context");
                         uint64_t creatorId = readUint64(room, "creatorId");
                         uint64_t id = readUint64(room, "id");
 
@@ -662,7 +662,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 roomClients.emplace_back(std::move(newClient));
                             }
                         }
-                        auto roomData = RoomData(creatorId, name, id, RoomData::Context::_2D, maxSize);
+                        auto roomData = RoomData(creatorId, name, id, static_cast<RoomData::Context>(context), maxSize);
                         newRooms.emplace_back(Room(roomData, std::move(roomClients)));
                     }
                     m_currentlyActiveRooms = std::move(newRooms);

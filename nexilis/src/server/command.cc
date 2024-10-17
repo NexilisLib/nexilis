@@ -237,7 +237,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         {
                             Log::debug("Command Room::create()");
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                            std::string roomName = Util::convertToString(payload);
+                            uint8_t context = payload[0];
+                            std::string roomName = Util::convertToString(Util::removeAmountOfBytesFromVector(payload, 1));
 
                             if (roomName.empty())
                             {
@@ -261,7 +262,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
                             else
                             {
-                                auto newRoom = Room(RoomData(user.getId(), roomName, Util::getRandomUint64(), RoomData::Context::_2D));
+                                auto newRoom = Room(RoomData(user.getId(), roomName, Util::getRandomUint64(), static_cast<RoomData::Context>(context)));
 
                                 auto newRoomId = newRoom.getId();
                                 RoomStorage::add(std::move(newRoom));
@@ -577,7 +578,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 {
                     std::map<std::string, boost::json::value> header{
                             {"command", boost::json::value("info")},
-                            {"type", boost::json::value("server_data")}};
+                            {"type", boost::json::value("server_data")},
+                            {"callback", boost::json::value(messageId)}};
 
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getServerData());
@@ -593,7 +595,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 {
                     std::map<std::string, boost::json::value> header{
                             {"command", boost::json::value("info")},
-                            {"type", boost::json::value("client_data")}};
+                            {"type", boost::json::value("client_data")},
+                            {"callback", boost::json::value(messageId)}};
 
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getClientData());

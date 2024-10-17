@@ -4,6 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/nexilis_macros.hh>
+#include <nexilis/room_data.hh>
 
 namespace nexilis::client
 {
@@ -68,7 +69,7 @@ public:
         public:
             static nx_data join(uint64_t roomId);
             static nx_data leave();
-            static nx_data create(const std::string& roomName);
+            static nx_data create(RoomData::Context context, const std::string& roomName);
         };
     };
 

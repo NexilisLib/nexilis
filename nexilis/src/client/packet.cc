@@ -167,12 +167,13 @@ nx_data Packet::Room::Management::leave()
     return id;
 }
 
-nx_data Packet::Room::Management::create(const std::string& roomName)
+nx_data Packet::Room::Management::create(RoomData::Context context, const std::string& roomName)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::create));
+    id.emplace_back(static_cast<uint8_t>(context));
 
     for (const char r : roomName)
     {
