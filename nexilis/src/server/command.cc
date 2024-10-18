@@ -431,34 +431,79 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     // Object2D
                     case 2:
                     {
-                        Log::debug("Command Room::Object2D(Vector2f position, Vector2f dimensions, std::string filepath)");
+                        switch (roomArg)
+                        {
+                            case 0:
+                            {
+                                Log::debug("Command Room::Object2D::create(Vector2f position, Vector2f dimensions, std::string filepath)");
 
-                        // Get messagedata
-                        auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                        auto position = Util::vector2fFromFront(payload);
-                        auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                        auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
-                        auto filepath = Util::convertToString(fileBytes);
+                                // Get messagedata
+                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto position = Util::vector2fFromFront(payload);
+                                auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+                                auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
+                                auto filepath = Util::convertToString(fileBytes);
 
-                        std::map<std::string, boost::json::value> params {
-                            {"positionX",  boost::json::value(position.x)},
-                            {"positionY",  boost::json::value(position.y)},
-                            {"dimensionX", boost::json::value(dimensions.x)},
-                            {"dimensionY", boost::json::value(dimensions.y)},
-                            {"filepath",   boost::json::value(filepath)}
-                        };
+                                std::map<std::string, boost::json::value> params {
+                                    {"positionX",  boost::json::value(position.x)},
+                                    {"positionY",  boost::json::value(position.y)},
+                                    {"dimensionX", boost::json::value(dimensions.x)},
+                                    {"dimensionY", boost::json::value(dimensions.y)},
+                                    {"filepath",   boost::json::value(filepath)}
+                                };
 
-                        // Add item to server storage.
-                        auto object = Object2D();
-                        object.setPosition(position); 
-                        object.setDimensions(dimensions);
-                        object.setFilepath(filepath);
-                        auto room = RoomStorage::getRoomById(user.getRoomId());
-                        room->addObject(std::move(object));
+                                // Add item to server storage.
+                                auto object = Object2D();
+                                object.setPosition(position); 
+                                object.setDimensions(dimensions);
+                                object.setFilepath(filepath);
+                                auto room = RoomStorage::getRoomById(user.getRoomId());
+                                room->addObject(std::move(object));
 
-                        auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                        sendRoomCommand(roomCommand, user, protocol);
-                        return Result::success;
+                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                sendRoomCommand(roomCommand, user, protocol);
+                                return Result::success;
+                            }
+
+                            case 1:
+                            {
+                                Log::debug("Command Room::Object2D::move");
+
+                                // Get messagedata.
+                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto objectId = Util::uint64FromFront(payload);
+                                auto newPosition = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+
+                                std::map<std::string, boost::json::value> params {
+                                    {"objectId", boost::json::value(objectId)},
+                                    {"x", boost::json::value(newPosition.x)},
+                                    {"y", boost::json::value(newPosition.y)}
+                                };
+
+                                // Get object from server storage.
+                                auto room = RoomStorage::getRoomById(user.getRoomId());
+                                if (!room)
+                                {
+                                    Log::error("Client room not found!");
+                                    return Result::failure;
+                                }
+
+                                auto object = room->getObject2DById(objectId);
+                                if (!object)
+                                {
+                                    Log::error("Object not found!");
+                                    return Result::failure;
+                                }
+
+                                // Move object in server storage.
+                                object->setPosition(newPosition);
+
+                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                sendRoomCommand(roomCommand, user, protocol);
+                                return Result::success;
+                            }
+                            default: return Result::not_found;
+                        }
                     }
 
                     // Communicate

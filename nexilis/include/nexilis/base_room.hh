@@ -5,12 +5,8 @@
 #include <nexilis/object/object2d.hh>
 #include <nexilis/object/object3d.hh>
 
-#include <variant>
-
 namespace nexilis
 {
-
-using RoomObjects = std::variant<std::vector<Object2D>, std::vector<Object3D>>;
 
 class BaseRoom
 {
@@ -60,41 +56,24 @@ public:
         return m_roomData.getContext();
     }
 
-    /// Add an Object2D to the room (switch to 2D mode)
-    void addObject(Object2D&& object)
-    {
-        if (!std::holds_alternative<std::vector<Object2D>>(m_objects)) {
-            // If m_objects doesn't currently hold Object2D, clear and switch to Object2D
-            m_objects = std::vector<Object2D>{};
-        }
-        std::get<std::vector<Object2D>>(m_objects).emplace_back(std::move(object));
-    }
+    /// Add an Object2D to the room.
+    void addObject(Object2D&& object);
 
-    /// Add an Object3D to the room (switch to 3D mode)
-    void addObject(Object3D&& object)
-    {
-        if (!std::holds_alternative<std::vector<Object3D>>(m_objects)) {
-            // If m_objects doesn't currently hold Object3D, clear and switch to Object3D
-            m_objects = std::vector<Object3D>{};
-        }
-        std::get<std::vector<Object3D>>(m_objects).emplace_back(std::move(object));
-    }
+    /// Add an Object3D to the room.
+    void addObject(Object3D&& object);
 
-    /// Get mutable reference to the objects (Object2D or Object3D)
-    RoomObjects& getObjects()
-    {
-        return m_objects;
-    }
+    // Get all 2D objects.
+    const std::vector<Object2D>& getObjects2D() const;
 
-    /// Get const reference to the objects (Object2D or Object3D)
-    const RoomObjects& getObjects() const
-    {
-        return m_objects;
-    }
+    // Get all 3D objects.
+    const std::vector<Object3D>& getObjects3D() const;
+
+    Object2D* getObject2DById(uint64_t id);
 
 private:
     RoomData m_roomData;
-    RoomObjects m_objects;
+    std::vector<Object2D> m_objects2D;
+    std::vector<Object3D> m_objects3D;
 };
 
 }

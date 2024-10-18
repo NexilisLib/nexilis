@@ -5,6 +5,8 @@
 #include <nexilis/types/vector2.hh>
 #include <nexilis/nexilis_macros.hh>
 #include <nexilis/room_data.hh>
+#include <nexilis/command_type.hh>
+#include <nexilis/room_command_type.hh>
 
 namespace nexilis::client
 {
@@ -45,23 +47,42 @@ public:
             static nx_data movement(Vector2f movement, float deltaTime);
         };
 
+        template <typename VectorType>
         class Object
         {
-        protected:
-            enum class Type
+        public:
+            static nx_data create(VectorType position, VectorType dimensions, const std::string& filePath)
             {
-                Object2D,
-                Object3D
-            };
-            static nx_data create(Type type, Vector2f position, Vector2f dimensions, const std::string& filePath);
-            //static nx_data move(Type type, uint64_t objectId, Vector2f newPosition);
+                auto id = clientIdentification();
+                id.emplace_back(static_cast<uint8_t>(CommandType::room));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::create));
+
+                emplace(id, Util::convertToByteVector(position));
+                emplace(id, Util::convertToByteVector(dimensions));
+                emplace(id, Util::convertToByteVector(filePath));
+                return id;
+            }
+
+            static nx_data move(uint64_t objectId, VectorType newPosition)
+            {
+                auto id = clientIdentification();
+                id.emplace_back(static_cast<uint8_t>(CommandType::room));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::move));
+
+                emplace(id, Util::convertToByteVector(objectId));
+                emplace(id, Util::convertToByteVector(newPosition));
+                return id;
+            }
         };
 
-        class Object2D : public Object
+        class Object2D : public Object<Vector2f>
         {
-        public:
-            static nx_data create(Vector2f position, Vector2f dimensions, const std::string filePath);
-            //static nx_data move(uint64_t objectId, Vector2f newPosition);
+        };
+
+        class Object3D : public Object<Vector3>
+        {
         };
 
         class Management
@@ -77,6 +98,7 @@ public:
     static void _initialize(ClientAPI& clientApi);
 
 private:
+    static void emplace(nx_data& originalData, const nx_data& newData);
     static nx_data clientIdentification();
     static ClientAPI* m_clientApi;
 };

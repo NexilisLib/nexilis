@@ -1,7 +1,5 @@
-#include <nexilis/room_command_type.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/client/packet.hh>
-#include <nexilis/command_type.hh>
 #include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
 
@@ -112,31 +110,6 @@ nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
     return id;
 }
 
-nx_data Packet::Room::Object::create(Type type, Vector2f position, Vector2f dimensions, const std::string& filePath)
-{
-    assert(type == Type::Object2D);
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::create));
-
-    auto emplace = [&id](const nx_data& vector) {
-        for (const auto& byte : vector) {
-            id.emplace_back(byte);
-        }
-    };
-
-    emplace(Util::convertToByteVector(position));
-    emplace(Util::convertToByteVector(dimensions));
-    emplace(Util::convertToByteVector(filePath));
-    return id;
-}
-
-nx_data Packet::Room::Object2D::create(Vector2f position, Vector2f dimensions, const std::string filePath)
-{
-    return Object::create(Object::Type::Object2D, position, dimensions, filePath);
-}
-
 /**
  *  2:0      Management
  *  2:0:0    Join room; uint64_t roomId
@@ -185,6 +158,14 @@ nx_data Packet::Room::Management::create(RoomData::Context context, const std::s
 void Packet::_initialize(ClientAPI& clientAPI)
 {
     m_clientApi = &clientAPI;
+}
+
+void Packet::emplace(nx_data& originalData, const nx_data& newData)
+{
+    for (const auto& byte : newData)
+    {
+        originalData.emplace_back(byte);
+    }
 }
 
 nx_data Packet::clientIdentification()

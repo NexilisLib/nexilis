@@ -1,7 +1,10 @@
 #ifndef NEXILIS_OBJECT_HH
 #define NEXILIS_OBJECT_HH
 
-#include <string>
+#include <nexilis/util.hh>
+
+namespace nexilis
+{
 
 template <typename VectorType>
 class Object
@@ -9,31 +12,36 @@ class Object
 public:
     /// Constructor.
     Object(const VectorType& pos, const VectorType& dim)
-        : position(pos), dimensions(dim)
+        : m_position(pos), m_dimensions(dim)
     {
     }
 
     /// Virtual destructor.
     virtual ~Object() = default;
 
+    uint64_t getId() const
+    {
+        return m_id;
+    }
+
     const VectorType& getPosition() const
     {
-        return position;
+        return m_position;
     }
 
     void setPosition(const VectorType& pos)
     {
-        position = pos;
+        m_position = pos;
     }
 
     const VectorType& getDimensions() const
     {
-        return dimensions;
+        return m_dimensions;
     }
 
     void setDimensions(const VectorType& dim)
     {
-        dimensions = dim;
+        m_dimensions = dim;
     }
 
     void setFilepath(const std::string& filepath)
@@ -47,9 +55,12 @@ public:
     }
 
 protected:
-    VectorType position;
-    VectorType dimensions;
+    uint64_t m_id = Util::getRandomUint64();
+    VectorType m_position;
+    VectorType m_dimensions;
     std::string m_filepath;
 };
+
+}
 
 #endif
