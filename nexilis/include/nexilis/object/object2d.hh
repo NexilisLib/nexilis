@@ -10,8 +10,8 @@ namespace nexilis
 class Object2D : public Object<Vector2f>
 {
 public:
-    Object2D(const Vector2f& position = {0.f, 0.f}, const Vector2f& dimensions = {0.f, 0.f}) 
-        : Object(position, dimensions)
+    Object2D(uint64_t id, const Vector2f& position = {0.f, 0.f}, const Vector2f& dimensions = {0.f, 0.f}) 
+        : Object(id, position, dimensions)
     {
     }
 };

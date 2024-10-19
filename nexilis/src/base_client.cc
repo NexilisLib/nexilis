@@ -6,7 +6,8 @@ namespace nexilis
 {
 
 BaseClient::BaseClient(uint64_t id)
-    : m_id(id)
+    : m_id(id),
+      m_object2D(id)
 {
 }
 

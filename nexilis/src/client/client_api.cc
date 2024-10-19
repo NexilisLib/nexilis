@@ -1,5 +1,3 @@
-#include "nexilis/object/object2d.hh"
-#include "nexilis/types/vector2.hh"
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/logger/log.hh>
@@ -552,24 +550,37 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     float dimensionX = readFloat(json, "dimensionX");
                     float dimensionY = readFloat(json, "dimensionY");
                     std::string filePath = readString(json, "filepath");
+                    uint64_t id = readUint64(json, "id");
 
                     for (auto& room : m_currentlyActiveRooms)
                     {
                         if (room.getId() == roomId)
                         {
-                            auto object = Object2D();
-                            object.setPosition({positionX, positionY});
-                            object.setDimensions({dimensionX, dimensionY});
+                            auto object = Object2D(id, {positionX, positionY}, {dimensionX, dimensionY});
                             object.setFilepath(filePath);
                             room.addObject(std::move(object));
                             return ReadResult::success;
                         }
                     }
+                    return ReadResult::failure;
 
                 }
                 else if (roomAction == "move")
                 {
-                    return ReadResult::not_implemented;
+                    uint64_t objectId = readUint64(json, "objectId");
+                    float newPositionX = readFloat(json, "x");
+                    float newPositionY = readFloat(json, "y");
+
+                    for (auto& room : m_currentlyActiveRooms)
+                    {
+                        if (room.getId() == roomId)
+                        {
+                            auto object = room.getObject2DById(objectId);
+                            object->setPosition({newPositionX, newPositionY});
+                            return ReadResult::success;
+                        }
+                    }
+                    return ReadResult::failure;
                 }
             }
             else if (type == "communicate")

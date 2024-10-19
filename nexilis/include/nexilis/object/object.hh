@@ -11,8 +11,10 @@ class Object
 {
 public:
     /// Constructor.
-    Object(const VectorType& pos, const VectorType& dim)
-        : m_position(pos), m_dimensions(dim)
+    Object(uint64_t id, const VectorType& pos, const VectorType& dim)
+        : m_id(id),
+          m_position(pos),
+          m_dimensions(dim)
     {
     }
 
@@ -55,7 +57,7 @@ public:
     }
 
 protected:
-    uint64_t m_id = Util::getRandomUint64();
+    uint64_t m_id;
     VectorType m_position;
     VectorType m_dimensions;
     std::string m_filepath;

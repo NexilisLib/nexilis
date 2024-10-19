@@ -444,21 +444,24 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
                                 auto filepath = Util::convertToString(fileBytes);
 
+                                // Create server object.
+                                auto object = Object2D(Util::getRandomUint64(), position, dimensions);
+                                object.setFilepath(filepath);
+                                uint64_t objectId = object.getId();
+                                Log::info("Created object with id: ", objectId);
+
+                                // Add to storage.
+                                auto room = RoomStorage::getRoomById(user.getRoomId());
+                                room->addObject(std::move(object));
+
                                 std::map<std::string, boost::json::value> params {
                                     {"positionX",  boost::json::value(position.x)},
                                     {"positionY",  boost::json::value(position.y)},
                                     {"dimensionX", boost::json::value(dimensions.x)},
                                     {"dimensionY", boost::json::value(dimensions.y)},
-                                    {"filepath",   boost::json::value(filepath)}
+                                    {"filepath",   boost::json::value(filepath)},
+                                    {"id",         boost::json::value(objectId)}
                                 };
-
-                                // Add item to server storage.
-                                auto object = Object2D();
-                                object.setPosition(position); 
-                                object.setDimensions(dimensions);
-                                object.setFilepath(filepath);
-                                auto room = RoomStorage::getRoomById(user.getRoomId());
-                                room->addObject(std::move(object));
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
@@ -491,7 +494,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto object = room->getObject2DById(objectId);
                                 if (!object)
                                 {
-                                    Log::error("Object not found!");
+                                    Log::error("Object not found with id: ", objectId);
                                     return Result::failure;
                                 }
 

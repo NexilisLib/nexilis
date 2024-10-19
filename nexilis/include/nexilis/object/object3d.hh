@@ -10,8 +10,8 @@ namespace nexilis
 class Object3D : public Object<Vector3>
 {
 public:
-    Object3D(const Vector3& position, const Vector3& dimensions) 
-        : Object(position, dimensions)
+    Object3D(uint64_t id, const Vector3& position, const Vector3& dimensions)
+        : Object(id, position, dimensions)
     {
     }
 };
