@@ -1,14 +1,13 @@
 #include "chat.hh"
 #include "vim.hh"
 
-#include <nexilis/packet.hh>
+#include <nexilis/client/packet.hh>
 
 #include <ncurses.h>
 
 #include <sstream>
-#include <thread>
 
-Chat::Chat(nexilis::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback)
+Chat::Chat(nexilis::client::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback)
     : m_clientApi(clientApi),
       m_sendTCP(sendTCP),
       m_sendTCPWithCallback(sendTCPWithCallback)
@@ -150,7 +149,7 @@ void Chat::updateChat(Window& window, State& programState)
             assert(!m_rooms->empty());
 
             /// Get the room that client is currently in.
-            nexilis::ClientAPI::Room* clientRoom;
+            nexilis::client::ClientAPI::Room* clientRoom;
             for (auto& room : *m_rooms)
             {
                 for (auto& client : room.getClients())
@@ -161,9 +160,7 @@ void Chat::updateChat(Window& window, State& programState)
                     }
                 }
             }
-            assert(*clientRoom != m_clientApi->getDefaultRoom());
-
-            std::vector<nexilis::ClientAPI::Room::Communication> messages;
+            std::vector<nexilis::client::ClientAPI::Room::Communication> messages;
 
             for (auto r = m_rooms->begin(); r != m_rooms->end(); r++)
             {
@@ -208,13 +205,13 @@ void Chat::updateChat(Window& window, State& programState)
 
         if (userString == "/quit")
         {
-            m_sendTCP(nexilis::Packet::Room::leave());
-            m_sendTCPWithCallback(nexilis::Packet::Info::rooms(), [&programState]()
+            m_sendTCP(nexilis::client::Packet::Room::Management::leave());
+            m_sendTCPWithCallback(nexilis::client::Packet::Info::rooms(), [&programState]()
                                   { programState = State::rooms; });
         }
         else
         {
-            m_sendTCP(nexilis::Packet::Communicate::roomMessage(userString));
+            //m_sendTCP(nexilis::client::Packet::Communicate::roomMessage(userString));
         }
     }
     else
@@ -224,7 +221,7 @@ void Chat::updateChat(Window& window, State& programState)
     }
 }
 
-std::string Chat::roomData(const nexilis::ClientAPI::Room& room)
+std::string Chat::roomData(const nexilis::client::ClientAPI::Room& room)
 {
     std::stringstream ss;
     ss << room.getName() << " ";

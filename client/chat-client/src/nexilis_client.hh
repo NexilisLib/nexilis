@@ -1,11 +1,10 @@
 #ifndef CHAT_CLIENT_NEXILIS_CLIENT_HH
 #define CHAT_CLIENT_NEXILIS_CLIENT_HH
 
-#include <nexilis/client_api.hh>
+#include <nexilis/client/client_api.hh>
 #include <nexilis/protocol_manager.hh>
 
-#include <nexilis/boost/tcp_client.hh>
-#include <nexilis/boost/udp_client.hh>
+#include <nexilis/client/protocol/nxboost/tcp_client.hh>
 
 class NexilisClient
 {
@@ -19,27 +18,21 @@ public:
     /// Move assignment operator.
     NexilisClient& operator=(NexilisClient&& other);
 
-    nexilis::ClientAPI& getClientAPI()
+    nexilis::client::ClientAPI& getClientAPI()
     {
         return m_clientAPI;
     }
 
-    nexilis::BoostTCPClient& getTCPClient()
+    nexilis::client::nxboost::TCPClient& getTCPClient()
     {
         return m_tcpClient;
     }
 
-    nexilis::BoostUDPClient& getUDPClient()
-    {
-        return m_udpClient;
-    }
-
 private:
-    nexilis::ClientAPI::ServerData m_serverData;
-    nexilis::ClientAPI m_clientAPI;
+    nexilis::client::ClientAPI::ServerData m_serverData;
+    nexilis::client::ClientAPI m_clientAPI;
     nexilis::ProtocolManager m_protocolManager;
-    nexilis::BoostUDPClient m_udpClient;
-    nexilis::BoostTCPClient m_tcpClient;
+    nexilis::client::nxboost::TCPClient m_tcpClient;
 };
 
 #endif

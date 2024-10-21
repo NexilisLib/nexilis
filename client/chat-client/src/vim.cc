@@ -1,6 +1,6 @@
 #include "vim.hh"
 #include "debug.hh"
-#include "nexilis/packet.hh"
+#include <nexilis/client/packet.hh>
 
 #include <cstdint>
 #include <ncurses.h>
@@ -89,7 +89,7 @@ void useVimMode(int trigger, State& programState, Window& window, const std::fun
                     case State::chat:
                     {
                         programState = State::rooms;
-                        sendTCPMessage(nexilis::Packet::Room::leave());
+                        sendTCPMessage(nexilis::client::Packet::Room::Management::leave());
                         break;
                     }
 

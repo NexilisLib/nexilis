@@ -1,43 +1,35 @@
 // nexilis libs
-#include <nexilis/log.hh>
+#include <nexilis/logger/log.hh>
 #include <nexilis/mysql/database.hh>
 #include <nexilis/protocol_manager.hh>
-#include <nexilis/room.hh>
-#include <nexilis/room_storage.hh>
-#include <nexilis/server_manager.hh>
+#include <nexilis/server/room.hh>
+#include <nexilis/server/room_storage.hh>
 
 // nexilis protocols
-#include <nexilis/boost/tcp_server.hh>
-#include <nexilis/boost/udp_server.hh>
+#include <nexilis/server/protocol/nxboost/tcp_server.hh>
+
+#include <iostream>
 
 int main()
 {
     nexilis::Log::startConsoleDebugging();
 
-    nexilis::Authentication auth;
-    auth.setMode(nexilis::Authentication::Mode::passwordProtected);
-    auth.setPassphrase("salasana");
-    auth.setRootPassword("root");
+    using namespace nexilis::server;
 
-    nexilis::ServerManager serverManager;
-    serverManager.setAuthentication(auth);
+    Settings settings;
+    settings.setMode(Settings::AuthenticationMode::passwordProtected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
 
     nexilis::ProtocolManager protocolManager;
 
     // Boost TCP
-    auto boostTCPServer = protocolManager.createProtocol<nexilis::BoostTCPServer>(12348);
+    auto boostTCPServer = protocolManager.createProtocol<nxboost::TCPServer>(settings, 12348);
     boostTCPServer.start();
     std::cout << "nexilis boost TCP ready" << std::endl;
-
-    // Boost UDP
-    auto boostUDPServer = protocolManager.createProtocol<nexilis::BoostUDPServer>(12347);
-    boostUDPServer.start();
-    std::cout << "nexilis boost UDP ready" << std::endl;
 
     std::cout << "SERVER READY, looping main thread" << std::endl;
     while (true)
     {
     }
-
-    return 0;
 }

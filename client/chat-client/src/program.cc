@@ -4,9 +4,10 @@
 #include "vim.hh"
 
 #include <nexilis/json.hh>
-#include <nexilis/packet.hh>
+#include <nexilis/client/packet.hh>
 
 #include <ncurses.h>
+#include <iostream>
 
 #include <boost/json/serialize.hpp>
 
@@ -122,7 +123,7 @@ void Program::inputHandler(Window& window)
             // When looking at room scene for the first time, auto update.
             if (updateRooms)
             {
-                m_sendTCPMessage(nexilis::Packet::Info::rooms());
+                m_sendTCPMessage(nexilis::client::Packet::Info::rooms());
                 updateRooms = false;
             }
 
@@ -161,7 +162,7 @@ void Program::inputHandler(Window& window)
                     {
                         break;
                     }
-                    m_sendTCPMessageWithCallback(nexilis::Packet::Room::join(roomId), [this]()
+                    m_sendTCPMessageWithCallback(nexilis::client::Packet::Room::Management::join(roomId), [this]()
                                                  { m_state = State::chat; });
                     updateRooms = true;
                     break;
@@ -171,7 +172,7 @@ void Program::inputHandler(Window& window)
                 case KEY_F(1):
                 {
                     std::string newRoomName = nexilis::Util::getRandomString(5);
-                    m_sendTCPMessage(nexilis::Packet::Room::create(newRoomName));
+                    m_sendTCPMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, newRoomName));
                     updateRooms = true;
                     break;
                 }
@@ -189,14 +190,14 @@ void Program::inputHandler(Window& window)
                     std::string date = nexilis::Util::getDateAndTime();
                     std::stringstream ss;
                     ss << "../../../logs/" << copiedClientId << ":" << date << "log.json";
-                    nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
+                    //nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
                     break;
                 }
 
                 case KEY_F(7):
                 {
                     debug("Pressed key up");
-                    debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
+                    //debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
                     break;
                 }
 
