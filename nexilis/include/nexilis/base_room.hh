@@ -70,6 +70,8 @@ public:
 
     Object2D* getObject2DById(uint64_t id);
 
+    void deleteObject2D(uint64_t id);
+
 private:
     RoomData m_roomData;
     std::vector<Object2D> m_objects2D;

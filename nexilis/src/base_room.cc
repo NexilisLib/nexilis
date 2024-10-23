@@ -80,4 +80,22 @@ Object2D* BaseRoom::getObject2DById(uint64_t id)
     return nullptr;
 }
 
+void BaseRoom::deleteObject2D(uint64_t objectId)
+{
+    auto it = std::find_if(m_objects2D.begin(), m_objects2D.end(),
+    [objectId](const Object2D& obj){
+        return obj.getId() == objectId;
+    });
+
+    if (it != m_objects2D.end())
+    {
+        m_objects2D.erase(it);
+        Log::info("Deleted object: ", objectId);
+    }
+    else
+    {
+        Log::info("Could not find object ", objectId, " for deletion");
+    }
+}
+
 }

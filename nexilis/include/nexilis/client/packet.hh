@@ -64,6 +64,17 @@ public:
                 return id;
             }
 
+            static nx_data destroy(uint64_t objectId)
+            {
+                auto id = clientIdentification();
+                id.emplace_back(static_cast<uint8_t>(CommandType::room));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::destroy));
+
+                emplace(id, Util::convertToByteVector(objectId));
+                return id;
+            }
+
             static nx_data move(uint64_t objectId, VectorType newPosition)
             {
                 auto id = clientIdentification();

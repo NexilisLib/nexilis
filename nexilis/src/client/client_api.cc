@@ -565,6 +565,19 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     return ReadResult::failure;
 
                 }
+                else if (roomAction == "destroy")
+                {
+                    uint64_t objectId = readUint64(json, "id");
+                    for (auto& room : m_currentlyActiveRooms)
+                    {
+                        if (room.getId() == roomId)
+                        {
+                            room.deleteObject2D(objectId);
+                            return ReadResult::success;
+                        }
+                    }
+                    return ReadResult::failure;
+                }
                 else if (roomAction == "move")
                 {
                     uint64_t objectId = readUint64(json, "objectId");

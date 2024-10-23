@@ -1,3 +1,4 @@
+#include "nexilis/object/object2d.hh"
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/room_storage.hh>
@@ -470,18 +471,31 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             case 1:
                             {
+                                Log::debug("Command Room::Object2D::destroy");
+                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto objectId = Util::uint64FromFront(payload);
+
+                                // Remove from storage.
+                                auto room = RoomStorage::getRoomById(user.getRoomId());
+                                room->deleteObject2D(objectId);
+
+                                std::map<std::string, boost::json::value> params {
+                                    {"id", boost::json::value(objectId)}
+                                };
+
+                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                sendRoomCommand(roomCommand, user, protocol);
+                                return Result::success;
+                            }
+
+                            case 2:
+                            {
                                 Log::debug("Command Room::Object2D::move");
 
                                 // Get messagedata.
                                 auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                                 auto objectId = Util::uint64FromFront(payload);
-                                auto newPosition = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-
-                                std::map<std::string, boost::json::value> params {
-                                    {"objectId", boost::json::value(objectId)},
-                                    {"x", boost::json::value(newPosition.x)},
-                                    {"y", boost::json::value(newPosition.y)}
-                                };
+                                auto position = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
 
                                 // Get object from server storage.
                                 auto room = RoomStorage::getRoomById(user.getRoomId());
@@ -497,6 +511,15 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     Log::error("Object not found with id: ", objectId);
                                     return Result::failure;
                                 }
+
+                                auto oldPosition = object->getPosition();
+                                auto newPosition = oldPosition + position;
+
+                                std::map<std::string, boost::json::value> params {
+                                    {"objectId", boost::json::value(objectId)},
+                                    {"x", boost::json::value(newPosition.x)},
+                                    {"y", boost::json::value(newPosition.y)}
+                                };
 
                                 // Move object in server storage.
                                 object->setPosition(newPosition);

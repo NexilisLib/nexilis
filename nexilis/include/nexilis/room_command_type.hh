@@ -35,7 +35,8 @@ public:
     enum class Object2D : uint8_t
     {
         create = 0,
-        move = 1
+        destroy = 1,
+        move = 2
     };
 
     enum class Communication : uint8_t

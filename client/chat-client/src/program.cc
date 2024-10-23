@@ -16,7 +16,7 @@ Program::Program(const nexilis::CmdLineOptions& options)
       m_optionUserName(m_options.getValue("-name", "NO USERNAME")),
       m_window(),
       m_menu(),
-      m_nexilisClient("192.168.1.8", m_optionUserName),
+      m_nexilisClient("127.0.0.1", m_optionUserName),
       m_sendTCPMessage([this](const std::vector<uint8_t>& payload)
                        { m_nexilisClient.getTCPClient().sendMessage(payload); }),
       m_sendTCPMessageWithCallback([this](const std::vector<uint8_t>& message, const std::function<void()>& callback)

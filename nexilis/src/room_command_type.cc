@@ -44,6 +44,8 @@ std::string RoomCommandType::Object2DTypeToString(RoomCommandType::Object2D obje
     {
         case RoomCommandType::Object2D::create:
             return "create";
+        case RoomCommandType::Object2D::destroy:
+            return "destroy";
         case RoomCommandType::Object2D::move:
             return "move";
         default:
