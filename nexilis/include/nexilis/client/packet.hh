@@ -86,6 +86,22 @@ public:
                 emplace(id, Util::convertToByteVector(newPosition));
                 return id;
             }
+
+            static nx_data createMoving(VectorType startingPosition, VectorType dimensions, VectorType movement,
+                        float deltaTime, const std::string& filepath)
+            {
+                auto id = clientIdentification();
+                id.emplace_back(static_cast<uint8_t>(CommandType::room));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMoving));
+
+                emplace(id, Util::convertToByteVector(startingPosition));
+                emplace(id, Util::convertToByteVector(dimensions));
+                emplace(id, Util::convertToByteVector(movement));
+                emplace(id, Util::convertToByteVector(deltaTime));
+                emplace(id, Util::convertToByteVector(filepath));
+                return id;
+            }
         };
 
         class Object2D : public Object<Vector2f>
