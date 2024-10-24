@@ -58,9 +58,7 @@ public:
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::create));
 
-                emplace(id, Util::convertToByteVector(position));
-                emplace(id, Util::convertToByteVector(dimensions));
-                emplace(id, Util::convertToByteVector(filePath));
+                emplaceAll(id, position, dimensions, filePath);
                 return id;
             }
 
@@ -71,7 +69,7 @@ public:
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::destroy));
 
-                emplace(id, Util::convertToByteVector(objectId));
+                emplaceAll(id, objectId);
                 return id;
             }
 
@@ -82,8 +80,7 @@ public:
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::move));
 
-                emplace(id, Util::convertToByteVector(objectId));
-                emplace(id, Util::convertToByteVector(newPosition));
+                emplaceAll(id, objectId, newPosition);
                 return id;
             }
 
@@ -95,11 +92,19 @@ public:
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMoving));
 
-                emplace(id, Util::convertToByteVector(startingPosition));
-                emplace(id, Util::convertToByteVector(dimensions));
-                emplace(id, Util::convertToByteVector(movement));
-                emplace(id, Util::convertToByteVector(deltaTime));
-                emplace(id, Util::convertToByteVector(filepath));
+                emplaceAll(id, startingPosition, dimensions, movement, deltaTime, filepath);
+                return id;
+            }
+
+            static nx_data createMovingTest(VectorType startingPosition, VectorType dimensions, VectorType movement,
+                        float deltaTime, const std::string& filepath)
+            {
+                auto id = clientIdentification();
+                id.emplace_back(static_cast<uint8_t>(CommandType::room));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMovingTest));
+
+                emplaceAll(id, startingPosition, dimensions, movement, deltaTime, filepath);
                 return id;
             }
         };
@@ -126,6 +131,13 @@ public:
 
 private:
     static void emplace(nx_data& originalData, const nx_data& newData);
+
+    template <typename... Args>
+    static void emplaceAll(nx_data& originalData, Args&&... args)
+    {
+        (emplace(originalData, Util::convertToByteVector(std::forward<Args>(args))), ...);
+    }
+
     static nx_data clientIdentification();
     static ClientAPI* m_clientApi;
 };

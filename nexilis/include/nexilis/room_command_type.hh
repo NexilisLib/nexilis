@@ -37,7 +37,8 @@ public:
         create = 0,
         destroy = 1,
         move = 2,
-        createMoving = 3
+        createMoving = 3,
+        createMovingTest = 4
     };
 
     enum class Communication : uint8_t

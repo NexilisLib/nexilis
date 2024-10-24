@@ -96,7 +96,12 @@ private:
 
     /// Send multiple messages with specified tickrate.
     void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
+    
+    // Smooth movement.
     double easing(double progress, double totalDistance);
+
+    // Linear movement.
+    double linear(double progress, double totalDistance);
 
 private:
     /// The "settings" of the server protocol.

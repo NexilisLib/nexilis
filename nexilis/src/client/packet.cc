@@ -67,11 +67,7 @@ nx_data Packet::Room::Player2D::position(Vector2f position)
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::position));
 
-    auto positionVector = Util::convertToByteVector(position);
-    for (const auto& byte : positionVector)
-    {
-        id.emplace_back(byte);
-    }
+    emplaceAll(id, position);
     return id;
 }
 
@@ -82,11 +78,7 @@ nx_data Packet::Room::Player2D::dimensions(Vector2f dimensions)
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::dimensions));
 
-    auto dimensionVector = Util::convertToByteVector(dimensions);
-    for (const auto& byte : dimensionVector)
-    {
-        id.emplace_back(byte);
-    }
+    emplaceAll(id, dimensions);
     return id;
 }
 
@@ -97,16 +89,7 @@ nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::movement));
 
-    auto movementVector = Util::convertToByteVector(movement);
-    for (const auto& byte : movementVector)
-    {
-        id.emplace_back(byte);
-    }
-    auto deltaVector = Util::convertToByteVector(deltaTime);
-    for (const auto& byte : deltaVector)
-    {
-        id.emplace_back(byte);
-    }
+    emplaceAll(id, movement, deltaTime);
     return id;
 }
 
@@ -123,11 +106,7 @@ nx_data Packet::Room::Management::join(uint64_t roomId)
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::join));
 
-    auto roomIdVector = Util::convertToByteVector(roomId);
-    for (const auto& elem : roomIdVector)
-    {
-        id.emplace_back(elem);
-    }
+    emplaceAll(id, roomId);
     return id;
 }
 

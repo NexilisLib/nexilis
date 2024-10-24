@@ -50,6 +50,8 @@ std::string RoomCommandType::Object2DTypeToString(RoomCommandType::Object2D obje
             return "move";
         case RoomCommandType::Object2D::createMoving:
             return "createMoving";
+        case RoomCommandType::Object2D::createMovingTest:
+            return "createMovingTest";
         default:
             Log::error("Object2DTypeToString no type found!");
             return "";

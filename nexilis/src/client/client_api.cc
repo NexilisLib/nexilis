@@ -648,6 +648,59 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         return ReadResult::failure;
                     }
                 }
+                else if (roomAction == "createMovingTest")
+                {
+                    std::string createMovingType = readString(json, "createMovingType");
+
+                    if (createMovingType == "create")
+                    {
+                        float positionX = readFloat(json, "positionX");
+                        float positionY = readFloat(json, "positionY");
+                        float dimensionX = readFloat(json, "dimensionX");
+                        float dimensionY = readFloat(json, "dimensionY");
+                        std::string filepath = readString(json, "filepath");
+                        uint64_t id = readUint64(json, "id");
+
+                        for (auto& room : m_currentlyActiveRooms)
+                        {
+                            if (room.getId() == roomId)
+                            {
+                                auto object = Object2D(id, {positionX, positionY}, {dimensionX, dimensionY});
+                                object.setFilepath(filepath);
+                                room.addObject(std::move(object));
+                                return ReadResult::success;
+                            }
+                        }
+                        return ReadResult::failure;
+                    }
+                    else if (createMovingType == "update")
+                    {
+                        float positionX = readFloat(json, "x");
+                        float positionY = readFloat(json, "y");
+                        uint64_t objectId = readUint64(json, "objectId");
+
+                        for (auto& room : m_currentlyActiveRooms)
+                        {
+                            if (room.getId() == roomId)
+                            {
+                                auto* object = room.getObject2DById(objectId);
+                                if (!object)
+                                {
+                                    Log::error("Could not find object!");
+                                    return ReadResult::error;
+                                }
+                                object->setPosition({positionX, positionY});
+                                return ReadResult::success;
+                            }
+                        }
+                        return ReadResult::failure;
+                    }
+                    else
+                    {
+                        Log::error("Undefined createmovingtype");
+                        return ReadResult::failure;
+                    }
+                }
             }
             else if (type == "communicate")
             {
