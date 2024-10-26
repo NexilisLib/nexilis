@@ -1,3 +1,4 @@
+#include "nexilis/movement_type.hh"
 #include "nexilis/object/object2d.hh"
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
@@ -539,7 +540,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
                                 auto movement = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 16));
                                 auto deltaTime = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 24));
-                                auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 28);
+                                auto movementType = static_cast<MovementType>(payload[28]);
+                                auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 29);
                                 auto filepath = Util::convertToString(fileBytes);
 
                                 // Create new object.
@@ -565,113 +567,33 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
 
-                                auto mtx = std::make_shared<std::mutex>();
-                                // Move the new object.
-                                std::thread([this, mtx, movement, &user, command, &protocol, &messageId, deltaTime, objectId]()
+                                std::function<double(double, double)> movementFunction;
+                                switch (movementType)
                                 {
-                                    try
-                                    {
-                                        runWithTickrate(m_settings.getTickrate(), deltaTime, [this, &mtx, movement, &user, command, &protocol, &messageId, objectId](double progress)
-                                        {
-                                            double easedX = easing(progress, movement.x);
-                                            double easedY = easing(progress, movement.y);
-                                            auto room = RoomStorage::getRoomById(user.getRoomId());
-                                            auto objectFromServer = room->getObject2DById(objectId);
-                                            auto currentObjectPosition = objectFromServer->getPosition();
-                                            auto newMovedPosition = Vector2f(currentObjectPosition.x + easedX, currentObjectPosition.y + easedY);
-                                            {
-                                                std::lock_guard<std::mutex> lock(*mtx);
-                                                objectFromServer->setPosition(newMovedPosition);
-                                                std::map<std::string, boost::json::value> params
-                                                {
-                                                    {"createMovingType", boost::json::value("update")},
-                                                    {"objectId", boost::json::value(objectFromServer->getId())},
-                                                    {"x", boost::json::value(newMovedPosition.x)},
-                                                    {"y", boost::json::value(newMovedPosition.y)}
-                                                };
-                                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                                sendRoomCommand(roomCommand, user, protocol);
-                                            }
-                                        });
-                                    }
-                                    catch (std::exception& e)
-                                    {
-                                        Log::error(e.what());
-                                    }
-                                }).detach();
-                                return Result::success;
-                            }
+                                    case MovementType::eased:
+                                        movementFunction = [this](double progress, double totalDistance) -> double {
+                                            return this->easing(progress, totalDistance);
+                                        };
+                                        break;
+                                    case MovementType::linear:
+                                        movementFunction = [this](double progress, double totalDistance) -> double {
+                                            return this->linear(progress, totalDistance);
+                                        };
+                                        break;
+                                    default:
+                                        Log::error("Undefined movement type!");
+                                }
 
-                            case 4:
-                            {
-                                Log::debug("Command Room::Object2D::createMovingTest");
-
-                                // Get messagedata.
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto startingPosition = Util::vector2fFromFront(payload);
-                                auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                                auto movement = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 16));
-                                auto deltaTime = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 24));
-                                auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 28);
-                                auto filepath = Util::convertToString(fileBytes);
-
-                                // Create new object.
-                                auto object = Object2D(Util::getRandomUint64(), startingPosition, dimensions);
-                                object.setFilepath(filepath);
-                                uint64_t objectId = object.getId();
-                                Log::info("Created object with id: ", objectId);
-
-                                // Add newly created object to storage.
-                                auto room = RoomStorage::getRoomById(user.getRoomId());
-                                room->addObject(std::move(object));
-
-                                std::map<std::string, boost::json::value> params
+                                auto objectMovementParams = Object2DMovementParams
                                 {
-                                    {"createMovingType", boost::json::value("create")},
-                                    {"positionX", boost::json::value(startingPosition.x)},
-                                    {"positionY", boost::json::value(startingPosition.y)},
-                                    {"dimensionX", boost::json::value(dimensions.x)},
-                                    {"dimensionY", boost::json::value(dimensions.y)},
-                                    {"filepath", boost::json::value(filepath)},
-                                    {"id", boost::json::value(objectId)}
+                                    objectId,
+                                    movement,
+                                    deltaTime,
+                                    movementFunction,
+                                    command,
+                                    messageId
                                 };
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-
-                                auto mtx = std::make_shared<std::mutex>();
-                                // Move the new object.
-                                std::thread([this, mtx, movement, &user, command, &protocol, &messageId, deltaTime, objectId]()
-                                {
-                                    try
-                                    {
-                                        runWithTickrate(m_settings.getTickrate(), deltaTime, [this, &mtx, movement, &user, command, &protocol, &messageId, objectId](double progress)
-                                        {
-                                            double linearX = linear(progress, movement.x);
-                                            double linearY = linear(progress, movement.y);
-                                            auto room = RoomStorage::getRoomById(user.getRoomId());
-                                            auto objectFromServer = room->getObject2DById(objectId);
-                                            auto currentObjectPosition = objectFromServer->getPosition();
-                                            auto newMovedPosition = Vector2f(currentObjectPosition.x + linearX, currentObjectPosition.y + linearY);
-                                            {
-                                                std::lock_guard<std::mutex> lock(*mtx);
-                                                objectFromServer->setPosition(newMovedPosition);
-                                                std::map<std::string, boost::json::value> params
-                                                {
-                                                    {"createMovingType", boost::json::value("update")},
-                                                    {"objectId", boost::json::value(objectFromServer->getId())},
-                                                    {"x", boost::json::value(newMovedPosition.x)},
-                                                    {"y", boost::json::value(newMovedPosition.y)}
-                                                };
-                                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                                sendRoomCommand(roomCommand, user, protocol);
-                                            }
-                                        });
-                                    }
-                                    catch (std::exception& e)
-                                    {
-                                        Log::error(e.what());
-                                    }
-                                }).detach();
+                                object2DMovement(objectMovementParams, user, protocol).detach();
                                 return Result::success;
                             }
 
@@ -996,6 +918,42 @@ double Command::easing(double progress, double totalDistance)
 double Command::linear(double progress, double totalDistance)
 {
     return totalDistance * progress;
+}
+
+std::thread Command::object2DMovement(const Object2DMovementParams& params, User& user, Protocol& protocol)
+{
+    return std::thread([this, params, &user, &protocol]()
+    {
+        try
+        {
+            runWithTickrate(m_settings.getTickrate(), params.deltaTime, [this, &params, &user, &protocol](double progress)
+            {
+                double movementX = params.movementFunction(progress, params.movementAmount.x);
+                double movementY = params.movementFunction(progress, params.movementAmount.y);
+
+                auto* room = RoomStorage::getRoomById(user.getRoomId());
+                auto* serverObject = room->getObject2DById(params.objectId);
+
+                Vector2f currentPosition = serverObject->getPosition();
+                Vector2f newPosition = Vector2f(currentPosition.x + movementX, currentPosition.y + movementY);
+
+                serverObject->setPosition(newPosition);
+                std::map<std::string, boost::json::value> messageParams
+                {
+                    {"createMovingType", boost::json::value("update")},
+                    {"objectId", boost::json::value(serverObject->getId())},
+                    {"x", boost::json::value(newPosition.x)},
+                    {"y", boost::json::value(newPosition.y)}
+                };
+                auto roomCommand = createRoomCommand(user.getRoomId(), user, params.messageData, messageParams, params.messageId);
+                sendRoomCommand(roomCommand, user, protocol);
+            });
+        }
+        catch (const std::exception& e)
+        {
+            Log::error(e.what());
+        }
+    });
 }
 
 } // namespace nexilis::server

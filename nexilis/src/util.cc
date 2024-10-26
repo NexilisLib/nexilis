@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstring>
 #include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
@@ -112,6 +113,11 @@ nx_data Util::convertToByteVector(const boost::json::object& obj)
     std::string jsonString = boost::json::serialize(obj);
     nx_data byteStream(jsonString.begin(), jsonString.end());
     return byteStream;
+}
+
+nx_data Util::convertToByteVector(uint8_t value)
+{
+    return nx_data{value};
 }
 
 uint64_t Util::getRandomUint64()

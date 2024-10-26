@@ -99,6 +99,15 @@ public:
 
     /// \defgroup BytevectorConversions Functions that converts items to byte vectors.
 
+    /// \ingroup BytevectorConversions
+    template <typename EnumType>
+    static nx_data convertToByteVector(EnumType e,
+        typename std::enable_if<std::is_enum<EnumType>::value>::type* = nullptr)
+    {
+        using UnderlyingType = typename std::underlying_type<EnumType>::type;
+        return convertToByteVector(static_cast<uint8_t>(static_cast<UnderlyingType>(e)));
+    }
+
     /// Byte vector conversions.
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(const char* command_data, uint64_t length);
@@ -117,6 +126,9 @@ public:
     
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(const std::string& value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(uint8_t value);
 
     /// Logging.
     static std::string getColorMessage(logger::LogLevel logLevel, const std::string& data);

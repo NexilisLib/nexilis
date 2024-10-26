@@ -7,6 +7,7 @@
 #include <nexilis/room_data.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/room_command_type.hh>
+#include <nexilis/movement_type.hh>
 
 namespace nexilis::client
 {
@@ -85,26 +86,14 @@ public:
             }
 
             static nx_data createMoving(VectorType startingPosition, VectorType dimensions, VectorType movement,
-                        float deltaTime, const std::string& filepath)
+                        float deltaTime, MovementType movementType, const std::string& filepath)
             {
                 auto id = clientIdentification();
                 id.emplace_back(static_cast<uint8_t>(CommandType::room));
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
                 id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMoving));
 
-                emplaceAll(id, startingPosition, dimensions, movement, deltaTime, filepath);
-                return id;
-            }
-
-            static nx_data createMovingTest(VectorType startingPosition, VectorType dimensions, VectorType movement,
-                        float deltaTime, const std::string& filepath)
-            {
-                auto id = clientIdentification();
-                id.emplace_back(static_cast<uint8_t>(CommandType::room));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMovingTest));
-
-                emplaceAll(id, startingPosition, dimensions, movement, deltaTime, filepath);
+                emplaceAll(id, startingPosition, dimensions, movement, deltaTime, movementType, filepath);
                 return id;
             }
         };
