@@ -1,6 +1,6 @@
 #include <nexilis/af_inet/udp_client.hh>
 #include <nexilis/log.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <arpa/inet.h>
 

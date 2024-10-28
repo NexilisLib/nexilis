@@ -1,7 +1,7 @@
 #ifndef NEXILIS_VECTOR3_HH
 #define NEXILIS_VECTOR3_HH
 
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 /// Vector3 object to be used in update messages
 

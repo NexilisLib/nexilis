@@ -1,6 +1,6 @@
 #include <nexilis/client/protocol/nxboost/udp_client.hh>
 #include <nexilis/logger/log.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <boost/asio/ip/address.hpp>
 

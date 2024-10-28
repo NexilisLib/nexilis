@@ -1,7 +1,7 @@
 #include "nexilis/server/server_protocol.hh"
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/command.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <sys/socket.h>
 #include <sys/types.h>

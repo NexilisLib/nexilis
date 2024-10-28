@@ -7,7 +7,7 @@
 #include <nexilis/object/object3d.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/types/vector3.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 #include <nexilis/json.hh>
 
 #include <boost/json/object.hpp>

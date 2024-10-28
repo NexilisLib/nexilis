@@ -1,6 +1,6 @@
 #include <nexilis/client/protocol/af_unix/stream_client.hh>
 #include <nexilis/logger/log.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <sys/socket.h>
 #include <sys/types.h>

@@ -1,7 +1,7 @@
 #include <nexilis/af_unix/sock_dgram/server.hh>
 #include <nexilis/client_storage.hh>
 #include <nexilis/command.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>

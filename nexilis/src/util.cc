@@ -2,7 +2,7 @@
 #include <cstring>
 #include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <boost/json/serialize.hpp>
 

@@ -4,7 +4,7 @@
 #include <nexilis/server/config.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/logger/log_level.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <boost/json/object.hpp>
 

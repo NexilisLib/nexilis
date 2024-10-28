@@ -3,7 +3,7 @@
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/types/vector2.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 #include <nexilis/room_data.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/room_command_type.hh>

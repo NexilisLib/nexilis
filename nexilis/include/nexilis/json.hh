@@ -1,7 +1,7 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <boost/json/object.hpp>
 

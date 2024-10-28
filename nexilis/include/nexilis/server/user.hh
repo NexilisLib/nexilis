@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <nexilis/base_client.hh>
 #include <nexilis/util.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 #include <nexilis/object/object2d.hh>
 
 namespace nexilis::server

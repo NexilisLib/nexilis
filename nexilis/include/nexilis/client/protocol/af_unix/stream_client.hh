@@ -4,7 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/nexilis_macros.hh>
+#include <nexilis/nexilis_constants.hh>
 
 #include <sys/un.h>
 
