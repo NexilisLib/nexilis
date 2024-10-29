@@ -113,6 +113,19 @@ public:
             static nx_data leave();
             static nx_data create(RoomData::Context context, const std::string& roomName);
         };
+
+        class Communicate
+        {
+        public:
+            /// Send message to everyone in room context.
+            static nx_data broadcast(const std::string& message);
+
+            /// Send message to everyone except yourself in room context.
+            static nx_data othercast(const std::string& message);
+
+            /// Send message to specific user.
+            static nx_data unicast(uint64_t userId, const std::string& message);
+        };
     };
 
     // Internal initilization function.

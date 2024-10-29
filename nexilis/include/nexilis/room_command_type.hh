@@ -43,7 +43,9 @@ public:
 
     enum class Communication : uint8_t
     {
-        broadcast
+        broadcast,
+        othercast,
+        unicast
     };
 
     static std::string RoomTypeToString(Root type);

@@ -134,6 +134,36 @@ nx_data Packet::Room::Management::create(RoomData::Context context, const std::s
     return id;
 }
 
+nx_data Packet::Room::Communicate::broadcast(const std::string& message)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::broadcast));
+    emplaceAll(id, message);
+    return id;
+}
+
+nx_data Packet::Room::Communicate::othercast(const std::string& message)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::othercast));
+    emplaceAll(id, message);
+    return id;
+}
+
+nx_data Packet::Room::Communicate::unicast(uint64_t userId, const std::string& message)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::unicast));
+    emplaceAll(id, userId, message);
+    return id;
+}
+
 void Packet::_initialize(ClientAPI& clientAPI)
 {
     m_clientApi = &clientAPI;
