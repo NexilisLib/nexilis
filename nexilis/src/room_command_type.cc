@@ -74,6 +74,22 @@ std::string RoomCommandType::ManagementTypeToString(RoomCommandType::Management 
     }
 }
 
+std::string RoomCommandType::CommunicationTypeToString(RoomCommandType::Communication communication)
+{
+    switch (communication)
+    {
+        case RoomCommandType::Communication::broadcast:
+            return "broadcast";
+        case RoomCommandType::Communication::othercast:
+            return "othercast";
+        case RoomCommandType::Communication::unicast:
+            return "unicast";
+        default:
+            Log::error("CommunicationTypeToString no type found!");
+            return "";
+    }
+}
+
 
 } // namespace nexilis
 

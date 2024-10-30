@@ -604,7 +604,50 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     // Communicate
                     case 3:
                     {
-                        return Result::not_found;
+                        switch (roomArg)
+                        {
+                            // broadcast
+                            case 0:
+                            {
+                                Log::debug("Command Room::Communicate::broadcast");
+
+                                // Get messagedata.
+                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto messageData = Util::convertToString(payload);
+
+                                if (user.getRoomId() == 0)
+                                {
+                                    Log::error("User not currently in room!");
+                                    return Result::error;
+                                }
+
+                                std::map<std::string, boost::json::value> params
+                                {
+                                    {"id", boost::json::value(user.getId())},
+                                    {"roomId", boost::json::value(user.getRoomId())},
+                                    {"message", boost::json::value(messageData)}
+                                };
+
+                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                sendRoomCommand(roomCommand, user, protocol);
+                                return Result::success;
+                            }
+
+                            // othercast
+                            case 1:
+                            {
+                                Log::debug("Command Room::Communicate::othercast");
+                                return Result::unimplemented;
+
+                            }
+
+                            // unicast
+                            case 2:
+                            {
+                                Log::debug("Command Room::Communicate::unicast");
+                                return Result::unimplemented;
+                            }
+                        }
                     }
                     default:
                         return Result::not_found;
@@ -851,8 +894,8 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
         }
         case RoomCommandType::Root::communication:
         {
-            Log::error("Unimplemented!");
-            return nx_data();
+            roomCommandAction = RoomCommandType::CommunicationTypeToString(static_cast<RoomCommandType::Communication>(action));
+            break;
         }
     }
     std::string roomCommandType = RoomCommandType::RoomTypeToString(roomType);

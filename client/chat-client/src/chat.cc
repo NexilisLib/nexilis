@@ -211,7 +211,7 @@ void Chat::updateChat(Window& window, State& programState)
         }
         else
         {
-            //m_sendTCP(nexilis::client::Packet::Communicate::roomMessage(userString));
+            m_sendTCP(nexilis::client::Packet::Room::Communicate::broadcast(userString));
         }
     }
     else

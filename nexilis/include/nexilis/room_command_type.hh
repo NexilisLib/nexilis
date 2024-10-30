@@ -52,6 +52,7 @@ public:
     static std::string Player2DTypeToString(Player2D player2D);
     static std::string Object2DTypeToString(Object2D object2D);
     static std::string ManagementTypeToString(Management management);
+    static std::string CommunicationTypeToString(Communication communication);
 };
 
 }

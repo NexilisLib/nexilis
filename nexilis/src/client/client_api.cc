@@ -702,9 +702,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     }
                 }
             }
-            else if (type == "communicate")
+            else if (type == "communication")
             {
-                if (roomAction == "room_message")
+                if (roomAction == "broadcast")
                 {
                     uint64_t id = readUint64(json, "id");
                     uint64_t roomId = readUint64(json, "roomId");
