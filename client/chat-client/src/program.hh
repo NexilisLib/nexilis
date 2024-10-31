@@ -34,10 +34,15 @@ private:
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
     void parseMessage(boost::json::object object);
+    
+    void handleQuit(int signal);
+    static void signalHandler(int signal);
 
 private:
     /// Command line options given to the program.
     nexilis::CmdLineOptions m_options;
+
+    static Program* m_instance;
 
     /// Command line option for "-name", expecting string value.
     std::string m_optionUserName;

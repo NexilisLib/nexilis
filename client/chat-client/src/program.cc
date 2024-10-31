@@ -7,9 +7,13 @@
 #include <nexilis/client/packet.hh>
 
 #include <ncurses.h>
+
+#include <csignal>
 #include <iostream>
 
 #include <boost/json/serialize.hpp>
+
+Program* Program::m_instance = nullptr;
 
 Program::Program(const nexilis::CmdLineOptions& options)
     : m_options(std::move(options)),
@@ -23,7 +27,26 @@ Program::Program(const nexilis::CmdLineOptions& options)
                                    { m_nexilisClient.getTCPClient().sendMessage(message, callback); }),
       m_chat(&m_nexilisClient.getClientAPI(), m_sendTCPMessage, m_sendTCPMessageWithCallback)
 {
+    m_instance = this;
+    std::signal(SIGINT, Program::signalHandler);
+    std::signal(SIGTERM, Program::signalHandler);
+    std::signal(SIGHUP, Program::signalHandler);
 }
+
+void Program::handleQuit(int)
+{
+    m_sendTCPMessage(nexilis::client::Packet::Room::Management::leave());
+    endwin();
+    exit(0);
+}
+
+void Program::signalHandler(int signal)
+{
+    if (m_instance)
+    {
+        m_instance->handleQuit(signal);
+    }
+}    
 
 void Program::start()
 {
@@ -197,7 +220,6 @@ void Program::inputHandler(Window& window)
                 case KEY_F(7):
                 {
                     debug("Pressed key up");
-                    //debugObject(m_nexilisClient.getClientAPI().getCurrentMessage());
                     break;
                 }
 

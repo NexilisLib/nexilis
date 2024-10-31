@@ -7,7 +7,8 @@
 
 #include <sstream>
 
-Chat::Chat(nexilis::client::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP, const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback)
+Chat::Chat(nexilis::client::ClientAPI* clientApi, const std::function<void(const std::vector<uint8_t>&)>& sendTCP,
+    const std::function<void(const std::vector<uint8_t>&, const std::function<void()>&)>& sendTCPWithCallback)
     : m_clientApi(clientApi),
       m_sendTCP(sendTCP),
       m_sendTCPWithCallback(sendTCPWithCallback)
