@@ -35,7 +35,10 @@ Program::Program(const nexilis::CmdLineOptions& options)
 
 void Program::handleQuit(int)
 {
-    m_sendTCPMessage(nexilis::client::Packet::Room::Management::leave());
+    if (m_nexilisClient.getClientAPI().clientInRoom())
+    {
+        m_sendTCPMessage(nexilis::client::Packet::Room::Management::leave());
+    }
     endwin();
     exit(0);
 }

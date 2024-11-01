@@ -6,7 +6,7 @@ import argparse
 # If unused type aliases found, the program asks to write them.
 
 # Header file that contains type alias declarations.
-aliases_file_path = '../nexilis/include/nexilis/nexilis_macros.hh'
+aliases_file_path = '../nexilis/include/nexilis/nexilis_constants.hh'
 
 # Read the aliases from the aliases file.
 def read_aliases(file_path):
@@ -16,7 +16,7 @@ def read_aliases(file_path):
             # Match using type alias lines (e.g., using nx_data = std::vector<uint8_t>;).
             using_match = re.match(r'using\s+(\w+)\s+=\s+(.+);', line)
             if using_match:
-                alias = using_match.group(1) 
+                alias = using_match.group(1)
                 value = using_match.group(2)
                 alias_map[value] = alias
     return alias_map
@@ -67,7 +67,7 @@ def process_files(target_path, alias_map):
         replacements, changes = analyze_cpp_file(target_path, alias_map)
         total_replacements += replacements
         all_changes.extend([(target_path, value, alias, count) for value, alias, count in changes])
-    
+
     # If the target is a directory, walk through all the files
     elif os.path.isdir(target_path):
         for root, dirs, files in os.walk(target_path):
@@ -84,7 +84,7 @@ def main():
     parser = argparse.ArgumentParser(description="Preview or apply changes for replacing hardcoded values or type aliases in C++ files.")
     parser.add_argument('target', nargs='?', default='.', help='Directory to process (default is current directory)')
     args = parser.parse_args()
-    
+
     # Read the aliases from the aliases file.
     alias_map = read_aliases(aliases_file_path)
 
