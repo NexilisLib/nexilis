@@ -123,7 +123,7 @@ public:
 
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(Vector2f value);
-    
+
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(const std::string& value);
 

@@ -2,6 +2,7 @@
 #define NEXILIS_OBJECT_HH
 
 #include <nexilis/util.hh>
+#include <nexilis/nx_emplace.hh>
 
 namespace nexilis
 {
@@ -20,6 +21,8 @@ public:
 
     /// Virtual destructor.
     virtual ~Object() = default;
+
+    virtual nx_data getData() = 0;
 
     uint64_t getId() const
     {
@@ -57,6 +60,13 @@ public:
     }
 
 protected:
+    nx_data baseData()
+    {
+        nx_data startingData;
+        nx_emplace(startingData, m_id, m_position, m_dimensions, m_filepath);
+        return startingData;
+    }
+
     uint64_t m_id;
     VectorType m_position;
     VectorType m_dimensions;
