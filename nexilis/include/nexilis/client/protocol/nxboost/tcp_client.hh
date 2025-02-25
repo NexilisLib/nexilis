@@ -68,8 +68,6 @@ private:
     std::unique_ptr<boost::asio::io_context> m_ioContext;
     boost::asio::ip::tcp::socket m_socket;
     boost::asio::ip::tcp::resolver m_resolver;
-    boost::asio::ip::tcp::resolver::iterator m_iterator;
-
     std::unique_ptr<std::mutex> m_mutex;
 };
 

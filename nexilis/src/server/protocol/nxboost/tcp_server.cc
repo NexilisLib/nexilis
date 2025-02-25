@@ -142,26 +142,25 @@ bool TCPServer::acceptClients()
                         break;
                     }
 
-                    // Create a vector to hold the data
+                    // Create a vector to hold the data.
                     nx_data data;
 
-                    // Get the sequence of const buffers from the streambuf
-                    const boost::asio::const_buffers_1& buffers = receiveBuffer.data();
+                    // Get the sequence of const buffers from the streambuf.
+                    const boost::asio::const_buffer& receive_buffer = receiveBuffer.data();
 
-                    // Check if the buffer is empty
-                    if (buffers.size() == 0)
+                    // Check if the buffer is empty.
+                    if (receive_buffer.size() == 0)
                     {
-                        Log::info("Getting empty data");
-                        continue;  // Skip processing and wait for more data
+                        Log::info("Empty data");
+                        continue;
                     }
 
-                    // Iterate over each const buffer and copy its data into the vector
-                    for (const auto& buffer : buffers)
-                    {
-                        const uint8_t* bufferData = boost::asio::buffer_cast<const uint8_t*>(buffer);
-                        std::size_t bufferSize = boost::asio::buffer_size(buffer);
-                        data.insert(data.end(), bufferData, bufferData + bufferSize);
-                    }
+                    // Extract the data.
+                    const uint8_t* buffer_data = static_cast<const uint8_t*>(receive_buffer.data());
+                    size_t buffer_size = receive_buffer.size();
+
+                    // Insert the data from the buffer into the vector.
+                    data.insert(data.end(), buffer_data, buffer_data + buffer_size);
 
                     auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
 

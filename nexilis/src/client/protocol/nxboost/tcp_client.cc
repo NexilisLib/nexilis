@@ -14,8 +14,6 @@ TCPClient::TCPClient(ClientAPI& api)
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_socket(*m_ioContext),
       m_resolver(*m_ioContext),
-      m_iterator(m_resolver.resolve({api.getBoostTCPServerAddress(),
-                                     std::to_string(api.getBoostTCPServerPortNumber())})),
       m_mutex(std::make_unique<std::mutex>())
 {
 }
@@ -29,7 +27,6 @@ TCPClient::TCPClient(TCPClient&& other)
       m_ioContext(std::move(other.m_ioContext)),
       m_socket(std::move(other.m_socket)),
       m_resolver(std::move(other.m_resolver)),
-      m_iterator(std::move(other.m_iterator)),
       m_mutex(std::move(other.m_mutex))
 {
     other.m_ioContext = nullptr;
@@ -48,7 +45,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_ioContext = std::move(other.m_ioContext);
         m_socket = std::move(other.m_socket);
         m_resolver = std::move(other.m_resolver);
-        m_iterator = std::move(other.m_iterator);
         m_mutex = std::move(other.m_mutex);
 
         other.m_mutex = nullptr;
@@ -100,7 +96,14 @@ bool TCPClient::connectToServer()
 {
     try
     {
-        boost::asio::connect(m_socket, m_iterator);
+        try
+        {
+            boost::asio::connect(m_socket, m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(getClientAPI()->getBoostTCPServerPortNumber())));
+        }
+        catch (...)
+        {
+            Log::error("Connection failed!");
+        }
     }
     catch (...)
     {
