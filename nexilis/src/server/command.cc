@@ -32,6 +32,40 @@ Command& Command::operator=(Command&& other)
     return *this;
 }
 
+bool Command::checkResult(Result result)
+{
+    switch (result)
+    {
+        case Result::success:
+            return true;
+
+        case Result::unauthorized:
+            Log::error("Unauthorized");
+            break;
+
+        case Result::unimplemented:
+            Log::error("Unimplemented");
+            break;
+
+        case Result::not_found:
+            Log::error("Not found");
+            break;
+
+        case Result::invalid_input:
+            Log::error("Invalid input");
+            break;
+
+        case Result::error:
+            Log::error("Error");
+            break;
+
+        case Result::failure:
+            Log::error("Failure");
+            break;
+    }
+    return false;
+}
+
 Command::Result Command::read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId)
 {
     return Command::read(Util::convertToByteVector(command_data, length), client, protocol, messageId);
@@ -584,16 +618,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                         Log::error("Undefined movement type!");
                                 }
 
-                                auto objectMovementParams = Object2DMovementParams
-                                {
-                                    objectId,
-                                    movement,
-                                    deltaTime,
-                                    movementFunction,
-                                    command,
-                                    messageId
-                                };
-                                object2DMovement(objectMovementParams, user, protocol).detach();
+                                auto base_move = Movement2D(Movement::Data(objectId, deltaTime, command, messageId), movement, movementFunction);
+                                object2DMovement(base_move, user, protocol).detach();
                                 return Result::success;
                             }
 
@@ -963,19 +989,22 @@ double Command::linear(double progress, double totalDistance)
     return totalDistance * progress;
 }
 
-std::thread Command::object2DMovement(const Object2DMovementParams& params, User& user, Protocol& protocol)
+std::thread Command::object2DMovement(const Movement2D& movement, User& user, Protocol& protocol)
 {
-    return std::thread([this, params, &user, &protocol]()
+    return std::thread([this, movement, &user, &protocol]()
     {
         try
         {
-            runWithTickrate(m_settings.getTickrate(), params.deltaTime, [this, &params, &user, &protocol](double progress)
+            runWithTickrate(m_settings.getTickrate(), movement.getDeltatime(), [this, &movement, &user, &protocol](double progress)
             {
-                double movementX = params.movementFunction(progress, params.movementAmount.x);
-                double movementY = params.movementFunction(progress, params.movementAmount.y);
+                auto func = movement.getMovementFunc();
+                auto amount = movement.getMovementAmount();
 
                 auto* room = RoomStorage::getRoomById(user.getRoomId());
-                auto* serverObject = room->getObject2DById(params.objectId);
+                auto* serverObject = room->getObject2DById(movement.getObjectId());
+
+                double movementY = func(progress, amount.y);
+                double movementX = func(progress, amount.x);
 
                 Vector2f currentPosition = serverObject->getPosition();
                 Vector2f newPosition = Vector2f(currentPosition.x + movementX, currentPosition.y + movementY);
@@ -988,7 +1017,7 @@ std::thread Command::object2DMovement(const Object2DMovementParams& params, User
                     {"x", boost::json::value(newPosition.x)},
                     {"y", boost::json::value(newPosition.y)}
                 };
-                auto roomCommand = createRoomCommand(user.getRoomId(), user, params.messageData, messageParams, params.messageId);
+                auto roomCommand = createRoomCommand(user.getRoomId(), user, movement.getMessageData(), messageParams, movement.getMessageId());
                 sendRoomCommand(roomCommand, user, protocol);
             });
         }

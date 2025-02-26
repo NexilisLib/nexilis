@@ -1,6 +1,7 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
+#include <nexilis/movement/movement_2D.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
 #include <nexilis/command_type.hh>
@@ -79,6 +80,10 @@ public:
     /// \return Result from reading the command.
     Result read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
 
+    /// Check the result of given command.
+    /// \param result The result of the command from read.
+    bool checkResult(Result result);
+
     Settings& getSettings()
     {
         return m_settings;
@@ -98,23 +103,14 @@ private:
     /// Send multiple messages with specified tickrate.
     void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
 
-    // Smooth movement.
+    /// Smooth movement.
     double easing(double progress, double totalDistance);
 
-    // Linear movement.
+    /// Linear movement.
     double linear(double progress, double totalDistance);
 
-    struct Object2DMovementParams
-    {
-        uint64_t objectId;
-        Vector2f movementAmount;
-        float deltaTime;
-        std::function<double(double, double)> movementFunction;
-        nx_data messageData;
-        uint64_t messageId;
-    };
-
-    std::thread object2DMovement(const Object2DMovementParams& params, User& user, Protocol& protocol);
+    /// 2D movement thread.
+    std::thread object2DMovement(const Movement2D& params, User& user, Protocol& protocol);
 
 private:
     /// The "settings" of the server protocol.

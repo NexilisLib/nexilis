@@ -30,6 +30,7 @@ add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pt
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
 set(SOURCES
+    # Base
     src/cmd_line_options.cc
     src/protocol.cc
     src/protocol_manager.cc
@@ -39,6 +40,18 @@ set(SOURCES
     src/room_command_type.cc
     src/json.cc
     src/room_data.cc
+
+    # Movement
+    src/movement/movement.cc
+    src/movement/movement_2D.cc
+    src/movement/movement_3D.cc
+
+    # Logger
+    src/logger/base_handler.cc
+    src/logger/console_handler.cc
+    src/logger/logger.cc
+    src/logger/log.cc
+    src/logger/loggable.cc
 
     # Server
     src/server/server_protocol.cc
@@ -65,15 +78,7 @@ set(SOURCES
     src/client/protocol/nxboost/tcp_client.cc
     src/client/protocol/af_unix/stream_client.cc
 
-    # Logger
-    src/logger/base_handler.cc
-    src/logger/console_handler.cc
-    src/logger/logger.cc
-    src/logger/log.cc
-    src/logger/loggable.cc
 
-    # Types
-    src/types/vector3.cc
 
     # MySQL
     src/mysql/database.cc

@@ -102,7 +102,7 @@ public:
         {
         };
 
-        class Object3D : public Object<Vector3>
+        class Object3D : public Object<Vector3f>
         {
         };
 

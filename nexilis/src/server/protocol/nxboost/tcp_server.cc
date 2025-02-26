@@ -181,6 +181,8 @@ bool TCPServer::acceptClients()
 
                     Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
+                    // TODO Command handling.
+
                     if (passCommand == Command::Result::success)
                     {
                         Log::info("Passed");
