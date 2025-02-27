@@ -1,33 +1,32 @@
 #!/bin/bash
 
-# Dependencies: dmenu
+# Function to display confirmation dialog using read.
+confirm_delete() {
+    echo -n "Are you sure you want to delete logs? (yes/no): "
+    read -r confirmed
 
-# Function to display confirmation dialog using dmenu
-confirm_delete()
-{
-    # Prompt user for confirmation
-    confirmed=$(echo -e "Yes\nNo" | dmenu -p "Are you sure you want to delete logs?")
+    # Convert input to lowercase for consistency.
+    confirmed=$(echo "$confirmed" | tr '[:upper:]' '[:lower:]')
 
-    # Check user's choice
-    if [[ $confirmed == "Yes" ]]; then
-        return 0 # Confirmation received
+    if [[ $confirmed == "yes" ]]; then
+        return 0  # Confirmation received.
     else
-        return 1 # Confirmation denied
+        return 1  # Confirmation denied.
     fi
 }
 
 # Get a list of files ending with .json or .txt
 files=$(ls *.json *.txt 2>/dev/null)
 
-# Check if any files exist
+# Check if any files exist.
 if [[ -n $files ]]; then
-    # Display files to the user
+    # Display files to the user.
     echo "Files to be deleted:"
     echo "$files"
 
-    # Ask for confirmation
+    # Ask for confirmation.
     if confirm_delete; then
-        # Delete files if confirmed
+        # Delete files if confirmed.
         rm -f *.json *.txt
         echo "Files deleted."
     else
