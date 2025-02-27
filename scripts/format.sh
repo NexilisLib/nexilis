@@ -1,12 +1,20 @@
 #!/bin/bash
 
+# Get the directory of the script.
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Define the directories to run Clang-Format recursively.
-directories=("../nexilis" "../client" "../server" "../tests")
+directories=("nexilis" "examples" "tests")
 
 # Run Clang-Format recursively in the specified directories.
 for directory in "${directories[@]}"; do
-    echo "Formatting files in directory: $directory"
-    find "$directory" -type f \( -name "*.hh" -or -name "*.cc" \) -exec clang-format -i {} +
+    target_dir="$script_dir/../$directory"
+    if [ -d "$target_dir" ]; then
+        echo "Formatting files in directory: $target_dir"
+        find "$target_dir" -type f \( -name "*.hh" -or -name "*.cc" \) -exec clang-format -i {} +
+    else
+        echo "Skipping: $target_dir (Directory not found)" 
+    fi
 done
 
 echo "Clang-Format completed."
