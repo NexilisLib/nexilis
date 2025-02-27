@@ -1,16 +1,16 @@
 #include <cstdint>
 #include <cstring>
-#include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/util.hh>
 
 #include <boost/json/serialize.hpp>
 
 #include <bitset>
 #include <iomanip>
+#include <iostream>
 #include <random>
 #include <sstream>
-#include <iostream>
 
 namespace nexilis
 {

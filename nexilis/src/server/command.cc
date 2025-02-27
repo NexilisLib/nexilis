@@ -1,12 +1,12 @@
 #include "nexilis/movement_type.hh"
 #include "nexilis/object/object2d.hh"
+#include <nexilis/json.hh>
+#include <nexilis/logger/log.hh>
+#include <nexilis/room_command_type.hh>
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/room_storage.hh>
-#include <nexilis/logger/log.hh>
 #include <nexilis/server/server_json.hh>
-#include <nexilis/room_command_type.hh>
-#include <nexilis/json.hh>
 
 #include <thread>
 
@@ -390,7 +390,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto mtx = std::make_shared<std::mutex>();
 
                                 std::thread([this, mtx, movementVector, &user, command, &protocol, &messageId, delta]()
-                                {
+                                            {
                                     try
                                     {
                                         runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, &user, command, &protocol, &messageId](double progress)
@@ -490,14 +490,13 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto room = RoomStorage::getRoomById(user.getRoomId());
                                 room->addObject(std::move(object));
 
-                                std::map<std::string, boost::json::value> params {
-                                    {"positionX",  boost::json::value(position.x)},
-                                    {"positionY",  boost::json::value(position.y)},
-                                    {"dimensionX", boost::json::value(dimensions.x)},
-                                    {"dimensionY", boost::json::value(dimensions.y)},
-                                    {"filepath",   boost::json::value(filepath)},
-                                    {"id",         boost::json::value(objectId)}
-                                };
+                                std::map<std::string, boost::json::value> params{
+                                        {"positionX", boost::json::value(position.x)},
+                                        {"positionY", boost::json::value(position.y)},
+                                        {"dimensionX", boost::json::value(dimensions.x)},
+                                        {"dimensionY", boost::json::value(dimensions.y)},
+                                        {"filepath", boost::json::value(filepath)},
+                                        {"id", boost::json::value(objectId)}};
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
@@ -514,9 +513,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto room = RoomStorage::getRoomById(user.getRoomId());
                                 room->deleteObject2D(objectId);
 
-                                std::map<std::string, boost::json::value> params {
-                                    {"id", boost::json::value(objectId)}
-                                };
+                                std::map<std::string, boost::json::value> params{
+                                        {"id", boost::json::value(objectId)}};
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
@@ -550,11 +548,10 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto oldPosition = object->getPosition();
                                 auto newPosition = oldPosition + position;
 
-                                std::map<std::string, boost::json::value> params {
-                                    {"objectId", boost::json::value(objectId)},
-                                    {"x", boost::json::value(newPosition.x)},
-                                    {"y", boost::json::value(newPosition.y)}
-                                };
+                                std::map<std::string, boost::json::value> params{
+                                        {"objectId", boost::json::value(objectId)},
+                                        {"x", boost::json::value(newPosition.x)},
+                                        {"y", boost::json::value(newPosition.y)}};
 
                                 // Move object in server storage.
                                 object->setPosition(newPosition);
@@ -588,16 +585,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 auto room = RoomStorage::getRoomById(user.getRoomId());
                                 room->addObject(std::move(object));
 
-                                std::map<std::string, boost::json::value> params
-                                {
-                                    {"createMovingType", boost::json::value("create")},
-                                    {"positionX", boost::json::value(startingPosition.x)},
-                                    {"positionY", boost::json::value(startingPosition.y)},
-                                    {"dimensionX", boost::json::value(dimensions.x)},
-                                    {"dimensionY", boost::json::value(dimensions.y)},
-                                    {"filepath", boost::json::value(filepath)},
-                                    {"id", boost::json::value(objectId)}
-                                };
+                                std::map<std::string, boost::json::value> params{
+                                        {"createMovingType", boost::json::value("create")},
+                                        {"positionX", boost::json::value(startingPosition.x)},
+                                        {"positionY", boost::json::value(startingPosition.y)},
+                                        {"dimensionX", boost::json::value(dimensions.x)},
+                                        {"dimensionY", boost::json::value(dimensions.y)},
+                                        {"filepath", boost::json::value(filepath)},
+                                        {"id", boost::json::value(objectId)}};
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
 
@@ -605,12 +600,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 switch (movementType)
                                 {
                                     case MovementType::eased:
-                                        movementFunction = [this](double progress, double totalDistance) -> double {
+                                        movementFunction = [this](double progress, double totalDistance) -> double
+                                        {
                                             return this->easing(progress, totalDistance);
                                         };
                                         break;
                                     case MovementType::linear:
-                                        movementFunction = [this](double progress, double totalDistance) -> double {
+                                        movementFunction = [this](double progress, double totalDistance) -> double
+                                        {
                                             return this->linear(progress, totalDistance);
                                         };
                                         break;
@@ -623,7 +620,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 return Result::success;
                             }
 
-                            default: return Result::not_found;
+                            default:
+                                return Result::not_found;
                         }
                     }
 
@@ -647,12 +645,10 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     return Result::error;
                                 }
 
-                                std::map<std::string, boost::json::value> params
-                                {
-                                    {"id", boost::json::value(user.getId())},
-                                    {"roomId", boost::json::value(user.getRoomId())},
-                                    {"message", boost::json::value(messageData)}
-                                };
+                                std::map<std::string, boost::json::value> params{
+                                        {"id", boost::json::value(user.getId())},
+                                        {"roomId", boost::json::value(user.getRoomId())},
+                                        {"message", boost::json::value(messageData)}};
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
@@ -664,7 +660,6 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             {
                                 Log::debug("Command Room::Communicate::othercast");
                                 return Result::unimplemented;
-
                             }
 
                             // unicast
@@ -992,7 +987,7 @@ double Command::linear(double progress, double totalDistance)
 std::thread Command::object2DMovement(const Movement2D& movement, User& user, Protocol& protocol)
 {
     return std::thread([this, movement, &user, &protocol]()
-    {
+                       {
         try
         {
             runWithTickrate(m_settings.getTickrate(), movement.getDeltatime(), [this, &movement, &user, &protocol](double progress)
@@ -1024,8 +1019,7 @@ std::thread Command::object2DMovement(const Movement2D& movement, User& user, Pr
         catch (const std::exception& e)
         {
             Log::error(e.what());
-        }
-    });
+        } });
 }
 
 } // namespace nexilis::server

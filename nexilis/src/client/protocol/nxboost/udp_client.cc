@@ -106,4 +106,4 @@ void UDPClient::sendMessage(const nx_data& payload)
     }
 }
 
-} // namespace nexilis
+} // namespace nexilis::client::nxboost

@@ -3,8 +3,8 @@
 #include "menu.hh"
 #include "vim.hh"
 
-#include <nexilis/json.hh>
 #include <nexilis/client/packet.hh>
+#include <nexilis/json.hh>
 
 #include <ncurses.h>
 
@@ -49,7 +49,7 @@ void Program::signalHandler(int signal)
     {
         m_instance->handleQuit(signal);
     }
-}    
+}
 
 void Program::start()
 {
@@ -216,7 +216,7 @@ void Program::inputHandler(Window& window)
                     std::string date = nexilis::Util::getDateAndTime();
                     std::stringstream ss;
                     ss << "../../../logs/" << copiedClientId << ":" << date << "log.json";
-                    //nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
+                    // nexilis::Json::saveToFile(m_nexilisClient.getClientAPI().getCurrentMessage(), ss.str());
                     break;
                 }
 

@@ -3,12 +3,12 @@
 
 #include <nexilis/base_client.hh>
 #include <nexilis/base_room.hh>
+#include <nexilis/json.hh>
+#include <nexilis/nexilis_constants.hh>
 #include <nexilis/object/object2d.hh>
 #include <nexilis/object/object3d.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/types/vector3.hh>
-#include <nexilis/nexilis_constants.hh>
-#include <nexilis/json.hh>
 
 #include <boost/json/object.hpp>
 
@@ -342,7 +342,6 @@ public:
 
         /// All of the broadcasts that have been sent in this room.
         std::vector<Room::Communication> m_roomMessages;
-
     };
     /// Constructor.
     ClientAPI(ServerData data);
@@ -552,7 +551,7 @@ private:
     std::string readString(const boost::json::value& context, const std::string& key);
     uint64_t readUint64(const boost::json::value& context, const std::string& key);
     float readFloat(const boost::json::value& context, const std::string& key);
-    
+
 private:
     /// The initialization data for the ClientAPI.
     ServerData m_data;

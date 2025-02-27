@@ -1,10 +1,10 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
-#include <nexilis/server/config.hh>
-#include <nexilis/types/vector2.hh>
 #include <nexilis/logger/log_level.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/server/config.hh>
+#include <nexilis/types/vector2.hh>
 
 #include <boost/json/object.hpp>
 
@@ -102,7 +102,7 @@ public:
     /// \ingroup BytevectorConversions
     template <typename EnumType>
     static nx_data convertToByteVector(EnumType e,
-        typename std::enable_if<std::is_enum<EnumType>::value>::type* = nullptr)
+                                       typename std::enable_if<std::is_enum<EnumType>::value>::type* = nullptr)
     {
         using UnderlyingType = typename std::underlying_type<EnumType>::type;
         return convertToByteVector(static_cast<uint8_t>(static_cast<UnderlyingType>(e)));

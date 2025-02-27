@@ -1,10 +1,10 @@
 #ifndef NEXILIS_BOOST_UDP_SERVER_HH
 #define NEXILIS_BOOST_UDP_SERVER_HH
 
-#include <nexilis/server/server_protocol.hh>
-#include <nexilis/server/settings.hh>
 #include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/server/server_protocol.hh>
+#include <nexilis/server/settings.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>

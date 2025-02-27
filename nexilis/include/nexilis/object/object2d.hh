@@ -1,8 +1,8 @@
 #ifndef NEXILIS_OBJECT2D_HH
 #define NEXILIS_OBJECT2D_HH
 
-#include <nexilis/types/vector2.hh>
 #include <nexilis/object/object.hh>
+#include <nexilis/types/vector2.hh>
 
 namespace nexilis
 {

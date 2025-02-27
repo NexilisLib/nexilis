@@ -29,9 +29,8 @@ public:
         (void)data;
         return nullptr;
     }
-
 };
 
-}
+} // namespace nexilis
 
 #endif

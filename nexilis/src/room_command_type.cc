@@ -1,5 +1,5 @@
-#include <nexilis/room_command_type.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/room_command_type.hh>
 
 namespace nexilis
 {
@@ -90,6 +90,4 @@ std::string RoomCommandType::CommunicationTypeToString(RoomCommandType::Communic
     }
 }
 
-
 } // namespace nexilis
-

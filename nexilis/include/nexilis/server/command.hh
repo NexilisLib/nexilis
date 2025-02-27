@@ -1,16 +1,16 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
+#include <nexilis/command_type.hh>
 #include <nexilis/movement/movement_2D.hh>
+#include <nexilis/protocol.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
-#include <nexilis/command_type.hh>
-#include <nexilis/protocol.hh>
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 #include <map>
+#include <string>
 #include <thread>
 
 namespace nexilis::server
@@ -93,6 +93,7 @@ public:
     {
         return m_settings;
     }
+
 private:
     /// Send message to every protocol that is avainable for a client;
     void sendMessageToClient(nx_data data, User& user, Protocol& protocol);

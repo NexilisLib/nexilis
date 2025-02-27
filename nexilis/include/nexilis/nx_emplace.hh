@@ -12,15 +12,15 @@ static void nx_emplace(nx_data& originalData, Args&&... args)
 {
     ([&originalData](const auto& data)
      {
-        const auto& byteVector = Util::convertToByteVector(data);
-        for (const auto& byte : byteVector)
-        {
-            originalData.emplace_back(byte);
-        }
-
-     } (std::forward<Args>(args)), ...);
+         const auto& byteVector = Util::convertToByteVector(data);
+         for (const auto& byte : byteVector)
+         {
+             originalData.emplace_back(byte);
+         }
+     }(std::forward<Args>(args)),
+     ...);
 }
 
-}
+} // namespace nexilis
 
 #endif

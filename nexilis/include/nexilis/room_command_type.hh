@@ -55,6 +55,6 @@ public:
     static std::string CommunicationTypeToString(Communication communication);
 };
 
-}
+} // namespace nexilis
 
 #endif

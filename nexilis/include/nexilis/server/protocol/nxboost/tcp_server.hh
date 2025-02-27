@@ -1,10 +1,10 @@
 #ifndef NEXILIS_BOOST_TCP_SERVER_HH
 #define NEXILIS_BOOST_TCP_SERVER_HH
 
-#include <nexilis/server/server_protocol.hh>
-#include <nexilis/server/message_handler.hh>
-#include <nexilis/server/settings.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/server/message_handler.hh>
+#include <nexilis/server/server_protocol.hh>
+#include <nexilis/server/settings.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -63,6 +63,6 @@ private:
     std::thread m_ioContextThread;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server::nxboost
 
 #endif

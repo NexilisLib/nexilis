@@ -10,4 +10,4 @@ Movement2D::Movement2D(const Movement::Data& data, Vector2f movement_amount, con
 {
 }
 
-}
+} // namespace nexilis

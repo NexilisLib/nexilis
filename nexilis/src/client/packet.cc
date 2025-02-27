@@ -1,7 +1,7 @@
-#include <nexilis/types/vector2.hh>
 #include <nexilis/client/packet.hh>
-#include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/types/vector2.hh>
+#include <nexilis/util.hh>
 
 namespace nexilis::client
 {

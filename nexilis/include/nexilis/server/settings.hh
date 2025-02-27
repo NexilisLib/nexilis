@@ -40,7 +40,10 @@ public:
 
     // Tickrate
     void setTickrate(float tickrate);
-    float getTickrate() const { return m_tickrate; }
+    float getTickrate() const
+    {
+        return m_tickrate;
+    }
 
 private:
     std::string m_rootPassword;

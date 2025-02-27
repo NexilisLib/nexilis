@@ -31,6 +31,6 @@ private:
     std::function<double(double, double, double)> m_movementFunction;
 };
 
-}
+} // namespace nexilis
 
 #endif

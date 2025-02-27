@@ -1,5 +1,5 @@
-#include <nexilis/logger/log.hh>
 #include <nexilis/logger/console_handler.hh>
+#include <nexilis/logger/log.hh>
 
 namespace nexilis
 {

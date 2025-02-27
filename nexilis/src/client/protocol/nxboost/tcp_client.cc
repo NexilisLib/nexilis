@@ -230,4 +230,4 @@ void TCPClient::receiveLoop()
     }
 }
 
-} // namespace nexilis
+} // namespace nexilis::client::nxboost

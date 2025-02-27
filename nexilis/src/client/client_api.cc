@@ -1,8 +1,8 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
+#include <nexilis/json.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/util.hh>
-#include <nexilis/json.hh>
 
 #include <thread>
 
@@ -563,7 +563,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         }
                     }
                     return ReadResult::failure;
-
                 }
                 else if (roomAction == "destroy")
                 {
@@ -955,4 +954,4 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
     };
 }
 
-} // namespace nexilis
+} // namespace nexilis::client

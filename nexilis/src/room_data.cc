@@ -56,4 +56,4 @@ RoomData& RoomData::operator=(RoomData&& other)
     return *this;
 }
 
-}
+} // namespace nexilis

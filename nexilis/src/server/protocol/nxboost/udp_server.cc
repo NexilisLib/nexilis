@@ -1,6 +1,6 @@
-#include <nexilis/server/protocol/nxboost/udp_server.hh>
-#include <nexilis/server/command.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/server/command.hh>
+#include <nexilis/server/protocol/nxboost/udp_server.hh>
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/system/system_error.hpp>
@@ -124,4 +124,4 @@ void UDPServer::receiveFromClients()
     Log::error("Socket is not open!");
 }
 
-} // namespace nexilis
+} // namespace nexilis::server::nxboost

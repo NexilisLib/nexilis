@@ -1,5 +1,5 @@
-#include <nexilis/util.hh>
 #include <nexilis/protocol_manager.hh>
+#include <nexilis/util.hh>
 
 namespace nexilis
 {

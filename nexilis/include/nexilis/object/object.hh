@@ -1,8 +1,8 @@
 #ifndef NEXILIS_OBJECT_HH
 #define NEXILIS_OBJECT_HH
 
-#include <nexilis/util.hh>
 #include <nexilis/nx_emplace.hh>
+#include <nexilis/util.hh>
 
 namespace nexilis
 {
@@ -73,6 +73,6 @@ protected:
     std::string m_filepath;
 };
 
-}
+} // namespace nexilis
 
 #endif

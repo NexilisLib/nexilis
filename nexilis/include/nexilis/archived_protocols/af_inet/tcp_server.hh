@@ -2,9 +2,9 @@
 #define NEXILIS_AF_INET_TCP_SERVER_HH
 
 #include <nexilis/authentication.hh>
+#include <nexilis/command.hh>
 #include <nexilis/loggable.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/command.hh>
 #include <nexilis/server/server_protocol.hh>
 
 #include <netinet/in.h>

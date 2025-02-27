@@ -1,6 +1,6 @@
-#include <nexilis/util.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/server/room.hh>
+#include <nexilis/util.hh>
 
 #include <sys/types.h>
 
@@ -12,8 +12,8 @@ Room::Room(const RoomData& data)
 {
 }
 
-Room::Room(Room&& other) :
-      BaseRoom(std::move(other)),
+Room::Room(Room&& other)
+    : BaseRoom(std::move(other)),
       m_clientIds(std::move(other.m_clientIds))
 {
 }

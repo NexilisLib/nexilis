@@ -1,8 +1,8 @@
 #include "nexilis/server/server_protocol.hh"
-#include <nexilis/server/protocol/nxboost/tcp_server.hh>
-#include <nexilis/server/command.hh>
-#include <nexilis/util.hh>
 #include <nexilis/logger/loggable.hh>
+#include <nexilis/server/command.hh>
+#include <nexilis/server/protocol/nxboost/tcp_server.hh>
+#include <nexilis/util.hh>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/read.hpp>
@@ -104,7 +104,7 @@ bool TCPServer::acceptClients()
 
         // Handle each client in a separate thread
         std::thread([this, newSocket = std::move(newSocket)]() mutable
-        {
+                    {
             try
             {
                 std::string clientAddress;

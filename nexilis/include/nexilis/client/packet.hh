@@ -2,12 +2,12 @@
 #define NEXILIS_PACKET_HH
 
 #include <nexilis/client/client_api.hh>
-#include <nexilis/types/vector2.hh>
-#include <nexilis/nexilis_constants.hh>
-#include <nexilis/room_data.hh>
 #include <nexilis/command_type.hh>
-#include <nexilis/room_command_type.hh>
 #include <nexilis/movement_type.hh>
+#include <nexilis/nexilis_constants.hh>
+#include <nexilis/room_command_type.hh>
+#include <nexilis/room_data.hh>
+#include <nexilis/types/vector2.hh>
 
 namespace nexilis::client
 {
@@ -86,7 +86,7 @@ public:
             }
 
             static nx_data createMoving(VectorType startingPosition, VectorType dimensions, VectorType movement,
-                        float deltaTime, MovementType movementType, const std::string& filepath)
+                                        float deltaTime, MovementType movementType, const std::string& filepath)
             {
                 auto id = clientIdentification();
                 id.emplace_back(static_cast<uint8_t>(CommandType::room));

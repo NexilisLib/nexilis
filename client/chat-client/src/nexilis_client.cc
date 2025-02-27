@@ -1,9 +1,9 @@
 #include "nexilis_client.hh"
 #include "debug.hh"
 
-#include <nexilis/util.hh>
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
+#include <nexilis/util.hh>
 
 #include <iostream>
 

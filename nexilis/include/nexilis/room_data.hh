@@ -81,6 +81,6 @@ private:
     uint32_t m_maxSize;
 };
 
-}
+} // namespace nexilis
 
 #endif

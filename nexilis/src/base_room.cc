@@ -9,10 +9,10 @@ BaseRoom::BaseRoom(const RoomData& roomData)
 {
 }
 
-BaseRoom::BaseRoom(BaseRoom&& other) :
-    m_roomData(std::move(other.m_roomData)),
-    m_objects2D(std::move(other.m_objects2D)),
-    m_objects3D(std::move(other.m_objects3D))
+BaseRoom::BaseRoom(BaseRoom&& other)
+    : m_roomData(std::move(other.m_roomData)),
+      m_objects2D(std::move(other.m_objects2D)),
+      m_objects3D(std::move(other.m_objects3D))
 {
 }
 
@@ -83,9 +83,10 @@ Object2D* BaseRoom::getObject2DById(uint64_t id)
 void BaseRoom::deleteObject2D(uint64_t objectId)
 {
     auto it = std::find_if(m_objects2D.begin(), m_objects2D.end(),
-    [objectId](const Object2D& obj){
-        return obj.getId() == objectId;
-    });
+                           [objectId](const Object2D& obj)
+                           {
+                               return obj.getId() == objectId;
+                           });
 
     if (it != m_objects2D.end())
     {
@@ -98,4 +99,4 @@ void BaseRoom::deleteObject2D(uint64_t objectId)
     }
 }
 
-}
+} // namespace nexilis

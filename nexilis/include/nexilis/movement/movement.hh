@@ -1,8 +1,8 @@
 #ifndef NEXILIS_MOVEMENT_MOVEMENT_HH
 #define NEXILIS_MOVEMENT_MOVEMENT_HH
 
-#include <nexilis/types/vector2.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/types/vector2.hh>
 
 namespace nexilis
 {
@@ -70,6 +70,6 @@ private:
     Data m_data;
 };
 
-}
+} // namespace nexilis
 
 #endif

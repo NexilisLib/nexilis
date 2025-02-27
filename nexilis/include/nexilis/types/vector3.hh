@@ -38,11 +38,11 @@ public:
 
         // Add component bytes to the serialized data.
         serializedData.insert(serializedData.end(), reinterpret_cast<const uint8_t*>(&xBytes),
-                            reinterpret_cast<const uint8_t*>(&xBytes) + sizeof(uint32_t));
+                              reinterpret_cast<const uint8_t*>(&xBytes) + sizeof(uint32_t));
         serializedData.insert(serializedData.end(), reinterpret_cast<const uint8_t*>(&yBytes),
-                            reinterpret_cast<const uint8_t*>(&yBytes) + sizeof(uint32_t));
+                              reinterpret_cast<const uint8_t*>(&yBytes) + sizeof(uint32_t));
         serializedData.insert(serializedData.end(), reinterpret_cast<const uint8_t*>(&zBytes),
-                            reinterpret_cast<const uint8_t*>(&zBytes) + sizeof(uint32_t));
+                              reinterpret_cast<const uint8_t*>(&zBytes) + sizeof(uint32_t));
 
         return serializedData;
     }

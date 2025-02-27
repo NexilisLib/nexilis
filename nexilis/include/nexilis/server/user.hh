@@ -3,9 +3,9 @@
 
 #include <cstdint>
 #include <nexilis/base_client.hh>
-#include <nexilis/util.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/object/object2d.hh>
+#include <nexilis/util.hh>
 
 namespace nexilis::server
 {

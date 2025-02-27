@@ -1,9 +1,9 @@
 #ifndef NEXILIS_CONSTANTS_HH
 #define NEXILIS_CONSTANTS_HH
 
-#include <vector>
 #include <cstdint>
 #include <limits>
+#include <vector>
 
 namespace nexilis
 {
@@ -15,6 +15,6 @@ constexpr inline uint32_t NEXILIS_DEFAULT_ROOM_CLIENT_AMOUNT = 30;
 
 using nx_data = std::vector<uint8_t>;
 
-}
+} // namespace nexilis
 
 #endif

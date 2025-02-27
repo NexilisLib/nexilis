@@ -1,7 +1,7 @@
 #include "nexilis/server/server_protocol.hh"
-#include <nexilis/server/protocol/af_unix/stream_server.hh>
-#include <nexilis/server/command.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/server/command.hh>
+#include <nexilis/server/protocol/af_unix/stream_server.hh>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -57,12 +57,11 @@ StreamServer& StreamServer::operator=(StreamServer&& other)
 void StreamServer::start()
 {
     m_receiveThread = std::thread([this]()
-    {
+                                  {
         while (true)
         {
             handleMessages();
-        } 
-    });
+        } });
 }
 
 void StreamServer::createSocket()
@@ -177,26 +176,24 @@ void StreamServer::handleMessages()
 
             if (msg.getClient())
             {
-                    auto handledMessage = getMessageHandler().readMessage(msg.getAddress(), payload, msg.getPort(), &getCommand().getSettings());
+                auto handledMessage = getMessageHandler().readMessage(msg.getAddress(), payload, msg.getPort(), &getCommand().getSettings());
 
-                    if (!handledMessage.getClient()->isUnixStreamSet())
-                    {
-                        handledMessage.getClient()->setUnixStreamSend([this, &clientSocket](const nx_data& bytes)
-                        {
-                            sendMessage(clientSocket, bytes);
-                        });
-                    }
+                if (!handledMessage.getClient()->isUnixStreamSet())
+                {
+                    handledMessage.getClient()->setUnixStreamSend([this, &clientSocket](const nx_data& bytes)
+                                                                  { sendMessage(clientSocket, bytes); });
+                }
 
-                    Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+                Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
-                    if (passCommand == Command::Result::success)
-                    {
-                        Log::info("Passed");
-                    }
-                    else
-                    {
-                        Log::info("Failed");
-                    }
+                if (passCommand == Command::Result::success)
+                {
+                    Log::info("Passed");
+                }
+                else
+                {
+                    Log::info("Failed");
+                }
             }
             else
             {
@@ -206,4 +203,4 @@ void StreamServer::handleMessages()
     }
 }
 
-} // namespace nexilis::af_unix::sock_stream
+} // namespace nexilis::server::af_unix

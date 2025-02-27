@@ -1,10 +1,10 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
-#include <nexilis/protocol.hh>
-#include <nexilis/server/settings.hh>
-#include <nexilis/server/server_protocol.hh>
 #include <nexilis/logger/loggable.hh>
+#include <nexilis/protocol.hh>
+#include <nexilis/server/server_protocol.hh>
+#include <nexilis/server/settings.hh>
 
 #include <thread>
 
@@ -59,6 +59,6 @@ private:
     std::thread m_receiveThread;
 };
 
-} // namespace nexilis
+} // namespace nexilis::server::af_unix
 
 #endif

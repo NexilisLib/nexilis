@@ -2,10 +2,10 @@
 #define NEXILIS_AF_INET_UDP_SERVER_HH
 
 #include <nexilis/af_inet/base_udp_server.hh>
-#include <nexilis/server/server_protocol.hh>
-#include <nexilis/message_handler.hh>
-#include <nexilis/command.hh>
 #include <nexilis/authentication.hh>
+#include <nexilis/command.hh>
+#include <nexilis/message_handler.hh>
+#include <nexilis/server/server_protocol.hh>
 
 namespace nexilis::af_inet
 {

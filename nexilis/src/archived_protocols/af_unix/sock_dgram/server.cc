@@ -19,8 +19,8 @@ namespace nexilis::af_unix::sock_dgram
 static std::string path;
 
 Server::Server(const Authentication& authentication, const std::string& socketPath)
-    :   Command(authentication),
-        m_buffer(NEXILIS_BUFFER)
+    : Command(authentication),
+      m_buffer(NEXILIS_BUFFER)
 {
     path = socketPath;
 

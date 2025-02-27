@@ -1,8 +1,8 @@
 #ifndef NEXILIS_LOGGER_BASE_HANDLER_HH
 #define NEXILIS_LOGGER_BASE_HANDLER_HH
 
-#include <nexilis/util.hh>
 #include <nexilis/logger/log_level.hh>
+#include <nexilis/util.hh>
 
 #include <cstdint>
 #include <string>

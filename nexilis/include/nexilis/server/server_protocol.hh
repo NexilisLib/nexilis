@@ -1,10 +1,10 @@
 #ifndef NEXILIS_SERVER_PROTOCOL_HH
 #define NEXILIS_SERVER_PROTOCOL_HH
 
-#include <nexilis/server/settings.hh>
-#include <nexilis/server/message_handler.hh>
-#include <nexilis/server/command.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/server/command.hh>
+#include <nexilis/server/message_handler.hh>
+#include <nexilis/server/settings.hh>
 
 namespace nexilis::server
 {

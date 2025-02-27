@@ -34,7 +34,7 @@ private:
     void debugObject(boost::json::object object);
     void readMessage(boost::json::object object);
     void parseMessage(boost::json::object object);
-    
+
     void handleQuit(int signal);
     static void signalHandler(int signal);
 
