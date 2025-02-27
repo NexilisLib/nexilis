@@ -2,11 +2,9 @@ name: Check correct alias usage
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   run-example-script:
