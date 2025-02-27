@@ -16,8 +16,7 @@ static void nx_emplace(nx_data& originalData, Args&&... args)
          for (const auto& byte : byteVector)
          {
              originalData.emplace_back(byte);
-         }
-     }(std::forward<Args>(args)),
+         } }(std::forward<Args>(args)),
      ...);
 }
 
