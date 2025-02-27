@@ -78,8 +78,6 @@ set(SOURCES
     src/client/protocol/nxboost/tcp_client.cc
     src/client/protocol/af_unix/stream_client.cc
 
-
-
     # MySQL
     src/mysql/database.cc
 

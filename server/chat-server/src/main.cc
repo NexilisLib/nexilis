@@ -1,12 +1,10 @@
-// nexilis libs
 #include <nexilis/logger/log.hh>
 #include <nexilis/mysql/database.hh>
 #include <nexilis/protocol_manager.hh>
+#include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/server/room.hh>
 #include <nexilis/server/room_storage.hh>
-
-// nexilis protocols
-#include <nexilis/server/protocol/nxboost/tcp_server.hh>
+#include <nexilis/server/runtime.hh>
 
 #include <iostream>
 
@@ -28,8 +26,15 @@ int main()
     boostTCPServer.start();
     std::cout << "nexilis boost TCP ready" << std::endl;
 
-    std::cout << "SERVER READY, looping main thread" << std::endl;
-    while (true)
-    {
-    }
+    auto condition = [](size_t)
+    { return true; };
+    auto f = std::function<bool()>([]()
+                                   {
+        std::cout << "Updating chat server" << std::endl;
+        return true; });
+
+    auto server_runtime = std::thread([&condition, &f]()
+                                      { nexilis::server::runtime(condition, f, 1); });
+
+    server_runtime.detach();
 }

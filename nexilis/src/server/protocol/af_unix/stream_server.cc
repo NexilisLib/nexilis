@@ -1,4 +1,3 @@
-#include "nexilis/server/server_protocol.hh"
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
@@ -184,15 +183,12 @@ void StreamServer::handleMessages()
                                                                   { sendMessage(clientSocket, bytes); });
                 }
 
-                Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+                Command::Result result = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+                getCommand().checkResult(result);
 
-                if (passCommand == Command::Result::success)
+                if (result == Command::Result::success)
                 {
                     Log::info("Passed");
-                }
-                else
-                {
-                    Log::info("Failed");
                 }
             }
             else

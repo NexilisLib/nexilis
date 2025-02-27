@@ -1,39 +1,55 @@
 #ifndef NEXILIS_SERVER_RUNTIME_HH
 #define NEXILIS_SERVER_RUNTIME_HH
 
-#include <cstdint>
-#include <thread>
+#include <chrono>
 #include <functional>
+#include <mutex>
+#include <thread>
 
 namespace nexilis::server
 {
 
+/// Control server runtime.
 /// \tparam Condition The condition when to run update function.
-/// \note Must have counter (size_t) as parameter.
+/// \note The condition must have "counter" (size_t) as a parameter.
 /// \tparam Args The arguments for the update function.
-/// \param condition The run condition.
+/// \param condition When to run the update function.
+/// The update condition logic can be formed from the "counter" parameter.
 /// \param f The update function.
-/// \param sleep The sleep time for this function.
+/// \param tickrate The tickrate for the update function.
 /// \param args Arguments for the update function.
 /// \return False if the update function returns false.
-template <typename Condition, typename ...Args>
-bool runtime(Condition condition, const std::function<bool(Args...)>& f,
-    uint32_t sleep, Args... args)
+template <typename Condition, typename... Args>
+bool runtime(const Condition& condition, const std::function<bool(Args...)>& f,
+             uint32_t tickrate, Args... args)
 {
-    for (std::size_t i = 0;;i++)
+    using clock = std::chrono::steady_clock;
+    auto tick_duration = std::chrono::milliseconds(1000 / tickrate);
+    std::mutex mtx;
+
+    for (size_t i = 0;; i++)
     {
-        if (condition(i))
+        auto start_time = clock::now();
+
         {
-            if (!f(std::forward<Args>(args)...))
+            std::lock_guard<std::mutex> lock(mtx);
+            if (condition(i))
             {
-                return false;
+                if (!f(std::forward<Args>(args)...))
+                {
+                    return false;
+                }
             }
         }
-        std::this_thread::sleep_for(std::chrono::seconds(sleep));
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - start_time);
+        if (elapsed < tick_duration)
+        {
+            std::this_thread::sleep_for(tick_duration - elapsed);
+        }
     }
     return true;
 }
 
-}
+} // namespace nexilis::server
 
 #endif
