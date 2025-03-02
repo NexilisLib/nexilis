@@ -38,7 +38,7 @@ TEST_P(SetLevelTest, setLevel)
 
 INSTANTIATE_TEST_CASE_P(setLevelTests, SetLevelTest, testing::Values(nexilis::logger::LogLevel::CRITICAL, nexilis::logger::LogLevel::ERROR, nexilis::logger::LogLevel::WARNING, nexilis::logger::LogLevel::INFO, nexilis::logger::LogLevel::DEBUG));
 
-TEST(LoggerTest, startStopLogging)
+TEST(LogTest, startStopLogging)
 {
     nexilis::Log::startConsoleLogging();
     nexilis::Log::stopLogging();
@@ -47,7 +47,7 @@ TEST(LoggerTest, startStopLogging)
 }
 
 // Test default state?
-TEST(LoggerTest, testNoHandlers)
+TEST(LogTest, testNoHandlers)
 {
     EXPECT_TRUE(nexilis::Log::noHandlers());
 }
@@ -55,20 +55,20 @@ TEST(LoggerTest, testNoHandlers)
 // Test adding handlers
 
 // Test removing handlers.
-TEST(LoggerTest, removeHandlers)
+TEST(LogTest, removeHandlers)
 {
     EXPECT_TRUE(nexilis::Log::noHandlers());
 
     auto handler = nexilis::logger::ConsoleHandler();
     uint64_t handlerId = handler.getId();
 
-    nexilis::Log::addHandler(std::move(handler));
+    nexilis::Log::addHandler(std::make_unique<nexilis::logger::ConsoleHandler>(handler));
     EXPECT_FALSE(nexilis::Log::noHandlers());
     nexilis::Log::removeHandler(handlerId);
     EXPECT_TRUE(nexilis::Log::noHandlers());
 }
 
-TEST(LoggerTest, checkDefaultStartConsoleLogging)
+TEST(LogTest, checkDefaultStartConsoleLogging)
 {
     nexilis::Log::startConsoleLogging();
     EXPECT_TRUE(nexilis::Log::getLevel(nexilis::logger::LogLevel::CRITICAL));
@@ -81,7 +81,7 @@ TEST(LoggerTest, checkDefaultStartConsoleLogging)
     nexilis::Log::stopLogging();
 }
 
-TEST(LoggerTest, ConsoleHandler)
+TEST(LogTest, ConsoleHandler)
 {
     nexilis::Log::startConsoleLogging();
 
@@ -90,7 +90,7 @@ TEST(LoggerTest, ConsoleHandler)
     std::streambuf* old_cout = std::cout.rdbuf();
     std::cout.rdbuf(ss.rdbuf());
 
-    nexilis::Log::addHandler(nexilis::logger::ConsoleHandler());
+    nexilis::Log::addHandler(std::make_unique<nexilis::logger::ConsoleHandler>(nexilis::logger::ConsoleHandler()));
     nexilis::Log::error("This is a test error message");
 
     // Reset cout's buffer to the original.
@@ -102,15 +102,15 @@ TEST(LoggerTest, ConsoleHandler)
     nexilis::Log::stopLogging();
 }
 
-TEST(LoggerTest, FileHandler)
+TEST(LogTest, FileHandler)
 {
     nexilis::Log::setLevel(nexilis::logger::LogLevel::INFO);
-    std::string fileName = "test_file_" + std::to_string(rand()) + ".log";
-    nexilis::Log::addHandler(nexilis::logger::FileHandler(fileName));
+    std::string filename = "test_file_" + std::to_string(rand()) + ".log";
+    nexilis::Log::addHandler(std::make_unique<nexilis::logger::FileHandler>(nexilis::logger::FileHandler(filename)));
 
     nexilis::Log::info("Test message");
 
-    std::ifstream file(fileName);
+    std::ifstream file(filename);
     std::string line;
     std::getline(file, line);
     std::string expected = "INFO: Test message";
@@ -118,6 +118,6 @@ TEST(LoggerTest, FileHandler)
     EXPECT_EQ(expected, line);
 
     file.close();
-    std::remove(fileName.c_str());
+    std::remove(filename.c_str());
     nexilis::Log::stopLogging();
 }

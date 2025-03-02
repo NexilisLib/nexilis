@@ -9,13 +9,13 @@ logger::Logger Log::log;
 void Log::startConsoleLogging(logger::LogLevel minLevel)
 {
     log.setMinimumLevel(minLevel);
-    log.addHandler(logger::ConsoleHandler());
+    log.addHandler(std::make_unique<logger::ConsoleHandler>(logger::ConsoleHandler()));
 }
 
 void Log::startConsoleDebugging()
 {
     log.setMinimumLevel(logger::LogLevel::DEBUG);
-    log.addHandler(logger::ConsoleHandler());
+    log.addHandler(std::make_unique<logger::ConsoleHandler>(logger::ConsoleHandler()));
 }
 
 void Log::stopLogging()
@@ -33,7 +33,7 @@ void Log::startConsoleLogging(uint8_t logLevel)
 {
     log.setLogLevel(logLevel);
 
-    log.addHandler(logger::ConsoleHandler());
+    log.addHandler(std::make_unique<logger::ConsoleHandler>(logger::ConsoleHandler()));
 }
 
 } // namespace nexilis

@@ -14,72 +14,58 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Boost REQUIRED COMPONENTS system json)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# MySQL C API
-find_library(MYSQL_CLIENT_LIBRARY mysqlclient)
-
-if(MYSQL_CLIENT_LIBRARY)
-    add_definitions(-DHAS_MYSQL_CLIENT_LIBRARY)
-    message("MySQL client library found")
-else()
-    message("MySQL client library not found")
-endif()
-
-
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
 set(SOURCES
     # Base
-    src/cmd_line_options.cc
-    src/protocol.cc
-    src/protocol_manager.cc
-    src/base_client.cc
-    src/base_room.cc
-    src/util.cc
-    src/room_command_type.cc
-    src/json.cc
-    src/room_data.cc
+    src/nexilis/cmd_line_options.cc
+    src/nexilis/protocol.cc
+    src/nexilis/protocol_manager.cc
+    src/nexilis/base_client.cc
+    src/nexilis/base_room.cc
+    src/nexilis/util.cc
+    src/nexilis/room_command_type.cc
+    src/nexilis/json.cc
+    src/nexilis/room_data.cc
 
     # Movement
-    src/movement/movement.cc
-    src/movement/movement_2D.cc
-    src/movement/movement_3D.cc
+    src/nexilis/movement/movement.cc
+    src/nexilis/movement/movement_2D.cc
+    src/nexilis/movement/movement_3D.cc
 
     # Logger
-    src/logger/base_handler.cc
-    src/logger/console_handler.cc
-    src/logger/logger.cc
-    src/logger/log.cc
-    src/logger/loggable.cc
+    src/nexilis/logger/base_handler.cc
+    src/nexilis/logger/console_handler.cc
+    src/nexilis/logger/logger.cc
+    src/nexilis/logger/log.cc
+    src/nexilis/logger/loggable.cc
 
     # Server
-    src/server/server_protocol.cc
-    src/server/user.cc
-    src/server/command.cc
-    src/server/message_handler.cc
-    src/server/server_json.cc
-    src/server/room.cc
-    src/server/config.cc
-    src/server/settings.cc
-    src/server/client_storage.cc
-    src/server/room_storage.cc
+    src/nexilis/server/server_protocol.cc
+    src/nexilis/server/user.cc
+    src/nexilis/server/command.cc
+    src/nexilis/server/message_handler.cc
+    src/nexilis/server/server_json.cc
+    src/nexilis/server/room.cc
+    src/nexilis/server/config.cc
+    src/nexilis/server/settings.cc
+    src/nexilis/server/client_storage.cc
+    src/nexilis/server/room_storage.cc
 
     # Server protocols
-    src/server/protocol/nxboost/tcp_server.cc
-    src/server/protocol/af_unix/stream_server.cc
+    src/nexilis/server/protocol/nxboost/tcp_server.cc
+    src/nexilis/server/protocol/af_unix/stream_server.cc
 
     # Client
-    src/client/client_api.cc
-    src/client/client_protocol.cc
-    src/client/packet.cc
+    src/nexilis/client/client_api.cc
+    src/nexilis/client/client_protocol.cc
+    src/nexilis/client/packet.cc
 
     # Client protocols
-    src/client/protocol/nxboost/tcp_client.cc
-    src/client/protocol/af_unix/stream_client.cc
-
-    # MySQL
-    src/mysql/database.cc
+    src/nexilis/client/protocol/nxboost/tcp_client.cc
+    src/nexilis/client/protocol/af_unix/stream_client.cc
 
     #src/af_unix/sock_dgram/server.cc
     #src/af_unix/sock_dgram/client.cc
@@ -93,13 +79,14 @@ set(SOURCES
 
     #src/boost/udp_client.cc
     #src/boost/udp_server.cc
+
+    # NexilisC
+    src/nexilisc/logger/logger_c.cc
+    src/nexilisc/logger/base_handler_c.cc
+    src/nexilisc/logger/file_handler_c.cc
+    src/nexilisc/logger/console_handler_c.cc
 )
 
 add_library(nexilis ${SOURCES})
 target_include_directories(nexilis PUBLIC include)
-
-if(MYSQL_CLIENT_LIBRARY)
-    target_link_libraries(nexilis PRIVATE Boost::system Boost::json ${MYSQL_CLIENT_LIBRARY})
-else()
-    target_link_libraries(nexilis PRIVATE Boost::system Boost::json)
-endif()
+target_link_libraries(nexilis PRIVATE Boost::system Boost::json)

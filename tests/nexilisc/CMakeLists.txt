@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.13)
-project(nexilis_tests)
+cmake_minimum_required(VERSION 3.30)
+project(nexilis_c_tests)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
@@ -12,12 +12,9 @@ add_subdirectory(../../nexilis/ nexilis_dir)
 
 add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 
-add_executable(nexilis_tests
+add_executable(nexilis_c_tests
     src/main.cc
-
-    src/logging/logger.cc
-    src/logging/log.cc
-    src/protocol/protocol.cc
+    src/logging/logger_c.cc
 )
 
-target_link_libraries(nexilis_tests nexilis ${GTEST_LIBRARIES})
+target_link_libraries(nexilis_c_tests nexilis ${GTEST_LIBRARIES})

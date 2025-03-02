@@ -25,10 +25,10 @@ public:
     /// \param handler R-value reference of the handler.
     /// \tparam T The type of handler.
     template <typename T>
-    void addHandler(T&& handler)
+    void addHandler(std::unique_ptr<T> handler)
     {
         std::lock_guard<std::mutex> lock(m_mtx);
-        m_handlers.emplace_back(std::make_unique<std::remove_reference_t<T>>(std::forward<T>(handler)));
+        m_handlers.emplace_back(std::move(handler));
     }
 
     /// Remove handler based on it's identifier.
