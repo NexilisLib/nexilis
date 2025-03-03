@@ -16,11 +16,9 @@ typedef struct nexilis_logger_LoggerC nexilis_logger_LoggerC;
 
 nexilis_logger_FileHandler* nexilis_logger_FileHandler_create(const char* filename);
 void nexilis_logger_FileHandler_destroy(nexilis_logger_FileHandler* handler);
-void nexilis_logger_FileHandler_emit(nexilis_logger_FileHandler* handler, nexilis_logger_loglevel log_level, const char* data);
 
 nexilis_logger_ConsoleHandler* nexilis_logger_ConsoleHandler_create();
 void nexilis_logger_ConsoleHandler_destroy(nexilis_logger_ConsoleHandler* handler);
-void nexilis_logger_ConsoleHandler_emit(nexilis_logger_ConsoleHandler* handler, nexilis_logger_loglevel log_level, const char* data);
 
 nexilis_logger_LoggerC* nexilis_logger_create();
 void nexilis_logger_destroy(nexilis_logger_LoggerC* logger);

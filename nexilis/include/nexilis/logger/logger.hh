@@ -18,8 +18,25 @@ namespace nexilis::logger
 class Logger
 {
 public:
-    /// Constructor.
-    Logger() = default;
+    /// Default constructor.
+    Logger()
+        : m_mtx()
+    {
+    }
+
+    ~Logger() = default;
+
+    // Move constructor.
+    Logger(Logger&& other) = delete;
+
+    // Move assignment operator.
+    Logger& operator=(Logger&& other) = delete;
+
+    /// Deleted copy constructor.
+    Logger(const Logger&) = delete;
+
+    /// Deleted move assignment operator.
+    Logger& operator=(const Logger&) = delete;
 
     // Add handler to the vector of handlers.
     /// \param handler R-value reference of the handler.
@@ -27,21 +44,13 @@ public:
     template <typename T>
     void addHandler(std::unique_ptr<T> handler)
     {
+        static_assert(std::is_base_of_v<BaseHandler, T>, "T must be derived from BaseHandler");
         std::lock_guard<std::mutex> lock(m_mtx);
         m_handlers.emplace_back(std::move(handler));
     }
 
     /// Remove handler based on it's identifier.
-    void removeHandler(uint64_t handlerId)
-    {
-        std::lock_guard<std::mutex> lock(m_mtx);
-
-        auto it = std::remove_if(m_handlers.begin(), m_handlers.end(),
-                                 [&](const std::unique_ptr<BaseHandler>& handler)
-                                 { return handlerId == handler->getId(); });
-
-        m_handlers.erase(it, m_handlers.end());
-    }
+    void removeHandler(uint64_t handlerId);
 
     /// Remove all handlers.
     void clearHandlers();
@@ -122,15 +131,28 @@ private:
     {
         // Return if loglevel is not on.
         if (!getLevel(logLevel))
+        {
             return;
+        }
 
         // Concat arguments.
         std::stringstream ss;
-        ss << data;
+
+        if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>)
+        {
+            if (!data)
+            {
+                emitLog(logLevel, "Invalid null string passed to logger");
+                return;
+            }
+            ss << std::string_view(data);
+        }
+        else
+        {
+            ss << data;
+        }
 
         int unused[] = {0, (addToStringStream(ss, args), 0)...};
-
-        // Silence warning about unused variables.
         (void)unused;
 
         emitLog(logLevel, ss.str());
@@ -164,11 +186,16 @@ private:
         std::ostringstream ss;
         ss << logLevelStr << data;
 
-        std::unique_lock<std::mutex> lock(m_mtx);
+        std::lock_guard<std::mutex> lock(m_mtx);
 
         // emit message to all handlers
         for (auto& handler : m_handlers)
-            handler->emit(logLevel, ss.str());
+        {
+            if (handler)
+            {
+                handler->emit(logLevel, ss.str());
+            }
+        }
     }
 
 private:

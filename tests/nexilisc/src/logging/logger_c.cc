@@ -5,7 +5,6 @@
 
 #include <cstdlib>
 #include <fstream>
-#include <sstream>
 #include <thread>
 
 // Helper function to generate a random filename
@@ -26,33 +25,32 @@ TEST(LoggerTest_c, DefaultValues_c)
     nexilis_logger_destroy(logger);
 }
 
-/*
 TEST(LoggerTest_c, ConsoleHandler_c)
 {
     nexilis_logger_LoggerC* logger = nexilis_logger_create();
+
     nexilis_logger_ConsoleHandler* console_handler = nexilis_logger_ConsoleHandler_create();
 
-    // Redirect console output to a stringstream.
-    std::stringstream ss;
-    std::streambuf* old_cout = std::cout.rdbuf();
-    std::cout.rdbuf(ss.rdbuf());
+    // Redirect stdout to a buffer
+    testing::internal::CaptureStdout();
 
+    // Transfer ownership of the console handler to the logger
     nexilis_logger_add_console_handler(logger, console_handler);
+
     nexilis_logger_set_level(logger, NEXILIS_LOGGER_LOGLEVEL_ERROR);
     nexilis_logger_error(logger, "This is a test error message");
 
-    // Reset cout's buffer to the original.
-    std::cout.rdbuf(old_cout);
+    // Get the captured stdout
+    std::string output = testing::internal::GetCapturedStdout();
 
-    // Check if the message was logged.
-    std::string message = ss.str();
-    EXPECT_NE(message.find("ERROR: This is a test error message"), std::string::npos);
+    // Check if the message was logged
+    EXPECT_NE(output.find("ERROR: This is a test error message"), std::string::npos);
 
+    // Clean up
     nexilis_logger_ConsoleHandler_destroy(console_handler);
     nexilis_logger_destroy(logger);
 }
 
-// Test file handler
 TEST(LoggerTest_c, FileHandler_c)
 {
     nexilis_logger_LoggerC* logger = nexilis_logger_create();
@@ -91,14 +89,10 @@ TEST(LoggerTest_c, MultipleHandlersWithThreads_c)
     nexilis_logger_set_level(logger, NEXILIS_LOGGER_LOGLEVEL_WARNING);
 
     std::thread t1([logger]()
-    {
-        nexilis_logger_warning(logger, "Test message from thread 1");
-    });
+                   { nexilis_logger_warning(logger, "Test message from thread 1"); });
 
     std::thread t2([logger]()
-    {
-        nexilis_logger_warning(logger, "Test message from thread 2");
-    });
+                   { nexilis_logger_warning(logger, "Test message from thread 2"); });
 
     t1.join();
     t2.join();
@@ -125,7 +119,6 @@ TEST(LoggerTest_c, MultipleHandlersWithThreads_c)
     nexilis_logger_FileHandler_destroy(file_handler);
     nexilis_logger_destroy(logger);
 }
-*/
 
 // Parameterized test for setting and unsetting log levels
 class LevelSetLogger_c : public ::testing::TestWithParam<nexilis_logger_loglevel>

@@ -14,9 +14,7 @@ class BaseHandler
 {
 public:
     /// Destructor.
-    virtual ~BaseHandler()
-    {
-    }
+    virtual ~BaseHandler() = default;
 
     // Overloading the equality operator.
     virtual bool operator==(const BaseHandler& other) const = 0;

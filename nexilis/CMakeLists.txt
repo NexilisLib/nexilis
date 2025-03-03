@@ -82,9 +82,6 @@ set(SOURCES
 
     # NexilisC
     src/nexilisc/logger/logger_c.cc
-    src/nexilisc/logger/base_handler_c.cc
-    src/nexilisc/logger/file_handler_c.cc
-    src/nexilisc/logger/console_handler_c.cc
 )
 
 add_library(nexilis ${SOURCES})
