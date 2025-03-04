@@ -88,7 +88,7 @@ def main():
     # Read the aliases from the aliases file.
     alias_map = read_aliases(aliases_file_path)
 
-    # Analyze the C++ file and get potential replacements>
+    # Analyze the C++ file and get potential replacements.
     total_replacements, changes = process_files(args.target, alias_map)
 
     if total_replacements == 0:

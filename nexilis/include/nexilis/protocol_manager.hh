@@ -54,6 +54,7 @@ public:
         {
             return m_id;
         }
+
     private:
         Protocol::Type m_type;
         Status m_status = Status::undefined;
