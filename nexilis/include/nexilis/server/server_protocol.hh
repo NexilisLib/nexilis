@@ -27,6 +27,12 @@ public:
     /// Deleted copy assignment operator.
     ServerProtocol& operator=(const ServerProtocol&) = delete;
 
+    /// Get the settings for given server protocol.
+    Settings& getSettings()
+    {
+        return m_command.getSettings();
+    }
+
 protected:
     /// Use this to parse the message before sending to Command.
     MessageHandler& getMessageHandler()

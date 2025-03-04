@@ -37,6 +37,23 @@ public:
         /// Move assignment operator.
         ProtocolData& operator=(ProtocolData&& other);
 
+        /// Get the status of the protocol.
+        Status getStatus() const
+        {
+            return m_status;
+        }
+
+        /// Get the Protocol::Type.
+        Protocol::Type getType() const
+        {
+            return m_type;
+        }
+
+        /// Get the id of the protocol.
+        size_t getId() const
+        {
+            return m_id;
+        }
     private:
         Protocol::Type m_type;
         Status m_status = Status::undefined;

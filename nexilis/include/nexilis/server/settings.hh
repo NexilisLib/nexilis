@@ -15,11 +15,19 @@ public:
     void setPassphrase(const std::string& password);
     bool isPassphrase(const std::string& password);
     bool hasPassphrase();
+    std::string getPassphrase()
+    {
+        return m_password;
+    }
 
     // Root password.
     void setRootPassword(const std::string& password);
     bool isRootPassword(const std::string& password);
     bool hasRootPassword();
+    std::string getRootPassword()
+    {
+        return m_rootPassword;
+    }
 
     enum class AuthenticationMode
     {

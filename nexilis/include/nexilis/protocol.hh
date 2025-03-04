@@ -12,6 +12,8 @@ public:
     // These are the types inherited from this class.
     enum class Type
     {
+        UNKNOWN,
+
         AF_INET_UDP_SERVER,
         AF_INET_UDP_CLIENT,
         AF_INET_TCP_SERVER,

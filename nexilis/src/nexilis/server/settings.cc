@@ -28,6 +28,11 @@ bool Settings::isRootPassword(const std::string& password)
     return m_rootPassword == password;
 }
 
+bool Settings::hasRootPassword()
+{
+    return !m_rootPassword.empty();
+}
+
 void Settings::setTickrate(float tickrate)
 {
     m_tickrate = tickrate;
