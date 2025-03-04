@@ -1,7 +1,9 @@
 #ifndef NEXILISC_LOGGER_C_H
 #define NEXILISC_LOGGER_C_H
 
-#include <nexilisc/logger/log_level_c.h>
+#include <nexilisc/logger/console_handler_c.h>
+#include <nexilisc/logger/file_handler_c.h>
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -11,23 +13,13 @@ extern "C" {
 // Logger
 typedef struct nexilis_logger_LoggerC nexilis_logger_LoggerC;
 
-// Handlers
-typedef struct nexilis_logger_FileHandler nexilis_logger_FileHandler;
-typedef struct nexilis_logger_ConsoleHandler nexilis_logger_ConsoleHandler;
-
-// File handler functions.
-nexilis_logger_FileHandler* nexilis_logger_FileHandler_create(const char* filename);
-void nexilis_logger_FileHandler_destroy(nexilis_logger_FileHandler* handler);
-void nexilis_logger_add_file_handler(nexilis_logger_LoggerC* logger, nexilis_logger_FileHandler* handler);
-
-/// Console handler functions.
-nexilis_logger_ConsoleHandler* nexilis_logger_ConsoleHandler_create();
-void nexilis_logger_ConsoleHandler_destroy(nexilis_logger_ConsoleHandler* handler);
-void nexilis_logger_add_console_handler(nexilis_logger_LoggerC* logger, nexilis_logger_ConsoleHandler* handler);
-
 // Logger functions.
 nexilis_logger_LoggerC* nexilis_logger_create();
 void nexilis_logger_destroy(nexilis_logger_LoggerC* logger);
+
+// Handler adding functions.
+void nexilis_logger_add_console_handler(nexilis_logger_LoggerC* logger, nexilis_logger_ConsoleHandler* handler);
+void nexilis_logger_add_file_handler(nexilis_logger_LoggerC* logger, nexilis_logger_FileHandler* handler);
 
 // Handler managing functions.
 void nexilis_logger_remove_handler(nexilis_logger_LoggerC* logger, uint64_t handlerId);

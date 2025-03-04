@@ -81,8 +81,13 @@ set(SOURCES
     #src/boost/udp_server.cc
 
     # NexilisC
-    src/nexilisc/logger/logger_c.cc
     src/nexilisc/protocol_manager_c.cc
+
+    src/nexilisc/logger/logger_c.cc
+    src/nexilisc/logger/console_handler_c.cc
+    src/nexilisc/logger/file_handler_c.cc
+
+    src/nexilisc/server/settings_c.cc
 )
 
 add_library(nexilis ${SOURCES})

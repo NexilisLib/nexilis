@@ -1,35 +1,22 @@
+#include <nexilis/logger/logger.hh>
 #include <nexilisc/logger/logger_c.h>
 
-#include <nexilis/logger/console_handler.hh>
 #include <nexilis/logger/file_handler.hh>
-#include <nexilis/logger/logger.hh>
-
-using namespace nexilis::logger;
 
 struct nexilis_logger_LoggerC
 {
-    Logger* logger;
+    nexilis::logger::Logger* logger;
 };
 
-struct nexilis_logger_FileHandler
+static nexilis::logger::LogLevel toLogLevel(int level)
 {
-    FileHandler* handler;
-};
-
-struct nexilis_logger_ConsoleHandler
-{
-    ConsoleHandler* handler;
-};
-
-static LogLevel toLogLevel(int level)
-{
-    return static_cast<LogLevel>(level);
+    return static_cast<nexilis::logger::LogLevel>(level);
 }
 
 nexilis_logger_LoggerC* nexilis_logger_create()
 {
     nexilis_logger_LoggerC* loggerC = new nexilis_logger_LoggerC;
-    loggerC->logger = new Logger();
+    loggerC->logger = new nexilis::logger::Logger();
     return loggerC;
 }
 
@@ -43,55 +30,15 @@ void nexilis_logger_destroy(nexilis_logger_LoggerC* logger)
     }
 }
 
-nexilis_logger_FileHandler* nexilis_logger_FileHandler_create(const char* filename)
-{
-    auto file_handler = new nexilis_logger_FileHandler();
-    file_handler->handler = new FileHandler(filename);
-    return file_handler;
-}
-
-void nexilis_logger_FileHandler_destroy(nexilis_logger_FileHandler* handler)
-{
-    if (handler)
-    {
-        if (handler->handler)
-        {
-            delete handler->handler;
-            handler->handler = nullptr;
-        }
-        delete handler;
-    }
-}
-
 void nexilis_logger_add_file_handler(nexilis_logger_LoggerC* logger, nexilis_logger_FileHandler* handler)
 {
     if (logger && handler)
     {
         auto cpp_logger = logger->logger;
         auto cpp_handler = handler->handler;
-        cpp_logger->addHandler(std::unique_ptr<FileHandler>(cpp_handler));
+        cpp_logger->addHandler(std::unique_ptr<nexilis::logger::FileHandler>(cpp_handler));
 
         handler->handler = nullptr;
-    }
-}
-
-nexilis_logger_ConsoleHandler* nexilis_logger_ConsoleHandler_create()
-{
-    auto console_handler = new nexilis_logger_ConsoleHandler();
-    console_handler->handler = new ConsoleHandler();
-    return console_handler;
-}
-
-void nexilis_logger_ConsoleHandler_destroy(nexilis_logger_ConsoleHandler* handler)
-{
-    if (handler)
-    {
-        if (handler->handler)
-        {
-            delete handler->handler;
-            handler->handler = nullptr;
-        }
-        delete handler;
     }
 }
 
@@ -101,7 +48,7 @@ void nexilis_logger_add_console_handler(nexilis_logger_LoggerC* logger, nexilis_
     {
         auto cpp_logger = logger->logger;
         auto cpp_handler = handler->handler;
-        cpp_logger->addHandler(std::unique_ptr<ConsoleHandler>(cpp_handler));
+        cpp_logger->addHandler(std::unique_ptr<nexilis::logger::ConsoleHandler>(cpp_handler));
 
         handler->handler = nullptr;
     }

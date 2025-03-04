@@ -1,0 +1,21 @@
+#include <nexilisc/logger/file_handler_c.h>
+
+nexilis_logger_FileHandler* nexilis_logger_FileHandler_create(const char* filename)
+{
+    auto file_handler = new nexilis_logger_FileHandler();
+    file_handler->handler = new nexilis::logger::FileHandler(filename);
+    return file_handler;
+}
+
+void nexilis_logger_FileHandler_destroy(nexilis_logger_FileHandler* handler)
+{
+    if (handler)
+    {
+        if (handler->handler)
+        {
+            delete handler->handler;
+            handler->handler = nullptr;
+        }
+        delete handler;
+    }
+}
