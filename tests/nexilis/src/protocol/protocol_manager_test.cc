@@ -2,8 +2,10 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/protocol_manager.hh>
-#include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/settings.hh>
+
+#include <nexilis/server/protocol/af_unix/stream_server.hh>
+#include <nexilis/server/protocol/nxboost/tcp_server.hh>
 
 class ProtocolManagerTest : public ::testing::Test
 {
@@ -24,4 +26,19 @@ TEST_F(ProtocolManagerTest, CreateProtocol_UnixStreamServer)
     EXPECT_EQ(unix_stream_server.getSettings().getMode(), nexilis::server::Settings::AuthenticationMode::passwordProtected);
     EXPECT_EQ(unix_stream_server.getSettings().getPassphrase(), "salasana");
     EXPECT_EQ(unix_stream_server.getSettings().getRootPassword(), "root");
+}
+
+TEST_F(ProtocolManagerTest, CreateProtocol_BoostTCPServer)
+{
+    nexilis::server::Settings settings;
+    settings.setMode(nexilis::server::Settings::AuthenticationMode::passwordProtected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    auto boost_tcp_server = manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings, 12345);
+
+    EXPECT_EQ(boost_tcp_server.getType(), nexilis::Protocol::Type::BOOST_TCP_SERVER);
+    EXPECT_EQ(boost_tcp_server.getSettings().getMode(), nexilis::server::Settings::AuthenticationMode::passwordProtected);
+    EXPECT_EQ(boost_tcp_server.getSettings().getPassphrase(), "salasana");
+    EXPECT_EQ(boost_tcp_server.getSettings().getRootPassword(), "root");
 }

@@ -1,8 +1,8 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/protocol_manager.hh>
 
-#include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
+#include <nexilis/server/protocol/nxboost/tcp_server.hh>
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
@@ -36,5 +36,7 @@ int main()
 
     client.sendMessage(nexilis::client::Packet::Set::username(server_data.getUsername()));
 
-    while(true){}
+    while (true)
+    {
+    }
 }

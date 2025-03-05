@@ -88,6 +88,12 @@ set(SOURCES
     src/nexilisc/logger/file_handler_c.cc
 
     src/nexilisc/server/settings_c.cc
+
+    src/nexilisc/client/client_api_c.cc
+
+    src/nexilisc/server/protocol/unix_stream_server_c.cc
+    src/nexilisc/server/protocol/boost_tcp_server_c.cc
+    src/nexilisc/client/protocol/boost_tcp_client_c.cc
 )
 
 add_library(nexilis ${SOURCES})
