@@ -1,5 +1,5 @@
-#include <nexilisc/client/protocol/boost_tcp_client_c.h>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
+#include <nexilisc/client/protocol/boost_tcp_client_c.h>
 
 struct nexilis_BoostTCPClient
 {
