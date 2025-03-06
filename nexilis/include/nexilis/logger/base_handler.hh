@@ -24,7 +24,7 @@ public:
     // \param data The data of the given message.
     virtual void emit(LogLevel logLevel, const std::string& data) = 0;
 
-    uint64_t getId()
+    uint64_t getId() const
     {
         return m_id;
     }

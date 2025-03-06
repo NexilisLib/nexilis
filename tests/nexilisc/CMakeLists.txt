@@ -16,6 +16,8 @@ add_executable(nexilis_c_tests
     src/main.cc
 
     src/logging/logger_test_c.cc
+    src/logging/log_test_c.cc
+
     src/protocol/protocol_manager_test_c.cc
 )
 
