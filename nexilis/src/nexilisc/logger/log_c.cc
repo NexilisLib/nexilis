@@ -1,8 +1,8 @@
 #include <nexilisc/logger/log_c.h>
 
-#include <nexilis/logger/log.hh>
 #include <nexilis/logger/console_handler.hh>
 #include <nexilis/logger/file_handler.hh>
+#include <nexilis/logger/log.hh>
 
 void nexilis_log_start_console_logging(nexilis_logger_loglevel minLevel)
 {
