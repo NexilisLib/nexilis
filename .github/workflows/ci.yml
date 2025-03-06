@@ -64,7 +64,7 @@ jobs:
           cd build
           cmake ..
           make
-          ./nexilisc_tests
+          ./nexilis_c_tests
 
   alias-check:
     name: Check Correct Alias Usage
