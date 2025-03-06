@@ -26,8 +26,8 @@ jobs:
             fi
           done
 
-  test:
-    name: Run Googletest Tests
+  cpp-tests:
+    name: Run Native Tests
     runs-on: ubuntu-24.04
 
     steps:
@@ -35,7 +35,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt-get install -y cmake g++ libgtest-dev libboost-all-dev libmysqlclient-dev
+          sudo apt update && sudo apt-get install -y cmake g++ libgtest-dev libboost-all-dev
 
       - name: Build and run tests
         run: |
@@ -45,6 +45,26 @@ jobs:
           cmake ..
           make
           ./nexilis_tests
+
+  c-tests:
+    name: Run nexilisc Tests
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt-get install -y cmake gcc libgtest-dev libboost-all-dev
+
+      - name: Build and run C tests
+        run: |
+          cd tests/nexilisc
+          mkdir build
+          cd build
+          cmake ..
+          make
+          ./nexilisc_tests
 
   alias-check:
     name: Check Correct Alias Usage
