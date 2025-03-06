@@ -60,7 +60,7 @@ bool User::unixStreamSend(const nx_data& data)
 {
     if (m_unixStreamSendToClient)
     {
-        (m_boostTCPSendToClient)(data);
+        (m_unixStreamSendToClient)(data);
         return true;
     }
     return false;

@@ -115,6 +115,7 @@ void StreamClient::start()
             auto data = receiveMessage();
             ClientProtocol::getClientAPI()->readMessage(data);
         } });
+    ClientProtocol::start(getType());
 }
 
 void StreamClient::stop()

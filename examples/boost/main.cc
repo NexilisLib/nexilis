@@ -30,12 +30,6 @@ int main()
     auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);
     client.start();
 
-    auto message = nexilis::Util::convertToByteVector(server_data.getPassword().c_str(), server_data.getPassword().size());
-    client.sendMessage(message);
-    client_api.waitUntilBoostTCPReady();
-
-    client.sendMessage(nexilis::client::Packet::Set::username(server_data.getUsername()));
-
     while (true)
     {
     }

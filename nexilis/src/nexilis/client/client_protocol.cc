@@ -1,4 +1,6 @@
 #include <nexilis/client/client_protocol.hh>
+#include <nexilis/client/packet.hh>
+#include <nexilis/logger/log.hh>
 #include <nexilis/util.hh>
 
 namespace nexilis::client
@@ -34,6 +36,52 @@ std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const 
     uint64_t messageId = Util::uint64FromFront(messageWithoutClientId);
 
     return std::make_pair(messageId, callback);
+}
+
+void ClientProtocol::start(Protocol::Type type)
+{
+    auto password = getClientAPI()->getClientPassword();
+    auto username = getClientAPI()->getClientUserName();
+
+    // TODO We're assuming here that the server is password protected.
+    auto message = Util::convertToByteVector(password.c_str(), password.size());
+    sendMessage(message);
+
+    switch (type)
+    {
+        case Protocol::Type::BOOST_TCP_CLIENT:
+            getClientAPI()->waitUntilBoostTCPReady();
+            break;
+        case Protocol::Type::BOOST_UDP_CLIENT:
+            getClientAPI()->waitUntilBoostUDPReady();
+            break;
+        case Protocol::Type::AF_INET_TCP_CLIENT:
+            getClientAPI()->waitUntilInetTCPReady();
+            break;
+        case Protocol::Type::AF_INET_UDP_CLIENT:
+            getClientAPI()->waitUntilInetUDPReady();
+            break;
+        case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
+            getClientAPI()->waitUntilUnixStreamReady();
+            break;
+        case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
+            getClientAPI()->waitUntilUnixDgramReady();
+            break;
+
+        case Protocol::Type::AF_INET_TCP_SERVER:
+        case Protocol::Type::AF_INET_UDP_SERVER:
+        case Protocol::Type::AF_UNIX_SOCK_DGRAM_SERVER:
+        case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
+        case Protocol::Type::BOOST_TCP_SERVER:
+        case Protocol::Type::BOOST_UDP_SERVER:
+            Log::error("This function cannot be called via server protocol");
+            return;
+
+        case Protocol::Type::UNKNOWN:
+            Log::error("This function called via unknown protocol");
+            return;
+    }
+    sendMessage(nexilis::client::Packet::Set::username(username));
 }
 
 } // namespace nexilis::client

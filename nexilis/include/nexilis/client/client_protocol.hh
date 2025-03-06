@@ -3,6 +3,7 @@
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/protocol.hh>
 
 namespace nexilis::client
 {
@@ -38,6 +39,9 @@ public:
 
     /// Create pair that contains the id of the message and the callback itself.
     std::pair<uint64_t, std::function<void()>> createCallback(const nx_data& message, const std::function<void()>& callback);
+
+protected:
+    void start(Protocol::Type type);
 
 private:
     ClientAPI* m_api;

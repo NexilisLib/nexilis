@@ -171,7 +171,7 @@ void StreamServer::handleMessages()
         else
         {
             nx_data payload = Util::convertToByteVector(message);
-            auto msg = getMessageHandler().readMessage("localhost", payload, -1, &getCommand().getSettings());
+            auto msg = getMessageHandler().readMessage("127.0.0.1", payload, -1, &getCommand().getSettings());
 
             if (msg.getClient())
             {

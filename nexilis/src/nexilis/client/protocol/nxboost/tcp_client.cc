@@ -10,7 +10,8 @@ namespace nexilis::client::nxboost
 {
 
 TCPClient::TCPClient(ClientAPI& api)
-    : ClientProtocol(&api),
+    : Protocol(),
+      ClientProtocol(&api),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_socket(*m_ioContext),
       m_resolver(*m_ioContext),
@@ -188,6 +189,7 @@ void TCPClient::start()
     {
         Log::error("Failed to connect to the server");
     }
+    ClientProtocol::start(getType());
 }
 
 void TCPClient::receiveLoop()

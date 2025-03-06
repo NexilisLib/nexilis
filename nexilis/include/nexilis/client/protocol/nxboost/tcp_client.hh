@@ -41,17 +41,17 @@ public:
     /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
     void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
-    /// Protocol::start() implementation.
-    void start() override;
-
-    /// Protocol::stop() implementation.
-    void stop() override;
-
     /// Protocol::getType() implementation.
     Type getType() override
     {
         return Type::BOOST_TCP_CLIENT;
     }
+
+    /// Protocol::start() implementation.
+    void start() override;
+
+    /// Protocol::stop() implementation.
+    void stop() override;
 
 protected:
     std::thread m_ioContextThread;

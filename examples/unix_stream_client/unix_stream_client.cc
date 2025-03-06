@@ -35,13 +35,4 @@ int main()
 
     unix_stream_client.start();
     std::cout << "Nexilisclient start called" << std::endl;
-
-    // Convert the passphrase into nexilis format (std::vector<uint8_t>).
-    auto message = nexilis::Util::convertToByteVector(server_data.getPassword().c_str(), server_data.getPassword().size());
-    unix_stream_client.sendMessage(message);
-    std::cout << "Sent password" << std::endl;
-    client_api.waitUntilUnixStreamReady();
-
-    // Set username.
-    unix_stream_client.sendMessage(nexilis::client::Packet::Set::username(client_name));
 }
