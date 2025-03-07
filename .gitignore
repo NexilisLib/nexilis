@@ -1,5 +1,5 @@
 *.vscode
 **build
 **.cache
-logs/*.json
-logs/*.txt
+**/bin/
+**/obj/
