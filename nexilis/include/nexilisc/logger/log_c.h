@@ -28,6 +28,9 @@ uint64_t nexilis_log_add_console_handler();
 /// Add a file handler (returns a handler ID).
 uint64_t nexilis_log_add_file_handler(const char* filename);
 
+/// Add a function handler (returns a handler ID).
+uint64_t nexilis_log_add_function_handler(void (*handler)(const nexilis_logger_loglevel&, const char*));
+
 /// Remove a log handler by ID.
 void nexilis_log_remove_handler(uint64_t handlerId);
 

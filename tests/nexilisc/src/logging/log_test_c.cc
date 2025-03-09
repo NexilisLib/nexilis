@@ -112,3 +112,31 @@ TEST(LogTest_c, FileHandler)
     std::remove(filename.c_str());
     nexilis_log_stop_logging();
 }
+
+TEST(LogTest_c, FunctionHandler)
+{
+    nexilis_log_set_level(NEXILIS_LOGGER_LOGLEVEL_INFO);
+
+    // Redirect console output to a stringstream.
+    std::stringstream ss;
+    std::streambuf* old_cout = std::cout.rdbuf();
+    std::cout.rdbuf(ss.rdbuf());
+
+    auto handler = [](const nexilis_logger_loglevel&, const char* msg)
+    {
+        std::cout << msg << std::endl;
+    };
+
+    nexilis_log_add_function_handler(handler);
+    nexilis_log_info("Function handler test");
+
+    // Reset cout's buffer to the original.
+    std::cout.rdbuf(old_cout);
+
+    // Check if the message was logged.
+    std::string message = ss.str();
+    EXPECT_NE(message.find("INFO: Function handler test"), std::string::npos);
+
+    // Clean up.
+    nexilis_log_stop_logging();
+}

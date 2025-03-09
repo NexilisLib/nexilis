@@ -2,6 +2,7 @@
 
 #include <nexilis/logger/console_handler.hh>
 #include <nexilis/logger/file_handler.hh>
+#include <nexilis/logger/function_handler.hh>
 #include <nexilis/logger/logger.hh>
 
 #include <thread>
@@ -57,6 +58,30 @@ TEST(LoggerTest, FileHandler)
 
     file.close();
     remove(fileName.c_str());
+}
+
+TEST(LoggerTest, FunctionHandler)
+{
+    Logger logger;
+
+    // Redirect console output to a stringstream.
+    std::stringstream ss;
+    std::streambuf* old_cout = std::cout.rdbuf();
+    std::cout.rdbuf(ss.rdbuf());
+
+    auto handler = [](const LogLevel&, const std::string& msg)
+    {
+        std::cout << msg << std::endl;
+    };
+    logger.addHandler(std::make_unique<FunctionHandler>(FunctionHandler(handler)));
+    logger.setLevel(LogLevel::INFO);
+
+    logger.info("Function handler test");
+    std::cout.rdbuf(old_cout);
+
+    // Check if the message was logged.
+    std::string message = ss.str();
+    EXPECT_NE(message.find("INFO: Function handler test"), std::string::npos);
 }
 
 TEST(LoggerTest, MultipleHandlersWithThreads)

@@ -76,6 +76,38 @@ TEST(LoggerTest_c, FileHandler_c)
     nexilis_logger_destroy(logger);
 }
 
+TEST(LoggerTest_c, FunctionHandler_c)
+{
+    nexilis_logger_LoggerC* logger = nexilis_logger_create();
+
+    // Redirect stdout to a buffer.
+    testing::internal::CaptureStdout();
+
+    // Create function pointer handler.
+    void (*handler)(const nexilis::logger::LogLevel&, const char*) = [](const nexilis::logger::LogLevel&, const char* msg)
+    {
+        std::cout << msg << std::endl;
+    };
+
+    nexilis_logger_FunctionHandler* function_handler = nexilis_logger_FunctionHandler_create(handler);
+
+    // Transfer ownership of the function handler to the logger.
+    nexilis_logger_add_function_handler(logger, function_handler);
+
+    nexilis_logger_set_level(logger, NEXILIS_LOGGER_LOGLEVEL_INFO);
+    nexilis_logger_info(logger, "Function handler test");
+
+    // Get the captured stdout.
+    std::string output = testing::internal::GetCapturedStdout();
+
+    // Check if the message was logged.
+    EXPECT_NE(output.find("INFO: Function handler test"), std::string::npos);
+
+    // Clean up.
+    nexilis_logger_FunctionHandler_destroy(function_handler);
+    nexilis_logger_destroy(logger);
+}
+
 // Test multiple handlers with threads
 TEST(LoggerTest_c, MultipleHandlersWithThreads_c)
 {

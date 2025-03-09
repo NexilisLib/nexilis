@@ -2,6 +2,7 @@
 
 #include <nexilis/logger/console_handler.hh>
 #include <nexilis/logger/file_handler.hh>
+#include <nexilis/logger/function_handler.hh>
 #include <nexilis/logger/log.hh>
 
 void nexilis_log_start_console_logging(nexilis_logger_loglevel minLevel)
@@ -39,6 +40,20 @@ uint64_t nexilis_log_add_file_handler(const char* filename)
     uint64_t handler_id = file_handler->getId();
 
     nexilis::Log::addHandler(std::move(file_handler));
+    return handler_id;
+}
+
+uint64_t nexilis_log_add_function_handler(void (*handler)(const nexilis_logger_loglevel&, const char*))
+{
+    auto cpp_handler = [handler](const nexilis::logger::LogLevel& level, const std::string& message)
+    {
+        handler(static_cast<nexilis_logger_loglevel>(level), message.c_str());
+    };
+
+    auto function_handler = std::make_unique<nexilis::logger::FunctionHandler>(cpp_handler);
+    uint64_t handler_id = function_handler->getId();
+
+    nexilis::Log::addHandler(std::move(function_handler));
     return handler_id;
 }
 

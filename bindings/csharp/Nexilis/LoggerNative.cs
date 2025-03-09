@@ -18,6 +18,8 @@ namespace Nexilis
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_logger_add_file_handler(IntPtr logger, IntPtr handler);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void nexilis_logger_add_function_handler(IntPtr logger, IntPtr handler);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_logger_remove_handler(IntPtr logger, ulong handlerId);

@@ -54,6 +54,18 @@ void nexilis_logger_add_console_handler(nexilis_logger_LoggerC* logger, nexilis_
     }
 }
 
+void nexilis_logger_add_function_handler(nexilis_logger_LoggerC* logger, nexilis_logger_FunctionHandler* handler)
+{
+    if (logger && logger->logger && handler && handler->handler)
+    {
+        auto cpp_logger = logger->logger;
+        auto cpp_handler = handler->handler;
+        cpp_logger->addHandler(std::unique_ptr<nexilis::logger::FunctionHandler>(cpp_handler));
+
+        handler->handler = nullptr;
+    }
+}
+
 void nexilis_logger_remove_handler(nexilis_logger_LoggerC* logger, uint64_t handlerId)
 {
     if (logger)

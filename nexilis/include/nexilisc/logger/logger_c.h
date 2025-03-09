@@ -3,6 +3,7 @@
 
 #include <nexilisc/logger/console_handler_c.h>
 #include <nexilisc/logger/file_handler_c.h>
+#include <nexilisc/logger/function_handler_c.h>
 
 #include <stdint.h>
 
@@ -20,6 +21,7 @@ void nexilis_logger_destroy(nexilis_logger_LoggerC* logger);
 // Handler adding functions.
 void nexilis_logger_add_console_handler(nexilis_logger_LoggerC* logger, nexilis_logger_ConsoleHandler* handler);
 void nexilis_logger_add_file_handler(nexilis_logger_LoggerC* logger, nexilis_logger_FileHandler* handler);
+void nexilis_logger_add_function_handler(nexilis_logger_LoggerC* logger, nexilis_logger_FunctionHandler* handler);
 
 // Handler managing functions.
 void nexilis_logger_remove_handler(nexilis_logger_LoggerC* logger, uint64_t handlerId);

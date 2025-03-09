@@ -36,6 +36,15 @@ namespace Nexilis
             LoggerNative.nexilis_logger_add_file_handler(_loggerPtr, fileHandler.HandlerPtr);
         }
 
+        public void AddFunctionHandler(FunctionHandler functionHandler)
+        {
+            if (functionHandler == null)
+            {
+                throw new ArgumentNullException(nameof(functionHandler));
+            }
+            LoggerNative.nexilis_logger_add_function_handler(_loggerPtr, functionHandler.HandlerPtr);
+        }
+
         public void RemoveHandler(ulong handlerId)
         {
             LoggerNative.nexilis_logger_remove_handler(_loggerPtr, handlerId);
