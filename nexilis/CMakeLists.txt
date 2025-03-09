@@ -100,4 +100,4 @@ set(SOURCES
 
 add_library(nexilis SHARED ${SOURCES})
 target_include_directories(nexilis PUBLIC include)
-target_link_libraries(nexilis PRIVATE Boost::system Boost::json)
+target_link_libraries(nexilis PUBLIC Boost::system Boost::json)
