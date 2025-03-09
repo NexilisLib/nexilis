@@ -19,3 +19,12 @@ void nexilis_logger_ConsoleHandler_destroy(nexilis_logger_ConsoleHandler* handle
         delete handler;
     }
 }
+
+uint64_t nexilis_logger_ConsoleHandler_get_id(nexilis_logger_ConsoleHandler* handler)
+{
+    if (handler && handler->handler)
+    {
+        return handler->handler->getId();
+    }
+    return 0;
+}

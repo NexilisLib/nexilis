@@ -18,14 +18,22 @@ namespace Nexilis
             }
         }
 
-        public void AddConsoleHandler(IntPtr handler)
+        public void AddConsoleHandler(ConsoleHandler consoleHandler)
         {
-            LoggerNative.nexilis_logger_add_console_handler(_loggerPtr, handler);
+            if (consoleHandler == null)
+            {
+                throw new ArgumentNullException(nameof(consoleHandler));
+            }
+            LoggerNative.nexilis_logger_add_console_handler(_loggerPtr, consoleHandler.HandlerPtr);
         }
 
-        public void AddFileHandler(IntPtr handler)
+        public void AddFileHandler(FileHandler fileHandler)
         {
-            LoggerNative.nexilis_logger_add_file_handler(_loggerPtr, handler);
+            if (fileHandler == null)
+            {
+                throw new ArgumentNullException(nameof(fileHandler));
+            }
+            LoggerNative.nexilis_logger_add_file_handler(_loggerPtr, fileHandler.HandlerPtr);
         }
 
         public void RemoveHandler(ulong handlerId)

@@ -19,3 +19,12 @@ void nexilis_logger_FileHandler_destroy(nexilis_logger_FileHandler* handler)
         delete handler;
     }
 }
+
+uint64_t nexilis_logger_FileHandler_get_id(nexilis_logger_FileHandler* handler)
+{
+    if (handler && handler->handler)
+    {
+        return handler->handler->getId();
+    }
+    return 0;
+}

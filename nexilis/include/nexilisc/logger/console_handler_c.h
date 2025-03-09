@@ -14,6 +14,7 @@ struct nexilis_logger_ConsoleHandler
 
 nexilis_logger_ConsoleHandler* nexilis_logger_ConsoleHandler_create();
 void nexilis_logger_ConsoleHandler_destroy(nexilis_logger_ConsoleHandler* handler);
+uint64_t nexilis_logger_ConsoleHandler_get_id(nexilis_logger_ConsoleHandler* handler);
 
 #ifdef __cplusplus
 }
