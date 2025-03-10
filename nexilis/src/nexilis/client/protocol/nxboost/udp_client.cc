@@ -11,7 +11,6 @@ namespace nexilis::client::nxboost
 
 UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
-      Loggable("boost::UDPClient", __FILE__),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
@@ -39,7 +38,6 @@ UDPClient::~UDPClient()
 UDPClient::UDPClient(UDPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
-      Loggable(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveMessageThread(std::move(other.m_receiveMessageThread)),
       m_ioContext(std::move(other.m_ioContext)),
@@ -58,7 +56,6 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
     {
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
-        Loggable::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveMessageThread = std::move(other.m_receiveMessageThread);
         m_ioContext = std::move(other.m_ioContext);
@@ -79,6 +76,11 @@ void UDPClient::start()
                                     { m_ioContext->run(); });
     m_socket.open(boost::asio::ip::udp::v4());
     m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
+}
+
+void UDPClient::stop()
+{
+    Log::error("Not implemented");
 }
 
 void UDPClient::receiveLoop()

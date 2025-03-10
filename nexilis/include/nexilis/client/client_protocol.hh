@@ -30,7 +30,7 @@ public:
     virtual void sendMessage(const nx_data& message) = 0;
 
     /// Send nexilis message with callback.
-    virtual void sendMessage(const nx_data& message, const std::function<void()>& callback) = 0;
+    void sendMessage(const nx_data& message, const std::function<void()>& callback);
 
     ClientAPI* getClientAPI()
     {

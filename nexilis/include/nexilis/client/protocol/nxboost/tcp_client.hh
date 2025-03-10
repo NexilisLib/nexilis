@@ -38,9 +38,6 @@ public:
     /// ClientProtocol::sendMessage(const nx_data&) implementation.
     void sendMessage(const nx_data& message) override;
 
-    /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
-    void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
-
     /// Protocol::getType() implementation.
     Type getType() override
     {

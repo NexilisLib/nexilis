@@ -100,12 +100,6 @@ void StreamClient::sendMessage(const nx_data& message)
     sendMsg(Util::convertToString(message));
 }
 
-void StreamClient::sendMessage(const nx_data& message, const std::function<void()>& callback)
-{
-    ClientProtocol::getClientAPI()->addCallback(ClientProtocol::createCallback(message, callback));
-    sendMsg(Util::convertToString(message));
-}
-
 void StreamClient::start()
 {
     m_receiveThread = std::thread([this]()

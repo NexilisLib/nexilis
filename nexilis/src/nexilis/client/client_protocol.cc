@@ -27,6 +27,12 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     return *this;
 }
 
+void ClientProtocol::sendMessage(const nx_data& message, const std::function<void()>& callback)
+{
+    m_api->addCallback(ClientProtocol::createCallback(message, callback));
+    sendMessage(message);
+}
+
 std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const nx_data& message, const std::function<void()>& callback)
 {
     // Vector without client id (8 bytes).

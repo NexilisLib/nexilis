@@ -2,7 +2,6 @@
 #define NEXILIS_BOOST_UDP_CLIENT_HH
 
 #include <nexilis/client/client_protocol.hh>
-#include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
 
 #include <boost/asio/io_context.hpp>
@@ -14,8 +13,7 @@ namespace nexilis::client::nxboost
 {
 
 class UDPClient : public Protocol,
-                  public ClientProtocol,
-                  public Loggable
+                  public ClientProtocol
 {
 public:
     /// Constructor.
@@ -40,10 +38,7 @@ public:
     void start() override;
 
     /// Protocol::stop() implementation.
-    void stop() override
-    {
-        Log::error("Not implemented");
-    }
+    void stop() override;
 
     /// Protocol::getType() implementation.
     Type getType() override
