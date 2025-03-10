@@ -56,6 +56,7 @@ set(SOURCES
 
     # Server protocols
     src/nexilis/server/protocol/nxboost/tcp_server.cc
+    src/nexilis/server/protocol/nxboost/udp_server.cc
     src/nexilis/server/protocol/af_unix/stream_server.cc
 
     # Client
@@ -65,6 +66,7 @@ set(SOURCES
 
     # Client protocols
     src/nexilis/client/protocol/nxboost/tcp_client.cc
+    src/nexilis/client/protocol/nxboost/udp_client.cc
     src/nexilis/client/protocol/af_unix/stream_client.cc
 
     #src/af_unix/sock_dgram/server.cc

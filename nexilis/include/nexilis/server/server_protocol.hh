@@ -12,7 +12,7 @@ namespace nexilis::server
 class ServerProtocol
 {
 public:
-    // Default constructor.
+    // Constructor.
     ServerProtocol(const Settings& settings);
 
     /// Move constructor.
