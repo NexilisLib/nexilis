@@ -23,18 +23,7 @@ UDPServer::UDPServer(const Settings& settings, int port)
 
 UDPServer::~UDPServer()
 {
-    m_socket.close();
-    m_ioContext->stop();
-
-    if (m_ioContextThread.joinable())
-    {
-        m_ioContextThread.join();
-    }
-
-    if (m_receiveThread.joinable())
-    {
-        m_receiveThread.join();
-    }
+    stop();
 }
 
 UDPServer::UDPServer(UDPServer&& other)
@@ -73,6 +62,25 @@ void UDPServer::start()
                                     { m_ioContext->run(); });
 
     m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
+}
+
+void UDPServer::stop()
+{
+    if (m_socket.is_open())
+    {
+        m_socket.close();
+    }
+    m_ioContext->stop();
+
+    if (m_ioContextThread.joinable())
+    {
+        m_ioContextThread.join();
+    }
+
+    if (m_receiveThread.joinable())
+    {
+        m_receiveThread.join();
+    }
 }
 
 void UDPServer::receiveFromClients()

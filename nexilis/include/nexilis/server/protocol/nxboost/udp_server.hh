@@ -40,10 +40,7 @@ public:
     void start() override;
 
     /// Protocol::stop() implementation.
-    void stop() override
-    {
-        Log::error("Not implemented");
-    }
+    void stop() override;
 
     /// Protocol::getType() implementation.
     Type getType() override

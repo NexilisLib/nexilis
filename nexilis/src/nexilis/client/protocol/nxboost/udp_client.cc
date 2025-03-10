@@ -21,18 +21,7 @@ UDPClient::UDPClient(ClientAPI& clientApi)
 
 UDPClient::~UDPClient()
 {
-    m_socket.close();
-    m_ioContext->stop();
-
-    if (m_ioContextThread.joinable())
-    {
-        m_ioContextThread.join();
-    }
-
-    if (m_receiveMessageThread.joinable())
-    {
-        m_receiveMessageThread.join();
-    }
+    stop();
 }
 
 UDPClient::UDPClient(UDPClient&& other)
@@ -76,11 +65,27 @@ void UDPClient::start()
                                     { m_ioContext->run(); });
     m_socket.open(boost::asio::ip::udp::v4());
     m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
+
+    ClientProtocol::start(getType());
 }
 
 void UDPClient::stop()
 {
-    Log::error("Not implemented");
+    if (m_socket.is_open())
+    {
+        m_socket.close();
+    }
+    m_ioContext->stop();
+
+    if (m_ioContextThread.joinable())
+    {
+        m_ioContextThread.join();
+    }
+
+    if (m_receiveMessageThread.joinable())
+    {
+        m_receiveMessageThread.join();
+    }
 }
 
 void UDPClient::receiveLoop()
