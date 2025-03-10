@@ -1,4 +1,4 @@
-A message in the nexilis API consist of few parts
+A messaga from client to the nexilis server consists of few parts.
 
 # Identification. (size_t)
 First 8 bytes is the id of the client.

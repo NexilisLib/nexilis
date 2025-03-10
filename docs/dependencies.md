@@ -1,22 +1,21 @@
-# Nexilis dependencies
+# Dependencies
 
-Nexilis has mandatory and optional dependencies.
+Currently Nexilis has only the boost library as a dependency.
 
-# Mandatory dependencies
+We are using and linking the "system" and "json" parts of boost.
 
-## Boost libraries
+## Downloading dependencies
 
-Download boost libraries with package manager.
+For Linux download boost with your package manager.
 
-# Optional dependencies
+## Arch Linux
 
-## MySQL C API
+```
+pacman -S boost
+```
 
-### Linux
+## Ubuntu
 
-Download MySQL C API with package manager.
-pacman -S mariadb-libs
-
-### Windows
-
-Still figuring it out.
+```
+apt install libboost-all-dev
+```
