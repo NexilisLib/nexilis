@@ -13,9 +13,10 @@ def stream_output(stream, output_type):
     for line in iter(stream.readline, ''):
         if output_type == "stdout":
             sys.stderr.buffer.write(line.encode())
+            sys.stderr.flush()
         else:
             sys.stdout.buffer.write(line.encode())
-        sys.stdout.flush()
+            sys.stdout.flush()
 
 def run_cppcheck(include_dir, src_dir, exclude_dirs=None):
     """
@@ -61,7 +62,7 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None):
     try:
         # Start the cppcheck process.
         process = subprocess.Popen(
-            command,
+            ["unbuffer"] + command, # pacman -S expect
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
