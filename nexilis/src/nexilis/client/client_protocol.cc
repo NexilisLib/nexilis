@@ -47,7 +47,9 @@ std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const 
 void ClientProtocol::start(Protocol::Type type)
 {
     auto password = getClientAPI()->getClientPassword();
+    Log::debug("Client password: ", password);
     auto username = getClientAPI()->getClientUserName();
+    Log::debug("Client username: ", username);
 
     // TODO We're assuming here that the server is password protected.
     auto message = Util::convertToByteVector(password.c_str(), password.size());

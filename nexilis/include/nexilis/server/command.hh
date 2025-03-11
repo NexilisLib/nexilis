@@ -49,7 +49,7 @@ public:
 
     /// Constructor.
     /// \param settings The settings of the server.
-    Command(const Settings& settings);
+    explicit Command(const Settings& settings);
 
     // Move constructor.
     Command(Command&& other);

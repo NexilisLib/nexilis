@@ -3,6 +3,7 @@
 
 #include <nexilis/nexilis_constants.hh>
 
+#include <cstring>
 #include <stdexcept>
 
 namespace nexilis
@@ -60,9 +61,10 @@ public:
         uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&data[sizeof(uint32_t)]);
         uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&data[sizeof(uint32_t) * 2]);
 
-        float x = *reinterpret_cast<const float*>(&xBytes);
-        float y = *reinterpret_cast<const float*>(&yBytes);
-        float z = *reinterpret_cast<const float*>(&zBytes);
+        float x, y, z;
+        std::memcpy(&x, &xBytes, sizeof(float));
+        std::memcpy(&y, &yBytes, sizeof(float));
+        std::memcpy(&z, &zBytes, sizeof(float));
 
         return Vector3(x, y, z);
     }

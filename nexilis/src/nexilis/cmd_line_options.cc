@@ -121,12 +121,13 @@ CmdLineOptions::CmdLineOptions(int argc, char** argv)
 
 const CmdLineOptions::Argument* CmdLineOptions::getArgument(const std::string& name) const
 {
-    for (const auto& arg : m_arguments)
+    // Use std::find_if algorithm to find the argument with the given name.
+    auto it = std::find_if(m_arguments.begin(), m_arguments.end(), [&name](const Argument& arg)
+                           { return arg.getName() == name; });
+
+    if (it != m_arguments.end())
     {
-        if (arg.getName() == name)
-        {
-            return &arg;
-        }
+        return &(*it);
     }
     return nullptr;
 }

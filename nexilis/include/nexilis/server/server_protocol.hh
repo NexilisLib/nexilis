@@ -13,7 +13,7 @@ class ServerProtocol
 {
 public:
     // Constructor.
-    ServerProtocol(const Settings& settings);
+    explicit ServerProtocol(const Settings& settings);
 
     /// Move constructor.
     ServerProtocol(ServerProtocol&& other);

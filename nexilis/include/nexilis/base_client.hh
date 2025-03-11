@@ -16,7 +16,7 @@ class BaseClient
 {
 public:
     /// Constructor.
-    BaseClient(uint64_t id);
+    explicit BaseClient(uint64_t id);
 
     /// Move constructor.
     BaseClient(BaseClient&& other);

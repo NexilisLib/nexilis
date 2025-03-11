@@ -23,7 +23,7 @@ public:
     {
     public:
         /// Constructor.
-        ProtocolData(Protocol::Type type);
+        explicit ProtocolData(Protocol::Type type);
 
         /// Copy constructor.
         ProtocolData(const ProtocolData& other);

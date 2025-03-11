@@ -43,12 +43,13 @@ StreamServer& StreamServer::operator=(StreamServer&& other)
 {
     if (this != &other)
     {
-        Protocol::operator=(std::move(other));
-        ServerProtocol::operator=(std::move(other));
         m_socketPath = std::move(other.m_socketPath);
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
         m_receiveThread = std::move(other.m_receiveThread);
+
+        Protocol::operator=(std::move(other));
+        ServerProtocol::operator=(std::move(other));
     }
     return *this;
 }
@@ -83,7 +84,8 @@ void StreamServer::bindSocket()
     // This operation will fail if this is the first usage and it's okay.
     unlink(m_socketPath.c_str());
 
-    if (bind(m_serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
+    auto address = reinterpret_cast<sockaddr*>(&serverAddr);
+    if (bind(m_serverSocket, address, sizeof(serverAddr)) == -1)
     {
         Log::error("Failed to bind socket");
         close(m_serverSocket);
@@ -110,11 +112,10 @@ std::string StreamServer::receiveMessage(int socket)
 {
     std::string message;
     char buffer[NEXILIS_BUFFER];
-    ssize_t bytesRead;
 
     while (true)
     {
-        bytesRead = recv(socket, buffer, sizeof(buffer), 0);
+        auto bytesRead = recv(socket, buffer, sizeof(buffer), 0);
 
         if (bytesRead > 0)
         {

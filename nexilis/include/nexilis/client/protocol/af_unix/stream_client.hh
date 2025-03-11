@@ -20,7 +20,7 @@ class StreamClient : public Protocol, public ClientProtocol
 {
 public:
     /// Constructor.
-    StreamClient(ClientAPI& clientApi);
+    explicit StreamClient(ClientAPI& clientApi);
 
     /// Destructor.
     ~StreamClient();

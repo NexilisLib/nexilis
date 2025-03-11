@@ -18,7 +18,7 @@ class TCPClient : public Protocol,
 {
 public:
     /// Constructor.
-    TCPClient(ClientAPI& api);
+    explicit TCPClient(ClientAPI& api);
 
     /// Destructor.
     ~TCPClient();

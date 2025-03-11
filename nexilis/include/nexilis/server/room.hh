@@ -15,7 +15,7 @@ class Room : public BaseRoom
 {
 public:
     /// Constructor.
-    Room(const RoomData& roomData);
+    explicit Room(const RoomData& roomData);
 
     /// Move constructor.
     Room(Room&& other);

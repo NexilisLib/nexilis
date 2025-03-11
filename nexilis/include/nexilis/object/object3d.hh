@@ -1,7 +1,6 @@
 #ifndef NEXILIS_OBJECT3D_HH
 #define NEXILIS_OBJECT3D_HH
 
-#include "nexilis/nexilis_constants.hh"
 #include <nexilis/object/object.hh>
 #include <nexilis/types/vector3.hh>
 

@@ -43,8 +43,6 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 {
     if (this != &other)
     {
-        Protocol::operator=(std::move(other));
-        ClientProtocol::operator=(std::move(other));
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveMessageThread = std::move(other.m_receiveMessageThread);
         m_ioContext = std::move(other.m_ioContext);
@@ -52,6 +50,9 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
+
+        Protocol::operator=(std::move(other));
+        ClientProtocol::operator=(std::move(other));
 
         other.m_ioContext = nullptr;
         other.m_mutex = nullptr;

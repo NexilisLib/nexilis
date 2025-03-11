@@ -13,7 +13,7 @@ class FileHandler : public BaseHandler
 public:
     /// Constructor.
     /// \param filename The file where the messages will be written.
-    FileHandler(const std::string& filename)
+    explicit FileHandler(const std::string& filename)
         : ofs(filename, std::ios::app)
     {
     }

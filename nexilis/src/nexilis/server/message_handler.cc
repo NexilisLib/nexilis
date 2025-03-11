@@ -120,7 +120,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
                 }
                 else
                 {
-                    Log::error("NEW MESSAGE WHICH IS IS NOT PASSWORD");
+                    Log::error("NEW MESSAGE WHICH IS NOT PASSWORD");
                     return errorMessage;
                 }
             }

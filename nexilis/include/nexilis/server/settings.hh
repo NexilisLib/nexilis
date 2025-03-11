@@ -15,7 +15,7 @@ public:
     void setPassphrase(const std::string& password);
     bool isPassphrase(const std::string& password);
     bool hasPassphrase();
-    std::string getPassphrase()
+    const std::string& getPassphrase() const
     {
         return m_password;
     }
@@ -24,7 +24,7 @@ public:
     void setRootPassword(const std::string& password);
     bool isRootPassword(const std::string& password);
     bool hasRootPassword();
-    std::string getRootPassword()
+    const std::string& getRootPassword() const
     {
         return m_rootPassword;
     }

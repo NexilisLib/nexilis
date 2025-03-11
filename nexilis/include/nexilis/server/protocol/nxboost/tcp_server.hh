@@ -19,16 +19,16 @@ class TCPServer : public Protocol,
 {
 public:
     /// Constructor.
-    TCPServer(const Settings& settings, int serverPort);
+    TCPServer(const Settings& settings, int serverPort) noexcept;
 
     /// Destructor.
     ~TCPServer();
 
     /// Move constructor.
-    TCPServer(TCPServer&& other);
+    TCPServer(TCPServer&& other) noexcept;
 
     /// Move assignment operator.
-    TCPServer& operator=(TCPServer&& other);
+    TCPServer& operator=(TCPServer&& other) noexcept;
 
     /// Deleted move constructor.
     TCPServer(const TCPServer&) = delete;

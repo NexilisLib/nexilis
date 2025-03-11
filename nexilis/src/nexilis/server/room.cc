@@ -22,22 +22,18 @@ Room& Room::operator=(Room&& other)
 {
     if (this != &other)
     {
-        BaseRoom::operator=(std::move(other));
         m_clientIds = std::move(other.m_clientIds);
+        BaseRoom::operator=(std::move(other));
     }
     return *this;
 }
 
 bool Room::contains(uint64_t userId)
 {
-    for (auto& client : m_clientIds)
-    {
-        if (client == userId)
-        {
-            return true;
-        }
-    }
-    return false;
+    // Use std::any_of algorithm to check if the user is in the room.
+    return std::any_of(m_clientIds.begin(), m_clientIds.end(),
+                       [&userId](uint64_t id)
+                       { return userId == id; });
 }
 
 void Room::joinRoom(uint64_t userId)

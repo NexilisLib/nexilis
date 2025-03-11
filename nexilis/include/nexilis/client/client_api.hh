@@ -41,17 +41,17 @@ public:
         /// Copy assignment operator.
         ServerData& operator=(const ServerData& other);
 
-        std::string getUsername() const
+        const std::string& getUsername() const
         {
             return m_username;
         }
 
-        void setUserName(const std::string username)
+        void setUserName(const std::string& username)
         {
             m_username = username;
         }
 
-        std::string getPassword() const
+        const std::string& getPassword() const
         {
             return m_password;
         }
@@ -62,7 +62,7 @@ public:
         }
 
         /// af_inet UDP
-        std::string getInetUDPServerAddress() const
+        const std::string& getInetUDPServerAddress() const
         {
             return m_inetUDPServerAddress;
         }
@@ -79,7 +79,7 @@ public:
         }
 
         /// af_inet TCP
-        std::string getInetTCPServerAddress() const
+        const std::string& getInetTCPServerAddress() const
         {
             return m_inetTCPServerAddress;
         }
@@ -96,7 +96,7 @@ public:
         }
 
         /// boost TCP.
-        std::string getBoostTCPServerAddress() const
+        const std::string& getBoostTCPServerAddress() const
         {
             return m_boostTCPServerAddress;
         }
@@ -113,7 +113,7 @@ public:
         }
 
         /// boost UDP.
-        std::string getBoostUDPServerAddress() const
+        const std::string& getBoostUDPServerAddress() const
         {
             return m_boostUDPServerAddress;
         }
@@ -130,7 +130,7 @@ public:
         }
 
         /// af_unix DGRAM
-        std::string getUnixDgramServerPath() const
+        const std::string& getUnixDgramServerPath() const
         {
             return m_unixDgramServerPath;
         }
@@ -141,7 +141,7 @@ public:
         }
 
         /// af_unix STREAM
-        std::string getUnixStreamServerPath() const
+        const std::string& getUnixStreamServerPath() const
         {
             return m_unixStreamServerPath;
         }
@@ -249,7 +249,7 @@ public:
             }
 
             /// Get the payload data as a string.
-            std::string getPayload() const
+            const std::string& getPayload() const
             {
                 return m_payload;
             }
@@ -328,7 +328,7 @@ public:
             m_roomMessages.emplace_back(std::move(broadcast));
         }
 
-        std::vector<Room::Communication> getMessages() const
+        const std::vector<Room::Communication>& getMessages() const
         {
             return m_roomMessages;
         }
@@ -343,8 +343,9 @@ public:
         /// All of the broadcasts that have been sent in this room.
         std::vector<Room::Communication> m_roomMessages;
     };
+
     /// Constructor.
-    ClientAPI(ServerData data);
+    explicit ClientAPI(ServerData data);
 
     /// Move constructor.
     ClientAPI(ClientAPI&& other);

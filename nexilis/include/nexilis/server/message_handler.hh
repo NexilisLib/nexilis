@@ -5,7 +5,6 @@
 #include <nexilis/server/user.hh>
 
 #include <cstdint>
-#include <vector>
 
 namespace nexilis::server
 {
@@ -33,17 +32,17 @@ public:
         {
         }
 
-        std::string getAddress()
+        const std::string& getAddress() const
         {
             return m_address;
         }
 
-        nx_data getData()
+        nx_data getData() const
         {
             return m_data;
         }
 
-        uint16_t getPort()
+        uint16_t getPort() const
         {
             return m_port;
         }
@@ -53,7 +52,7 @@ public:
             return m_user;
         }
 
-        uint64_t getMessageId()
+        uint64_t getMessageId() const
         {
             return m_messageId;
         }

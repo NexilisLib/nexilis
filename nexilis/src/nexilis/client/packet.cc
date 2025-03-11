@@ -15,10 +15,8 @@ nx_data Packet::Set::username(const std::string& name)
     id.emplace_back(1);
 
     auto nameVector = Util::convertToByteVector(name.c_str(), name.size());
-    for (const auto& elem : nameVector)
-    {
-        id.emplace_back(elem);
-    }
+    id.reserve(id.size() + nameVector.size());
+    std::copy(nameVector.begin(), nameVector.end(), std::back_inserter(id));
     return id;
 }
 
@@ -127,10 +125,10 @@ nx_data Packet::Room::Management::create(RoomData::Context context, const std::s
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::create));
     id.emplace_back(static_cast<uint8_t>(context));
 
-    for (const char r : roomName)
-    {
-        id.emplace_back(static_cast<uint8_t>(r));
-    }
+    id.reserve(id.size() + roomName.size());
+    std::transform(roomName.begin(), roomName.end(), std::back_inserter(id), [](char c)
+                   { return static_cast<uint8_t>(c); });
+
     return id;
 }
 
@@ -171,10 +169,8 @@ void Packet::_initialize(ClientAPI& clientAPI)
 
 void Packet::emplace(nx_data& originalData, const nx_data& newData)
 {
-    for (const auto& byte : newData)
-    {
-        originalData.emplace_back(byte);
-    }
+    originalData.reserve(originalData.size() + newData.size());
+    std::copy(newData.begin(), newData.end(), std::back_inserter(originalData));
 }
 
 nx_data Packet::clientIdentification()
@@ -198,10 +194,8 @@ nx_data Packet::clientIdentification()
     assert(Util::convertToType<uint64_t>(clientIdVector) != 0);
 
     auto messageIdVector = Util::convertToByteVector(m_clientApi->getNewMessageId());
-    for (const auto& byte : messageIdVector)
-    {
-        clientIdVector.emplace_back(byte);
-    }
+    messageIdVector.reserve(clientIdVector.size() + messageIdVector.size());
+    std::copy(clientIdVector.begin(), clientIdVector.end(), std::back_inserter(messageIdVector));
 
     return clientIdVector;
 }

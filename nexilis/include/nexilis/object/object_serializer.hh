@@ -13,7 +13,7 @@ namespace nexilis
 class ObjectSerializer
 {
 public:
-    nx_data data(const std::unique_ptr<Object<T>> object)
+    static nx_data data(const std::unique_ptr<Object<T>> object)
     {
         return object.getData();
     }

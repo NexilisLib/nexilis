@@ -18,10 +18,10 @@ public:
     User(uint64_t id, std::string ip_address) noexcept;
 
     /// Move constructor.
-    User(User&& other);
+    User(User&& other) noexcept;
 
     /// Move assignment operator.
-    User& operator=(User&& other);
+    User& operator=(User&& other) noexcept;
 
     /// Deleted copy constructor.
     User(const User& other) = delete;
@@ -37,7 +37,7 @@ public:
 
     /// Getter for the ip address.
     /// \return The ip address of the connection.
-    std::string getIPAddress() const
+    const std::string& getIPAddress() const
     {
         return m_ip_address;
     }
@@ -91,7 +91,7 @@ public:
 
     /// Is boost TCP send function set?
     /// \ingroup UserBoostTCP
-    bool isBoostTCPSet()
+    bool isBoostTCPSet() const
     {
         return m_boostTCPSendToClient != nullptr;
     }
@@ -111,7 +111,7 @@ public:
 
     /// Is boost UDP send function set?
     /// \ingroup UserBoostUDP
-    bool isBoostUDPSet()
+    bool isBoostUDPSet() const
     {
         return m_boostUDPSendToClient != nullptr;
     }
@@ -131,7 +131,7 @@ public:
 
     /// Is User unixstream send function set?
     /// \ingroup UserUnixStream
-    bool isUnixStreamSet()
+    bool isUnixStreamSet() const
     {
         return m_unixStreamSendToClient != nullptr;
     }

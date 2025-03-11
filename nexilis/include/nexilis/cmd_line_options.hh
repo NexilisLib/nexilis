@@ -24,7 +24,7 @@ public:
     class Value : public IValue
     {
     public:
-        Value(const T& val)
+        explicit Value(const T& val)
             : value(val)
         {
         }
@@ -83,7 +83,7 @@ public:
             return result;
         }
 
-        std::string getName() const
+        const std::string& getName() const
         {
             return m_name;
         }

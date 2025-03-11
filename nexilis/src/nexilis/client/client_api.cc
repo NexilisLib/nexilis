@@ -396,7 +396,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                 // Set own m_data.
                 m_data.setUserName(username);
-                return ReadResult::success;
 
                 for (auto&& rooms : m_currentlyActiveRooms)
                 {
@@ -706,7 +705,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 if (roomAction == "broadcast")
                 {
                     uint64_t id = readUint64(json, "id");
-                    uint64_t roomId = readUint64(json, "roomId");
                     std::string message = readString(json, "message");
 
                     for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
@@ -723,9 +721,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         if (room->getId() == roomId)
                         {
                             Room::Communication newMessage(message, sender);
+                            auto message_id = newMessage.getId();
                             room->addMessage(std::move(newMessage));
 
-                            assert(room->containsCommunication(newMessage.getId()));
+                            assert(room->containsCommunication(message_id));
                             Log::info("Added new message in room: ", roomId);
                             return ReadResult::success;
                         }
@@ -775,7 +774,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                             for (const auto& client : clients)
                             {
-                                uint64_t id = readUint64(client, "id");
+                                uint64_t client_id = readUint64(client, "id");
                                 std::string username = readString(client, "name");
 
                                 float object2DX = readFloat(client, "roomPositionX");
@@ -783,7 +782,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 float dimension2DX = readFloat(client, "roomDimensionX");
                                 float dimension2DY = readFloat(client, "roomDimensionY");
 
-                                ClientAPI::ClientSession newClient(id, this);
+                                ClientAPI::ClientSession newClient(client_id, this);
                                 Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
                                 newClient.getObject2D().setPosition({object2DX, object2DY});
                                 newClient.getObject2D().setDimensions({dimension2DX, dimension2DY});
@@ -927,7 +926,7 @@ uint64_t ClientAPI::readUint64(const boost::json::value& context, const std::str
 
 float ClientAPI::readFloat(const boost::json::value& context, const std::string& key)
 {
-    float item;
+    float item = 0.f;
     bool readGood = true;
     if (context.at(key).if_double())
     {

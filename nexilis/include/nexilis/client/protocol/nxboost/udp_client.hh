@@ -17,7 +17,7 @@ class UDPClient : public Protocol,
 {
 public:
     /// Constructor.
-    UDPClient(ClientAPI& api);
+    explicit UDPClient(ClientAPI& api);
 
     /// Destructor.
     ~UDPClient();

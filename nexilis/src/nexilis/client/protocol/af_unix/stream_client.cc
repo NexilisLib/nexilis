@@ -46,13 +46,14 @@ StreamClient& StreamClient::operator=(StreamClient&& other)
 {
     if (this != &other)
     {
-        Protocol::operator=(std::move(other));
-        ClientProtocol::operator=(std::move(other));
         m_serverSocketPath = std::move(other.m_serverSocketPath);
         m_clientSocket = std::move(other.m_clientSocket);
         m_serverAddr = std::move(other.m_serverAddr);
         m_receiveThread = std::move(other.m_receiveThread);
         m_mutex = std::move(other.m_mutex);
+
+        Protocol::operator=(std::move(other));
+        ClientProtocol::operator=(std::move(other));
     }
     return *this;
 }
@@ -74,7 +75,8 @@ void StreamClient::connectToServer()
     m_serverAddr.sun_family = AF_UNIX;
     strcpy(m_serverAddr.sun_path, m_serverSocketPath.c_str());
 
-    if (connect(m_clientSocket, (struct sockaddr*)&m_serverAddr, sizeof(m_serverAddr)) == -1)
+    auto address = reinterpret_cast<sockaddr*>(&m_serverAddr);
+    if (connect(m_clientSocket, address, sizeof(m_serverAddr)) == -1)
     {
         perror("connect");
         close(m_clientSocket);

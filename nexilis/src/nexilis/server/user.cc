@@ -9,7 +9,7 @@ User::User(uint64_t id, std::string ip_address) noexcept
 {
 }
 
-User::User(User&& other)
+User::User(User&& other) noexcept
     : BaseClient(std::move(other)),
       m_ip_address(std::move(other.m_ip_address)),
       m_username(std::move(other.m_username)),
@@ -21,17 +21,18 @@ User::User(User&& other)
 }
 
 /// Move assignment operator.
-User& User::operator=(User&& other)
+User& User::operator=(User&& other) noexcept
 {
     if (this != &other)
     {
-        BaseClient::operator=(std::move(other));
         m_ip_address = std::move(other.m_ip_address);
         m_username = std::move(other.m_username);
         m_roomId = std::move(other.m_roomId);
         m_boostTCPSendToClient = std::move(other.m_boostTCPSendToClient);
         m_hasRootAccess = std::move(other.m_hasRootAccess);
         m_hasCommonAccess = std::move(other.m_hasCommonAccess);
+
+        BaseClient::operator=(std::move(other));
     }
     return *this;
 }

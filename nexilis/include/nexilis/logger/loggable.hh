@@ -44,13 +44,13 @@ public:
     /// Getters.
 
     /// Get the associated name.
-    std::string getName() const
+    const std::string& getName() const
     {
         return m_name;
     }
 
     /// Get the file name.
-    std::string getFile() const
+    const std::string& getFile() const
     {
         return m_file;
     }

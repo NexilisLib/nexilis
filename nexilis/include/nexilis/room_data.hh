@@ -36,7 +36,7 @@ public:
     RoomData& operator=(RoomData&& other);
 
     /// Get the given name for the room.
-    std::string getName() const
+    const std::string& getName() const
     {
         return m_name;
     }

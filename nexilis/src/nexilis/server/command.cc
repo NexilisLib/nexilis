@@ -1,7 +1,6 @@
-#include "nexilis/movement_type.hh"
-#include "nexilis/object/object2d.hh"
 #include <nexilis/json.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/movement_type.hh>
 #include <nexilis/room_command_type.hh>
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
@@ -238,7 +237,6 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
                                 assert(user.getRoomId() == roomId);
 
-                                auto roomId = user.getRoomId();
                                 std::map<std::string, boost::json::value> params;
                                 auto roomCommand = createRoomCommand(roomId, user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);

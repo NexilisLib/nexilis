@@ -121,7 +121,7 @@ public:
 
 private:
     template <typename T>
-    void addToStringStream(std::stringstream& ss, const T& data)
+    static void addToStringStream(std::stringstream& ss, const T& data)
     {
         ss << data;
     }

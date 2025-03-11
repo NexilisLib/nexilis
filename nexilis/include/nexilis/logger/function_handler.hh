@@ -12,7 +12,7 @@ class FunctionHandler : public BaseHandler
 {
 public:
     /// Constructor.
-    FunctionHandler(const std::function<void(LogLevel, const std::string&)>& function)
+    explicit FunctionHandler(const std::function<void(LogLevel, const std::string&)>& function)
         : m_function(function)
     {
     }

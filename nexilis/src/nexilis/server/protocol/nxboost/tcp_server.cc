@@ -1,4 +1,3 @@
-#include "nexilis/server/server_protocol.hh"
 #include <nexilis/logger/loggable.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
@@ -12,16 +11,16 @@
 namespace nexilis::server::nxboost
 {
 
-TCPServer::TCPServer(const Settings& settings, int serverPort)
+TCPServer::TCPServer(const Settings& settings, int serverPort) noexcept
     : ServerProtocol(settings),
       m_mutex(std::make_unique<std::mutex>()),
-      m_ioContext(std::make_unique<::boost::asio::io_context>()),
+      m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_acceptor(*m_ioContext,
-                 boost::asio::ip::tcp::endpoint(::boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
+                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
 {
 }
 
-TCPServer::TCPServer(TCPServer&& other)
+TCPServer::TCPServer(TCPServer&& other) noexcept
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
       m_mutex(std::move(other.m_mutex)),
@@ -32,17 +31,18 @@ TCPServer::TCPServer(TCPServer&& other)
 {
 }
 
-TCPServer& TCPServer::operator=(TCPServer&& other)
+TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
 {
     if (this != &other)
     {
-        Protocol::operator=(std::move(other));
-        ServerProtocol::operator=(std::move(other));
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
         m_listenThread = std::move(other.m_listenThread);
         m_ioContextThread = std::move(other.m_ioContextThread);
+
+        Protocol::operator=(std::move(other));
+        ServerProtocol::operator=(std::move(other));
     }
     return *this;
 }

@@ -54,7 +54,7 @@ public:
         m_filepath = filepath;
     }
 
-    std::string getFilepath() const
+    const std::string& getFilepath() const
     {
         return m_filepath;
     }

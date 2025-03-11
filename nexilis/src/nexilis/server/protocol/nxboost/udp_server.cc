@@ -43,8 +43,6 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
 {
     if (this != &other)
     {
-        Protocol::operator=(std::move(other));
-        ServerProtocol::operator=(std::move(other));
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
@@ -52,6 +50,9 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
+
+        Protocol::operator=(std::move(other));
+        ServerProtocol::operator=(std::move(other));
     }
     return *this;
 }
