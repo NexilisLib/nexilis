@@ -92,13 +92,13 @@ void UDPServer::receiveFromClients()
     {
         try
         {
-            m_receiveBuffer.clear();
+            m_receiveBuffer.resize(NEXILIS_BUFFER);
 
-            m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+            size_t bytes_received = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
 
             std::string address = m_remoteEndpoint.address().to_string();
             uint16_t port = m_remoteEndpoint.port();
-            Log::info("Received from ", address, " port ", port);
+            Log::info("Received from ", address, " port ", port, " ", bytes_received, " bytes");
 
             auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &getCommand().getSettings());
 

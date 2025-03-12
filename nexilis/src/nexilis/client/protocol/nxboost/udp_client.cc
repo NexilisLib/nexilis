@@ -105,8 +105,8 @@ void UDPClient::sendMessage(const nx_data& payload)
 {
     if (m_socket.is_open())
     {
-        m_socket.send_to(boost::asio::buffer(payload), m_remoteEndpoint);
-        Log::debug("sent message to server");
+        size_t bytes_sent = m_socket.send_to(boost::asio::buffer(payload), m_remoteEndpoint);
+        Log::debug("Sent ", bytes_sent, " bytes to server");
     }
     else
     {

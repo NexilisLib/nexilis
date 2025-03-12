@@ -3,6 +3,31 @@
 namespace nexilis
 {
 
+Protocol::Mode Protocol::getMode(Protocol::Type type)
+{
+    switch (type)
+    {
+        case Protocol::Type::AF_INET_UDP_SERVER:
+        case Protocol::Type::AF_INET_TCP_SERVER:
+        case Protocol::Type::BOOST_UDP_SERVER:
+        case Protocol::Type::BOOST_TCP_SERVER:
+        case Protocol::Type::AF_UNIX_SOCK_DGRAM_SERVER:
+        case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
+            return Protocol::Mode::SERVER;
+
+        case Protocol::Type::AF_INET_UDP_CLIENT:
+        case Protocol::Type::AF_INET_TCP_CLIENT:
+        case Protocol::Type::BOOST_UDP_CLIENT:
+        case Protocol::Type::BOOST_TCP_CLIENT:
+        case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
+        case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
+            return Protocol::Mode::CLIENT;
+
+        default:
+            return Protocol::Mode::UNKNOWN;
+    }
+}
+
 std::string Protocol::typeToString(Type type)
 {
     switch (type)

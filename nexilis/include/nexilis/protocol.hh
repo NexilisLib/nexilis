@@ -30,6 +30,14 @@ public:
         AF_UNIX_SOCK_STREAM_SERVER
     };
 
+    // Enum for server or client protocol.
+    enum class Mode
+    {
+        UNKNOWN,
+        SERVER,
+        CLIENT
+    };
+
     /// Default constructor.
     Protocol() = default;
 
@@ -58,8 +66,11 @@ public:
     /// \note New types to Protocol::Type.
     virtual Type getType() = 0;
 
+    /// Get the mode of a type.
+    static Mode getMode(Type type);
+
     /// Returns a string value of the Type.
-    std::string typeToString(Type type);
+    static std::string typeToString(Type type);
 };
 
 } // namespace nexilis
