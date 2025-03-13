@@ -98,19 +98,25 @@ void UDPServer::receiveFromClients()
 
             std::string address = m_remoteEndpoint.address().to_string();
             uint16_t port = m_remoteEndpoint.port();
-            Log::info("Received from ", address, " port ", port, " ", bytes_received, " bytes");
+            Log::info("Received from ", address, " port:", port, " ", bytes_received, " bytes.", " Data: ", m_receiveBuffer.data());
 
-            auto handledMessage = getMessageHandler().readMessage(address, m_receiveBuffer, port, &getCommand().getSettings());
+            // Create a new buffer containing only the received bytes.
+            nx_data received_message(m_receiveBuffer.begin(), m_receiveBuffer.begin() + bytes_received);
 
+            auto handledMessage = getMessageHandler().readMessage(address, received_message, port, &getCommand().getSettings());
+
+            // clang-format off
             if (!handledMessage.getClient()->isBoostUDPSet())
             {
                 handledMessage.getClient()->setBoostUDPSend([this](const nx_data& bytes)
-                                                            {
+                {
                     if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
                     {
                         Log::error("Failed to send message to client");
-                    } });
+                    }
+                });
             }
+            // clang-format on
 
             Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 

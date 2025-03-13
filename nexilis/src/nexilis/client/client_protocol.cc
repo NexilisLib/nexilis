@@ -55,13 +55,18 @@ void ClientProtocol::start(Protocol::Type type)
     auto message = Util::convertToByteVector(password.c_str(), password.size());
     sendMessage(message);
 
+    Log::debug("Client protocol type: ", Protocol::typeToString(type));
     switch (type)
     {
         case Protocol::Type::BOOST_TCP_CLIENT:
+            Log::debug("Waiting for Boost TCP to be ready");
             getClientAPI()->waitUntilBoostTCPReady();
+            Log::debug("Boost TCP is ready");
             break;
         case Protocol::Type::BOOST_UDP_CLIENT:
+            Log::debug("Waiting for Boost UDP to be ready");
             getClientAPI()->waitUntilBoostUDPReady();
+            Log::debug("Boost UDP is ready");
             break;
         case Protocol::Type::AF_INET_TCP_CLIENT:
             getClientAPI()->waitUntilInetTCPReady();

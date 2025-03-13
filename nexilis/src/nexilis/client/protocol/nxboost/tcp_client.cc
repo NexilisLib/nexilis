@@ -179,12 +179,12 @@ void TCPClient::start()
 
         // Start a separate thread to continuously receive messages.
         m_receiveThread = std::thread(&TCPClient::receiveLoop, this);
+        ClientProtocol::start(getType());
     }
     else
     {
         Log::error("Failed to connect to the server");
     }
-    ClientProtocol::start(getType());
 }
 
 void TCPClient::receiveLoop()

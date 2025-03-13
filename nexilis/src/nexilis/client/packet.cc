@@ -191,11 +191,14 @@ nx_data Packet::clientIdentification()
     auto clientIdVector = Util::convertToByteVector(clientId);
 
     assert(!clientIdVector.empty());
+    assert(clientIdVector.size() == 8);
     assert(Util::convertToType<uint64_t>(clientIdVector) != 0);
 
     auto messageIdVector = Util::convertToByteVector(m_clientApi->getNewMessageId());
-    messageIdVector.reserve(clientIdVector.size() + messageIdVector.size());
-    std::copy(clientIdVector.begin(), clientIdVector.end(), std::back_inserter(messageIdVector));
+    assert(messageIdVector.size() == 8);
+
+    clientIdVector.reserve(clientIdVector.size() + messageIdVector.size());
+    std::copy(messageIdVector.begin(), messageIdVector.end(), std::back_inserter(clientIdVector));
 
     return clientIdVector;
 }

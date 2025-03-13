@@ -34,9 +34,9 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
     if (!user)
     {
         // Create a new user.
-        Log::info("Creating new user");
         uint64_t newId = Util::getRandomUint64();
         User newUser(newId, address);
+        Log::info("Created new user: ", newId);
         auto username = Util::getRandomString(10);
         newUser.setUsername(username);
         user = &newUser;

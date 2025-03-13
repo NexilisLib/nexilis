@@ -408,7 +408,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         }
                     }
                 }
-                return ReadResult::not_found;
+                return ReadResult::success;
             }
             else
             {
@@ -420,6 +420,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "client_id")
             {
+                Log::debug("Received Get::clientId command");
                 uint64_t clientId = readUint64(json, "client_id");
                 setClientId(clientId);
                 Packet::_initialize(*this);
