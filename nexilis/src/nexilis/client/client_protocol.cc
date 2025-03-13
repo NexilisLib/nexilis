@@ -46,6 +46,12 @@ std::pair<uint64_t, std::function<void()>> ClientProtocol::createCallback(const 
 
 void ClientProtocol::start(Protocol::Type type)
 {
+    if (m_api->isInitialized())
+    {
+        Log::error("Password already sent using another protocol!");
+        return;
+    }
+
     auto password = getClientAPI()->getClientPassword();
     Log::debug("Client password: ", password);
     auto username = getClientAPI()->getClientUserName();

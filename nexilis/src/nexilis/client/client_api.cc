@@ -424,6 +424,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 uint64_t clientId = readUint64(json, "client_id");
                 setClientId(clientId);
                 Packet::_initialize(*this);
+                m_isInitialized = true;
                 return ReadResult::success;
             }
             else

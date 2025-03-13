@@ -536,6 +536,13 @@ public:
         return m_overlappingAllowed;
     }
 
+public:
+    /// Is the server aware of the client, is the ClientAPI and Packet ready for use.
+    bool isInitialized() const
+    {
+        return m_isInitialized;
+    }
+
 private:
     /// Setters.
     void setClientId(uint64_t id)
@@ -571,6 +578,9 @@ private:
 
     /// Can the elements overlap each other.
     bool m_overlappingAllowed = false;
+
+    /// Is the server aware of the client, is "Packet" initialized.
+    bool m_isInitialized = false;
 };
 
 } // namespace nexilis::client
