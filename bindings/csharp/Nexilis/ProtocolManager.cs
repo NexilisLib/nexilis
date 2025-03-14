@@ -25,6 +25,12 @@ namespace Nexilis
             GC.SuppressFinalize(this);
         }
 
+        public IntPtr GetHandle()
+        {
+            ThrowIfDisposed();
+            return _handle;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)

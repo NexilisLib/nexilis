@@ -45,7 +45,7 @@ namespace Nexilis.Tests
             var fileHandler = new FileHandler(fileName);
 
             _logger.AddFileHandler(fileHandler);
-            _logger.SetLevel((int)LogLevel.Info);
+            _logger.SetLevel((int)LogLevel.INFO);
             _logger.Info("Test message");
 
             string line = File.ReadAllText(fileName);
@@ -72,7 +72,7 @@ namespace Nexilis.Tests
 
             // Act
             _logger.AddFunctionHandler(functionHandler);
-            _logger.SetLevel((int)LogLevel.Info);
+            _logger.SetLevel((int)LogLevel.INFO);
             _logger.Info(message);
 
             // Assert
@@ -96,7 +96,7 @@ namespace Nexilis.Tests
 
             _logger.AddConsoleHandler(consoleHandler);
             _logger.AddFileHandler(fileHandler);
-            _logger.SetLevel((int)LogLevel.Warning);
+            _logger.SetLevel((int)LogLevel.WARNING);
 
             var t1 = new Thread(() => _logger.Warning("Test message from thread 1"));
             var t2 = new Thread(() => _logger.Warning("Test message from thread 2"));

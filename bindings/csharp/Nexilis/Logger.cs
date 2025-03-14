@@ -20,28 +20,19 @@ namespace Nexilis
 
         public void AddConsoleHandler(ConsoleHandler consoleHandler)
         {
-            if (consoleHandler == null)
-            {
-                throw new ArgumentNullException(nameof(consoleHandler));
-            }
+            ArgumentNullException.ThrowIfNull(consoleHandler);
             LoggerNative.nexilis_logger_add_console_handler(_loggerPtr, consoleHandler.HandlerPtr);
         }
 
         public void AddFileHandler(FileHandler fileHandler)
         {
-            if (fileHandler == null)
-            {
-                throw new ArgumentNullException(nameof(fileHandler));
-            }
+            ArgumentNullException.ThrowIfNull(fileHandler);
             LoggerNative.nexilis_logger_add_file_handler(_loggerPtr, fileHandler.HandlerPtr);
         }
 
         public void AddFunctionHandler(FunctionHandler functionHandler)
         {
-            if (functionHandler == null)
-            {
-                throw new ArgumentNullException(nameof(functionHandler));
-            }
+            ArgumentNullException.ThrowIfNull(functionHandler);
             LoggerNative.nexilis_logger_add_function_handler(_loggerPtr, functionHandler.HandlerPtr);
         }
 
