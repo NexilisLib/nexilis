@@ -1,4 +1,4 @@
-namespace Nexilis
+namespace Nexilis.Server
 {
     public enum AuthenticationMode
     {

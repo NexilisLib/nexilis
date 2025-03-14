@@ -1,4 +1,4 @@
-namespace Nexilis
+namespace Nexilis.Logger
 {
     /// <summary>
     /// Represents a file handler for logging messages to a file.

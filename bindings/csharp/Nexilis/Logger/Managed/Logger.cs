@@ -1,4 +1,4 @@
-namespace Nexilis
+namespace Nexilis.Logger
 {
     public class Logger : IDisposable
     {

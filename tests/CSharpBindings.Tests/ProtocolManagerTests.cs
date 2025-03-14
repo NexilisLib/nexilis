@@ -2,33 +2,36 @@ using System;
 using Xunit;
 using Nexilis;
 
-public class BoostTCPServerTest
+namespace Nexilis.Tests
 {
-    [Fact]
-    public void CreateProtocol_BoostTCPServer()
+    public class BoostTCPServerTest
     {
-        // Arrange
-        using (var settings = new Settings())
-        using (var protocolManager = new ProtocolManager())
+        [Fact]
+        public void CreateProtocol_BoostTCPServer()
         {
-            // Set up settings
-            settings.SetMode(AuthenticationMode.PasswordProtected);
-            settings.SetPassphrase("salasana");
-            settings.SetRootPassword("root");
-
-            int port = 12345;
-
-            using (var server = new BoostTCPServer(protocolManager, settings, port))
+            // Arrange
+            using (var settings = new Server.Settings())
+            using (var protocolManager = new ProtocolManager())
             {
-                // Assert
-                // Verify the protocol type
-                Assert.Equal(ProtocolType.BOOST_TCP_SERVER, server.GetProtocolType());
+                // Set up settings
+                settings.SetMode(Server.AuthenticationMode.PasswordProtected);
+                settings.SetPassphrase("salasana");
+                settings.SetRootPassword("root");
 
-                // Verify the settings
-                var serverSettings = server.GetSettings();
-                Assert.Equal(AuthenticationMode.PasswordProtected, serverSettings.GetMode());
-                Assert.Equal("salasana", serverSettings.GetPassphrase());
-                Assert.Equal("root", serverSettings.GetRootPassword());
+                int port = 12345;
+
+                using (var server = new Server.BoostTCPServer(protocolManager, settings, port))
+                {
+                    // Assert
+                    // Verify the protocol type
+                    Assert.Equal(ProtocolType.BOOST_TCP_SERVER, server.GetProtocolType());
+
+                    // Verify the settings
+                    var serverSettings = server.GetSettings();
+                    Assert.Equal(Server.AuthenticationMode.PasswordProtected, serverSettings.GetMode());
+                    Assert.Equal("salasana", serverSettings.GetPassphrase());
+                    Assert.Equal("root", serverSettings.GetRootPassword());
+                }
             }
         }
     }

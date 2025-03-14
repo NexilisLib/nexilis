@@ -9,11 +9,11 @@ namespace Nexilis.Tests
 {
     public class LoggerTests : IDisposable
     {
-        private readonly Logger _logger;
+        private readonly Logger.Logger _logger;
 
         public LoggerTests()
         {
-            _logger = new Logger();
+            _logger = new Logger.Logger();
         }
 
         public void Dispose()
@@ -42,10 +42,10 @@ namespace Nexilis.Tests
         public void FileHandler()
         {
             string fileName = GenerateRandomFileName();
-            var fileHandler = new FileHandler(fileName);
+            var fileHandler = new Logger.FileHandler(fileName);
 
             _logger.AddFileHandler(fileHandler);
-            _logger.SetLevel((int)LogLevel.INFO);
+            _logger.SetLevel((int)Logger.LogLevel.INFO);
             _logger.Info("Test message");
 
             string line = File.ReadAllText(fileName);
@@ -62,17 +62,17 @@ namespace Nexilis.Tests
             string expectedMessage = "INFO: Function handler test message";
 
             // Use a list to capture the log level and message
-            var capturedLogs = new List<(LogLevel Level, string Message)>();
+            var capturedLogs = new List<(Logger.LogLevel Level, string Message)>();
 
             // Create a function handler that captures the log level and message
-            var functionHandler = new FunctionHandler((level, msg) =>
+            var functionHandler = new Logger.FunctionHandler((level, msg) =>
             {
                 capturedLogs.Add((level, msg));
             });
 
             // Act
             _logger.AddFunctionHandler(functionHandler);
-            _logger.SetLevel((int)LogLevel.INFO);
+            _logger.SetLevel((int)Logger.LogLevel.INFO);
             _logger.Info(message);
 
             // Assert
@@ -91,12 +91,12 @@ namespace Nexilis.Tests
         public void MultipleHandlersWithThreads()
         {
             string fileName = GenerateRandomFileName();
-            var consoleHandler = new ConsoleHandler();
-            var fileHandler = new FileHandler(fileName);
+            var consoleHandler = new Logger.ConsoleHandler();
+            var fileHandler = new Logger.FileHandler(fileName);
 
             _logger.AddConsoleHandler(consoleHandler);
             _logger.AddFileHandler(fileHandler);
-            _logger.SetLevel((int)LogLevel.WARNING);
+            _logger.SetLevel((int)Logger.LogLevel.WARNING);
 
             var t1 = new Thread(() => _logger.Warning("Test message from thread 1"));
             var t2 = new Thread(() => _logger.Warning("Test message from thread 2"));

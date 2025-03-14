@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Nexilis
+namespace Nexilis.Logger
 {
     public class FunctionHandler : IDisposable
     {

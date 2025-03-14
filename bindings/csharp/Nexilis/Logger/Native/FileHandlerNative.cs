@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Nexilis
+namespace Nexilis.Logger
 {
     public static class FileHandlerNative
     {

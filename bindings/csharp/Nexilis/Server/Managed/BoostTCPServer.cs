@@ -1,6 +1,6 @@
 using System;
 
-namespace Nexilis
+namespace Nexilis.Server
 {
     public class BoostTCPServer : IDisposable
     {
