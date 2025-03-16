@@ -2,11 +2,10 @@
 
 # Project settings
 PROJECT_NAME           = "nexilis"
-PROJECT_NUMBER         = "1.0"
+PROJECT_NUMBER         = "0.0.1"
 PROJECT_BRIEF          = "Nexilis Client/Server API documentation."
 
-# TODO
-OUTPUT_DIRECTORY       = ../doxygen
+OUTPUT_DIRECTORY       = docs
 CREATE_SUBDIRS         = YES
 OUTPUT_LANGUAGE        = English
 
@@ -41,23 +40,6 @@ HTML_EXTRA_STYLESHEET  =
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
-
-# LaTeX output options
-GENERATE_LATEX         = YES
-LATEX_OUTPUT           = latex
-LATEX_CMD_NAME         = pdflatex
-MAKEINDEX_CMD_NAME     = makeindex
-COMPACT_LATEX          = NO
-PAPER_TYPE             = a4
-EXTRA_PACKAGES         =
-LATEX_HEADER           =
-LATEX_FOOTER           =
-LATEX_EXTRA_STYLESHEET =
-LATEX_EXTRA_FILES      =
-PDF_HYPERLINKS         = YES
-USE_PDFLATEX           = YES
-LATEX_BATCHMODE        = NO
-LATEX_HIDE_INDICES     = NO
 
 # Enabling graphs and diagrams
 HAVE_DOT               = YES
