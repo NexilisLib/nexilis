@@ -19,12 +19,9 @@ jobs:
 
       - name: Check formatting
         run: |
-          directories=("nexilis" "tests")
-          for dir in "${directories[@]}"; do
-            if [ -d "$dir" ]; then
-              find "$dir" -type f \( -name "*.cc" -o -name "*.hh" \) -exec clang-format -n -Werror {} +
-            fi
-          done
+          pip install scripts/requirements.txt
+          python3 scripts/create-env.py
+          python3 scripts/format.py
 
   cpp-tests:
     name: Run Native Tests
