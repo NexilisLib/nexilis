@@ -19,7 +19,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          pip install scripts/requirements.txt
+          pip install -r scripts/requirements.txt
           python3 scripts/create-env.py
           python3 scripts/format.py
 
@@ -77,7 +77,7 @@ jobs:
 
       - name: Run best_practices.py
         run: |
-          pip install scripts/requirements.txt
+          pip install -r scripts/requirements.txt
           python3 scripts/create-env.py
 
           output=$(python3 scripts/best_practises.py)
