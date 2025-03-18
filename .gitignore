@@ -3,3 +3,5 @@
 **.cache
 **/bin/
 **/obj/
+.env
+**__pycache__

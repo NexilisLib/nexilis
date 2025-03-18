@@ -80,8 +80,10 @@ jobs:
 
       - name: Run best_practices.py
         run: |
-          cd scripts
-          output=$(python3 best_practises.py ../nexilis)
+          pip install scripts/requirements.txt
+          python3 scripts/create-env.py
+
+          output=$(python3 scripts/best_practises.py)
           if [ "$output" = "0" ]; then
             echo "Best practices successful."
           else

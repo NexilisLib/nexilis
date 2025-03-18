@@ -1,3 +1,5 @@
+from create_env import get_nexilis_root
+
 import subprocess
 import sys
 import os
@@ -93,11 +95,12 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None):
         sys.exit(1)
 
 if __name__ == "__main__":
-    include_directory = "../nexilis/include/nexilis/"  
-    src_directory = "../nexilis/src/nexilis/"
+    root = get_nexilis_root()
+    include_directory = root + "/nexilis/include/nexilis/"  
+    src_directory = root + "/nexilis/src/nexilis/"
     exclude_directories = [
-        "../nexilis/include/nexilis/archived_protocols",
-        "../nexilis/src/nexilis/archived_protocols",
+        root + "/nexilis/include/nexilis/archived_protocols",
+        root + "/nexilis/src/nexilis/archived_protocols",
     ]
 
     run_cppcheck(

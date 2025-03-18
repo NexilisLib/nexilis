@@ -1,12 +1,14 @@
+from create_env import get_nexilis_root
+
 import re
 import os
-import argparse
 
 # This program checks if the input file/directory has correct usage for type aliases.
 # If unused type aliases found, the program asks to write them.
+nexilis_root = get_nexilis_root()
 
 # Header file that contains type alias declarations.
-aliases_file_path = '../nexilis/include/nexilis/nexilis_constants.hh'
+aliases_file_path = nexilis_root + '/nexilis/include/nexilis/nexilis_constants.hh'
 
 # Read the aliases from the aliases file.
 def read_aliases(file_path):
@@ -81,15 +83,11 @@ def process_files(target_path, alias_map):
     return total_replacements, all_changes
 
 def main():
-    parser = argparse.ArgumentParser(description="Preview or apply changes for replacing hardcoded values or type aliases in C++ files.")
-    parser.add_argument('target', nargs='?', default='.', help='Directory to process (default is current directory)')
-    args = parser.parse_args()
-
     # Read the aliases from the aliases file.
     alias_map = read_aliases(aliases_file_path)
 
     # Analyze the C++ file and get potential replacements.
-    total_replacements, changes = process_files(args.target, alias_map)
+    total_replacements, changes = process_files(nexilis_root + "/nexilis", alias_map)
 
     if total_replacements == 0:
         print("0")

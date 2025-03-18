@@ -1,16 +1,14 @@
+from create_env import get_nexilis_root
+
 import os
 import subprocess
-
-# Get the directory of the script.
-script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Define the directories to run Clang-Format recursively.
 directories = ["nexilis", "examples", "tests"]
 
 # Run Clang-Format recursively in the specified directories.
 for directory in directories:
-    target_dir = os.path.abspath(os.path.join(script_dir, "..", directory))
-
+    target_dir = get_nexilis_root()
     if os.path.isdir(target_dir):
         print(f"Formatting files in directory: {target_dir}")
         find_command = (
