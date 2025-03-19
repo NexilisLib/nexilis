@@ -5,3 +5,4 @@
 **/obj/
 .env
 **__pycache__
+**vgcore.*
