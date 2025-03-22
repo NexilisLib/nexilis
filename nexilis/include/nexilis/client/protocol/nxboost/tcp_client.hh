@@ -58,14 +58,17 @@ private:
     void receiveLoop();
     bool connectToServer();
     bool send(const nx_data& data);
-    bool receive(nx_data& buffer);
+    void receive(const std::function<void(nx_data)>& buffer);
 
 private:
-    bool m_stopped = false;
-    std::unique_ptr<boost::asio::io_context> m_ioContext;
+    std::unique_ptr<std::atomic<bool>> m_stopped;
+    std::shared_ptr<boost::asio::io_context> m_ioContext;
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
     boost::asio::ip::tcp::socket m_socket;
     boost::asio::ip::tcp::resolver m_resolver;
-    std::unique_ptr<std::mutex> m_mutex;
+
+    std::shared_ptr<std::mutex> m_sendMutex;
+    std::shared_ptr<std::mutex> m_receiveMutex;
 };
 
 } // namespace nexilis::client::nxboost

@@ -176,7 +176,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     nx_data message = Util::convertToByteVector(json);
                     sendMessageToClient(message, user, protocol);
 
-                    Log::info("sent message to client");
+                    Log::info("Sent message GET CLIENTID to client");
                     return Result::success;
                 }
                 default:

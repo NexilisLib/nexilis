@@ -19,7 +19,7 @@ class TCPServer : public Protocol,
 {
 public:
     /// Constructor.
-    TCPServer(const Settings& settings, int serverPort) noexcept;
+    explicit TCPServer(const Settings& settings, int serverPort) noexcept;
 
     /// Destructor.
     ~TCPServer();
@@ -54,6 +54,7 @@ private:
     bool acceptClients();
 
 private:
+    std::unique_ptr<std::atomic<bool>> m_stopped;
     std::unique_ptr<std::mutex> m_mutex;
     std::unique_ptr<boost::asio::io_context> m_ioContext;
 
@@ -61,6 +62,7 @@ private:
 
     std::thread m_listenThread;
     std::thread m_ioContextThread;
+    std::vector<std::thread> m_clientThreads;
 };
 
 } // namespace nexilis::server::nxboost
