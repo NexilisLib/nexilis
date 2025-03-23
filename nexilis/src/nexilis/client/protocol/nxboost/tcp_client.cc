@@ -75,12 +75,18 @@ TCPClient::~TCPClient()
 
 void TCPClient::stop()
 {
+    if (!m_stopped)
+    {
+        Log::error("Stopped is null");
+        return;
+    }
+
     if (m_stopped->load())
     {
         return;
     }
 
-    m_stopped->store(true);
+    m_stopped->store(true, std::memory_order_relaxed);
 
     if (m_ioContext)
     {
@@ -168,7 +174,6 @@ bool TCPClient::send(const nx_data& data)
 
 void TCPClient::receive(const std::function<void(nx_data)>& callback)
 {
-    Log::debug("New receive loop started");
     if (!m_socket.is_open())
     {
         Log::error("TCPClient socket is not open for receiving.");

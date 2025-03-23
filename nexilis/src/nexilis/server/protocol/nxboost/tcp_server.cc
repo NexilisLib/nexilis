@@ -26,7 +26,7 @@ TCPServer::TCPServer(const Settings& settings, int serverPort) noexcept
 TCPServer::TCPServer(TCPServer&& other) noexcept
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
-      m_stopped(std::move(other.m_stopped)),
+      m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
       m_mutex(std::move(other.m_mutex)),
       m_ioContext(std::move(other.m_ioContext)),
       m_acceptor(std::move(other.m_acceptor)),
@@ -40,6 +40,10 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
     if (this != &other)
     {
         m_stopped = std::move(other.m_stopped);
+        if (!m_stopped)
+        {
+            m_stopped = std::make_unique<std::atomic<bool>>(false);
+        }
         m_mutex = std::move(other.m_mutex);
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
@@ -75,25 +79,16 @@ void TCPServer::start()
 
 void TCPServer::stop()
 {
-    if (!m_mutex)
+    if (!m_stopped)
     {
-        Log::error("Mutex is not initialized.");
+        Log::error("m_stopped is null, preventing crash");
         return;
     }
-    std::lock_guard<std::mutex> lock(*m_mutex);
 
-    if (m_stopped && m_stopped->load())
+    if (m_stopped->exchange(true, std::memory_order_relaxed))
     {
         Log::debug("Already stopped TCPServer.");
         return;
-    }
-    else
-    {
-        Log::debug("Stopping TCPServer.");
-    }
-    if (m_stopped)
-    {
-        m_stopped->store(true);
     }
 
     if (m_acceptor.is_open())
@@ -141,10 +136,8 @@ bool TCPServer::acceptClients()
 {
     try
     {
-        while (true)
+        while (!m_stopped->load())
         {
-            //std::lock_guard<std::mutex> lock(*m_mutex);
-
             // Create a new socket for each client connection
             boost::asio::ip::tcp::socket newSocket(*m_ioContext);
             boost::system::error_code accept_error;
@@ -281,7 +274,13 @@ bool TCPServer::sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& 
 {
     if (clientSocket.is_open())
     {
-        boost::asio::write(clientSocket, boost::asio::buffer(data));
+        boost::system::error_code ec;
+        boost::asio::write(clientSocket, boost::asio::buffer(data), ec);
+        if (ec)
+        {
+            Log::error("Failed to send data: ", ec.message());
+            return false;
+        }
         return true;
     }
     return false;
