@@ -11,13 +11,12 @@
 namespace nexilis::server::nxboost
 {
 
-TCPServer::TCPServer(const Settings& settings, int serverPort) noexcept
+TCPServer::TCPServer(const Settings& settings) noexcept
     : ServerProtocol(settings),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
-      m_acceptor(*m_ioContext,
-                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(std::to_string(serverPort))))
+      m_acceptor(*m_ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 0))
 {
     // Enable SO_REUSEADDR to allow port reuse.
     m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -31,7 +30,8 @@ TCPServer::TCPServer(TCPServer&& other) noexcept
       m_ioContext(std::move(other.m_ioContext)),
       m_acceptor(std::move(other.m_acceptor)),
       m_listenThread(std::move(other.m_listenThread)),
-      m_ioContextThread(std::move(other.m_ioContextThread))
+      m_ioContextThread(std::move(other.m_ioContextThread)),
+      m_serverPort(std::move(other.m_serverPort))
 {
 }
 
@@ -49,6 +49,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
         m_acceptor = std::move(other.m_acceptor);
         m_listenThread = std::move(other.m_listenThread);
         m_ioContextThread = std::move(other.m_ioContextThread);
+        m_serverPort = std::move(other.m_serverPort);
 
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
@@ -59,6 +60,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
 TCPServer::~TCPServer()
 {
     stop();
+    Util::cleanupPortFile(getType());
 }
 
 void TCPServer::start()
@@ -129,6 +131,12 @@ void TCPServer::stop()
 bool TCPServer::startListening()
 {
     m_acceptor.listen();
+    m_serverPort = m_acceptor.local_endpoint().port();
+    Log::debug("Boost TCP server started on port: ", m_serverPort);
+    if (!Util::writePortToFile(m_serverPort, getType()))
+    {
+        Log::error("Failed to write Boost TCP server port to a file.");
+    }
     return true;
 }
 

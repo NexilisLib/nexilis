@@ -10,7 +10,7 @@ extern "C" {
 
 typedef struct nexilis_BoostTCPServer nexilis_BoostTCPServer;
 
-nexilis_BoostTCPServer* nexilis_create_boost_tcp_server(nexilis_ProtocolManagerC* manager, nexilis_server_SettingsC* settings, int port);
+nexilis_BoostTCPServer* nexilis_create_boost_tcp_server(nexilis_ProtocolManagerC* manager, nexilis_server_SettingsC* settings);
 void nexilis_boost_tcp_server_destroy(nexilis_BoostTCPServer* server);
 nexilis_server_SettingsC nexilis_boost_tcp_server_get_settings(nexilis_BoostTCPServer* server);
 nexilis_ProtocolTypeC nexilis_boost_tcp_server_get_type(nexilis_BoostTCPServer* server);

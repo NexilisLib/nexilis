@@ -6,13 +6,13 @@ struct nexilis_BoostTCPServer
     nexilis::server::nxboost::TCPServer* server;
 };
 
-nexilis_BoostTCPServer* nexilis_create_boost_tcp_server(nexilis_ProtocolManagerC* manager, nexilis_server_SettingsC* settings, int port)
+nexilis_BoostTCPServer* nexilis_create_boost_tcp_server(nexilis_ProtocolManagerC* manager, nexilis_server_SettingsC* settings)
 {
     if (manager && manager->manager && settings && settings->settings)
     {
         auto server = new nexilis_BoostTCPServer();
         server->server = new nexilis::server::nxboost::TCPServer(
-                manager->manager->createProtocol<nexilis::server::nxboost::TCPServer>(*settings->settings, port));
+                manager->manager->createProtocol<nexilis::server::nxboost::TCPServer>(*settings->settings));
         return server;
     }
     return nullptr;

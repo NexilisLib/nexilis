@@ -1,5 +1,3 @@
-#include <cstdint>
-#include <cstring>
 #include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/util.hh>
@@ -11,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <fstream>
 
 namespace nexilis
 {
@@ -286,5 +285,110 @@ std::string Util::getDateAndTime()
     ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
     return ss.str();
 }
+
+std::filesystem::path Util::getNexilisTempPath()
+{
+    auto tmp_dir = std::filesystem::temp_directory_path();
+    auto nexilis_temp_dir = tmp_dir / "nexilis";
+
+    std::error_code ec;
+    std::filesystem::create_directories(nexilis_temp_dir, ec);
+    if (!ec)
+    {
+        std::filesystem::permissions(nexilis_temp_dir,
+                std::filesystem::perms::owner_all,
+                std::filesystem::perm_options::replace,
+                ec);
+    }
+    return nexilis_temp_dir;
+}
+
+std::string Util::getPortFilePath(Protocol::Type protocol_type)
+{
+    std::filesystem::path port_file = getNexilisTempPath() /
+        ("nexilis_" + Protocol::typeToString(protocol_type) + "_port.txt");
+
+    return port_file.string();
+}
+
+bool Util::writePortToFile(uint16_t port, Protocol::Type protocol_type)
+{
+    std::string file_path = getPortFilePath(protocol_type);
+
+    try
+    {
+        std::ofstream port_file(file_path, std::ios::out);
+        if (!port_file.is_open())
+        {
+            return false;
+        }
+
+        port_file << port;
+        port_file.close();
+
+        std::filesystem::permissions(file_path,
+                std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                std::filesystem::perm_options::replace);
+
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+std::optional<uint16_t> Util::readPortFromFile(Protocol::Type protocol_type)
+{
+    std::string file_path = getPortFilePath(protocol_type);
+
+    try
+    {
+        if (!std::filesystem::exists(file_path))
+        {
+            return std::nullopt;
+        }
+
+        std::ifstream port_file(file_path);
+        if (!port_file.is_open())
+        {
+            return std::nullopt;
+        }
+
+        int port_value;
+        if (!(port_file >> port_value))
+        {
+            return std::nullopt;
+        }
+
+        if (port_value < 1024 || port_value > 65535)
+        {
+            return std::nullopt;
+        }
+
+        return static_cast<uint16_t>(port_value);
+    }
+    catch (...)
+    {
+        return std::nullopt;
+    }
+}
+
+
+void Util::cleanupPortFile(Protocol::Type protocol_type)
+{
+    std::string file_path = getPortFilePath(protocol_type);
+    try
+    {
+        if (std::filesystem::exists(file_path))
+        {
+            std::filesystem::remove(file_path);
+        }
+    }
+    catch(...)
+    {
+    }
+}
+
 
 } // namespace nexilis

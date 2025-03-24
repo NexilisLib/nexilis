@@ -35,7 +35,7 @@ TEST_F(ProtocolManagerTest, CreateProtocol_BoostTCPServer)
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
 
-    auto boost_tcp_server = manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings, 12345);
+    auto boost_tcp_server = manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
 
     EXPECT_EQ(boost_tcp_server.getType(), nexilis::Protocol::Type::BOOST_TCP_SERVER);
     EXPECT_EQ(boost_tcp_server.getSettings().getMode(), nexilis::server::Settings::AuthenticationMode::passwordProtected);

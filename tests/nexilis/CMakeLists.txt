@@ -17,7 +17,9 @@ add_executable(nexilis_tests
 
     src/logging/logger_test.cc
     src/logging/log_test.cc
+
     src/protocol/protocol_manager_test.cc
+    src/protocol/boost_tcp_test.cc
 )
 
 target_link_libraries(nexilis_tests nexilis ${GTEST_LIBRARIES})

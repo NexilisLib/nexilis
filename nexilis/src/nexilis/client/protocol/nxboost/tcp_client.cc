@@ -124,10 +124,15 @@ bool TCPClient::connectToServer()
 {
     try
     {
+        auto port = Util::readPortFromFile(Protocol::Type::BOOST_TCP_SERVER);
+        if (!port)
+        {
+            Log::error("Could not read TCP server port from a file.");
+            return false;
+        }
         try
         {
-            boost::asio::connect(m_socket, m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(),
-                                                              std::to_string(getClientAPI()->getBoostTCPServerPortNumber())));
+            boost::asio::connect(m_socket, m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(*port)));
         }
         catch (...)
         {

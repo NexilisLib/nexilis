@@ -1,6 +1,7 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
+#include <nexilis/protocol.hh>
 #include <nexilis/logger/log_level.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/server/config.hh>
@@ -9,6 +10,8 @@
 #include <boost/json/object.hpp>
 
 #include <string>
+#include <optional>
+#include <filesystem>
 
 namespace nexilis
 {
@@ -137,6 +140,23 @@ public:
 
     /// Other
     static std::string getDateAndTime();
+
+    /// \defgroup PortHandling
+
+    /// \ingroup PortHandling
+    static std::filesystem::path getNexilisTempPath();
+
+    /// \ingroup PortHandling
+    static std::string getPortFilePath(Protocol::Type protocol_type);
+
+    /// \ingroup PortHandling
+    static bool writePortToFile(uint16_t port, Protocol::Type protocol_type);
+
+    /// \ingroup PortHandling
+    static std::optional<uint16_t> readPortFromFile(Protocol::Type protocol_type);
+
+    /// \ingroup PortHandling
+    static void cleanupPortFile(Protocol::Type protocol_type);
 };
 
 } // namespace nexilis
