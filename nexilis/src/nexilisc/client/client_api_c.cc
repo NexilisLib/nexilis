@@ -88,11 +88,11 @@ const char* nexilis_server_data_get_password(const nexilis_ServerData* server_da
     return nullptr;
 }
 
-void nexilis_server_data_set_inet_udp(nexilis_ServerData* server_data, const char* server_address, uint16_t port)
+void nexilis_server_data_set_inet_udp(nexilis_ServerData* server_data, const char* server_address)
 {
     if (server_data && server_data->data && server_address)
     {
-        server_data->data->setInetUDP(server_address, port);
+        server_data->data->setInetUDP(server_address);
     }
 }
 
@@ -111,20 +111,11 @@ const char* nexilis_server_data_get_inet_udp_server_address(const nexilis_Server
     return nullptr;
 }
 
-uint16_t nexilis_server_data_get_inet_udp_server_port(const nexilis_ServerData* server_data)
-{
-    if (server_data && server_data->data)
-    {
-        return server_data->data->getInetUDPServerPort();
-    }
-    return 0;
-}
-
-void nexilis_server_data_set_inet_tcp(nexilis_ServerData* server_data, const char* server_address, uint16_t port)
+void nexilis_server_data_set_inet_tcp(nexilis_ServerData* server_data, const char* server_address)
 {
     if (server_data && server_data->data && server_address)
     {
-        server_data->data->setInetTCP(server_address, port);
+        server_data->data->setInetTCP(server_address);
     }
 }
 
@@ -143,20 +134,11 @@ const char* nexilis_server_data_get_inet_tcp_server_address(const nexilis_Server
     return nullptr;
 }
 
-uint16_t nexilis_server_data_get_inet_tcp_server_port(const nexilis_ServerData* server_data)
-{
-    if (server_data && server_data->data)
-    {
-        return server_data->data->getInetTCPServerPort();
-    }
-    return 0;
-}
-
-void nexilis_server_data_set_boost_tcp(nexilis_ServerData* server_data, const char* server_address, uint16_t port)
+void nexilis_server_data_set_boost_tcp(nexilis_ServerData* server_data, const char* server_address)
 {
     if (server_data && server_data->data && server_address)
     {
-        server_data->data->setBoostTCP(server_address, port);
+        server_data->data->setBoostTCP(server_address);
     }
 }
 
@@ -175,20 +157,11 @@ const char* nexilis_server_data_get_boost_tcp_server_address(const nexilis_Serve
     return nullptr;
 }
 
-uint16_t nexilis_server_data_get_boost_tcp_server_port(const nexilis_ServerData* server_data)
-{
-    if (server_data && server_data->data)
-    {
-        return server_data->data->getBoostTCPServerPort();
-    }
-    return 0;
-}
-
-void nexilis_server_data_set_boost_udp(nexilis_ServerData* server_data, const char* server_address, uint16_t port)
+void nexilis_server_data_set_boost_udp(nexilis_ServerData* server_data, const char* server_address)
 {
     if (server_data && server_data->data && server_address)
     {
-        server_data->data->setBoostUDP(server_address, port);
+        server_data->data->setBoostUDP(server_address);
     }
 }
 
@@ -205,15 +178,6 @@ const char* nexilis_server_data_get_boost_udp_server_address(const nexilis_Serve
         return cstr;
     }
     return nullptr;
-}
-
-uint16_t nexilis_server_data_get_boost_udp_server_port(const nexilis_ServerData* server_data)
-{
-    if (server_data && server_data->data)
-    {
-        return server_data->data->getBoostUDPServerPort();
-    }
-    return 0;
 }
 
 void nexilis_server_data_set_unix_dgram_server_path(nexilis_ServerData* server_data, const char* socket_path)
@@ -449,15 +413,6 @@ const char* nexilis_client_api_get_inet_udp_server_address(const nexilis_ClientA
     return nullptr;
 }
 
-uint16_t nexilis_client_api_get_inet_udp_port_number(const nexilis_ClientAPI* client_api)
-{
-    if (client_api && client_api->api)
-    {
-        return client_api->api->getInetUDPPortNumber();
-    }
-    return 0;
-}
-
 const char* nexilis_client_api_get_inet_tcp_server_address(const nexilis_ClientAPI* client_api)
 {
     if (client_api && client_api->api)
@@ -471,15 +426,6 @@ const char* nexilis_client_api_get_inet_tcp_server_address(const nexilis_ClientA
         return cstr;
     }
     return nullptr;
-}
-
-uint16_t nexilis_client_api_get_inet_tcp_port_number(const nexilis_ClientAPI* client_api)
-{
-    if (client_api && client_api->api)
-    {
-        return client_api->api->getInetTCPPortNumber();
-    }
-    return 0;
 }
 
 const char* nexilis_client_api_get_boost_tcp_server_address(const nexilis_ClientAPI* client_api)
@@ -497,15 +443,6 @@ const char* nexilis_client_api_get_boost_tcp_server_address(const nexilis_Client
     return nullptr;
 }
 
-uint16_t nexilis_client_api_get_boost_tcp_server_port_number(const nexilis_ClientAPI* client_api)
-{
-    if (client_api && client_api->api)
-    {
-        return client_api->api->getBoostTCPServerPortNumber();
-    }
-    return 0;
-}
-
 const char* nexilis_client_api_get_boost_udp_server_address(const nexilis_ClientAPI* client_api)
 {
     if (client_api && client_api->api)
@@ -519,15 +456,6 @@ const char* nexilis_client_api_get_boost_udp_server_address(const nexilis_Client
         return cstr;
     }
     return nullptr;
-}
-
-uint16_t nexilis_client_api_get_boost_udp_server_port_number(const nexilis_ClientAPI* client_api)
-{
-    if (client_api && client_api->api)
-    {
-        return client_api->api->getBoostUDPServerPortNumber();
-    }
-    return 0;
 }
 
 const char* nexilis_client_api_get_unix_dgram_path(const nexilis_ClientAPI* client_api)

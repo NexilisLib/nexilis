@@ -13,7 +13,7 @@ UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), clientApi.getBoostUDPServerPortNumber()),
+      m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), 0),
       m_socket(*m_ioContext),
       m_receiveBuffer(NEXILIS_BUFFER)
 {

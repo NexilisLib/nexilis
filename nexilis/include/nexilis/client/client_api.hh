@@ -67,15 +67,9 @@ public:
             return m_inetUDPServerAddress;
         }
 
-        uint16_t getInetUDPServerPort() const
-        {
-            return m_inetUDPPort;
-        }
-
-        void setInetUDP(const std::string& serverAddress, uint16_t port)
+        void setInetUDP(const std::string& serverAddress)
         {
             m_inetUDPServerAddress = serverAddress;
-            m_inetUDPPort = port;
         }
 
         /// af_inet TCP
@@ -84,15 +78,9 @@ public:
             return m_inetTCPServerAddress;
         }
 
-        uint16_t getInetTCPServerPort() const
-        {
-            return m_inetTCPPort;
-        }
-
-        void setInetTCP(const std::string& serverAddress, uint16_t port)
+        void setInetTCP(const std::string& serverAddress)
         {
             m_inetTCPServerAddress = serverAddress;
-            m_inetTCPPort = port;
         }
 
         /// boost TCP.
@@ -101,15 +89,9 @@ public:
             return m_boostTCPServerAddress;
         }
 
-        uint16_t getBoostTCPServerPort() const
-        {
-            return m_boostTCPServerPort;
-        }
-
-        void setBoostTCP(const std::string& serverAddress, uint16_t port)
+        void setBoostTCP(const std::string& serverAddress)
         {
             m_boostTCPServerAddress = serverAddress;
-            m_boostTCPServerPort = port;
         }
 
         /// boost UDP.
@@ -118,15 +100,9 @@ public:
             return m_boostUDPServerAddress;
         }
 
-        uint16_t getBoostUDPServerPort() const
-        {
-            return m_boostUDPServerPort;
-        }
-
-        void setBoostUDP(const std::string& serverAddress, uint16_t port)
+        void setBoostUDP(const std::string& serverAddress)
         {
             m_boostUDPServerAddress = serverAddress;
-            m_boostUDPServerPort = port;
         }
 
         /// af_unix DGRAM
@@ -158,19 +134,15 @@ public:
 
         /// af_inet UDP
         std::string m_inetUDPServerAddress;
-        uint16_t m_inetUDPPort = 0xFFFF;
 
         /// af_inet TCP
         std::string m_inetTCPServerAddress;
-        uint16_t m_inetTCPPort = 0xFFFF;
 
         /// boost TCP
         std::string m_boostTCPServerAddress;
-        uint16_t m_boostTCPServerPort = 0xFFFF;
 
         /// boost UDP
         std::string m_boostUDPServerAddress;
-        uint16_t m_boostUDPServerPort = 0xFFFF;
 
         /// af_unix DGRAM
         std::string m_unixDgramServerPath;
@@ -465,20 +437,10 @@ public:
         return m_data.getInetUDPServerAddress();
     }
 
-    uint16_t getInetUDPPortNumber() const
-    {
-        return m_data.getInetUDPServerPort();
-    }
-
     /// af_inet TCP.
     std::string getInetTCPServerAddress() const
     {
         return m_data.getInetTCPServerAddress();
-    }
-
-    uint16_t getInetTCPPortNumber() const
-    {
-        return m_data.getInetTCPServerPort();
     }
 
     /// boost TCP
@@ -487,20 +449,10 @@ public:
         return m_data.getBoostTCPServerAddress();
     }
 
-    uint16_t getBoostTCPServerPortNumber() const
-    {
-        return m_data.getBoostTCPServerPort();
-    }
-
     /// boost UDP
     std::string getBoostUDPServerAddress() const
     {
         return m_data.getBoostUDPServerAddress();
-    }
-
-    uint16_t getBoostUDPServerPortNumber() const
-    {
-        return m_data.getBoostUDPServerPort();
     }
 
     /// af_unix DGRAM.
