@@ -7,7 +7,6 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/asio/deadline_timer.hpp>
 
 namespace nexilis::server::nxboost
 {
@@ -69,19 +68,15 @@ void TCPServer::start()
     // clang-format off
     m_ioContextThread = std::thread([this]()
     {
-        Log::debug("BoostTCPServer io_context started.");
         m_ioContext->run();
-        Log::error("TCPServer io_context stopped");
     });
 
     m_listenThread = std::thread([this]()
     {
-        Log::debug("BoostTCPServer listenthread started.");
         if (startListening())
         {
             acceptClients();
         }
-        Log::debug("BoostTCPServer listenthread stopped.");
     });
     // clang-format on
 }
@@ -142,7 +137,7 @@ void TCPServer::stop()
     {
         Log::error("Closing error: ", ec.message());
     }
-    Log::debug("TCPServer stopped");
+    Log::debug("BoostTCPServer stopped.");
 }
 
 bool TCPServer::startListening()
@@ -157,6 +152,125 @@ bool TCPServer::startListening()
     return true;
 }
 
+void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
+{
+    // clang-format off
+    auto client_thread = std::thread([this, newSocket = std::move(socket)]() mutable
+    {
+    // clang-format on
+        try
+        {
+            std::string clientAddress;
+            uint16_t clientPort;
+
+            try
+            {
+                boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
+                boost::asio::ip::address remoteAddress = remoteEndpoint.address();
+                clientAddress = remoteAddress.to_string();
+                clientPort = remoteEndpoint.port();
+                Log::debug("Remote IP address: ", clientAddress);
+            }
+            catch (const std::exception& e)
+            {
+                Log::debug("Error getting info from remote, reason: ", e.what());
+            }
+
+            while (!m_stopped->load())
+            {
+                boost::asio::streambuf receiveBuffer;
+                boost::system::error_code error_code;
+
+                boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
+
+                if (error_code == boost::asio::error::eof)
+                {
+                    Log::debug("End receive ", clientAddress);
+                    break;
+                }
+                else if (error_code)
+                {
+                    // Handle other errors
+                    Log::error("TCPServer Error reading from client: ", error_code.message());
+                    break;
+                }
+
+                // Create a vector to hold the data.
+                nx_data data;
+
+                // Get the sequence of const buffers from the streambuf.
+                const boost::asio::const_buffer& receive_buffer = receiveBuffer.data();
+
+                // Check if the buffer is empty.
+                if (receive_buffer.size() == 0)
+                {
+                    Log::info("Empty data");
+                    continue;
+                }
+
+                // Extract the data.
+                const uint8_t* buffer_data = static_cast<const uint8_t*>(receive_buffer.data());
+                size_t buffer_size = receive_buffer.size();
+
+                // Insert the data from the buffer into the vector.
+                data.insert(data.end(), buffer_data, buffer_data + buffer_size);
+
+                auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
+
+                if (!handledMessage.getClient()->isBoostTCPSet())
+                {
+                    handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
+                    {
+                        if (sendToClient(bytes, newSocket))
+                        {
+                            Log::info("Sent message to client succesfully");
+                        }
+                        else
+                        {
+                            Log::error("Error sending message to client");
+                        }
+                    });
+                }
+
+                Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+
+                // TODO Command handling.
+
+                if (passCommand == Command::Result::success)
+                {
+                    Log::info("Passed");
+                }
+                else
+                {
+                    Log::info("Failed");
+                }
+            }
+            boost::system::error_code ec;
+            if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+            {
+                Log::error("Error in client socket shutdown");
+            }
+            if (newSocket.close(ec))
+            {
+                Log::error("Error in client socket close");
+            }
+        }
+        catch (const boost::system::system_error& e)
+        {
+            // Handle errors or client disconnect here
+            Log::error("Error in client thread: ", e.what());
+        }
+        catch (const std::exception& e)
+        {
+            Log::error("Exception in client thread: ", e.what());
+        } });
+
+    {
+        std::lock_guard<std::mutex> lock(*m_mutex);
+        m_clientThreads.emplace_back(std::move(client_thread));
+    }
+}
+
 bool TCPServer::acceptClients()
 {
     try
@@ -165,150 +279,56 @@ bool TCPServer::acceptClients()
         {
             // Create a new socket for each client connection
             boost::asio::ip::tcp::socket newSocket(*m_ioContext);
+            boost::system::error_code ec;
 
-            boost::asio::deadline_timer timer(*m_ioContext);
-            timer.expires_from_now(boost::posix_time::milliseconds(100));
+            m_acceptor.non_blocking(true);
 
-            bool accept_timeout = false;
-            timer.async_wait([this, &accept_timeout](const boost::system::error_code& ec)
+            // Try to accept with timeout.
+            auto start = std::chrono::steady_clock::now();
+            bool accepted = false;
+
+            while (!m_stopped->load())
             {
-                if (!ec) {
-                    m_acceptor.cancel();
-                    accept_timeout = true;
+                ec = m_acceptor.accept(newSocket, ec);
+
+                if (!ec)
+                {
+                    // Successfully accepted a connection
+                    auto remote_endpoint = newSocket.remote_endpoint();
+                    Log::debug("Accepted connection from: ", remote_endpoint.address().to_string(), ":", remote_endpoint.port());
+                    accepted = true;
+                    break;
                 }
-            });
 
-            boost::system::error_code accept_error;
-            if (m_acceptor.accept(newSocket, accept_error) == boost::asio::error::operation_aborted)
+                if (ec != boost::asio::error::would_block)
+                {
+                    // Real error occurred
+                    if (ec != boost::asio::error::operation_aborted)
+                    {
+                        Log::error("Accept error: ", ec.message());
+                    }
+                    return false;
+                }
+
+                // Check timeout (100ms max wait)
+                if (std::chrono::steady_clock::now() - start > std::chrono::milliseconds(100))
+                {
+                    break;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+
+            if (m_stopped->load())
             {
-                // Normal shutdown.
                 break;
             }
 
-            if (accept_error)
+            // Handle the new client
+            if (accepted)
             {
-                Log::error("Error accepting client connection: ", accept_error.message());
-                continue; // Proceed to accept the next client
+                handleClient(std::move(newSocket));
             }
-
-            // Handle each client in a separate thread
-            // clang-format off
-            auto client_thread = std::thread([this, newSocket = std::move(newSocket)]() mutable
-            {
-            // clang-format on
-                try
-                {
-                    std::string clientAddress;
-                    uint16_t clientPort;
-
-                    try
-                    {
-                        boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
-                        boost::asio::ip::address remoteAddress = remoteEndpoint.address();
-                        clientAddress = remoteAddress.to_string();
-                        clientPort = remoteEndpoint.port();
-                        Log::debug("Remote IP address: ", clientAddress);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        Log::debug("Error getting info from remote, reason: ", e.what());
-                    }
-
-                    while (!m_stopped->load())
-                    {
-                        boost::asio::streambuf receiveBuffer;
-                        boost::system::error_code error_code;
-
-                        boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
-
-                        if (error_code == boost::asio::error::eof)
-                        {
-                            Log::debug("End receive ", clientAddress);
-                            break;
-                        }
-                        else if (error_code)
-                        {
-                            // Handle other errors
-                            Log::error("TCPServer Error reading from client: ", error_code.message());
-                            break;
-                        }
-
-                        // Create a vector to hold the data.
-                        nx_data data;
-
-                        // Get the sequence of const buffers from the streambuf.
-                        const boost::asio::const_buffer& receive_buffer = receiveBuffer.data();
-
-                        // Check if the buffer is empty.
-                        if (receive_buffer.size() == 0)
-                        {
-                            Log::info("Empty data");
-                            continue;
-                        }
-
-                        // Extract the data.
-                        const uint8_t* buffer_data = static_cast<const uint8_t*>(receive_buffer.data());
-                        size_t buffer_size = receive_buffer.size();
-
-                        // Insert the data from the buffer into the vector.
-                        data.insert(data.end(), buffer_data, buffer_data + buffer_size);
-
-                        auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
-
-                        if (!handledMessage.getClient()->isBoostTCPSet())
-                        {
-                            handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
-                            {
-                                if (sendToClient(bytes, newSocket))
-                                {
-                                    Log::info("Sent message to client succesfully");
-                                }
-                                else
-                                {
-                                    Log::error("Error sending message to client");
-                                }
-                            });
-                        }
-
-                        Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
-
-                        // TODO Command handling.
-
-                        if (passCommand == Command::Result::success)
-                        {
-                            Log::info("Passed");
-                        }
-                        else
-                        {
-                            Log::info("Failed");
-                        }
-                    }
-                    boost::system::error_code ec;
-                    if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
-                    {
-                        Log::error("Error in client socket shutdown");
-                    }
-                    if (newSocket.close(ec))
-                    {
-                        Log::error("Error in client socket close");
-                    }
-                }
-                catch (const boost::system::system_error& e)
-                {
-                    // Handle errors or client disconnect here
-                    Log::error("Error in client thread: ", e.what());
-                }
-                catch (const std::exception& e)
-                {
-                    Log::error("Exception in client thread: ", e.what());
-                } });
-
-            {
-                std::lock_guard<std::mutex> lock(*m_mutex);
-                m_clientThreads.emplace_back(std::move(client_thread));
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     catch (const std::exception& e)

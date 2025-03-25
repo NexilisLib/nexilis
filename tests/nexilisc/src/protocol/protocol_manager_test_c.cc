@@ -36,7 +36,7 @@ TEST(ProtocolTest_c, CreateProtocol_BoostTCPServer)
 
     auto protocol_manager = nexilis_ProtocolManager_create();
 
-    auto server = nexilis_create_boost_tcp_server(protocol_manager, settings, 12345);
+    auto server = nexilis_create_boost_tcp_server(protocol_manager, settings);
     auto protocol_settings = nexilis_boost_tcp_server_get_settings(server);
 
     EXPECT_EQ(nexilis_boost_tcp_server_get_type(server), PROTOCOL_TYPE_BOOST_TCP_SERVER);

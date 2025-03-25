@@ -58,6 +58,7 @@ private:
     bool sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& clientSocket);
     bool startListening();
     bool acceptClients();
+    void handleClient(boost::asio::ip::tcp::socket socket);
 
 private:
     std::unique_ptr<std::atomic<bool>> m_stopped;
