@@ -5,11 +5,11 @@
 #include <boost/json/serialize.hpp>
 
 #include <bitset>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <random>
 #include <sstream>
-#include <fstream>
 
 namespace nexilis
 {
@@ -296,9 +296,9 @@ std::filesystem::path Util::getNexilisTempPath()
     if (!ec)
     {
         std::filesystem::permissions(nexilis_temp_dir,
-                std::filesystem::perms::owner_all,
-                std::filesystem::perm_options::replace,
-                ec);
+                                     std::filesystem::perms::owner_all,
+                                     std::filesystem::perm_options::replace,
+                                     ec);
     }
     return nexilis_temp_dir;
 }
@@ -306,7 +306,7 @@ std::filesystem::path Util::getNexilisTempPath()
 std::string Util::getPortFilePath(Protocol::Type protocol_type)
 {
     std::filesystem::path port_file = getNexilisTempPath() /
-        ("nexilis_" + Protocol::typeToString(protocol_type) + "_port.txt");
+                                      ("nexilis_" + Protocol::typeToString(protocol_type) + "_port.txt");
 
     return port_file.string();
 }
@@ -327,8 +327,8 @@ bool Util::writePortToFile(uint16_t port, Protocol::Type protocol_type)
         port_file.close();
 
         std::filesystem::permissions(file_path,
-                std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
-                std::filesystem::perm_options::replace);
+                                     std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                                     std::filesystem::perm_options::replace);
 
         return true;
     }
@@ -374,7 +374,6 @@ std::optional<uint16_t> Util::readPortFromFile(Protocol::Type protocol_type)
     }
 }
 
-
 void Util::cleanupPortFile(Protocol::Type protocol_type)
 {
     std::string file_path = getPortFilePath(protocol_type);
@@ -385,10 +384,9 @@ void Util::cleanupPortFile(Protocol::Type protocol_type)
             std::filesystem::remove(file_path);
         }
     }
-    catch(...)
+    catch (...)
     {
     }
 }
-
 
 } // namespace nexilis

@@ -15,7 +15,7 @@ TCPClient::TCPClient(ClientAPI& api)
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
-        boost::asio::make_work_guard(*m_ioContext))),
+              boost::asio::make_work_guard(*m_ioContext))),
       m_socket(*m_ioContext),
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
@@ -75,35 +75,26 @@ TCPClient::~TCPClient()
 
 void TCPClient::stop()
 {
-    if (!m_stopped)
-    {
-        Log::error("Stopped is null");
-        return;
-    }
-
-    if (m_stopped->load())
+    if (!m_stopped || m_stopped->exchange(true))
     {
         return;
     }
 
-    m_stopped->store(true, std::memory_order_relaxed);
+    m_workGuard.reset();
 
+    boost::system::error_code ec;
+    if (m_socket.cancel(ec))
+    {
+        Log::error("Error cancelling socket operations: ", ec.message());
+    }
+    if (ec)
+    {
+        Log::error("Cancel error: ", ec.message());
+    }
     if (m_ioContext)
     {
         m_ioContext->stop();
-    }
-
-    if (m_socket.is_open())
-    {
-        boost::system::error_code ec;
-        if (m_socket.cancel(ec))
-        {
-            Log::error("Error cancelling socket operations: ", ec.message());
-        }
-        if (m_socket.close(ec))
-        {
-            Log::error("Error closing socket: ", ec.message());
-        }
+        Log::debug("BoostTCPClient io_context stopped");
     }
     if (m_ioContextThread.joinable())
     {
@@ -112,6 +103,14 @@ void TCPClient::stop()
     if (m_receiveThread.joinable())
     {
         m_receiveThread.join();
+    }
+    if (m_socket.close(ec))
+    {
+        Log::error("Error closing socket: ", ec.message());
+    }
+    if (ec)
+    {
+        Log::error("Closing error: ", ec.message());
     }
 }
 
@@ -184,41 +183,49 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
         Log::error("TCPClient socket is not open for receiving.");
         return;
     }
+    if (m_stopped->load())
+    {
+        return;
+    }
 
     auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
 
+    // clang-format off
     boost::asio::async_read(m_socket, *receiveBuffer, boost::asio::transfer_at_least(1),
-            [this, receiveBuffer, callback](const boost::system::error_code& ec, size_t bytes_transferred)
-    {
-        if (ec)
+        [this, receiveBuffer, callback](const boost::system::error_code& ec, size_t bytes_transferred)
         {
-            Log::error("Receive error: ", ec.message());
-            m_socket.close();
-            return;
-        }
+            if (ec || m_stopped->load())
+            {
+                if (ec != boost::asio::error::operation_aborted)
+                {
+                    m_socket.close();
+                }
+                Log::error("Receive error: ", ec.message());
+                return;
+            }
 
-        if (bytes_transferred == 0)
-        {
-            Log::warning("No data received!");
-            return;
-        }
+            if (bytes_transferred == 0)
+            {
+                Log::warning("No data received!");
+                return;
+            }
 
-        nx_data buffer(bytes_transferred);
-        std::istream is(receiveBuffer.get());
-        is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
-        Log::info("Received message of size: ", bytes_transferred);
+            nx_data buffer(bytes_transferred);
+            std::istream is(receiveBuffer.get());
+            is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
+            Log::info("Received message of size: ", bytes_transferred);
 
-        if (callback)
-        {
-            Log::debug("Calling callback");
-            callback(buffer);
-        }
+            if (callback)
+            {
+                callback(buffer);
+            }
 
-        if (m_socket.is_open())
-        {
-            receive(callback);
-        }
+            if (m_socket.is_open())
+            {
+                receive(callback);
+            }
     });
+    // clang-format on
 }
 
 void TCPClient::start()
@@ -227,16 +234,21 @@ void TCPClient::start()
     {
         Log::info("Connected to server!");
 
+        // clang-format off
         m_ioContextThread = std::thread([this]()
         {
-            Log::info("io_context thread started.");
+            Log::debug("BoostTCPClient io_context thread started.");
             m_ioContext->run();
-            Log::info("io_context thread stopped.");
+            Log::debug("BoostTCPClient io_context thread stopped.");
         });
 
-        // Start a separate thread to continuously receive messages.
-        m_receiveThread = std::thread(&TCPClient::receiveLoop, this);
-        Log::info("Receive thread started");
+        m_receiveThread = std::thread([this]()
+        {
+            Log::debug("BoostTCPClient Receive loop started");
+            receiveLoop();
+            Log::debug("BoostTCPClient Receive loop stopped");
+        });
+        // clang-format on
 
         ClientProtocol::start(getType());
     }
@@ -248,35 +260,40 @@ void TCPClient::start()
 
 void TCPClient::receiveLoop()
 {
-    Log::info("Receive started");
-
-    // Start the asynchronous receive operation
-    auto cb = [this](const nx_data& buffer)
+    while (!m_stopped->load())
     {
-        try
+        auto cb = [this](const nx_data& buffer)
         {
-            auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
-            if (result == ClientAPI::ReadResult::success)
+            if (m_stopped->load())
             {
-                Log::info("Message read successfully");
+                return;
             }
-            else
+            try
             {
-                Log::info("Received unexpected message: ");
-                Util::debugUint8Vector(buffer);
+                auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
+                if (result == ClientAPI::ReadResult::success)
+                {
+                    Log::info("Message read successfully");
+                }
+                else
+                {
+                    Log::info("Received unexpected message: ");
+                    Util::debugUint8Vector(buffer);
+                }
             }
-        }
-        catch (const std::exception& e)
-        {
-            Log::error("Exception in receive callback: ", e.what());
-        }
-        catch (...)
-        {
-            Log::error("Unknown error in receive callback");
-        }
-    };
+            catch (const std::exception& e)
+            {
+                Log::error("Exception in receive callback: ", e.what());
+            }
+            catch (...)
+            {
+                Log::error("Unknown error in receive callback");
+            }
+        };
 
-    receive(cb);
+        receive(cb);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 }
 
 } // namespace nexilis::client::nxboost

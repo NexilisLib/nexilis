@@ -7,6 +7,7 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
 namespace nexilis::server::nxboost
 {
@@ -67,65 +68,81 @@ void TCPServer::start()
 {
     // clang-format off
     m_ioContextThread = std::thread([this]()
-        { m_ioContext->run(); });
+    {
+        Log::debug("BoostTCPServer io_context started.");
+        m_ioContext->run();
+        Log::error("TCPServer io_context stopped");
+    });
 
     m_listenThread = std::thread([this]()
     {
+        Log::debug("BoostTCPServer listenthread started.");
         if (startListening())
         {
             acceptClients();
         }
+        Log::debug("BoostTCPServer listenthread stopped.");
     });
     // clang-format on
 }
 
 void TCPServer::stop()
 {
-    if (!m_stopped)
+    if (!m_stopped || m_stopped->exchange(true))
     {
-        Log::error("m_stopped is null, preventing crash");
+        Log::debug("TCPServer stop already in progress or completed.");
         return;
     }
 
-    if (m_stopped->exchange(true, std::memory_order_relaxed))
+    boost::system::error_code ec;
+    if (m_acceptor.cancel(ec))
     {
-        Log::debug("Already stopped TCPServer.");
-        return;
+        Log::error("Error cancelling socket operations: ", ec.message());
     }
-
-    if (m_acceptor.is_open())
+    if (ec)
     {
-        boost::system::error_code ec;
-        if (m_acceptor.cancel(ec))
-        {
-            Log::error("Error cancelling socket operations: ", ec.message());
-        }
-        if (m_acceptor.close(ec))
-        {
-            Log::error("Error closing socket: ", ec.message());
-        }
+        Log::error("Cancel error: ", ec.message());
     }
 
     if (m_ioContext)
     {
+        Log::debug("TCPServer stopping io_context");
         m_ioContext->stop();
     }
+
+    {
+        std::lock_guard<std::mutex> lock(*m_mutex);
+        Log::debug("BoostTCPServer closing ", m_clientThreads.size(), " client connections...");
+        for (auto& thread : m_clientThreads)
+        {
+            if (thread.joinable())
+            {
+                thread.join();
+            }
+        }
+        m_clientThreads.clear();
+    }
+
     if (m_ioContextThread.joinable())
     {
+        Log::debug("TCPServer closing ioContextThread");
         m_ioContextThread.join();
     }
     if (m_listenThread.joinable())
     {
+        Log::debug("TCPServer closing listenThread");
         m_listenThread.join();
     }
-    for (auto& client_thread : m_clientThreads)
+
+    if (m_acceptor.close(ec))
     {
-        if (client_thread.joinable())
-        {
-            client_thread.join();
-        }
+        Log::error("Error closing socket: ", ec.message());
     }
-    m_clientThreads.clear();
+    if (ec)
+    {
+        Log::error("Closing error: ", ec.message());
+    }
+    Log::debug("TCPServer stopped");
 }
 
 bool TCPServer::startListening()
@@ -148,8 +165,25 @@ bool TCPServer::acceptClients()
         {
             // Create a new socket for each client connection
             boost::asio::ip::tcp::socket newSocket(*m_ioContext);
+
+            boost::asio::deadline_timer timer(*m_ioContext);
+            timer.expires_from_now(boost::posix_time::milliseconds(100));
+
+            bool accept_timeout = false;
+            timer.async_wait([this, &accept_timeout](const boost::system::error_code& ec)
+            {
+                if (!ec) {
+                    m_acceptor.cancel();
+                    accept_timeout = true;
+                }
+            });
+
             boost::system::error_code accept_error;
-            m_acceptor.accept(newSocket);
+            if (m_acceptor.accept(newSocket, accept_error) == boost::asio::error::operation_aborted)
+            {
+                // Normal shutdown.
+                break;
+            }
 
             if (accept_error)
             {
@@ -180,7 +214,7 @@ bool TCPServer::acceptClients()
                         Log::debug("Error getting info from remote, reason: ", e.what());
                     }
 
-                    while (true)
+                    while (!m_stopped->load())
                     {
                         boost::asio::streambuf receiveBuffer;
                         boost::system::error_code error_code;
@@ -249,6 +283,15 @@ bool TCPServer::acceptClients()
                             Log::info("Failed");
                         }
                     }
+                    boost::system::error_code ec;
+                    if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+                    {
+                        Log::error("Error in client socket shutdown");
+                    }
+                    if (newSocket.close(ec))
+                    {
+                        Log::error("Error in client socket close");
+                    }
                 }
                 catch (const boost::system::system_error& e)
                 {
@@ -259,8 +302,6 @@ bool TCPServer::acceptClients()
                 {
                     Log::error("Exception in client thread: ", e.what());
                 } });
-
-            client_thread.detach();
 
             {
                 std::lock_guard<std::mutex> lock(*m_mutex);

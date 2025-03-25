@@ -1,17 +1,17 @@
 #ifndef NEXILIS_COMMON_UTIL_HH
 #define NEXILIS_COMMON_UTIL_HH
 
-#include <nexilis/protocol.hh>
 #include <nexilis/logger/log_level.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/protocol.hh>
 #include <nexilis/server/config.hh>
 #include <nexilis/types/vector2.hh>
 
 #include <boost/json/object.hpp>
 
-#include <string>
-#include <optional>
 #include <filesystem>
+#include <optional>
+#include <string>
 
 namespace nexilis
 {
