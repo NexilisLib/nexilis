@@ -32,13 +32,11 @@ protected:
     {
         if (client)
         {
-            std::cout << "Stopping client" << std::endl;
             client->stop();
         }
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (server)
         {
-            std::cout << "Stopping server" << std::endl;
             server->stop();
         }
     }
@@ -50,14 +48,14 @@ protected:
 
     std::unique_ptr<nexilis::client::ClientAPI> api;
 
-    // Nexilis protools.
+    // Nexilis protocols.
     std::shared_ptr<nexilis::server::nxboost::TCPServer> server;
     std::shared_ptr<nexilis::client::nxboost::TCPClient> client;
 };
 
 TEST_F(BoostTCPTest, SuccessfulConnection)
 {
-    nexilis::Log::startConsoleDebugging();
+    // nexilis::Log::startConsoleDebugging();
 
     // Start the client and check if it connects successfully
     client->start();
@@ -66,8 +64,9 @@ TEST_F(BoostTCPTest, SuccessfulConnection)
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // Check if the client is connected
-    // EXPECT_TRUE(client->isConnected());
+    EXPECT_TRUE(client->isConnected());
 
     // Check if the server has an active connection
-    // EXPECT_TRUE(server->hasActiveConnections());
+    EXPECT_TRUE(server->hasActiveConnections());
+    EXPECT_EQ(server->activeConnectionsCount(), 1);
 }

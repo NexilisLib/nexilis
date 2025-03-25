@@ -37,6 +37,11 @@ public:
         return m_api;
     }
 
+    bool isConnected() const
+    {
+        return m_api->isInitialized();
+    }
+
 protected:
     void start(Protocol::Type type);
 

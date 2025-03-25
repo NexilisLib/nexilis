@@ -158,6 +158,7 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
     auto client_thread = std::thread([this, newSocket = std::move(socket)]() mutable
     {
     // clang-format on
+        ServerProtocol::connectionEstablished();
         try
         {
             std::string clientAddress;
@@ -263,7 +264,8 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         catch (const std::exception& e)
         {
             Log::error("Exception in client thread: ", e.what());
-        } });
+        }
+    ServerProtocol::connectionClosed(); });
 
     {
         std::lock_guard<std::mutex> lock(*m_mutex);

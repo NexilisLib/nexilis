@@ -10,7 +10,8 @@ ServerProtocol::ServerProtocol(const Settings& settings)
 
 ServerProtocol::ServerProtocol(ServerProtocol&& other)
     : m_messageHandler(std::move(other.m_messageHandler)),
-      m_command(std::move(other.m_command))
+      m_command(std::move(other.m_command)),
+      m_activeConnections(other.m_activeConnections.load())
 {
 }
 
@@ -20,6 +21,7 @@ ServerProtocol& ServerProtocol::operator=(ServerProtocol&& other)
     {
         m_messageHandler = std::move(other.m_messageHandler);
         m_command = std::move(other.m_command);
+        m_activeConnections = std::move(other.m_activeConnections.load());
     }
     return *this;
 }

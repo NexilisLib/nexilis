@@ -33,6 +33,18 @@ public:
         return m_command.getSettings();
     }
 
+    /// Check if there are active connections.
+    bool hasActiveConnections() const
+    {
+        return m_activeConnections > 0;
+    }
+
+    /// Get the count of active connections.
+    uint64_t activeConnectionsCount() const
+    {
+        return m_activeConnections;
+    }
+
 protected:
     /// Use this to parse the message before sending to Command.
     MessageHandler& getMessageHandler()
@@ -55,9 +67,24 @@ protected:
         return m_command;
     }
 
+    /// Derived class calls when a new connection is established.
+    void connectionEstablished()
+    {
+        ++m_activeConnections;
+    }
+
+    /// Derived class calls when a connection is closed.
+    void connectionClosed()
+    {
+        --m_activeConnections;
+    }
+
 private:
     MessageHandler m_messageHandler;
     Command m_command;
+
+    /// Active connections for the server protocol.
+    std::atomic<uint64_t> m_activeConnections{0};
 };
 
 } // namespace nexilis::server
