@@ -8,11 +8,11 @@
 namespace nexilis::server::nxboost
 {
 
-UDPServer::UDPServer(const Settings& settings, int port)
+UDPServer::UDPServer(const Settings& settings)
     : ServerProtocol(settings),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_remoteEndpoint(boost::asio::ip::udp::v4(), port),
+      m_remoteEndpoint(boost::asio::ip::udp::v4(), 0),
       m_socket(*m_ioContext, m_remoteEndpoint),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
@@ -24,6 +24,7 @@ UDPServer::UDPServer(const Settings& settings, int port)
 UDPServer::~UDPServer()
 {
     stop();
+    Util::cleanupPortFile(getType());
 }
 
 UDPServer::UDPServer(UDPServer&& other)
@@ -63,6 +64,14 @@ void UDPServer::start()
                                     { m_ioContext->run(); });
 
     m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
+
+    auto local_endpoint = m_socket.local_endpoint();
+    m_serverPort = local_endpoint.port();
+    Log::debug("Boost UDP server started on port: ", m_serverPort);
+    if (!Util::writePortToFile(m_serverPort, getType()))
+    {
+        Log::error("Failed to write Boost UDP server port to a file");
+    }
 }
 
 void UDPServer::stop()

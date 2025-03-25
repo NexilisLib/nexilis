@@ -65,7 +65,7 @@ def main():
         print("No patterns found in .gitignore.")
         return
 
-    # Delete files and directories matching the patterns
+    # Delete files and directories matching the patterns.
     delete_ignored_files(base_dir, patterns)
 
     # Prompt the user to delete the .env file.

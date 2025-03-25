@@ -13,10 +13,19 @@ UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
-      m_remoteEndpoint(boost::asio::ip::make_address(clientApi.getBoostUDPServerAddress()), 0),
       m_socket(*m_ioContext),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
+    auto port = Util::readPortFromFile(Protocol::Type::BOOST_UDP_SERVER);
+
+    if (!port)
+    {
+        throw std::runtime_error("BoostUDPClient port unspecified!");
+    }
+
+    m_remoteEndpoint = boost::asio::ip::udp::endpoint(
+            boost::asio::ip::make_address(clientApi.getBoostTCPServerAddress()),
+            *port);
 }
 
 UDPClient::~UDPClient()
@@ -31,9 +40,9 @@ UDPClient::UDPClient(UDPClient&& other)
       m_receiveMessageThread(std::move(other.m_receiveMessageThread)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
-      m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
       m_socket(std::move(other.m_socket)),
-      m_receiveBuffer(std::move(other.m_receiveBuffer))
+      m_receiveBuffer(std::move(other.m_receiveBuffer)),
+      m_remoteEndpoint(std::move(other.m_remoteEndpoint))
 {
     other.m_ioContext = nullptr;
     other.m_mutex = nullptr;
@@ -47,9 +56,9 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_receiveMessageThread = std::move(other.m_receiveMessageThread);
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
-        m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
+        m_remoteEndpoint = std::move(other.m_remoteEndpoint);
 
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));

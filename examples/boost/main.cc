@@ -18,19 +18,19 @@ int main()
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
 
-    auto server = protocol_manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings, 11223);
+    auto server = protocol_manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
     server.start();
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     nexilis::client::ClientAPI::ServerData server_data;
     server_data.setPassword("salasana");
     server_data.setUserName("example_user");
-    server_data.setBoostTCP("127.0.0.1", 11223);
+    server_data.setBoostTCP("127.0.0.1");
 
     nexilis::client::ClientAPI client_api(server_data);
     auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);
     client.start();
 
-    while (true)
-    {
-    }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }

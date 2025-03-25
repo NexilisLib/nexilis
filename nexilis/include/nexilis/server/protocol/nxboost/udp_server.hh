@@ -19,7 +19,7 @@ class UDPServer : public Protocol,
 {
 public:
     /// Constructor.
-    UDPServer(const Settings& settings, int port);
+    UDPServer(const Settings& settings);
 
     /// Destructor.
     ~UDPServer();
@@ -48,6 +48,12 @@ public:
         return Type::BOOST_UDP_SERVER;
     }
 
+    /// Get the port where the server is running.
+    uint16_t getPort() const
+    {
+        return m_serverPort;
+    }
+
 private:
     void receiveFromClients();
 
@@ -59,6 +65,7 @@ private:
     nx_data m_receiveBuffer;
     std::thread m_ioContextThread;
     std::thread m_receiveThread;
+    uint16_t m_serverPort;
 };
 
 } // namespace nexilis::server::nxboost
