@@ -53,11 +53,10 @@ private:
     void receiveLoop();
 
 private:
+    std::unique_ptr<std::atomic<bool>> m_stopped;
+    std::unique_ptr<boost::asio::io_context> m_ioContext;
     std::thread m_ioContextThread;
     std::thread m_receiveMessageThread;
-
-private:
-    std::unique_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<std::mutex> m_mutex;
     boost::asio::ip::udp::socket m_socket;
     std::vector<char> m_receiveBuffer;

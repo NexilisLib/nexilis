@@ -11,22 +11,12 @@ namespace nexilis::client::nxboost
 
 UDPClient::UDPClient(ClientAPI& clientApi)
     : ClientProtocol(&clientApi),
+      m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_socket(*m_ioContext),
       m_receiveBuffer(NEXILIS_BUFFER)
 {
-    auto port = Util::readPortFromFile(Protocol::Type::BOOST_UDP_SERVER);
-
-    if (!port)
-    {
-        Log::error("Boost UDP port unspecified");
-        return;
-    }
-
-    m_remoteEndpoint = boost::asio::ip::udp::endpoint(
-            boost::asio::ip::make_address(clientApi.getBoostTCPServerAddress()),
-            *port);
 }
 
 UDPClient::~UDPClient()
@@ -37,9 +27,10 @@ UDPClient::~UDPClient()
 UDPClient::UDPClient(UDPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
+      m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
+      m_ioContext(std::move(other.m_ioContext)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveMessageThread(std::move(other.m_receiveMessageThread)),
-      m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
       m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer)),
@@ -53,9 +44,14 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 {
     if (this != &other)
     {
+        m_stopped = std::move(other.m_stopped);
+        if (!m_stopped)
+        {
+            m_stopped = std::make_unique<std::atomic<bool>>(false);
+        }
+        m_ioContext = std::move(other.m_ioContext);
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveMessageThread = std::move(other.m_receiveMessageThread);
-        m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
@@ -72,19 +68,60 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 
 void UDPClient::start()
 {
-    m_ioContextThread = std::thread([this]()
-                                    { m_ioContext->run(); });
-    m_socket.open(boost::asio::ip::udp::v4());
-    m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
+    if (m_stopped->load())
+    {
+        Log::debug("BoostUDPClient already stopped, cannot start");
+        return;
+    }
 
-    ClientProtocol::start(getType());
+    auto port = Util::readPortFromFile(Protocol::Type::BOOST_UDP_SERVER);
+
+    if (!port)
+    {
+        Log::error("Boost UDP port unspecified");
+        return;
+    }
+
+    m_remoteEndpoint = boost::asio::ip::udp::endpoint(
+            boost::asio::ip::make_address(getClientAPI()->getBoostUDPServerAddress()),
+            *port);
+
+    try
+    {
+        m_ioContextThread = std::thread([this]()
+                                        { m_ioContext->run(); });
+        m_socket.open(boost::asio::ip::udp::v4());
+        m_receiveMessageThread = std::thread(&UDPClient::receiveLoop, this);
+
+        ClientProtocol::start(getType());
+    }
+    catch (const std::exception& e)
+    {
+        Log::error("Failed to start BoostUDPClient: ", e.what());
+        stop();
+    }
 }
 
 void UDPClient::stop()
 {
+    if (!m_stopped || m_stopped->exchange(true))
+    {
+        Log::debug("BoostUDPClient stop already in progress or completed");
+        return;
+    }
+
+    boost::system::error_code ec;
     if (m_socket.is_open())
     {
-        m_socket.close();
+        if (m_socket.cancel(ec))
+        {
+            Log::error("Error cancelling socket: ", ec.message());
+        }
+
+        if (m_socket.close(ec))
+        {
+            Log::error("Error closing socket: ", ec.message());
+        }
     }
 
     if (m_ioContext)
@@ -104,6 +141,7 @@ void UDPClient::stop()
         Log::debug("BoostUDPClient receive message thread stopped");
         m_receiveMessageThread.join();
     }
+    Log::debug("BoostUDPClient stopped");
 }
 
 void UDPClient::receiveLoop()
@@ -129,14 +167,30 @@ void UDPClient::receiveLoop()
 
 void UDPClient::sendMessage(const nx_data& payload)
 {
-    if (m_socket.is_open())
+    if (m_stopped->load())
+    {
+        Log::error("UDPClient::send(): client is stopped");
+        return;
+    }
+
+    if (!m_socket.is_open())
+    {
+        Log::error("UDPClient::send(): socket is not open");
+        return;
+    }
+
+    try
     {
         size_t bytes_sent = m_socket.send_to(boost::asio::buffer(payload), m_remoteEndpoint);
         Log::debug("Sent ", bytes_sent, " bytes to server");
     }
-    else
+    catch (const boost::system::system_error& e)
     {
-        Log::error("UDPClient::send(): boost::UDPClient socket is not open");
+        Log::error("Failed to send message: ", e.what());
+    }
+    catch (const std::exception& e)
+    {
+        Log::error("Exception in sendMessage: ", e.what());
     }
 }
 

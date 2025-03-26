@@ -10,6 +10,7 @@ namespace nexilis::server::nxboost
 
 UDPServer::UDPServer(const Settings& settings)
     : ServerProtocol(settings),
+      m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_remoteEndpoint(boost::asio::ip::udp::v4(), 0),
@@ -30,6 +31,7 @@ UDPServer::~UDPServer()
 UDPServer::UDPServer(UDPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
@@ -44,6 +46,11 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
 {
     if (this != &other)
     {
+        m_stopped = std::move(other.m_stopped);
+        if (!m_stopped)
+        {
+            m_stopped = std::make_unique<std::atomic<bool>>(false);
+        }
         m_ioContext = std::move(other.m_ioContext);
         m_mutex = std::move(other.m_mutex);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
@@ -60,11 +67,6 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
 
 void UDPServer::start()
 {
-    m_ioContextThread = std::thread([this]()
-                                    { m_ioContext->run(); });
-
-    m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
-
     auto local_endpoint = m_socket.local_endpoint();
     m_serverPort = local_endpoint.port();
     Log::debug("Boost UDP server started on port: ", m_serverPort);
@@ -72,29 +74,62 @@ void UDPServer::start()
     {
         Log::error("Failed to write Boost UDP server port to a file");
     }
+
+    m_ioContextThread = std::thread([this]()
+                                    { m_ioContext->run(); });
+
+    m_receiveThread = std::thread(&UDPServer::receiveFromClients, this);
 }
 
 void UDPServer::stop()
 {
-    if (m_socket.is_open())
+    if (!m_stopped || m_stopped->exchange(true))
     {
-        m_socket.close();
+        Log::debug("BoostUDPServer stop already in progress or completed.");
+        return;
+    }
+
+    boost::system::error_code ec;
+
+    if (m_socket.cancel(ec))
+    {
+        Log::error("Error cancelling socket: ", ec.message());
+    }
+    if (ec)
+    {
+        Log::error("Cancelling error: ", ec.message());
     }
 
     if (m_ioContext)
     {
+        Log::debug("BoostUDPServer stopping io_context");
         m_ioContext->stop();
+    }
+
+    if (m_socket.is_open())
+    {
+        if (m_socket.close(ec))
+        {
+            Log::error("Error closing socket: ", ec.message());
+        }
+        if (ec)
+        {
+            Log::error("Socket closing error: ", ec.message());
+        }
     }
 
     if (m_ioContextThread.joinable())
     {
+        Log::debug("BoostUDPServer closing ioContextThread");
         m_ioContextThread.join();
     }
 
     if (m_receiveThread.joinable())
     {
+        Log::debug("BoostUDPServer closing receiveThread");
         m_receiveThread.join();
     }
+    Log::debug("BoostUDPServer stopped");
 }
 
 void UDPServer::receiveFromClients()

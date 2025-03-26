@@ -306,7 +306,7 @@ std::filesystem::path Util::getNexilisTempPath()
 std::string Util::getPortFilePath(Protocol::Type protocol_type)
 {
     std::filesystem::path port_file = getNexilisTempPath() /
-                                      ("nexilis_" + Protocol::typeToString(protocol_type) + "_port.txt");
+                                      (Protocol::typeToString(protocol_type) + "_port.txt");
 
     return port_file.string();
 }

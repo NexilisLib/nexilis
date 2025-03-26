@@ -58,6 +58,7 @@ private:
     void receiveFromClients();
 
 private:
+    std::unique_ptr<std::atomic<bool>> m_stopped;
     std::unique_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<std::mutex> m_mutex;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
