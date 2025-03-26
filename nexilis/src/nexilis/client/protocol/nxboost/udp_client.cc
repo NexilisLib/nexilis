@@ -20,7 +20,8 @@ UDPClient::UDPClient(ClientAPI& clientApi)
 
     if (!port)
     {
-        throw std::runtime_error("BoostUDPClient port unspecified!");
+        Log::error("Boost UDP port unspecified");
+        return;
     }
 
     m_remoteEndpoint = boost::asio::ip::udp::endpoint(
@@ -85,15 +86,22 @@ void UDPClient::stop()
     {
         m_socket.close();
     }
-    m_ioContext->stop();
+
+    if (m_ioContext)
+    {
+        Log::debug("BoostUDPClient io context stopped");
+        m_ioContext->stop();
+    }
 
     if (m_ioContextThread.joinable())
     {
+        Log::debug("BoostUDPClient io context thread stopped");
         m_ioContextThread.join();
     }
 
     if (m_receiveMessageThread.joinable())
     {
+        Log::debug("BoostUDPClient receive message thread stopped");
         m_receiveMessageThread.join();
     }
 }
@@ -106,7 +114,16 @@ void UDPClient::receiveLoop()
         Log::info("Received bytes: ", receivedBytes);
 
         auto byteVector = Util::convertToByteVector(m_receiveBuffer.data(), receivedBytes);
-        ClientProtocol::getClientAPI()->readMessage(byteVector);
+        auto result = ClientProtocol::getClientAPI()->readMessage(byteVector);
+        if (result == ClientAPI::ReadResult::success)
+        {
+            Log::debug("BoostUDPClient: Message read successfully");
+        }
+        else
+        {
+            Log::error("Received unexpected message: ");
+            Util::debugUint8Vector(byteVector);
+        }
     }
 }
 

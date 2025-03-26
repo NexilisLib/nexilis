@@ -6,8 +6,7 @@
 namespace nexilis::server
 {
 
-/// Nexilis Server-side API.
-/// Creating static lifetime for the clients in the server context.
+/// Static lifetime for the clients in the server context.
 class ClientStorage
 {
 public:
@@ -20,6 +19,8 @@ public:
     static User* getClientById(uint64_t id);
 
     static std::vector<User*> getClientsByIpAddress(const std::string& ip_address);
+
+    static void clear();
 
 private:
     static std::vector<User> m_clients;

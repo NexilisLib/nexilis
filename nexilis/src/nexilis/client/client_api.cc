@@ -254,6 +254,7 @@ void ClientAPI::waitUntilInetUDPReady()
 {
     while (!IsInetUDPReady())
     {
+        Log::debug("ClientAPI waiting for inetUDP to be initialized...");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
@@ -262,6 +263,7 @@ void ClientAPI::waitUntilInetTCPReady()
 {
     while (!isInetTCPReady())
     {
+        Log::debug("ClientAPI waiting for inetTCP to be initialized...");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
@@ -270,6 +272,7 @@ void ClientAPI::waitUntilBoostTCPReady()
 {
     while (!isBoostTCPReady())
     {
+        Log::debug("ClientAPI waiting for BoostTCP to be initialized...");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
@@ -278,6 +281,7 @@ void ClientAPI::waitUntilBoostUDPReady()
 {
     while (!isBoostUDPReady())
     {
+        Log::debug("ClientAPI waiting for BoostUDP to be initialized...");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
@@ -286,6 +290,7 @@ void ClientAPI::waitUntilUnixDgramReady()
 {
     while (!isUnixDgramReady())
     {
+        Log::debug("ClientAPI waiting for unix dgram to be initialized...");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
@@ -294,6 +299,7 @@ void ClientAPI::waitUntilUnixStreamReady()
 {
     while (!isUnixStreamReady())
     {
+        Log::debug("ClientAPI waiting for unix stream to be initialized...");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }

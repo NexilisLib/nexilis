@@ -80,7 +80,11 @@ void UDPServer::stop()
     {
         m_socket.close();
     }
-    m_ioContext->stop();
+
+    if (m_ioContext)
+    {
+        m_ioContext->stop();
+    }
 
     if (m_ioContextThread.joinable())
     {

@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/protocol_manager.hh>
+#include <nexilis/server/client_storage.hh>
+
+#include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 
 class BoostTCPTest : public ::testing::Test
@@ -53,9 +55,9 @@ protected:
     std::shared_ptr<nexilis::client::nxboost::TCPClient> client;
 };
 
-TEST_F(BoostTCPTest, SuccessfulConnection)
+TEST_F(BoostTCPTest, BoostTCPSuccessfulConnection)
 {
-    // nexilis::Log::startConsoleDebugging();
+    nexilis::Log::startConsoleDebugging();
 
     // Start the client and check if it connects successfully
     client->start();
@@ -69,4 +71,9 @@ TEST_F(BoostTCPTest, SuccessfulConnection)
     // Check if the server has an active connection
     EXPECT_TRUE(server->hasActiveConnections());
     EXPECT_EQ(server->activeConnectionsCount(), 1);
+
+    // Remove client from static storage.
+    nexilis::server::ClientStorage::clear();
+
+    nexilis::Log::stopLogging();
 }

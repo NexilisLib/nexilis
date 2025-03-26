@@ -18,7 +18,7 @@ void ClientStorage::add(User&& client)
     Log::info("New client, total amount = ", m_clients.size());
 }
 
-bool ClientStorage::contains(size_t id)
+bool ClientStorage::contains(uint64_t id)
 {
     return std::find_if(m_clients.begin(), m_clients.end(),
                         [id](const User& client)
@@ -58,6 +58,11 @@ std::vector<User*> ClientStorage::getClientsByIpAddress(const std::string& ip_ad
     }
 
     return result;
+}
+
+void ClientStorage::clear()
+{
+    m_clients.clear();
 }
 
 } // namespace nexilis::server
