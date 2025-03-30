@@ -1,0 +1,3 @@
+[submodule "nexilis/third-party/boost"]
+	path = nexilis/third-party/boost
+	url = https://github.com/boostorg/boost.git
