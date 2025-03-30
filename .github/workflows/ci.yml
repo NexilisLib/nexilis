@@ -29,6 +29,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Update submodules
+        run: |
+          git submodule sync --recursive && git submodule update --init --recursive
 
       - name: Install dependencies
         run: |
@@ -50,6 +57,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Update submodules
+        run: git submodule sync --recursive && git submodule update --init --recursive
 
       - name: Install dependencies
         run: |
