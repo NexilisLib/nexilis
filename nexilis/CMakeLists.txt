@@ -1,18 +1,40 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Compile with clang.
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-# Boost system, json. Asio is header only
-find_package(Boost REQUIRED COMPONENTS system json)
-include_directories(${Boost_INCLUDE_DIRS})
+# System boost
+#find_package(Boost REQUIRED COMPONENTS system json)
+#include_directories(${Boost_INCLUDE_DIRS})
+
+# Boost subrepos
+add_subdirectory(third-party/boost/libs/static_assert)
+add_subdirectory(third-party/boost/libs/intrusive)
+add_subdirectory(third-party/boost/libs/endian)
+add_subdirectory(third-party/boost/libs/predef)
+add_subdirectory(third-party/boost/libs/mp11)
+add_subdirectory(third-party/boost/libs/winapi)
+add_subdirectory(third-party/boost/libs/core)
+add_subdirectory(third-party/boost/libs/move)
+add_subdirectory(third-party/boost/libs/container_hash)
+add_subdirectory(third-party/boost/libs/describe)
+add_subdirectory(third-party/boost/libs/container)
+add_subdirectory(third-party/boost/libs/variant)
+add_subdirectory(third-party/boost/libs/variant2)
+add_subdirectory(third-party/boost/libs/throw_exception)
+add_subdirectory(third-party/boost/libs/align)
+add_subdirectory(third-party/boost/libs/config)
+add_subdirectory(third-party/boost/libs/assert)
+add_subdirectory(third-party/boost/libs/system)
+add_subdirectory(third-party/boost/libs/json)
 
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 
@@ -101,5 +123,25 @@ set(SOURCES
 )
 
 add_library(nexilis SHARED ${SOURCES})
-target_include_directories(nexilis PUBLIC include)
-target_link_libraries(nexilis PUBLIC Boost::system Boost::json)
+target_include_directories(nexilis PUBLIC include
+    third-party/boost/libs/static_assert/include
+    third-party/boost/libs/intrusive/include
+    third-party/boost/libs/endian/include
+    third-party/boost/libs/predef/include
+    third-party/boost/libs/mp11/include
+    third-party/boost/libs/winapi/include
+    third-party/boost/libs/core/include
+    third-party/boost/libs/move/include
+    third-party/boost/libs/container_hash/include
+    third-party/boost/libs/describe/include
+    third-party/boost/libs/container/include
+    third-party/boost/libs/variant/include
+    third-party/boost/libs/variant2/include
+    third-party/boost/libs/throw_exception/include
+    third-party/boost/libs/align/include
+    third-party/boost/libs/config/include
+    third-party/boost/libs/assert/include
+    third-party/boost/libs/system/include
+    third-party/boost/libs/json/include
+)
+target_link_libraries(nexilis PRIVATE Boost::system Boost::json)

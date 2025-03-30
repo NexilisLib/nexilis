@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.25)
 project(nexilis_c_tests)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
