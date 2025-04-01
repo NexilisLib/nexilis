@@ -1,4 +1,5 @@
 import os
+import subprocess
 from pathlib import Path
 from create_env import get_nexilis_root
 from utils.run_command import run_command
