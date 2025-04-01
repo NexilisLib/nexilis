@@ -91,9 +91,8 @@ jobs:
      - name: Update submodules
        run: git submodule sync --recursive && git submodule update --init --recursive
 
-     - name: Install dependencies
-       run: |
-         sudo apt update && sudo apt-get install -y build-essential g++ premake5
+     - name: Install premake5
+       uses: Jarod42/install-premake5@v5
 
      - name: Run run_premake.py
        run: |
