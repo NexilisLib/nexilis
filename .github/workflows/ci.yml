@@ -83,15 +83,16 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      uses: actions/checkout@v3
-      actions: 'recursive'
+     - uses: actions/checkout@v3
+       with:
+        submodules: 'recursive'
         fetch-depth: 0
 
-        name: Update submodules
-        run: git submodule sync --recursive && git submodule update --init --recursive
+     - name: Update submodules
+       run: git submodule sync --recursive && git submodule update --init --recursive
 
-      name: Run run_premake.py
-        run: |
+     - name: Run run_premake.py
+       run: |
           pip install -r scripts/requirements.txt
           python3 scripts/create_env.py
           python3 scripts/run_premake.py
