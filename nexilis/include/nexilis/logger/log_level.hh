@@ -1,8 +1,11 @@
 #ifndef NEXILIS_LOGGER_LOGLEVEL_HH
 #define NEXILIS_LOGGER_LOGLEVEL_HH
 
-// windows.h
+#undef DEBUG
+#undef INFO
 #undef ERROR
+#undef WARNING
+#undef CRITICAL
 
 namespace nexilis::logger
 {
