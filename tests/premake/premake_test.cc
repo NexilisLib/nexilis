@@ -9,6 +9,9 @@
 
 int main()
 {
+    // TODO trigger this from lua
+    //nexilis::Log::startConsoleDebugging();
+
     nexilis::ProtocolManager protocol_manager;
 
     nexilis::server::Settings settings;

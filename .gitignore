@@ -1,8 +1,11 @@
 *.vscode
 **build
 **.cache
-**/bin/
-**/obj/
+**bin/
+**bin-int/
+**obj/
 .env
 **__pycache__
 **vgcore.*
+**Makefile
+**.make
