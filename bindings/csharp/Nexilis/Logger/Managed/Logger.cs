@@ -1,3 +1,6 @@
+using System;
+using System.Runtime.InteropServices;
+
 namespace Nexilis.Logger
 {
     public class Logger : IDisposable
@@ -20,19 +23,19 @@ namespace Nexilis.Logger
 
         public void AddConsoleHandler(ConsoleHandler consoleHandler)
         {
-            ArgumentNullException.ThrowIfNull(consoleHandler);
+            NullCheck.ThrowIfNull(consoleHandler, nameof(consoleHandler));
             LoggerNative.nexilis_logger_add_console_handler(_loggerPtr, consoleHandler.HandlerPtr);
         }
 
         public void AddFileHandler(FileHandler fileHandler)
         {
-            ArgumentNullException.ThrowIfNull(fileHandler);
+            NullCheck.ThrowIfNull(fileHandler, nameof(fileHandler));
             LoggerNative.nexilis_logger_add_file_handler(_loggerPtr, fileHandler.HandlerPtr);
         }
 
         public void AddFunctionHandler(FunctionHandler functionHandler)
         {
-            ArgumentNullException.ThrowIfNull(functionHandler);
+            NullCheck.ThrowIfNull(functionHandler, nameof(functionHandler));
             LoggerNative.nexilis_logger_add_function_handler(_loggerPtr, functionHandler.HandlerPtr);
         }
 

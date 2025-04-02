@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Nexilis.Server
 {
@@ -10,8 +11,8 @@ namespace Nexilis.Server
 
         public BoostTCPServer(ProtocolManager protocolManager, Settings settings, int port)
         {
-            ArgumentNullException.ThrowIfNull(protocolManager);
-            ArgumentNullException.ThrowIfNull(settings);
+            NullCheck.ThrowIfNull(protocolManager, nameof(protocolManager));
+            NullCheck.ThrowIfNull(settings, nameof(settings));
 
             this._settings = settings;
 

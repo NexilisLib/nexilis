@@ -1,3 +1,6 @@
+using System;
+using System.Runtime.InteropServices;
+
 namespace Nexilis.Logger
 {
     /// <summary>

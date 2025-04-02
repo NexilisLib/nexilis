@@ -1,3 +1,5 @@
+using System;
+
 namespace Nexilis.Logger
 {
     /// <summary>
