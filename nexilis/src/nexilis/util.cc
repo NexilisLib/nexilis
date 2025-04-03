@@ -14,6 +14,8 @@
 namespace nexilis
 {
 
+static std::random_device rand_dev;
+
 std::string Util::convertToString(nx_data bytes)
 {
     std::string result;
@@ -121,7 +123,6 @@ nx_data Util::convertToByteVector(uint8_t value)
 
 uint64_t Util::getRandomUint64()
 {
-    std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
     std::uniform_int_distribution<uint64_t> dist(0, NEXILIS_MAX);
 
@@ -138,7 +139,6 @@ uint64_t Util::getRandomUint64()
 
 int Util::getRandomInt(int from, int to)
 {
-    std::random_device rand_dev;
     std::mt19937_64 generator(rand_dev());
     std::uniform_int_distribution<uint64_t> dist(from, to);
     int randomValue = dist(generator);
@@ -150,7 +150,6 @@ int Util::getRandomInt(int from, int to)
 
 std::string Util::getRandomString(uint64_t charAmount)
 {
-    std::random_device rand_dev;
     std::mt19937 eng(rand_dev());
     std::uniform_int_distribution<int> distribution('A', 'Z');
 
