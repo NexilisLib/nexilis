@@ -6,14 +6,15 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(BUILD_SHARED_LIBS ON)
+
+#set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost)
+#set(Boost_NO_SYSTEM_PATHS ON)
 
 # Compile with clang.
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
-
-# System boost
-#find_package(Boost REQUIRED COMPONENTS system json)
-#include_directories(${Boost_INCLUDE_DIRS})
 
 # Boost subrepos
 add_subdirectory(third-party/boost/libs/static_assert)
@@ -34,10 +35,10 @@ add_subdirectory(third-party/boost/libs/align)
 add_subdirectory(third-party/boost/libs/config)
 add_subdirectory(third-party/boost/libs/assert)
 add_subdirectory(third-party/boost/libs/system)
+add_subdirectory(third-party/boost/libs/asio)
 add_subdirectory(third-party/boost/libs/json)
 
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
 set(SOURCES
@@ -124,24 +125,17 @@ set(SOURCES
 
 add_library(nexilis SHARED ${SOURCES})
 target_include_directories(nexilis PUBLIC include
-    third-party/boost/libs/static_assert/include
-    third-party/boost/libs/intrusive/include
-    third-party/boost/libs/endian/include
-    third-party/boost/libs/predef/include
-    third-party/boost/libs/mp11/include
-    third-party/boost/libs/winapi/include
-    third-party/boost/libs/core/include
-    third-party/boost/libs/move/include
-    third-party/boost/libs/container_hash/include
-    third-party/boost/libs/describe/include
-    third-party/boost/libs/container/include
-    third-party/boost/libs/variant/include
-    third-party/boost/libs/variant2/include
-    third-party/boost/libs/throw_exception/include
-    third-party/boost/libs/align/include
-    third-party/boost/libs/config/include
-    third-party/boost/libs/assert/include
-    third-party/boost/libs/system/include
-    third-party/boost/libs/json/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost
+    ${BOOST_ROOT}/libs/asio/include
 )
-target_link_libraries(nexilis PRIVATE Boost::system Boost::json)
+target_link_libraries(nexilis PRIVATE
+    Boost::system
+    Boost::json
+)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_link_libraries(nexilis PRIVATE
+        ws2_32
+        mswsock
+    )
+endif()
