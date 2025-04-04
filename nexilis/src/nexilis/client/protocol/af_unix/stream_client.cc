@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include <nexilis/client/protocol/af_unix/stream_client.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_constants.hh>
@@ -140,3 +142,5 @@ nx_data StreamClient::receiveMessage()
 }
 
 } // namespace nexilis::client::af_unix
+
+#endif

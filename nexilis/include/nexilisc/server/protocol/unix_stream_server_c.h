@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #ifndef NEXILISC_SERVER_PROTOCOL_AF_UNIX_STREAM_SERVER_C_H
 #define NEXILISC_SERVER_PROTOCOL_AF_UNIX_STREAM_SERVER_C_H
 
@@ -18,6 +20,8 @@ nexilis_ProtocolTypeC nexilis_unix_stream_server_get_type(nexilis_UnixStreamServ
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif

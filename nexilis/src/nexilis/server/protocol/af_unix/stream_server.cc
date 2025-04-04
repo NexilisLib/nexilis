@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
@@ -201,3 +203,5 @@ void StreamServer::handleMessages()
 }
 
 } // namespace nexilis::server::af_unix
+
+#endif

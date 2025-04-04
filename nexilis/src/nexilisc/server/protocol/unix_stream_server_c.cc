@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilisc/server/protocol/unix_stream_server_c.h>
 
@@ -49,3 +51,5 @@ nexilis_ProtocolTypeC nexilis_unix_stream_server_get_type(nexilis_UnixStreamServ
     }
     return PROTOCOL_TYPE_UNKNOWN;
 }
+
+#endif

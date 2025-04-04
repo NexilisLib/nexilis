@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
@@ -61,4 +63,6 @@ private:
 
 } // namespace nexilis::server::af_unix
 
-#endif
+#endif // NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
+
+#endif // __linux__
