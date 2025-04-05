@@ -31,52 +31,52 @@ Loggable& Loggable::operator=(Loggable&& other)
 
 void Loggable::debug(const std::string& message)
 {
-    printFromLogger(logger::LogLevel::DEBUG, createShortMessage(message));
+    printFromLogger(logger::LogLevel::Debug, createShortMessage(message));
 }
 
 void Loggable::debugExtra(const std::string& message, const int line)
 {
-    printFromLogger(logger::LogLevel::DEBUG, createLongMessage(message, line));
+    printFromLogger(logger::LogLevel::Debug, createLongMessage(message, line));
 }
 
 void Loggable::info(const std::string& message)
 {
-    printFromLogger(logger::LogLevel::INFO, createShortMessage(message));
+    printFromLogger(logger::LogLevel::Info, createShortMessage(message));
 }
 
 void Loggable::infoExtra(const std::string& message, const int line)
 {
-    printFromLogger(logger::LogLevel::INFO, createLongMessage(message, line));
+    printFromLogger(logger::LogLevel::Info, createLongMessage(message, line));
 }
 
 void Loggable::warning(const std::string& message)
 {
-    printFromLogger(logger::LogLevel::WARNING, createShortMessage(message));
+    printFromLogger(logger::LogLevel::Warning, createShortMessage(message));
 }
 
 void Loggable::warningExtra(const std::string& message, const int line)
 {
-    printFromLogger(logger::LogLevel::WARNING, createLongMessage(message, line));
+    printFromLogger(logger::LogLevel::Warning, createLongMessage(message, line));
 }
 
 void Loggable::error(const std::string& message)
 {
-    printFromLogger(logger::LogLevel::ERROR, createShortMessage(message));
+    printFromLogger(logger::LogLevel::Error, createShortMessage(message));
 }
 
 void Loggable::errorExtra(const std::string& message, const int line)
 {
-    printFromLogger(logger::LogLevel::ERROR, createLongMessage(message, line));
+    printFromLogger(logger::LogLevel::Error, createLongMessage(message, line));
 }
 
 void Loggable::critical(const std::string& message)
 {
-    printFromLogger(logger::LogLevel::CRITICAL, createShortMessage(message));
+    printFromLogger(logger::LogLevel::Critical, createShortMessage(message));
 }
 
 void Loggable::criticalExtra(const std::string& message, const int line)
 {
-    printFromLogger(logger::LogLevel::CRITICAL, createLongMessage(message, line));
+    printFromLogger(logger::LogLevel::Critical, createLongMessage(message, line));
 }
 
 std::string Loggable::createShortMessage(const std::string& message)
@@ -97,27 +97,27 @@ void Loggable::printFromLogger(logger::LogLevel logLevel, const std::string& mes
 {
     switch (logLevel)
     {
-        case logger::LogLevel::DEBUG:
+        case logger::LogLevel::Debug:
         {
             Log::debug(message);
             break;
         }
-        case logger::LogLevel::INFO:
+        case logger::LogLevel::Info:
         {
             Log::info(message);
             break;
         }
-        case logger::LogLevel::WARNING:
+        case logger::LogLevel::Warning:
         {
             Log::warning(message);
             break;
         }
-        case logger::LogLevel::ERROR:
+        case logger::LogLevel::Error:
         {
             Log::error(message);
             break;
         }
-        case logger::LogLevel::CRITICAL:
+        case logger::LogLevel::Critical:
         {
             Log::critical(message);
             break;

@@ -63,35 +63,35 @@ public:
     template <typename T, typename... Args>
     void debug(const T& data, const Args&... args)
     {
-        concatAndEmit(LogLevel::DEBUG, data, args...);
+        concatAndEmit(LogLevel::Debug, data, args...);
     }
 
     /// Send info message.
     template <typename T, typename... Args>
     void info(const T& data, const Args&... args)
     {
-        concatAndEmit(LogLevel::INFO, data, args...);
+        concatAndEmit(LogLevel::Info, data, args...);
     }
 
     /// Send warning message.
     template <typename T, typename... Args>
     void warning(const T& data, const Args&... args)
     {
-        concatAndEmit(LogLevel::WARNING, data, args...);
+        concatAndEmit(LogLevel::Warning, data, args...);
     }
 
     /// Send error message.
     template <typename T, typename... Args>
     void error(const T& data, const Args&... args)
     {
-        concatAndEmit(LogLevel::ERROR, data, args...);
+        concatAndEmit(LogLevel::Error, data, args...);
     }
 
     /// Send critical message.
     template <typename T, typename... Args>
     void critical(const T& data, const Args&... args)
     {
-        concatAndEmit(LogLevel::CRITICAL, data, args...);
+        concatAndEmit(LogLevel::Critical, data, args...);
     }
 
     /// Unset specific log level.
@@ -165,19 +165,19 @@ private:
         std::string logLevelStr;
         switch (logLevel)
         {
-            case LogLevel::DEBUG:
+            case LogLevel::Debug:
                 logLevelStr = "DEBUG: ";
                 break;
-            case LogLevel::INFO:
+            case LogLevel::Info:
                 logLevelStr = "INFO: ";
                 break;
-            case LogLevel::WARNING:
+            case LogLevel::Warning:
                 logLevelStr = "WARNING: ";
                 break;
-            case LogLevel::ERROR:
+            case LogLevel::Error:
                 logLevelStr = "ERROR: ";
                 break;
-            case LogLevel::CRITICAL:
+            case LogLevel::Critical:
                 logLevelStr = "CRITICAL: ";
                 break;
         }

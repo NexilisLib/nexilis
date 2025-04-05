@@ -13,7 +13,7 @@ class Log
 public:
     /// Start static console logging session.
     /// \param minLevel The minimum logging level, see logLevel.hh.
-    static void startConsoleLogging(logger::LogLevel minLevel = logger::LogLevel::INFO);
+    static void startConsoleLogging(logger::LogLevel minLevel = logger::LogLevel::Info);
 
     /// Start static console logging setup with all log levels.
     static void startConsoleDebugging();

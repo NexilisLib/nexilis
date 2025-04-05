@@ -178,15 +178,15 @@ std::string Util::getColorMessage(logger::LogLevel logLevel, const std::string& 
     std::string color;
     switch (logLevel)
     {
-        case logger::LogLevel::DEBUG:
-        case logger::LogLevel::INFO:
+        case logger::LogLevel::Debug:
+        case logger::LogLevel::Info:
             color = "\033[37m";
             break;
-        case logger::LogLevel::WARNING:
+        case logger::LogLevel::Warning:
             color = "\033[33m";
             break;
-        case logger::LogLevel::ERROR:
-        case logger::LogLevel::CRITICAL:
+        case logger::LogLevel::Error:
+        case logger::LogLevel::Critical:
             color = "\033[31m";
             break;
     }

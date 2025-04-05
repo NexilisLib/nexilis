@@ -14,17 +14,17 @@ void Log::startConsoleLogging(logger::LogLevel minLevel)
 
 void Log::startConsoleDebugging()
 {
-    log.setMinimumLevel(logger::LogLevel::DEBUG);
+    log.setMinimumLevel(logger::LogLevel::Debug);
     log.addHandler(std::make_unique<logger::ConsoleHandler>(logger::ConsoleHandler()));
 }
 
 void Log::stopLogging()
 {
-    log.unsetLevel(logger::LogLevel::CRITICAL);
-    log.unsetLevel(logger::LogLevel::ERROR);
-    log.unsetLevel(logger::LogLevel::WARNING);
-    log.unsetLevel(logger::LogLevel::INFO);
-    log.unsetLevel(logger::LogLevel::DEBUG);
+    log.unsetLevel(logger::LogLevel::Critical);
+    log.unsetLevel(logger::LogLevel::Error);
+    log.unsetLevel(logger::LogLevel::Warning);
+    log.unsetLevel(logger::LogLevel::Info);
+    log.unsetLevel(logger::LogLevel::Debug);
 
     clearHandlers();
 }
