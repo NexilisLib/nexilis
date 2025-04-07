@@ -12,11 +12,11 @@ using namespace nexilis::logger;
 TEST(LoggerTest, DefaultValues)
 {
     Logger logger;
-    EXPECT_FALSE(logger.getLevel(LogLevel::DEBUG));
-    EXPECT_FALSE(logger.getLevel(LogLevel::INFO));
-    EXPECT_FALSE(logger.getLevel(LogLevel::WARNING));
-    EXPECT_FALSE(logger.getLevel(LogLevel::ERROR));
-    EXPECT_FALSE(logger.getLevel(LogLevel::CRITICAL));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Debug));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Info));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Warning));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Error));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Critical));
 }
 
 TEST(LoggerTest, ConsoleHandler)
@@ -29,7 +29,7 @@ TEST(LoggerTest, ConsoleHandler)
     std::cout.rdbuf(ss.rdbuf());
 
     logger.addHandler(std::make_unique<ConsoleHandler>(ConsoleHandler()));
-    logger.setLevel(LogLevel::ERROR);
+    logger.setLevel(LogLevel::Error);
     logger.error("This is a test error message");
 
     // Reset cout's buffer to the original.
@@ -45,7 +45,7 @@ TEST(LoggerTest, FileHandler)
     Logger logger;
     std::string fileName = "test_file_" + std::to_string(rand()) + ".log";
     logger.addHandler(std::make_unique<FileHandler>(FileHandler(fileName)));
-    logger.setLevel(LogLevel::INFO);
+    logger.setLevel(LogLevel::Info);
 
     logger.info("Test message");
 
@@ -74,7 +74,7 @@ TEST(LoggerTest, FunctionHandler)
         std::cout << msg << std::endl;
     };
     logger.addHandler(std::make_unique<FunctionHandler>(FunctionHandler(handler)));
-    logger.setLevel(LogLevel::INFO);
+    logger.setLevel(LogLevel::Info);
 
     logger.info("Function handler test");
     std::cout.rdbuf(old_cout);
@@ -91,7 +91,7 @@ TEST(LoggerTest, MultipleHandlersWithThreads)
 
     logger.addHandler(std::make_unique<ConsoleHandler>(ConsoleHandler()));
     logger.addHandler(std::make_unique<FileHandler>(FileHandler(fileName)));
-    logger.setLevel(LogLevel::WARNING);
+    logger.setLevel(LogLevel::Warning);
 
     std::thread t1([&logger]()
                    { logger.warning("Test message from thread 1"); });
@@ -167,8 +167,8 @@ INSTANTIATE_TEST_SUITE_P(
         AllLogLevels,
         LevelSetLogger,
         ::testing::Values(
-                LogLevel::DEBUG,
-                LogLevel::INFO,
-                LogLevel::WARNING,
-                LogLevel::ERROR,
-                LogLevel::CRITICAL));
+                LogLevel::Debug,
+                LogLevel::Info,
+                LogLevel::Warning,
+                LogLevel::Error,
+                LogLevel::Critical));
