@@ -10,12 +10,14 @@ namespace Nexilis
 
         public ProtocolManager()
         {
-            _handle = ProtocolManagerNative.nexilis_ProtocolManager_create();
+            _handle = ProtocolManagerNative.nexilis_protocol_manager_create();
             if (_handle == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to create ProtocolManager.");
             }
         }
+
+        public IntPtr ProtocolManagerPtr => _handle;
 
         ~ProtocolManager()
         {
@@ -40,7 +42,7 @@ namespace Nexilis
             {
                 if (_handle != IntPtr.Zero)
                 {
-                    ProtocolManagerNative.nexilis_ProtocolManager_destroy(_handle);
+                    ProtocolManagerNative.nexilis_protocol_manager_destroy(_handle);
                     _handle = IntPtr.Zero;
                 }
                 _disposed = true;
@@ -62,7 +64,7 @@ namespace Nexilis
 
             public ProtocolData(ProtocolType type)
             {
-                _handle = ProtocolManagerNative.nexilis_ProtocolData_create(type);
+                _handle = ProtocolManagerNative.nexilis_protocol_data_create(type);
                 if (_handle == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Failed to create ProtocolData.");
@@ -86,7 +88,7 @@ namespace Nexilis
                 {
                     if (_handle != IntPtr.Zero)
                     {
-                        ProtocolManagerNative.nexilis_ProtocolData_destroy(_handle);
+                        ProtocolManagerNative.nexilis_protocol_data_destroy(_handle);
                         _handle = IntPtr.Zero;
                     }
                     _disposed = true;
@@ -96,19 +98,19 @@ namespace Nexilis
             public ProtocolType GetProtocolType()
             {
                 ThrowIfDisposed();
-                return ProtocolManagerNative.nexilis_ProtocolData_get_type(_handle);
+                return ProtocolManagerNative.nexilis_protocol_data_get_type(_handle);
             }
 
             public ProtocolStatus GetStatus()
             {
                 ThrowIfDisposed();
-                return ProtocolManagerNative.nexilis_ProtocolData_get_status(_handle);
+                return ProtocolManagerNative.nexilis_protocol_data_get_status(_handle);
             }
 
             public ulong GetId()
             {
                 ThrowIfDisposed();
-                return ProtocolManagerNative.nexilis_ProtocolData_get_id(_handle);
+                return ProtocolManagerNative.nexilis_protocol_data_get_id(_handle);
             }
 
             private void ThrowIfDisposed()

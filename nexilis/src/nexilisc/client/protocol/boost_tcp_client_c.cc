@@ -6,7 +6,7 @@ struct nexilis_BoostTCPClient
     nexilis::client::nxboost::TCPClient* client;
 };
 
-nexilis_BoostTCPClient* nexilis_create_boost_tcp_client(nexilis_ProtocolManagerC* manager, nexilis_ClientAPI* client_api)
+nexilis_BoostTCPClient* nexilis_boost_tcp_client_create(nexilis_ProtocolManagerC* manager, nexilis_ClientAPI* client_api)
 {
     if (manager && manager->manager && client_api && client_api->api)
     {
@@ -66,4 +66,13 @@ void nexilis_boost_tcp_client_send_message(nexilis_BoostTCPClient* client, const
         }
         client->client->sendMessage(data);
     }
+}
+
+bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client)
+{
+    if (client && client->client)
+    {
+        return client->client->isConnected();
+    }
+    return false;
 }

@@ -12,12 +12,13 @@ extern "C" {
 
 typedef struct nexilis_BoostTCPClient nexilis_BoostTCPClient;
 
-nexilis_BoostTCPClient* nexilis_create_boost_tcp_client(nexilis_ProtocolManagerC* manager, nexilis_ClientAPI* client_api);
+nexilis_BoostTCPClient* nexilis_boost_tcp_client_create(nexilis_ProtocolManagerC* manager, nexilis_ClientAPI* client_api);
 void nexilis_boost_tcp_client_destroy(nexilis_BoostTCPClient* client);
 nexilis_ProtocolTypeC nexilis_boost_tcp_client_get_type(nexilis_BoostTCPClient* client);
 void nexilis_boost_tcp_client_start(nexilis_BoostTCPClient* client);
 void nexilis_boost_tcp_client_stop(nexilis_BoostTCPClient* client);
 void nexilis_boost_tcp_client_send_message(nexilis_BoostTCPClient* client, const uint8_t message[], size_t message_size);
+bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client);
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,8 @@ class BoostTCPTest : public ::testing::Test
 protected:
     void SetUp() override
     {
+        nexilis::Log::startConsoleDebugging();
+
         // Set up the server
         settings.setMode(nexilis::server::Settings::AuthenticationMode::passwordProtected);
         settings.setPassphrase("salasana");
@@ -38,10 +40,12 @@ protected:
         {
             client->stop();
         }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         if (server)
         {
             server->stop();
         }
+        nexilis::Log::stopLogging();
     }
 
     nexilis::ProtocolManager protocol_manager;
@@ -58,8 +62,6 @@ protected:
 
 TEST_F(BoostTCPTest, BoostTCPSuccessfulConnection)
 {
-    nexilis::Log::startConsoleDebugging();
-
     // Start the client and check if it connects successfully
     client->start();
 
@@ -75,6 +77,4 @@ TEST_F(BoostTCPTest, BoostTCPSuccessfulConnection)
 
     // Remove client from static storage.
     nexilis::server::ClientStorage::clear();
-
-    nexilis::Log::stopLogging();
 }

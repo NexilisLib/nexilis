@@ -12,7 +12,7 @@ TEST(ProtocolTest_c, CreateProtocol_UnixStreamServer)
     nexilis_settings_set_passphrase(settings, "salasana");
     nexilis_settings_set_root_password(settings, "root");
 
-    auto protocol_manager = nexilis_ProtocolManager_create();
+    auto protocol_manager = nexilis_protocol_manager_create();
 
     auto server = nexilis_create_unix_stream_server(protocol_manager, settings, "/tmp/nexilis/stream");
     auto protocol_settings = nexilis_unix_stream_server_get_settings(server);
@@ -23,7 +23,7 @@ TEST(ProtocolTest_c, CreateProtocol_UnixStreamServer)
     EXPECT_EQ(protocol_settings.settings->getRootPassword(), "root");
 
     nexilis_settings_destroy(settings);
-    nexilis_ProtocolManager_destroy(protocol_manager);
+    nexilis_protocol_manager_destroy(protocol_manager);
     nexilis_unix_stream_server_destroy(server);
 }
 
@@ -34,7 +34,7 @@ TEST(ProtocolTest_c, CreateProtocol_BoostTCPServer)
     nexilis_settings_set_passphrase(settings, "salasana");
     nexilis_settings_set_root_password(settings, "root");
 
-    auto protocol_manager = nexilis_ProtocolManager_create();
+    auto protocol_manager = nexilis_protocol_manager_create();
 
     auto server = nexilis_create_boost_tcp_server(protocol_manager, settings);
     auto protocol_settings = nexilis_boost_tcp_server_get_settings(server);
@@ -45,6 +45,6 @@ TEST(ProtocolTest_c, CreateProtocol_BoostTCPServer)
     EXPECT_EQ(protocol_settings.settings->getRootPassword(), "root");
 
     nexilis_settings_destroy(settings);
-    nexilis_ProtocolManager_destroy(protocol_manager);
+    nexilis_protocol_manager_destroy(protocol_manager);
     nexilis_boost_tcp_server_destroy(server);
 }
