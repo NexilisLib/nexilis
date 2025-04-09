@@ -31,6 +31,22 @@ void nexilis_boost_tcp_server_destroy(nexilis_BoostTCPServer* server)
     }
 }
 
+void nexilis_boost_tcp_server_start(nexilis_BoostTCPServer* server)
+{
+    if (server && server->server)
+    {
+        server->server->start();
+    }
+}
+
+void nexilis_boost_tcp_server_stop(nexilis_BoostTCPServer* server)
+{
+    if (server && server->server)
+    {
+        server->server->stop();
+    }
+}
+
 nexilis_server_SettingsC nexilis_boost_tcp_server_get_settings(nexilis_BoostTCPServer* server)
 {
     auto settings = nexilis_server_SettingsC();
