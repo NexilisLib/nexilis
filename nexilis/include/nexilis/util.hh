@@ -3,6 +3,7 @@
 
 #include <nexilis/logger/log_level.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_data.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/config.hh>
 #include <nexilis/types/vector2.hh>

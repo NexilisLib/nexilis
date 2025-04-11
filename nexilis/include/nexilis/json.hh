@@ -1,9 +1,9 @@
 #ifndef NEXILIS_JSON_HH
 #define NEXILIS_JSON_HH
 
-#include <nexilis/nexilis_constants.hh>
-
 #include <boost/json/object.hpp>
+#include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_data.hh>
 
 #include <map>
 

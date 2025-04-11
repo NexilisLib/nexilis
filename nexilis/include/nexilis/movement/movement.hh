@@ -2,6 +2,7 @@
 #define NEXILIS_MOVEMENT_MOVEMENT_HH
 
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_data.hh>
 #include <nexilis/types/vector2.hh>
 
 namespace nexilis

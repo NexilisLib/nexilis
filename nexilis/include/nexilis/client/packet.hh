@@ -5,6 +5,7 @@
 #include <nexilis/command_type.hh>
 #include <nexilis/movement_type.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_data.hh>
 #include <nexilis/room_command_type.hh>
 #include <nexilis/room_data.hh>
 #include <nexilis/types/vector2.hh>
