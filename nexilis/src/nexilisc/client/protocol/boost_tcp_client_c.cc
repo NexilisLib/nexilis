@@ -59,13 +59,35 @@ void nexilis_boost_tcp_client_send_message(nexilis_BoostTCPClient* client, const
 {
     if (client && client->client)
     {
-        nexilis::nx_data data;
-        for (size_t i = 0; i < message_size; i++)
-        {
-            data.emplace_back(message[i]);
-        }
+        nexilis::nx_data data(message, message + message_size);
         client->client->sendMessage(data);
     }
+}
+
+void nexilis_boost_tcp_client_send_message_with_callback(nexilis_BoostTCPClient* client, const uint8_t message[], size_t message_size, void (*callback)(const uint8_t*, size_t))
+{
+    if (!client || !client->client)
+    {
+        return;
+    }
+
+    nexilis::nx_data data(message, message + message_size);
+
+    std::function<void()> cb;
+    if (callback)
+    {
+        // Capture the data by value.
+        cb = [callback, data]()
+        {
+            callback(data.data(), data.size());
+        };
+    }
+    else
+    {
+        cb = []() {};
+    }
+
+    client->client->ClientProtocol::sendMessage(data, cb);
 }
 
 bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client)

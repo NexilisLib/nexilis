@@ -18,6 +18,7 @@ nexilis_ProtocolTypeC nexilis_boost_tcp_client_get_type(nexilis_BoostTCPClient* 
 void nexilis_boost_tcp_client_start(nexilis_BoostTCPClient* client);
 void nexilis_boost_tcp_client_stop(nexilis_BoostTCPClient* client);
 void nexilis_boost_tcp_client_send_message(nexilis_BoostTCPClient* client, const uint8_t message[], size_t message_size);
+void nexilis_boost_tcp_client_send_message_with_callback(nexilis_BoostTCPClient* client, const uint8_t message[], size_t message_size, void (*callback)(const uint8_t*, size_t));
 bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client);
 
 #ifdef __cplusplus
