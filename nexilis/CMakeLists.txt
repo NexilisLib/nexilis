@@ -9,9 +9,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS ON)
 
-#set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost)
-#set(Boost_NO_SYSTEM_PATHS ON)
-
 # Compile with clang.
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
@@ -107,6 +104,7 @@ set(SOURCES
 
     # NexilisC
     src/nexilisc/protocol_manager_c.cc
+    src/nexilisc/nx_data_c.cc
 
     src/nexilisc/logger/logger_c.cc
     src/nexilisc/logger/console_handler_c.cc
