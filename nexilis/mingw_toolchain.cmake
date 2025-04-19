@@ -21,7 +21,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -pthread -std=c+
 set(CMAKE_SHARED_LINKER_FLAGS "-lwinpthread -Wl,--enable-auto-import")
 
 add_compile_definitions(
-    WIN32_LEAN_AND_MEAN
     NOMINMAX
     _WIN32_WINT=0x0A00
     BOOST_ASIO_DISABLE_LOCAL_SOCKETS

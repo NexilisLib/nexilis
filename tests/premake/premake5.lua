@@ -8,9 +8,15 @@ workspace "NexilisTest"
         files { "premake_test.cc" }
         linkoptions {
             "-L../../nexilis/bin/Debug/",
-            "-l:libnexilis-premake_d.so"
+            "-L../../bindings/lua/bin/Debug/",
+            "-l:libnexilis-premake_d.so",
+            "-l:libnexilis-lua.a",
+            "-llua"
         }
-        includedirs { "../../nexilis/include" }
+        includedirs { 
+            "../../nexilis/include",
+            "/usr/include/lua5.2"
+        }
 
         postbuildcommands {
             "cp ../../nexilis/bin/Debug/libnexilis-premake_d.so bin/Debug/",

@@ -25,7 +25,7 @@ workspace "nexilis"
         kind "SharedLib"
         language "C++"
         targetdir "bin/%{cfg.buildcfg}"
-        objdir "bin-int/%{cfg.buildcfg}"
+        objdir "obj/%{cfg.buildcfg}"
 
         includedirs{
             "include",
