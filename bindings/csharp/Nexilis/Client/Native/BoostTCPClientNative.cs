@@ -22,5 +22,7 @@ namespace Nexilis.Client
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_boost_tcp_client_send_message(IntPtr client, byte[] message, uint length);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void nexilis_boost_tcp_client_send_message_with_callback(IntPtr client, byte[] message, uint length, IntPtr callback);
     }
 }

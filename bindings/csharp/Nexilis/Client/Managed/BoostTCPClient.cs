@@ -104,10 +104,11 @@ namespace Nexilis.Client
         }
 
         /// <summary>
-        /// Sends a message using the Boost TCP client.
-        /// </summary>
+        /// Sends a message using the Boost TCP client with a callback.
+        /// /// </summary>
         /// <param name="message">The message to send.</param>
-        public void SendMessage(string message)
+        /// <param callref="callback">The callback to invoke when the message is sent.</param>
+        public void SendMessageWithCallback(string message, IntPtr callback)
         {
             if (string.IsNullOrEmpty(message))
             {
@@ -115,7 +116,7 @@ namespace Nexilis.Client
             }
 
             byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
-            SendMessage(messageBytes, (uint)messageBytes.Length);
+            BoostTCPClientNative.nexilis_boost_tcp_client_send_message_with_callback(_boostTcpClientPtr, messageBytes, (uint)messageBytes.Length, callback);
         }
     }
 }
