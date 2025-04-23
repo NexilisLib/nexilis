@@ -10,12 +10,13 @@ extern "C" {
 
 typedef struct {
     uint8_t* data;
-    size_t size;
+    uint64_t size;
 } nx_data_c;
 
-nx_data_c nexilis_nx_data_create(size_t size);
-nx_data_c nexilis_nx_data_create_from(const uint8_t* data, size_t size);
+nx_data_c nexilis_nx_data_create(uint64_t size);
+nx_data_c nexilis_nx_data_create_from(const uint8_t* data, uint64_t size);
 void nexilis_nx_data_destroy(nx_data_c* data);
+uint64_t nexilis_nx_data_get_size(const nx_data_c* data);
 
 #ifdef __cplusplus
 }

@@ -145,7 +145,14 @@ private:
                 emitLog(logLevel, "Invalid null string passed to logger");
                 return;
             }
-            ss << std::string_view(data);
+            if constexpr (std::is_same_v<T, nx_data>)
+            {
+                ss << std::string_view(Util::convertToString(data));
+            }
+            else
+            {
+                ss << std::string_view(data);
+            }
         }
         else
         {

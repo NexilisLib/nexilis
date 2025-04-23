@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 
-nx_data_c nexilis_nx_data_create(size_t size)
+nx_data_c nexilis_nx_data_create(uint64_t size)
 {
     nx_data_c result;
     result.data = static_cast<uint8_t*>(malloc(size));
@@ -11,7 +11,7 @@ nx_data_c nexilis_nx_data_create(size_t size)
     return result;
 }
 
-nx_data_c nexilis_nx_data_create_from(const uint8_t* data, size_t size)
+nx_data_c nexilis_nx_data_create_from(const uint8_t* data, uint64_t size)
 {
     nx_data_c result = nexilis_nx_data_create(size);
     if (result.data && data)
@@ -29,4 +29,13 @@ void nexilis_nx_data_destroy(nx_data_c* data)
         data->data = nullptr;
         data->size = 0;
     }
+}
+
+uint64_t nexilis_nx_data_get_size(const nx_data_c* data)
+{
+    if (data)
+    {
+        return data->size;
+    }
+    return 0;
 }
