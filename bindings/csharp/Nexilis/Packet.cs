@@ -21,7 +21,7 @@ namespace Nexilis.Client
             {
                 throw new InvalidOperationException("Failed to get packet info general.");
             }
-            return NxData.Create((int)raw);
+            return NxData.FromHandle(raw);
         }
         public static NxData InfoClients()
         {
@@ -30,7 +30,7 @@ namespace Nexilis.Client
             {
                 throw new InvalidOperationException("Failed to get packet info clients.");
             }
-            return NxData.Create((int)raw);
+            return NxData.FromHandle(raw);
         }
         public static NxData InfoRooms()
         {
@@ -39,7 +39,7 @@ namespace Nexilis.Client
             {
                 throw new InvalidOperationException("Failed to get packet info rooms.");
             }
-            return NxData.Create((int)raw);
+            return NxData.FromHandle(raw);
         }
     }
 }

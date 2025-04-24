@@ -10,6 +10,8 @@ namespace Nexilis.Logger
 
         // Delegate for the callback function
         private readonly Action<LogLevel, string> _function;
+        public static Action<LogLevel, string> EmptyFunction = (level, message) => {};
+        public bool isEmpty => _function == EmptyFunction;
 
         // Constructor
         public FunctionHandler(Action<LogLevel, string> function)

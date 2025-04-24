@@ -10,7 +10,7 @@ namespace Nexilis
         private bool _disposed = false;
 
         public IntPtr Data => _rawData.data;
-        public int Size => (int)_rawData.size;
+        public ulong Size => _rawData.size.ToUInt64();
 
         internal NxData(IntPtr handle, RawNxData rawData)
         {
@@ -35,10 +35,14 @@ namespace Nexilis
         {
             if (handle == IntPtr.Zero)
                 throw new ArgumentNullException(nameof(handle));
+            
+            UIntPtr sizePtr = RawNxDataNative.nexilis_nx_data_get_size(handle);
+            if (sizePtr == UIntPtr.Zero)
+                throw new InvalidOperationException("Invalid NxData handle.");
 
             return new NxData(handle, new RawNxData {
                 data = handle,
-                size = (UIntPtr)0 // TODO
+                size = sizePtr
             });
         }
 
@@ -68,8 +72,8 @@ namespace Nexilis
             if (_disposed) throw new ObjectDisposedException(nameof(NxData));
             if (_rawData.size == UIntPtr.Zero) return Array.Empty<byte>();
             
-            byte[] bytes = new byte[Size];
-            Marshal.Copy(_rawData.data, bytes, 0, Size);
+            byte[] bytes = new byte[(int)Size];
+            Marshal.Copy(_rawData.data, bytes, 0, (int)Size);
             return bytes;
         }
 
