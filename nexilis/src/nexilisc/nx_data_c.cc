@@ -39,3 +39,12 @@ uint64_t nexilis_nx_data_get_size(const nx_data_c* data)
     }
     return 0;
 }
+
+uint8_t* nexilis_nx_data_get_data(const nx_data_c* data)
+{
+    if (data)
+    {
+        return data->data;
+    }
+    return nullptr;
+}
