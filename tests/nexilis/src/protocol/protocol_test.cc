@@ -1,12 +1,15 @@
 #include <gtest/gtest.h>
 
+#include <nexilis/client/packet.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/client/protocol/nxboost/udp_client.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/protocol_manager.hh>
+#include <nexilis/room_data.hh>
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/server/protocol/nxboost/udp_server.hh>
+#include <nexilis/server/room_storage.hh>
 
 static nexilis::ProtocolManager protocol_manager;
 
@@ -88,7 +91,27 @@ protected:
 };
 
 template <typename Server, typename Client>
-class ProtocolTestObject : public ProtocolTest<Server, Client>
+class ProtocolTestBoostTCP : public ProtocolTest<Server, Client>
+{
+protected:
+    void setup() override
+    {
+        this->server_data.setBoostTCP("127.0.0.1");
+    }
+};
+
+template <typename Server, typename Client>
+class ProtocolTestBoostUDP : public ProtocolTest<Server, Client>
+{
+protected:
+    void setup() override
+    {
+        this->server_data.setBoostUDP("127.0.0.1");
+    }
+};
+
+template <typename ProtocolTestType>
+class ProtocolBasicTest : public ProtocolTestType
 {
 protected:
     void defaultSetup() override
@@ -103,42 +126,75 @@ protected:
     }
 };
 
-template <typename Server, typename Client>
-class ProtocolTestBoostTCP : public ProtocolTestObject<Server, Client>
-{
-    void setup() override
-    {
-        this->server_data.setBoostTCP("127.0.0.1");
-    }
-};
+using BasicBoostTCPTest = ProtocolBasicTest<ProtocolTestBoostTCP<
+        nexilis::server::nxboost::TCPServer, nexilis::client::nxboost::TCPClient>>;
 
-template <typename Server, typename Client>
-class ProtocolTestBoostUDP : public ProtocolTestObject<Server, Client>
-{
-    void setup() override
-    {
-        this->server_data.setBoostUDP("127.0.0.1");
-    }
-};
-
-using BoostTCP = ProtocolTestBoostTCP<nexilis::server::nxboost::TCPServer, nexilis::client::nxboost::TCPClient>;
-
-TEST_F(BoostTCP, ProtocolTestBoostTCPClientConnected)
+TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPClientConnected)
 {
     this->clientStart();
     EXPECT_TRUE(client->isConnected());
 }
 
-TEST_F(BoostTCP, ProtocolTestBoostTCPHasActiveConnections)
+TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPHasActiveConnections)
 {
     this->clientStart();
     EXPECT_TRUE(server->hasActiveConnections());
 }
 
-TEST_F(BoostTCP, ProtocolTestBoostTCPActiveConnectionsCountFromOne)
+TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPActiveConnectionsCountFromOne)
 {
     this->clientStart();
     EXPECT_EQ(server->activeConnectionsCount(), 1);
 }
 
-using BoostUDP = ProtocolTestBoostTCP<nexilis::server::nxboost::UDPServer, nexilis::client::nxboost::UDPClient>;
+using BasicBoostUDPTest = ProtocolTestBoostTCP<nexilis::server::nxboost::UDPServer,
+                                               nexilis::client::nxboost::UDPClient>;
+
+template <typename ProtocolTestType, nexilis::RoomData::Context RoomContext>
+class ProtocolRoomTest : public ProtocolTestType
+{
+protected:
+    void defaultSetup() override
+    {
+        this->setup();
+        this->createSettings();
+        this->createServer();
+
+        auto room = nexilis::server::Room(nexilis::RoomData(
+                0,
+                "RoomTestRoom",
+                nexilis::Util::getRandomUint64(),
+                RoomContext));
+        auto id = room.getId();
+        nexilis::server::RoomStorage::add(std::move(room));
+        EXPECT_TRUE(nexilis::server::RoomStorage::contains(id));
+        EXPECT_TRUE(nexilis::server::RoomStorage::getRoomById(id) != nullptr);
+
+        this->serverStart();
+        this->createDefaultServerData();
+        this->createClientAPI();
+        this->createClient();
+    }
+};
+
+using RoomBoostTCP2DTest = ProtocolRoomTest<BasicBoostTCPTest, nexilis::RoomData::Context::_2D>;
+
+TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomClientConnected)
+{
+    this->clientStart();
+    EXPECT_TRUE(client->isConnected());
+    EXPECT_TRUE(server->hasActiveConnections());
+    EXPECT_EQ(server->activeConnectionsCount(), 1);
+}
+
+TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
+{
+    this->clientStart();
+
+    std::promise<void> promise;
+    std::future<void> future = promise.get_future();
+    this->client->ClientProtocol::sendMessage(
+            nexilis::client::Packet::Info::rooms(),
+            this->api->waitUntilRoomsCreated(promise));
+    future.wait();
+}
