@@ -119,6 +119,11 @@ void TCPClient::sendMessage(const nx_data& message)
     send(message);
 }
 
+void TCPClient::sendMessage(const nx_data& message, const std::function<void()>& callback)
+{
+    sendMessageWithCallback(message, callback);
+}
+
 bool TCPClient::connectToServer()
 {
     try

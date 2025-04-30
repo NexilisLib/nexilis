@@ -87,7 +87,7 @@ void nexilis_boost_tcp_client_send_message_with_callback(nexilis_BoostTCPClient*
         cb = []() {};
     }
 
-    client->client->ClientProtocol::sendMessage(data, cb);
+    client->client->sendMessage(data, cb);
 }
 
 bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client)

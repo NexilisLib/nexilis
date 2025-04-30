@@ -193,7 +193,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
 
     std::promise<void> promise;
     std::future<void> future = promise.get_future();
-    this->client->ClientProtocol::sendMessage(
+    this->client->sendMessage(
             nexilis::client::Packet::Info::rooms(),
             this->api->waitUntilRoomsCreated(promise));
     future.wait();

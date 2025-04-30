@@ -30,7 +30,8 @@ public:
     virtual void sendMessage(const nx_data& message) = 0;
 
     /// Send nexilis message with callback.
-    void sendMessage(const nx_data& message, const std::function<void()>& callback);
+    /// Call sendMessageWithCallback in the derived class.
+    virtual void sendMessage(const nx_data& message, const std::function<void()>& callback) = 0;
 
     ClientAPI* getClientAPI()
     {
@@ -44,6 +45,8 @@ public:
 
 protected:
     void start(Protocol::Type type);
+
+    void sendMessageWithCallback(const nx_data& message, const std::function<void()>& callback);
 
 private:
     /// Create a pair that contains the id of the message and the callback itself.

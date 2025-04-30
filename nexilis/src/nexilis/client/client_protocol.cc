@@ -27,7 +27,7 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     return *this;
 }
 
-void ClientProtocol::sendMessage(const nx_data& message, const std::function<void()>& callback)
+void ClientProtocol::sendMessageWithCallback(const nx_data& message, const std::function<void()>& callback)
 {
     m_api->addCallback(ClientProtocol::createCallback(message, callback));
     sendMessage(message);
