@@ -1,4 +1,6 @@
 import os
+import json
+import sys
 
 # Format single JSON file.
 def format_json_file(file_path):

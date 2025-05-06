@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from create_env import get_nexilis_root
+from env import get_nexilis_root
 from run_premake import build_and_run_premake
 
 import os

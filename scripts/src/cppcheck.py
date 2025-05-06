@@ -1,4 +1,4 @@
-from create_env import get_nexilis_root
+from env import get_nexilis_root
 
 import subprocess
 import sys

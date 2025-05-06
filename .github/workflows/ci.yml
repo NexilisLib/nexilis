@@ -20,8 +20,8 @@ jobs:
       - name: Check formatting
         run: |
           pip install -r scripts/requirements.txt
-          python3 scripts/create_env.py
-          python3 scripts/format.py
+          python scripts/src/create_env.py
+          python scripts/src/format.py
 
   cpp-tests:
     name: Run Native Tests
@@ -93,7 +93,7 @@ jobs:
       - name: Run best_practices.py
         run: |
           pip install -r scripts/requirements.txt
-          python3 scripts/create_env.py
+          python scripts/src/create_env.py
 
           output=$(python3 scripts/best_practises.py)
           if [ "$output" = "0" ]; then
