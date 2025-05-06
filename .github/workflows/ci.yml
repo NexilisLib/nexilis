@@ -95,7 +95,7 @@ jobs:
           pip install -r scripts/requirements.txt
           python scripts/src/env.py
 
-          output=$(python3 scripts/best_practises.py)
+          output=$(python scripts/src/best_practises.py)
           if [ "$output" = "0" ]; then
             echo "Best practices successful."
           else
