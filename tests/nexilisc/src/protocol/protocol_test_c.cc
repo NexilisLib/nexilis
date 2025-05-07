@@ -7,7 +7,8 @@
 #include <nexilisc/client/protocol/boost_tcp_client_c.h>
 #include <nexilisc/server/protocol/boost_tcp_server_c.h>
 
-#include <unistd.h>
+// TODO C API
+#include <nexilis/server/room_storage.hh>
 
 static nexilis_ProtocolManagerC* protocol_manager = nullptr;
 
@@ -164,6 +165,7 @@ protected:
 template <typename Server, typename Client>
 class ProtocolTestBoostTCPC : public ProtocolTestObjectC<Server, Client>
 {
+protected:
     void setup() override
     {
         this->create_server_func = nexilis_create_boost_tcp_server;
@@ -183,6 +185,43 @@ class ProtocolTestBoostTCPC : public ProtocolTestObjectC<Server, Client>
 using BoostTCPC = ProtocolTestBoostTCPC<nexilis_BoostTCPServer, nexilis_BoostTCPClient>;
 
 TEST_F(BoostTCPC, ProtocolTestBoostTCPClientConnected)
+{
+    this->clientStart();
+    EXPECT_TRUE(this->is_connected(this->client));
+}
+
+template <typename ProtocolTestType, nexilis::RoomData::Context RoomContext>
+class ProtocolRoomTestC : public ProtocolTestType
+{
+protected:
+    void defaultSetup() override
+    {
+        this->setup();
+        this->createSettings();
+        this->createServer();
+
+        auto room = nexilis::server::Room(nexilis::RoomData(
+                0,
+                "RoomTestRoom",
+                nexilis::Util::getRandomUint64(),
+                RoomContext));
+
+        auto id = room.getId();
+        nexilis::server::RoomStorage::add(std::move(room));
+        EXPECT_TRUE(nexilis::server::RoomStorage::contains(id));
+        EXPECT_TRUE(nexilis::server::RoomStorage::getRoomById(id) != nullptr);
+        
+        this->serverStart();
+        this->createDefaultServerData();
+        this->setAddress();
+        this->createClientAPI();
+        this->createClient();
+    }
+};
+
+using RoomBoostTCP2DTestC = ProtocolRoomTestC<BoostTCPC, nexilis::RoomData::Context::_2D>;
+
+TEST_F(RoomBoostTCP2DTestC, ProtocolTestBoostTCPClientConnected)
 {
     this->clientStart();
     EXPECT_TRUE(this->is_connected(this->client));
