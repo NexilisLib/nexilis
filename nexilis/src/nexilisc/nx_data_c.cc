@@ -6,18 +6,19 @@
 nx_data_c nexilis_nx_data_create(uint64_t size)
 {
     nx_data_c result;
-    result.data = static_cast<uint8_t*>(malloc(size));
-    result.size = size;
+    result.data = new nexilis::nx_data(size);
     return result;
 }
 
 nx_data_c nexilis_nx_data_create_from(const uint8_t* data, uint64_t size)
 {
-    nx_data_c result = nexilis_nx_data_create(size);
-    if (result.data && data)
+    nx_data_c result;
+    auto* vec = new nexilis::nx_data(size);
+    if (data && size > 0)
     {
-        memcpy(result.data, data, size);
+        memcpy(result.data->data(), data, size);
     }
+    result.data = vec;
     return result;
 }
 
@@ -25,26 +26,36 @@ void nexilis_nx_data_destroy(nx_data_c* data)
 {
     if (data && data->data)
     {
-        free(data->data);
+        delete data->data;
         data->data = nullptr;
-        data->size = 0;
     }
 }
 
 uint64_t nexilis_nx_data_get_size(const nx_data_c* data)
 {
-    if (data)
+    if (!data || !data->data)
     {
-        return data->size;
+        return 0;
     }
-    return 0;
+    return data->data->size();
 }
 
-uint8_t* nexilis_nx_data_get_data(const nx_data_c* data)
+const uint8_t* nexilis_nx_data_get_data(const nx_data_c* data)
 {
-    if (data)
+    if (!data || !data->data)
     {
-        return data->data;
+        return nullptr;
     }
-    return nullptr;
+    auto* vec = static_cast<nexilis::nx_data*>(data->data);
+    return vec->empty() ? nullptr : vec->data();
+}
+
+uint8_t* nexilis_nx_data_get_mutable(nx_data_c* data)
+{
+    if (!data || !data->data)
+    {
+        return nullptr;
+    }
+    auto* vec = static_cast<nexilis::nx_data*>(data->data);
+    return vec->empty() ? nullptr : vec->data();
 }
