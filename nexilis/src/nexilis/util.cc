@@ -140,7 +140,7 @@ uint64_t Util::getRandomUint64()
 int Util::getRandomInt(int from, int to)
 {
     std::mt19937_64 generator(rand_dev());
-    std::uniform_int_distribution<uint64_t> dist(from, to);
+    std::uniform_int_distribution<int> dist(from, to);
     int randomValue = dist(generator);
 
     assert(randomValue >= from);

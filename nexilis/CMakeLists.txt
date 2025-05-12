@@ -103,6 +103,8 @@ set(SOURCES
     #src/boost/udp_server.cc
 
     # NexilisC
+    src/nexilisc/nexilis_promise.cc
+    src/nexilisc/nexilis_waiter.cc
     src/nexilisc/protocol_manager_c.cc
     src/nexilisc/nx_data_c.cc
 

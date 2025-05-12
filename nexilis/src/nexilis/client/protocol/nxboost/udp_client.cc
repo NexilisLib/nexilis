@@ -111,6 +111,7 @@ void UDPClient::stop()
     }
 
     boost::system::error_code ec;
+    std::unique_lock<std::mutex> lock(*m_mutex);
     if (m_socket.is_open())
     {
         if (m_socket.cancel(ec))
@@ -123,6 +124,7 @@ void UDPClient::stop()
             Log::error("Error closing socket: ", ec.message());
         }
     }
+    lock.unlock();
 
     if (m_ioContext)
     {
@@ -192,6 +194,11 @@ void UDPClient::sendMessage(const nx_data& payload)
     {
         Log::error("Exception in sendMessage: ", e.what());
     }
+}
+
+void UDPClient::sendMessage(const nx_data& payload, const std::function<void()>& callback)
+{
+    sendMessageWithCallback(payload, callback);
 }
 
 } // namespace nexilis::client::nxboost

@@ -21,6 +21,7 @@ namespace nexilis::server
 MessageHandler::Message MessageHandler::readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication)
 {
     Log::debug("Payload size: ", payload.size());
+    Util::debugUint8Vector(payload);
 
     // TODO
     // Error Messages.
@@ -28,6 +29,11 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
     Message errorMessage("", errordata, -1, nullptr, 0);
 
     auto clientId = Util::uint64FromFront(payload);
+    if (clientId == 0)
+    {
+        Log::error("Client id is zero");
+        return errorMessage;
+    }
     auto* user = ClientStorage::getClientById(clientId);
     bool userAlreadyExists = true;
 
