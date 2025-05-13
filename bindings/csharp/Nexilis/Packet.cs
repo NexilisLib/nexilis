@@ -5,41 +5,35 @@ namespace Nexilis.Client
 {
     public static class Packet
     {
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr nexilis_packet_info_general();
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr nexilis_packet_info_clients();
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr nexilis_packet_info_rooms();
-
-        public static NxData InfoGeneral()
+        private static NxLogger _logger = new NxLogger("Packet");
+        public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback)
         {
-            var raw = nexilis_packet_info_general();
-            if (raw == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Failed to get packet info general.");
-            }
-            return NxData.FromHandle(raw);
+            _logger.AddHandler(logCallback);
+            _logger.SetMinimumLevel(Logger.LogLevel.DEBUG);
         }
-        public static NxData InfoClients()
-        {
-            var raw = nexilis_packet_info_clients();
-            if (raw == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Failed to get packet info clients.");
-            }
-            return NxData.FromHandle(raw);
-        }
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_info_general();
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_info_clients();
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_info_rooms();
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void nexilis_packet_info_rooms_out(ref RawNxData result);
+
         public static NxData InfoRooms()
         {
-            var raw = nexilis_packet_info_rooms();
-            if (raw == IntPtr.Zero)
+            return NativeInterop.ExecuteSafe(() =>
             {
-                throw new InvalidOperationException("Failed to get packet info rooms.");
-            }
-            return NxData.FromHandle(raw);
+                var raw = nexilis_packet_info_rooms();
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get packet info rooms.");
+                }
+                return NxData.Create(raw);
+            }, "InfoRooms");
         }
     }
 }

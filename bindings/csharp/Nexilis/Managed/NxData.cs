@@ -5,90 +5,98 @@ namespace Nexilis
 {
     public sealed class NxData : IDisposable
     {
-        private IntPtr _handle;
+        private static NxLogger _logger = new NxLogger("NxData");
+        public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback)
+        {
+            _logger.AddHandler(logCallback);
+            _logger.SetMinimumLevel(Logger.LogLevel.DEBUG);
+        }
         private RawNxData _rawData;
         private bool _disposed = false;
 
-        public IntPtr Data => _rawData.data;
-        public ulong Size => _rawData.size.ToUInt64();
-
-        internal NxData(IntPtr handle, RawNxData rawData)
+        public ulong Size
         {
-            _handle = handle;
+            get
+            {
+                if (_disposed) throw new ObjectDisposedException(nameof(NxData));
+                return RawNxDataNative.nexilis_nx_data_get_size(ref _rawData);
+            }
+        }
+        public IntPtr DataPointer
+        {
+            get
+            {
+                if (_disposed) throw new ObjectDisposedException(nameof(NxData));
+                return RawNxDataNative.nexilis_nx_data_get_data(ref _rawData);
+            }
+        }
+
+        internal NxData(RawNxData rawData)
+        {
             _rawData = rawData;
         }
 
-        public static NxData Create(int size)
+        public static NxData Create(RawNxData rawData)
         {
-            if (size < 0)
+            if (rawData.data == IntPtr.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(size));
+                throw new ArgumentNullException(nameof(rawData));
             }
-            IntPtr handle = RawNxDataNative.nexilis_nx_data_create((UIntPtr)size);
-            return new NxData(handle, new RawNxData {
-                data = handle,
-                size = (UIntPtr)size
-            });
+            return new NxData(rawData);
         }
 
-        public static NxData FromHandle(IntPtr handle)
+        public static NxData Create(ulong size)
         {
-            if (handle == IntPtr.Zero)
-                throw new ArgumentNullException(nameof(handle));
-            
-            UIntPtr sizePtr = RawNxDataNative.nexilis_nx_data_get_size(handle);
-            if (sizePtr == UIntPtr.Zero)
-                throw new InvalidOperationException("Invalid NxData handle.");
+            if (size == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero.");
+            }
 
-            return new NxData(handle, new RawNxData {
-                data = handle,
-                size = sizePtr
-            });
+            RawNxData rawData = RawNxDataNative.nexilis_nx_data_create(size);
+            return new NxData(rawData);
         }
 
-        public static NxData FromBytes(byte[] data)
+        public static NxData Create(byte[] data)
         {
             if (data == null || data.Length == 0)
             {
-                throw new ArgumentException("Data cannot be null or empty.", nameof(data));
+                throw new ArgumentNullException(nameof(data));
             }
 
-            IntPtr unmanagedArray = Marshal.AllocHGlobal(data.Length);
-            Marshal.Copy(data, 0, unmanagedArray, data.Length);
-            
-            IntPtr handle = RawNxDataNative.nexilis_nx_data_create_from(
-                unmanagedArray, 
-                (UIntPtr)data.Length
-            );
-            
-            return new NxData(handle, new RawNxData {
-                data = unmanagedArray,
-                size = (UIntPtr)data.Length
-            });
+            IntPtr dataPtr = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, dataPtr, data.Length);
+            RawNxData rawData = RawNxDataNative.nexilis_nx_data_create_from(dataPtr, (ulong)data.Length);
+            Marshal.FreeHGlobal(dataPtr);
+            return new NxData(rawData);
         }
 
         public byte[] ToBytes()
         {
             if (_disposed) throw new ObjectDisposedException(nameof(NxData));
-            if (_rawData.size == UIntPtr.Zero) return Array.Empty<byte>();
+
+            var size = Size;
+            if (size == 0) return Array.Empty<byte>();
             
-            byte[] bytes = new byte[(int)Size];
-            Marshal.Copy(_rawData.data, bytes, 0, (int)Size);
+            var dataPtr = RawNxDataNative.nexilis_nx_data_get_data(ref _rawData);
+            if (dataPtr == IntPtr.Zero) return Array.Empty<byte>();
+            
+            byte[] bytes = new byte[(int)size];
+            Marshal.Copy(dataPtr, bytes, 0, (int)size);
             return bytes;
         }
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (_disposed) return;
+
+            if (_rawData.data != IntPtr.Zero)
             {
-                RawNxDataNative.nexilis_nx_data_destroy(_handle);
-                if (_rawData.data != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(_rawData.data);
-                }
-                _disposed = true;
-                GC.SuppressFinalize(this);
+                RawNxDataNative.nexilis_nx_data_destroy(ref _rawData);
+                _rawData.data = IntPtr.Zero;
             }
+
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
 
         ~NxData() => Dispose();
