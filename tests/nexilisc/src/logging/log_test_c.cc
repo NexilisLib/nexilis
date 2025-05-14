@@ -19,6 +19,38 @@ TEST(LogTest_c, loggerDefaultLogLevel)
     EXPECT_TRUE(logLevelsEmpty());
 }
 
+// Test setting and unsetting log levels
+TEST(LogTest_c, SetLevel_c)
+{
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_log_set_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_log_unset_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+}
+
+// Test setting and unsetting all log levels
+TEST(LogTest_c, SetAllLevels_c)
+{
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_INFO));
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_WARNING));
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_ERROR));
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_CRITICAL));
+
+    nexilis_log_set_all_levels();
+
+    EXPECT_TRUE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_INFO));
+    EXPECT_TRUE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_WARNING));
+    EXPECT_TRUE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_ERROR));
+    EXPECT_TRUE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_CRITICAL));
+
+    nexilis_log_unset_all_levels();
+
+    EXPECT_FALSE(nexilis_log_get_level(NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+}
+
 class SetLevelTest : public testing::TestWithParam<nexilis_logger_loglevel>
 {
 };

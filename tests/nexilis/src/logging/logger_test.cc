@@ -19,6 +19,42 @@ TEST(LoggerTest, DefaultValues)
     EXPECT_FALSE(logger.getLevel(LogLevel::Critical));
 }
 
+TEST(LoggerTest, SetLevel)
+{
+    Logger logger;
+    EXPECT_FALSE(logger.getLevel(LogLevel::Debug));
+    EXPECT_TRUE(logger.setLevel(LogLevel::Debug));
+    EXPECT_TRUE(logger.getLevel(LogLevel::Debug));
+    EXPECT_TRUE(logger.unsetLevel(LogLevel::Debug));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Debug));
+}
+
+TEST(LoggerTest, SetAllLevels)
+{
+    Logger logger;
+    EXPECT_FALSE(logger.getLevel(LogLevel::Debug));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Info));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Warning));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Error));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Critical));
+
+    logger.setAllLevels();
+
+    EXPECT_TRUE(logger.getLevel(LogLevel::Debug));
+    EXPECT_TRUE(logger.getLevel(LogLevel::Info));
+    EXPECT_TRUE(logger.getLevel(LogLevel::Warning));
+    EXPECT_TRUE(logger.getLevel(LogLevel::Error));
+    EXPECT_TRUE(logger.getLevel(LogLevel::Critical));
+
+    logger.unsetAllLevels();
+
+    EXPECT_FALSE(logger.getLevel(LogLevel::Debug));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Info));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Warning));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Error));
+    EXPECT_FALSE(logger.getLevel(LogLevel::Critical));
+}
+
 TEST(LoggerTest, ConsoleHandler)
 {
     Logger logger;

@@ -57,9 +57,19 @@ public:
         return log.setLevel(logLevel);
     }
 
+    static void setAllLevels()
+    {
+        log.setAllLevels();
+    }
+
     static bool unsetLevel(logger::LogLevel logLevel)
     {
         return log.unsetLevel(logLevel);
+    }
+
+    static void unsetAllLevels()
+    {
+        log.unsetAllLevels();
     }
 
     static bool getLevel(logger::LogLevel logLevel)

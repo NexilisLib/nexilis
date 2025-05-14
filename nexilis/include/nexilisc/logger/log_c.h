@@ -43,8 +43,14 @@ bool nexilis_log_no_handlers();
 /// Set a specific logging level.
 bool nexilis_log_set_level(nexilis_logger_loglevel logLevel);
 
+/// Set all logging levels.
+void nexilis_log_set_all_levels();
+
 /// Unset (disable) a specific logging level.
 bool nexilis_log_unset_level(nexilis_logger_loglevel logLevel);
+
+/// Unset all logging levels.
+void nexilis_log_unset_all_levels();
 
 /// Check if a logging level is enabled.
 bool nexilis_log_get_level(nexilis_logger_loglevel logLevel);

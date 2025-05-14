@@ -37,7 +37,9 @@ void nexilis_logger_critical(nexilis_logger_LoggerC* logger, const char* message
 
 // Set level functions.
 bool nexilis_logger_unset_level(nexilis_logger_LoggerC* logger, int level);
+void nexilis_logger_unset_all_levels(nexilis_logger_LoggerC* logger);
 bool nexilis_logger_set_level(nexilis_logger_LoggerC* logger, int level);
+void nexilis_logger_set_all_levels(nexilis_logger_LoggerC* logger);
 bool nexilis_logger_get_level(nexilis_logger_LoggerC* logger, int level);
 bool nexilis_logger_set_minimum_level(nexilis_logger_LoggerC* logger, int level);
 void nexilis_logger_set_log_level(nexilis_logger_LoggerC* logger, uint8_t level);

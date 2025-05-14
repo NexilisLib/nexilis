@@ -36,13 +36,27 @@ bool Logger::noHandlers()
 bool Logger::unsetLevel(const LogLevel& level)
 {
     std::lock_guard<std::mutex> lock(m_mtx);
-    return (m_logLevel &= static_cast<uint8_t>(~(1 << static_cast<uint8_t>(level))));
+    const uint8_t mask = (1 << static_cast<uint8_t>(level));
+    m_logLevel &= ~mask;
+    return (m_logLevel & mask) == 0;
+}
+
+void Logger::unsetAllLevels()
+{
+    std::lock_guard<std::mutex> lock(m_mtx);
+    m_logLevel = 0;
 }
 
 bool Logger::setLevel(const LogLevel& level)
 {
     std::lock_guard<std::mutex> lock(m_mtx);
     return (m_logLevel |= (1 << static_cast<uint8_t>(level)));
+}
+
+void Logger::setAllLevels()
+{
+    std::lock_guard<std::mutex> lock(m_mtx);
+    m_logLevel = static_cast<uint8_t>(-1);
 }
 
 bool Logger::getLevel(const LogLevel& level)

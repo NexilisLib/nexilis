@@ -96,13 +96,19 @@ public:
 
     /// Unset specific log level.
     /// \param level The log level to be unset.
-    /// \return If unsetting is successfull.
+    /// \return True, if unsetting is successfull.
     bool unsetLevel(const LogLevel& level);
+
+    /// Unset all log levels.
+    void unsetAllLevels();
 
     /// Set specific log level.
     /// \param level The log level to be set up.
-    /// \return If setting is successfull.
+    /// \return True, if setting is successfull.
     bool setLevel(const LogLevel& level);
+
+    /// Set all log levels.
+    void setAllLevels();
 
     /// Check if the given level is in use.
     /// \param level The level to be checked.

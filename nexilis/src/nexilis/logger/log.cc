@@ -20,12 +20,7 @@ void Log::startConsoleDebugging()
 
 void Log::stopLogging()
 {
-    log.unsetLevel(logger::LogLevel::Critical);
-    log.unsetLevel(logger::LogLevel::Error);
-    log.unsetLevel(logger::LogLevel::Warning);
-    log.unsetLevel(logger::LogLevel::Info);
-    log.unsetLevel(logger::LogLevel::Debug);
-
+    log.unsetAllLevels();
     clearHandlers();
 }
 

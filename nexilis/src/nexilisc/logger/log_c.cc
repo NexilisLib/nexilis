@@ -77,9 +77,19 @@ bool nexilis_log_set_level(nexilis_logger_loglevel logLevel)
     return nexilis::Log::setLevel(static_cast<nexilis::logger::LogLevel>(logLevel));
 }
 
+void nexilis_log_set_all_levels()
+{
+    nexilis::Log::setAllLevels();
+}
+
 bool nexilis_log_unset_level(nexilis_logger_loglevel logLevel)
 {
     return nexilis::Log::unsetLevel(static_cast<nexilis::logger::LogLevel>(logLevel));
+}
+
+void nexilis_log_unset_all_levels()
+{
+    nexilis::Log::unsetAllLevels();
 }
 
 bool nexilis_log_get_level(nexilis_logger_loglevel logLevel)

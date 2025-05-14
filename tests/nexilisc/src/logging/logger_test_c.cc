@@ -25,6 +25,47 @@ TEST(LoggerTest_c, DefaultValues_c)
     nexilis_logger_destroy(logger);
 }
 
+// Test setting and unsetting log levels
+TEST(LoggerTest_c, SetLevel_c)
+{
+    nexilis_logger_LoggerC* logger = nexilis_logger_create();
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_logger_set_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_logger_unset_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    nexilis_logger_destroy(logger);
+}
+
+// Test setting and unsetting all log levels
+TEST(LoggerTest_c, SetAllLevels_c)
+{
+    nexilis_logger_LoggerC* logger = nexilis_logger_create();
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_INFO));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_WARNING));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_ERROR));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_CRITICAL));
+
+    nexilis_logger_set_all_levels(logger);
+
+    EXPECT_TRUE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_TRUE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_INFO));
+    EXPECT_TRUE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_WARNING));
+    EXPECT_TRUE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_ERROR));
+    EXPECT_TRUE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_CRITICAL));
+
+    nexilis_logger_unset_all_levels(logger);
+
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_DEBUG));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_INFO));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_WARNING));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_ERROR));
+    EXPECT_FALSE(nexilis_logger_get_level(logger, NEXILIS_LOGGER_LOGLEVEL_CRITICAL));
+
+    nexilis_logger_destroy(logger);
+}
+
 TEST(LoggerTest_c, ConsoleHandler_c)
 {
     nexilis_logger_LoggerC* logger = nexilis_logger_create();

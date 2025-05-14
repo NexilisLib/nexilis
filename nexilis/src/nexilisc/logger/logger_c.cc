@@ -136,6 +136,14 @@ bool nexilis_logger_unset_level(nexilis_logger_LoggerC* logger, int level)
     return false;
 }
 
+void nexilis_logger_unset_all_levels(nexilis_logger_LoggerC* logger)
+{
+    if (logger)
+    {
+        logger->logger->unsetAllLevels();
+    }
+}
+
 bool nexilis_logger_set_level(nexilis_logger_LoggerC* logger, int level)
 {
     if (logger)
@@ -143,6 +151,14 @@ bool nexilis_logger_set_level(nexilis_logger_LoggerC* logger, int level)
         return logger->logger->setLevel(toLogLevel(level));
     }
     return false;
+}
+
+void nexilis_logger_set_all_levels(nexilis_logger_LoggerC* logger)
+{
+    if (logger)
+    {
+        logger->logger->setAllLevels();
+    }
 }
 
 bool nexilis_logger_get_level(nexilis_logger_LoggerC* logger, int level)
