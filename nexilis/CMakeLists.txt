@@ -60,6 +60,7 @@ set(SOURCES
     src/nexilis/logger/console_handler.cc
     src/nexilis/logger/logger.cc
     src/nexilis/logger/log.cc
+    src/nexilis/logger/file_log.cc
     src/nexilis/logger/loggable.cc
 
     # Server

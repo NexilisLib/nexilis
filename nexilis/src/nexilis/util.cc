@@ -302,6 +302,21 @@ std::filesystem::path Util::getNexilisTempPath()
     return nexilis_temp_dir;
 }
 
+void Util::deleteIfExists(const std::filesystem::path& filePath)
+{
+    try
+    {
+        if (std::filesystem::exists(filePath))
+        {
+            std::filesystem::remove(filePath);
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e)
+    {
+        std::cerr << "Filesystem error: " << e.what() << '\n';
+    }
+}
+
 std::string Util::getPortFilePath(Protocol::Type protocol_type)
 {
     std::filesystem::path port_file = getNexilisTempPath() /
@@ -376,16 +391,7 @@ std::optional<uint16_t> Util::readPortFromFile(Protocol::Type protocol_type)
 void Util::cleanupPortFile(Protocol::Type protocol_type)
 {
     std::string file_path = getPortFilePath(protocol_type);
-    try
-    {
-        if (std::filesystem::exists(file_path))
-        {
-            std::filesystem::remove(file_path);
-        }
-    }
-    catch (...)
-    {
-    }
+    deleteIfExists(file_path);
 }
 
 } // namespace nexilis

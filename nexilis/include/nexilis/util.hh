@@ -142,10 +142,11 @@ public:
     /// Other
     static std::string getDateAndTime();
 
-    /// \defgroup PortHandling
-
-    /// \ingroup PortHandling
+    /// File stuff
+    static void deleteIfExists(const std::filesystem::path& filePath);
     static std::filesystem::path getNexilisTempPath();
+
+    /// \defgroup PortHandling
 
     /// \ingroup PortHandling
     static std::string getPortFilePath(Protocol::Type protocol_type);
