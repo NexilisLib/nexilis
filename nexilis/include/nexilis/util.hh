@@ -53,6 +53,9 @@ public:
     /// Convert nx_data to string.
     static std::string convertToString(nx_data bytes);
 
+    /// Convert nx_data to number values.
+    static std::string convertToNumbers(const nx_data& bytes);
+
     /// Convert nx_data to Vec2f.
     static Vector2f convertToVector2(const nx_data& bytes);
 

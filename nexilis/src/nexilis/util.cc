@@ -26,6 +26,17 @@ std::string Util::convertToString(nx_data bytes)
     return result;
 }
 
+std::string Util::convertToNumbers(const nx_data& bytes)
+{
+    std::stringstream ss;
+    for (uint8_t byte : bytes)
+    {
+        ss << std::hex << static_cast<int>(byte) << " ";
+    }
+    ss << std::dec << std::endl;
+    return ss.str();
+}
+
 Vector2f Util::convertToVector2(const nx_data& bytes)
 {
     // Ensure the vector has enough bytes for two floats

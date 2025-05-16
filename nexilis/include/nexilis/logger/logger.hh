@@ -126,12 +126,6 @@ public:
     void setLogLevel(uint8_t logLevel);
 
 private:
-    template <typename T>
-    static void addToStringStream(std::stringstream& ss, const T& data)
-    {
-        ss << data;
-    }
-
     template <typename T, typename... Args>
     void concatAndEmit(const LogLevel& logLevel, const T& data, const Args&... args)
     {
@@ -144,29 +138,31 @@ private:
         // Concat arguments.
         std::stringstream ss;
 
-        if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>)
+        auto processArg = [&ss](const auto& arg)
         {
-            if (!data)
+            using ArgType = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<ArgType, nx_data>)
             {
-                emitLog(logLevel, "Invalid null string passed to logger");
-                return;
+                ss << std::string_view(Util::convertToString(arg));
             }
-            if constexpr (std::is_same_v<T, nx_data>)
+            else if constexpr (std::is_convertible_v<ArgType, std::string_view>)
             {
-                ss << std::string_view(Util::convertToString(data));
+                // For string-like types that can be converted to string_view.
+                ss << std::string_view(arg);
             }
             else
             {
-                ss << std::string_view(data);
+                // For all other types.
+                ss << arg;
             }
-        }
-        else
-        {
-            ss << data;
-        }
+        };
 
-        int unused[] = {0, (addToStringStream(ss, args), 0)...};
-        (void)unused;
+        // Process the first argument.
+        processArg(data);
+
+        // Process the remaining arguments.
+        (processArg(args), ...);
 
         emitLog(logLevel, ss.str());
     }
