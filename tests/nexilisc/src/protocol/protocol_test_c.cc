@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <nexilisc/logger/log_c.h>
+#include <nexilisc/nx_data_c.h>
 #include <nexilisc/protocol_manager_c.h>
 #include <nexilisc/server/settings_c.h>
 
@@ -80,6 +81,24 @@ protected:
         sleep(1);
     }
 
+    void stopClient(Client* client)
+    {
+        stop_client(client);
+        sleep(1);
+    }
+
+    void destroyClient(Client* client)
+    {
+        destroy_client(client);
+        sleep(1);
+    }
+
+    void destroyServer(Server* server)
+    {
+        destroy_server(server);
+        sleep(1);
+    }
+
     void createDefaultServerData()
     {
         server_data = nexilis_server_data_create();
@@ -113,6 +132,11 @@ protected:
         set_address(this->server_data, "127.0.0.1");
     }
 
+    void sendMessage(nx_data_c* data)
+    {
+        send_message(client, data->data->data(), data->data->size());
+    }
+
     // Function pointers for polymorphic behavior.
     Server* (*create_server_func)(nexilis_ProtocolManagerC*, nexilis_server_SettingsC*);
     void (*start_server)(Server*);
@@ -125,6 +149,7 @@ protected:
     void (*destroy_client)(Client*);
     bool (*is_connected)(Client*);
     void (*set_address)(nexilis_ServerData*, const char*);
+    void (*send_message)(Client*, const uint8_t*, size_t);
 
     Server* server = nullptr;
     Client* client = nullptr;
@@ -179,6 +204,7 @@ protected:
         this->destroy_client = nexilis_boost_tcp_client_destroy;
         this->is_connected = nexilis_boost_tcp_client_is_connected;
         this->set_address = nexilis_server_data_set_boost_tcp;
+        this->send_message = nexilis_boost_tcp_client_send_message;
     }
 };
 
@@ -210,7 +236,7 @@ protected:
         nexilis::server::RoomStorage::add(std::move(room));
         EXPECT_TRUE(nexilis::server::RoomStorage::contains(id));
         EXPECT_TRUE(nexilis::server::RoomStorage::getRoomById(id) != nullptr);
-        
+
         this->serverStart();
         this->createDefaultServerData();
         this->setAddress();

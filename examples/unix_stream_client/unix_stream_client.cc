@@ -9,9 +9,9 @@
 
 #include <iostream>
 
-nexilis::client::ClientAPI::ServerData getServerData(const std::string& address, const std::string& username)
+nexilis::client::ServerData getServerData(const std::string& address, const std::string& username)
 {
-    nexilis::client::ClientAPI::ServerData serverData;
+    nexilis::client::ServerData serverData;
     serverData.setPassword("salasana");
     serverData.setUserName(username);
     serverData.setUnixStreamServerPath(address);

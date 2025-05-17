@@ -25,7 +25,7 @@ protected:
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         // Set up the client
-        nexilis::client::ClientAPI::ServerData server_data;
+        nexilis::client::ServerData server_data;
         server_data.setPassword("salasana");
         server_data.setUserName("example_user");
         server_data.setBoostTCP("127.0.0.1");

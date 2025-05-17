@@ -86,7 +86,7 @@ protected:
     std::shared_ptr<Client> client;
 
     nexilis::server::Settings settings;
-    nexilis::client::ClientAPI::ServerData server_data;
+    nexilis::client::ServerData server_data;
     std::unique_ptr<nexilis::client::ClientAPI> api;
 };
 
