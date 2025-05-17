@@ -16,7 +16,7 @@ nx_data_c nexilis_nx_data_create_from(const uint8_t* data, uint64_t size)
     auto* vec = new nexilis::nx_data(size);
     if (data && size > 0)
     {
-        memcpy(result.data->data(), data, size);
+        memcpy(vec->data(), data, size);
     }
     result.data = vec;
     return result;
