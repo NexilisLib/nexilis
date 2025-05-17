@@ -81,6 +81,7 @@ set(SOURCES
     src/nexilis/server/protocol/af_unix/stream_server.cc
 
     # Client
+    src/nexilis/client/server_data.cc
     src/nexilis/client/client_api.cc
     src/nexilis/client/client_protocol.cc
     src/nexilis/client/packet.cc
@@ -118,6 +119,7 @@ set(SOURCES
     src/nexilisc/server/settings_c.cc
 
     src/nexilisc/client/client_api_c.cc
+    src/nexilisc/client/server_data_c.cc
     src/nexilisc/client/packet_c.cc
 
     src/nexilisc/server/protocol/unix_stream_server_c.cc
