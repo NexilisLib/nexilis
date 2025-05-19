@@ -2,6 +2,8 @@
 #define NEXILISC_CLIENT_API_C_H
 
 #include <nexilisc/client/server_data_c.h>
+#include <nexilisc/client/rooms_collection.h>
+
 #include <nexilis/client/client_api.hh>
 
 #ifdef __cplusplus
@@ -36,6 +38,8 @@ const char* nexilis_client_api_get_boost_tcp_server_address(const nexilis_Client
 const char* nexilis_client_api_get_boost_udp_server_address(const nexilis_ClientAPI* client_api);
 const char* nexilis_client_api_get_unix_dgram_path(const nexilis_ClientAPI* client_api);
 const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* client_api);
+
+const nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api);
 
 #ifdef __cplusplus
 }

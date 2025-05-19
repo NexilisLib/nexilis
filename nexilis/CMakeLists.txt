@@ -124,6 +124,7 @@ set(SOURCES
     src/nexilisc/client/server_data_c.cc
     src/nexilisc/client/packet_c.cc
     src/nexilisc/client/room_c.cc
+    src/nexilisc/client/rooms_collection.cc
 
     src/nexilisc/server/protocol/unix_stream_server_c.cc
     src/nexilisc/server/protocol/boost_tcp_server_c.cc

@@ -4,16 +4,30 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <nexilisc/room_data_c.h>
+
+#include <nexilis/client/room.hh>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// Read only room handle.
+struct nexilis_ConstRoom
+{
+    const nexilis::client::Room* room;
+};
+
+// Mutable room handle.
+struct nexilis_Room
+{
+    nexilis::client::Room* room;
+};
+
 typedef struct nexilis_Communication nexilis_Communication;
-typedef struct nexilis_Room nexilis_Room;
 typedef struct nexilis_ClientSession nexilis_ClientSession;
 
-
-//nexilis_Room* nexilis_room_create(const char* room_data, nexilis_ClientSession** clients, size_t num_clients);
+nexilis_Room* nexilis_room_create(const char* room_data, nexilis_ClientSession** clients, size_t num_clients);
 void nexilis_room_destroy(nexilis_Room* room);
 void nexilis_room_add_client(nexilis_Room* room, nexilis_ClientSession* client);
 void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id);

@@ -262,3 +262,11 @@ const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* cli
     }
     return nullptr;
 }
+
+const nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api)
+{
+    static nexilis_RoomsCollection collection;
+    collection.rooms = &client_api->api->getActiveRooms();
+    return &collection;
+}
+

@@ -7,17 +7,11 @@ struct nexilis_ClientSession
     nexilis::client::ClientSession* session;
 };
 
-struct nexilis_Room
-{
-    nexilis::client::Room* room;
-};
-
 struct nexilis_Communication
 {
     nexilis::client::Room::Communication* communication;
 };
 
-/*
 nexilis_Room* nexilis_room_create(nexilis_ClientSession** clients, size_t num_clients, uint64_t creator_id, const char* name, nexilis_RoomContext context, uint32_t max_size)
 {
     std::vector<nexilis::client::ClientSession> client_sessions;
@@ -31,9 +25,11 @@ nexilis_Room* nexilis_room_create(nexilis_ClientSession** clients, size_t num_cl
 
     auto room = new nexilis_Room();
     room->room = new nexilis::client::Room(*room_data->data, std::move(client_sessions));
+
+    delete room_data;
+    delete room_data->data;
     return room;
 }
-*/
 
 void nexilis_room_destroy(nexilis_Room* room)
 {
