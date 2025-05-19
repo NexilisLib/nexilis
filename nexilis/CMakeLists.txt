@@ -84,7 +84,9 @@ set(SOURCES
     src/nexilis/client/server_data.cc
     src/nexilis/client/client_api.cc
     src/nexilis/client/client_protocol.cc
+    src/nexilis/client/client_session.cc
     src/nexilis/client/packet.cc
+    src/nexilis/client/room.cc
 
     # Client protocols
     src/nexilis/client/protocol/nxboost/tcp_client.cc
@@ -121,6 +123,7 @@ set(SOURCES
     src/nexilisc/client/client_api_c.cc
     src/nexilisc/client/server_data_c.cc
     src/nexilisc/client/packet_c.cc
+    src/nexilisc/client/room_c.cc
 
     src/nexilisc/server/protocol/unix_stream_server_c.cc
     src/nexilisc/server/protocol/boost_tcp_server_c.cc

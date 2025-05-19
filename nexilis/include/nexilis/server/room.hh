@@ -1,5 +1,5 @@
-#ifndef NEXILIS_ROOM_HH
-#define NEXILIS_ROOM_HH
+#ifndef NEXILIS_SERVER_ROOM_HH
+#define NEXILIS_SERVER_ROOM_HH
 
 #include <nexilis/base_room.hh>
 #include <nexilis/object/object2d.hh>

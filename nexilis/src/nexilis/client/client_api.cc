@@ -1,4 +1,5 @@
 #include <nexilis/client/client_api.hh>
+#include <nexilis/client/client_session.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/json.hh>
 #include <nexilis/logger/log.hh>
@@ -8,134 +9,6 @@
 
 namespace nexilis::client
 {
-
-// ClientAPI::ClientSession
-ClientAPI::ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI)
-    : BaseClient(id),
-      m_clientAPI(clientAPI)
-{
-}
-
-ClientAPI::ClientSession::ClientSession(ClientSession&& other)
-    : BaseClient(std::move(other)),
-      m_clientAPI(std::move(other.m_clientAPI))
-{
-}
-
-ClientAPI::ClientSession& ClientAPI::ClientSession::operator=(ClientSession&& other)
-{
-    if (this != &other)
-    {
-        BaseClient::operator=(std::move(other));
-    }
-    return *this;
-}
-
-bool operator==(const ClientAPI::ClientSession& lhs, const ClientAPI::ClientSession& rhs)
-{
-    return lhs.getId() == rhs.getId() &&
-           lhs.getUsername() == rhs.getUsername();
-}
-
-// ClientAPI::Room::Communication
-ClientAPI::Room::Communication::Communication(const std::string& payload, ClientAPI::ClientSession* client)
-    : m_payload(payload),
-      m_client(client),
-      m_id(Util::getRandomUint64())
-{
-}
-
-ClientAPI::Room::Communication::Communication(const Communication& other)
-    : m_payload(other.m_payload),
-      m_client(other.m_client),
-      m_id(other.m_id)
-{
-}
-
-ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(const Communication& other)
-{
-    if (this != &other)
-    {
-        m_payload = other.m_payload;
-        m_client = other.m_client;
-        m_id = other.m_id;
-    }
-    return *this;
-}
-
-ClientAPI::Room::Communication::Communication(Communication&& other)
-    : m_payload(std::move(other.m_payload)),
-      m_client(std::move(other.m_client)),
-      m_id(std::move(other.m_id))
-
-{
-}
-
-ClientAPI::Room::Communication& ClientAPI::Room::Communication::operator=(Communication&& other)
-{
-    if (this != &other)
-    {
-        m_payload = std::move(other.m_payload);
-        m_client = std::move(other.m_client);
-        m_id = std::move(other.m_id);
-    }
-    return *this;
-}
-
-bool operator==(const ClientAPI::Room::Communication& lhs, const ClientAPI::Room::Communication& rhs)
-{
-    return lhs.getPayload() == rhs.getPayload() &&
-           lhs.getClient() == rhs.getClient() &&
-           lhs.getId() == rhs.getId();
-}
-
-// ClientAPI::Room
-ClientAPI::Room::Room(Room&& other)
-    : BaseRoom(std::move(other)),
-      m_clients(std::move(other.m_clients)),
-      m_roomMessages(std::move(other.m_roomMessages))
-{
-}
-
-ClientAPI::Room& ClientAPI::Room::operator=(Room&& other)
-{
-    if (this != &other)
-    {
-        m_clients = std::move(other.m_clients);
-        m_roomMessages = std::move(other.m_roomMessages);
-    }
-    return *this;
-}
-
-ClientAPI::Room::Room(const RoomData& roomData, std::vector<ClientSession>&& clients)
-    : BaseRoom(roomData),
-      m_clients(std::move(clients))
-{
-}
-
-bool operator==(const ClientAPI::Room& lhs, const ClientAPI::Room& rhs)
-{
-    return lhs.getClients() == rhs.getClients() &&
-           lhs.getMessages() == rhs.getMessages();
-}
-
-bool ClientAPI::Room::containsCommunication(const Room::Communication& communication)
-{
-    return std::find(m_roomMessages.begin(), m_roomMessages.end(), communication) != m_roomMessages.end();
-}
-
-bool ClientAPI::Room::containsCommunication(uint64_t communicationId)
-{
-    auto idComparator = [communicationId](const Communication& item)
-    {
-        return item.getId() == communicationId;
-    };
-    return std::find_if(m_roomMessages.begin(), m_roomMessages.end(), idComparator) != m_roomMessages.end();
-}
-
-///
-/// ClientAPI
-///
 
 ClientAPI::ClientAPI(ServerData data)
     : m_data(data)
@@ -691,7 +564,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         uint64_t creatorId = readUint64(room, "creatorId");
                         uint64_t id = readUint64(room, "id");
 
-                        std::vector<ClientAPI::ClientSession> roomClients;
+                        std::vector<ClientSession> roomClients;
 
                         if (room.as_object().find("clients") != room.as_object().end())
                         {
@@ -708,7 +581,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 float dimension2DX = readFloat(client, "roomDimensionX");
                                 float dimension2DY = readFloat(client, "roomDimensionY");
 
-                                ClientAPI::ClientSession newClient(client_id, this);
+                                ClientSession newClient(client_id, this);
                                 Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
                                 newClient.getObject2D().setPosition({object2DX, object2DY});
                                 newClient.getObject2D().setDimensions({dimension2DX, dimension2DY});
