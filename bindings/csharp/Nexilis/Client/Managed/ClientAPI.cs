@@ -20,6 +20,15 @@ namespace Nexilis.Client
         /// </summary>
         public IntPtr ClientApiPtr => _clientApiPtr;
 
+        /// <symmary>
+        /// Get active rooms from the server.
+        /// </symmary>
+        public RoomsCollection GetActiveRooms()
+        {
+            var ptr = ClientAPINative.nexilis_client_api_get_active_rooms(_clientApiPtr);
+            return new RoomsCollection(ptr);
+        }
+
         /// <summary>
         /// Releases the resources used by the <see cref="ClientAPI"/>.
         /// </summary>

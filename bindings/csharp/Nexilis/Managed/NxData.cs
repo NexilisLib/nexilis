@@ -42,31 +42,15 @@ namespace Nexilis
             {
                 throw new ArgumentNullException(nameof(rawData));
             }
-            return new NxData(rawData);
-        }
-
-        public static NxData Create(ulong size)
-        {
-            if (size == 0)
+            try
             {
-                throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero.");
+                var size = RawNxDataNative.nexilis_nx_data_get_size(ref rawData);
+                if (size == 0) throw new InvalidOperationException("Invalid data size");
             }
-
-            RawNxData rawData = RawNxDataNative.nexilis_nx_data_create(size);
-            return new NxData(rawData);
-        }
-
-        public static NxData Create(byte[] data)
-        {
-            if (data == null || data.Length == 0)
+            catch (Exception ex)
             {
-                throw new ArgumentNullException(nameof(data));
+                throw new ArgumentException("Invalid RawNxData", nameof(rawData), ex);
             }
-
-            IntPtr dataPtr = Marshal.AllocHGlobal(data.Length);
-            Marshal.Copy(data, 0, dataPtr, data.Length);
-            RawNxData rawData = RawNxDataNative.nexilis_nx_data_create_from(dataPtr, (ulong)data.Length);
-            Marshal.FreeHGlobal(dataPtr);
             return new NxData(rawData);
         }
 

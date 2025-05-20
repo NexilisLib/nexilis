@@ -29,8 +29,12 @@ typedef struct nexilis_ClientSession nexilis_ClientSession;
 
 nexilis_Room* nexilis_room_create(const char* room_data, nexilis_ClientSession** clients, size_t num_clients);
 void nexilis_room_destroy(nexilis_Room* room);
+
+uint64_t nexilis_room_get_id(nexilis_ConstRoom* room);
+
 void nexilis_room_add_client(nexilis_Room* room, nexilis_ClientSession* client);
 void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id);
+
 nexilis_ClientSession** nexilis_room_get_clients(const nexilis_Room* room, size_t* num_clients);
 void nexilis_room_add_message(nexilis_Room* room, nexilis_Communication* communication);
 nexilis_Communication** nexilis_room_get_messages(const nexilis_Room* room, size_t* num_messages);

@@ -2,12 +2,14 @@
 
 size_t nexilis_rooms_collection_rooms_count(const nexilis_RoomsCollection* collection)
 {
-    return collection ? collection->rooms->size() : 0;
+    if (!collection || collection->rooms)
+        return 0;
+    return collection->rooms->size();
 }
 
 const nexilis_ConstRoom* nexilis_rooms_collection_rooms_get(const nexilis_RoomsCollection* collection, size_t index)
 {
-    if (!collection || index >= collection->rooms->size())
+    if (!collection || !collection->rooms || index >= collection->rooms->size())
     {
         return nullptr;
     }
@@ -16,4 +18,12 @@ const nexilis_ConstRoom* nexilis_rooms_collection_rooms_get(const nexilis_RoomsC
     static thread_local nexilis_ConstRoom room_wrapper;
     room_wrapper.room = &(*collection->rooms)[index];
     return &room_wrapper;
+}
+
+void nexilis_rooms_collection_free(nexilis_RoomsCollection* collection)
+{
+    if (collection)
+    {
+        delete collection;
+    }
 }

@@ -44,6 +44,15 @@ void nexilis_room_destroy(nexilis_Room* room)
     }
 }
 
+uint64_t nexilis_room_get_id(nexilis_ConstRoom* room)
+{
+    if (room && room->room)
+    {
+        return room->room->getId();
+    }
+    return 0;
+}
+
 void nexilis_room_add_client(nexilis_Room* room, nexilis_ClientSession* client)
 {
     if (room && room->room && client && client->session)

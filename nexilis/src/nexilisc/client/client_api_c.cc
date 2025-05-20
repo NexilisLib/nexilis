@@ -1,3 +1,4 @@
+#include <nexilis/logger/file_log.hh>
 #include <nexilisc/client/client_api_c.h>
 #include <nexilisc/room_data_c.h>
 
@@ -263,10 +264,10 @@ const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* cli
     return nullptr;
 }
 
-const nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api)
+nexilis_RoomsCollection nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api)
 {
     static nexilis_RoomsCollection collection;
     collection.rooms = &client_api->api->getActiveRooms();
-    return &collection;
+    nexilis::FileLog::debug("Rooms amount: ", collection.rooms->size());
+    return collection;
 }
-

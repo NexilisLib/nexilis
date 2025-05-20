@@ -34,5 +34,8 @@ namespace Nexilis.Client
         public static extern string nexilis_client_api_get_boost_tcp_server_address(IntPtr client_api);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern string nexilis_client_api_get_boost_udp_server_address(IntPtr client_api);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr nexilis_client_api_get_active_rooms(IntPtr client_api);
     }
 }

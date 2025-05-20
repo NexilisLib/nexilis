@@ -16,6 +16,7 @@ struct nexilis_RoomsCollection
 
 size_t nexilis_rooms_collection_rooms_count(const nexilis_RoomsCollection* collection);
 const nexilis_ConstRoom* nexilis_rooms_collection_rooms_get(const nexilis_RoomsCollection* collection, size_t index);
+void nexilis_rooms_collection_free(nexilis_RoomsCollection* collection);
 
 #ifdef __cplusplus
 }

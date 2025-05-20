@@ -20,8 +20,14 @@ namespace Nexilis.Client
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_info_rooms();
+
+
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexilis_packet_info_rooms_out(ref RawNxData result);
+        public static extern RawNxData nexilis_packet_room_management_join(ulong roomId);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_room_management_leave();
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_room_management_create(RoomContext context, string roomName);
 
         public static NxData InfoRooms()
         {
@@ -34,6 +40,19 @@ namespace Nexilis.Client
                 }
                 return NxData.Create(raw);
             }, "InfoRooms");
+        }
+
+        public static NxData RoomManagementCreate(RoomContext context, string roomName)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = nexilis_packet_room_management_create(context, roomName);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room management create.");
+                }
+                return NxData.Create(raw);
+            }, "RoomManagementCreate");
         }
     }
 }
