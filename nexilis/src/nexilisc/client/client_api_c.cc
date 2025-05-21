@@ -264,10 +264,10 @@ const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* cli
     return nullptr;
 }
 
-nexilis_RoomsCollection nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api)
+nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api)
 {
-    static nexilis_RoomsCollection collection;
-    collection.rooms = &client_api->api->getActiveRooms();
-    nexilis::FileLog::debug("Rooms amount: ", collection.rooms->size());
+    auto* collection = new nexilis_RoomsCollection;
+    collection->rooms = &client_api->api->getActiveRooms();
+    nexilis::FileLog::debug("Rooms amount: ", collection->rooms->size());
     return collection;
 }
