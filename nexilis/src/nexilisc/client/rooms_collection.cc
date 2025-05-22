@@ -2,8 +2,10 @@
 
 size_t nexilis_rooms_collection_rooms_count(const nexilis_RoomsCollection* collection)
 {
-    if (!collection || collection->rooms)
+    if (!collection || !collection->rooms)
+    {
         return 0;
+    }
     return collection->rooms->size();
 }
 
