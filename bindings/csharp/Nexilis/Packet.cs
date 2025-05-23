@@ -54,5 +54,17 @@ namespace Nexilis.Client
                 return NxData.Create(raw);
             }, "RoomManagementCreate");
         }
+        public static NxData RoomManagementJoin(ulong roomId)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = nexilis_packet_room_management_join(roomId);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room management join.");
+                }
+                return NxData.Create(raw);
+            }, "RoomManagementJoin");
+        }
     }
 }

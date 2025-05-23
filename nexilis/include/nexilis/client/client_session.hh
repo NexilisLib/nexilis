@@ -14,6 +14,9 @@ public:
     /// Constuctor.
     ClientSession(uint64_t id, ClientAPI* clientAPI);
 
+    /// Virtual destructor.
+    virtual ~ClientSession() = default;
+
     /// Move constructor.
     ClientSession(ClientSession&& other);
 
