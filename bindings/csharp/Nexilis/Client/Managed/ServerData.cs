@@ -63,6 +63,16 @@ namespace Nexilis.Client
         }
 
         /// <summary>
+        /// Sets the username for the server data.
+        /// </summary>
+        /// <param name="username">The username to set.</param>
+        public ServerData Username(string username)
+        {
+            ServerDataNative.nexilis_server_data_set_username(_serverDataPtr, username);
+            return this;
+        }
+
+        /// <summary>
         /// Gets the username from the server data.
         /// </summary>
         /// <returns>The username from the server data.</returns>
@@ -81,6 +91,16 @@ namespace Nexilis.Client
         }
 
         /// <summary>
+        /// Sets the password for the server data.
+        /// </summary>
+        /// <param name="password">The password to set.</param>
+        public ServerData Password(string password)
+        {
+            ServerDataNative.nexilis_server_data_set_password(_serverDataPtr, password);
+            return this;
+        }
+
+        /// <summary>
         /// Gets the password from the server data.
         /// </summary>
         /// <returns>The password from the server data.</returns>
@@ -93,16 +113,26 @@ namespace Nexilis.Client
         /// Sets the Boost TCP server address for the server data.
         /// </summary>
         /// <param name="address">The Boost TCP server address to set.</param>
-        public void SetBoostTcp(string address)
+        public void SetBoostTCP(string address)
         {
             ServerDataNative.nexilis_server_data_set_boost_tcp(_serverDataPtr, address);
+        }
+
+        /// <summary>
+        /// Sets the Boost TCP server address for the server data.
+        /// </summary>
+        /// <param name="address">The Boost TCP server address to set.</param>
+        public ServerData BoostTCP(string address)
+        {
+            ServerDataNative.nexilis_server_data_set_boost_tcp(_serverDataPtr, address);
+            return this;
         }
 
         /// <summary>
         /// Gets the Boost TCP server address from the server data.
         /// </summary>
         /// <returns>The Boost TCP server address from the server data.</returns>
-        public string GetBoostTcpServerAddress()
+        public string GetBoostTCPServerAddress()
         {
             return ServerDataNative.nexilis_server_data_get_boost_tcp_server_adress(_serverDataPtr);
         }
@@ -111,9 +141,19 @@ namespace Nexilis.Client
         /// Sets the Boost UDP server address for the server data.
         /// </summary>
         /// <param name="address">The Boost UDP server address to set.</param>
-        public void SetBoostUdp(string address)
+        public void SetBoostUDP(string address)
         {
             ServerDataNative.nexilis_server_data_set_boost_udp(_serverDataPtr, address);
+        }
+
+        /// <summary>
+        /// Sets the Boost UDP server address for the server data.
+        /// </summary>
+        /// <param name="address">The Boost UDP server address to set.</param>
+        public ServerData BoostUDP(string address)
+        {
+            ServerDataNative.nexilis_server_data_set_boost_udp(_serverDataPtr, address);
+            return this;
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ public class NxLogger : IDisposable
 
     // Logging callback.
     private Action<Logger.LogLevel, string>? _logCallback;
-    
+
     private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
     private bool _disposed = false;
     private string _logContext;
