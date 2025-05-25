@@ -1,7 +1,8 @@
 #ifndef NEXILIS_VECTOR3_HH
 #define NEXILIS_VECTOR3_HH
 
-#include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_data.hh>
+#include <nexilis/types/vector.hh>
 
 #include <cstring>
 #include <stdexcept>
@@ -10,22 +11,30 @@ namespace nexilis
 {
 
 template <typename T>
-class Vector3
+class Vector3 : public Vector<T>
 {
 public:
+    T x, y, z;
+
     /// Constructor.
     /// \param x The x value of the vector3.
     /// \param y The y value of the vector3.
     /// \param z The z value of the vector3.
     Vector3(T x, T y, T z)
-        : m_x(x), m_y(y), m_z(z)
+        : x(x), y(y), z(z)
     {
     }
 
     /// Default constructor.
     Vector3()
-        : m_x(0), m_y(0), m_z(0)
+        : x(0), y(0), z(0)
     {
+    }
+
+    /// Vector::getType implementation.
+    VectorType getType() override
+    {
+        return VectorType::vector3;
     }
 
     nx_data serialize() const
@@ -33,9 +42,9 @@ public:
         nx_data serializedData;
 
         // Convert each component into bytes.
-        uint32_t xBytes = *reinterpret_cast<const uint32_t*>(&m_x);
-        uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&m_y);
-        uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&m_z);
+        uint32_t xBytes = *reinterpret_cast<const uint32_t*>(&x);
+        uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&y);
+        uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&z);
 
         // Add component bytes to the serialized data.
         serializedData.insert(serializedData.end(), reinterpret_cast<const uint8_t*>(&xBytes),
@@ -61,18 +70,13 @@ public:
         uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&data[sizeof(uint32_t)]);
         uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&data[sizeof(uint32_t) * 2]);
 
-        float x, y, z;
-        std::memcpy(&x, &xBytes, sizeof(float));
-        std::memcpy(&y, &yBytes, sizeof(float));
-        std::memcpy(&z, &zBytes, sizeof(float));
+        float _x, _y, _z;
+        std::memcpy(&_x, &xBytes, sizeof(float));
+        std::memcpy(&_y, &yBytes, sizeof(float));
+        std::memcpy(&_z, &zBytes, sizeof(float));
 
-        return Vector3(x, y, z);
+        return Vector3(_x, _y, _z);
     }
-
-private:
-    T m_x;
-    T m_y;
-    T m_z;
 };
 
 using Vector3f = Vector3<float>;

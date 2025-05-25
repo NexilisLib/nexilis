@@ -38,9 +38,9 @@ public:
         return !(lhs == rhs);
     }
 
-    void setUsername(const std::string& username)
+    void setUsername(const std::string& newUsername)
     {
-        BaseClient::setUsername(username);
+        BaseClient::setBaseUsername(newUsername);
     }
 
 private:

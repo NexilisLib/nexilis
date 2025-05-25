@@ -30,19 +30,24 @@ public:
     /// Deleted copy assignment operator.
     BaseClient& operator=(const BaseClient& other) = delete;
 
-    virtual uint64_t getId() const
+    uint64_t getId() const
     {
         return m_id;
     }
 
-    virtual std::string getUsername() const
+    std::string getUsername() const
     {
         return m_username;
     }
 
-    virtual Object2D& getObject2D()
+    Object2D& getObject2D()
     {
         return m_object2D;
+    }
+
+    Object3D& getObject3D()
+    {
+        return m_object3D;
     }
 
 protected:
@@ -51,7 +56,7 @@ protected:
         m_id = id;
     }
 
-    void setUsername(const std::string& username)
+    void setBaseUsername(const std::string& username)
     {
         m_username = username;
     }
@@ -60,6 +65,7 @@ private:
     uint64_t m_id;
     std::string m_username;
     Object2D m_object2D;
+    Object3D m_object3D;
 };
 
 } // namespace nexilis

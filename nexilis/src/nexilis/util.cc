@@ -44,16 +44,29 @@ Vector2f Util::convertToVector2(const nx_data& bytes)
     {
         throw std::invalid_argument("The input vector does not contain enough bytes for two floats.");
     }
-
-    // Variables to hold the float values
-    float float1, float2;
+    float x, y;
 
     // Copy the first 4 bytes.
-    memcpy(&float1, bytes.data(), sizeof(float));
+    memcpy(&x, bytes.data(), sizeof(float));
     // Copy the next 4 bytes.
-    memcpy(&float2, bytes.data() + sizeof(float), sizeof(float));
+    memcpy(&y, bytes.data() + sizeof(float), sizeof(float));
 
-    return Vector2f(float1, float2);
+    return Vector2f(x, y);
+}
+
+Vector3f Util::convertToVector3(const nx_data& bytes)
+{
+    if (bytes.size() < sizeof(float) * 3)
+    {
+        throw std::invalid_argument("The input vector does not contain enough bytes for three floats");
+    }
+    float x, y, z;
+
+    memcpy(&x, bytes.data(), sizeof(float));
+    memcpy(&y, bytes.data() + sizeof(float), sizeof(float));
+    memcpy(&z, bytes.data() + sizeof(float) * 2, sizeof(float));
+
+    return Vector3f(x, y, z);
 }
 
 uint16_t Util::uint8PairToUint16(uint8_t lowByte, uint8_t highByte)

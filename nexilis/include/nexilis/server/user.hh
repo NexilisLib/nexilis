@@ -82,7 +82,7 @@ public:
 
     void setUsername(const std::string& username)
     {
-        BaseClient::setUsername(username);
+        BaseClient::setBaseUsername(username);
     }
 
     /// Protocol specific stuff.

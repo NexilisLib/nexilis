@@ -1,6 +1,8 @@
 #ifndef NEXILIS_VECTOR2_HH
 #define NEXILIS_VECTOR2_HH
 
+#include <nexilis/types/vector.hh>
+
 #include <cmath>
 #include <cstdint>
 
@@ -8,8 +10,9 @@ namespace nexilis
 {
 
 template <typename T>
-struct Vector2
+class Vector2 : public Vector<T>
 {
+public:
     T x;
     T y;
 
@@ -27,6 +30,12 @@ struct Vector2
         : x(static_cast<T>(vec.x)),
           y(static_cast<T>(vec.y))
     {
+    }
+
+    /// Vector::getType implementation.
+    VectorType getType() override
+    {
+        return VectorType::vector2;
     }
 
     bool operator!=(const Vector2<T>& rhs) const

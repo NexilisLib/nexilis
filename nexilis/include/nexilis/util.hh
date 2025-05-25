@@ -7,6 +7,7 @@
 #include <nexilis/protocol.hh>
 #include <nexilis/server/config.hh>
 #include <nexilis/types/vector2.hh>
+#include <nexilis/types/vector3.hh>
 
 #include <boost/json/object.hpp>
 
@@ -58,6 +59,9 @@ public:
 
     /// Convert nx_data to Vec2f.
     static Vector2f convertToVector2(const nx_data& bytes);
+
+    /// Convert nx_data to Vector3f
+    static Vector3f convertToVector3(const nx_data& bytes);
 
     /// Return uint16_t from two bytes.
     static uint16_t uint8PairToUint16(uint8_t lowByte, uint8_t highByte);
@@ -130,6 +134,9 @@ public:
 
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(Vector2f value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(Vector3f value);
 
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(const std::string& value);

@@ -268,6 +268,6 @@ nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_Clien
 {
     auto* collection = new nexilis_RoomsCollection;
     collection->rooms = &client_api->api->getActiveRooms();
-    nexilis::FileLog::debug("Rooms amount: ", collection->rooms->size());
+    nexilis::FileLog::debug("Rooms amount in C: ", collection->rooms->size());
     return collection;
 }

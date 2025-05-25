@@ -22,7 +22,23 @@ std::string RoomCommandType::RoomTypeToString(RoomCommandType::Root type)
     }
 }
 
-std::string RoomCommandType::Player2DTypeToString(RoomCommandType::Player2D player2D)
+std::string RoomCommandType::ManagementTypeToString(RoomCommandType::Management management)
+{
+    switch (management)
+    {
+        case RoomCommandType::Management::join:
+            return "join";
+        case RoomCommandType::Management::leave:
+            return "leave";
+        case RoomCommandType::Management::create:
+            return "create";
+        default:
+            Log::error("ManagementTypeToString no type found!");
+            return "";
+    }
+}
+
+std::string RoomCommandType::PlayerTypeToString(RoomCommandType::Player2D player2D)
 {
     switch (player2D)
     {
@@ -38,7 +54,7 @@ std::string RoomCommandType::Player2DTypeToString(RoomCommandType::Player2D play
     }
 }
 
-std::string RoomCommandType::Object2DTypeToString(RoomCommandType::Object2D object2D)
+std::string RoomCommandType::ObjectTypeToString(RoomCommandType::Object2D object2D)
 {
     switch (object2D)
     {
@@ -58,18 +74,34 @@ std::string RoomCommandType::Object2DTypeToString(RoomCommandType::Object2D obje
     }
 }
 
-std::string RoomCommandType::ManagementTypeToString(RoomCommandType::Management management)
+std::string RoomCommandType::PlayerTypeToString(RoomCommandType::Player3D player3D)
 {
-    switch (management)
+    switch (player3D)
     {
-        case RoomCommandType::Management::join:
-            return "join";
-        case RoomCommandType::Management::leave:
-            return "leave";
-        case RoomCommandType::Management::create:
-            return "create";
+        case RoomCommandType::Player3D::position:
+            return "position";
+        case RoomCommandType::Player3D::dimensions:
+            return "dimensions";
+        case RoomCommandType::Player3D::movement:
+            return "movement";
         default:
-            Log::error("ManagementTypeToString no type found!");
+            Log::error("Player3DTypeToString no type found!");
+            return "";
+    }
+}
+
+std::string RoomCommandType::ObjectTypeToString(RoomCommandType::Object3D object3D)
+{
+    switch (object3D)
+    {
+        case RoomCommandType::Object3D::create:
+            return "create";
+        case RoomCommandType::Object3D::destroy:
+            return "destroy";
+        case RoomCommandType::Object3D::move:
+            return "move";
+        default:
+            Log::error("Object3DTypeToString no type found!");
             return "";
     }
 }

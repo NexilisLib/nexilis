@@ -186,20 +186,6 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
         case CommandType::room:
         {
-            /**
-             *  2:0      Management
-             *  2:0:0    Join room; uint64_t roomId
-             *  2:0:1    Leave room; void
-             *  2:0:2    Create room; string roomName
-             *
-             *  2:1      Object2D
-             *  2:1:0    Set position; Vec2f position
-             *  2:1:1    Set dimensions; Vec2f dimensions
-             *
-             *  2:2    Communication.
-             *  2:2:0
-             */
-            // arg = command[1]
             const uint8_t roomCommandPayloadAmount = 3;
             auto roomArg = command[2];
             switch (arg)
@@ -308,87 +294,134 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
                         }
                     }
-
-                    // Player 2D
+                    // Communicate
                     case 1:
                     {
                         switch (roomArg)
                         {
-                            /// Position 2D
+                            // broadcast
                             case 0:
                             {
-                                Log::debug("Command Room::position2D(vector2)");
+                                Log::debug("Command Room::Communicate::broadcast");
+
+                                // Get messagedata.
+                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto messageData = Util::convertToString(payload);
+
                                 if (user.getRoomId() == 0)
                                 {
-                                    Log::error("User not in room!");
+                                    Log::error("User not currently in room!");
                                     return Result::error;
                                 }
 
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto vector = Util::convertToVector2(payload);
-                                Log::debug("Position x:", vector.x, " y:", vector.y);
-
-                                auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-
-                                if (!currentRoom)
-                                {
-                                    Log::warning("Client not currently in room.");
-                                    return Result::failure;
-                                }
-
-                                user.getObject2D().setPosition(vector);
-
                                 std::map<std::string, boost::json::value> params{
-                                        {"x", boost::json::value(vector.x)},
-                                        {"y", boost::json::value(vector.y)}};
+                                        {"id", boost::json::value(user.getId())},
+                                        {"roomId", boost::json::value(user.getRoomId())},
+                                        {"message", boost::json::value(messageData)}};
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
                                 return Result::success;
                             }
 
-                            // Dimensions 2D
+                            // othercast
                             case 1:
                             {
-                                Log::debug("Command Room::dimensions(vector2)");
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto vector = Util::convertToVector2(payload);
-                                Log::debug("Dimension x:", vector.x, " y:", vector.y);
-
-                                auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-                                if (!currentRoom)
-                                {
-                                    Log::error("Client not currently in room.");
-                                    return Result::failure;
-                                }
-
-                                std::map<std::string, boost::json::value> params{
-                                        {"x", boost::json::value(vector.x)},
-                                        {"y", boost::json::value(vector.y)}};
-
-                                user.getObject2D().setDimensions(vector);
-
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
+                                Log::debug("Command Room::Communicate::othercast");
+                                return Result::unimplemented;
                             }
 
-                            // Movement 2D, creates a thread that sends the new position with time of delta.
-                            // In 16 thread CPU: when delta = 0.1f -> ~6 updates.
+                            // unicast
                             case 2:
                             {
-                                Log::debug("Command Room::movement(vector2 movementVector, float delta)");
+                                Log::debug("Command Room::Communicate::unicast");
+                                return Result::unimplemented;
+                            }
+                        }
+                    }
+                    default:
+                        return Result::not_found;
+                }
+                // Player 2D
+                case 2:
+                {
+                    switch (roomArg)
+                    {
+                        /// Position 2D
+                        case 0:
+                        {
+                            Log::debug("Command Room::position2D(vector2)");
+                            if (user.getRoomId() == 0)
+                            {
+                                Log::error("User not in room!");
+                                return Result::error;
+                            }
 
-                                // Get messagedata
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto vecX = Util::floatFromFront(payload);
-                                auto vecY = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
-                                auto delta = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                                auto movementVector = Vector2f(vecX, vecY);
-                                auto mtx = std::make_shared<std::mutex>();
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto vector = Util::convertToVector2(payload);
+                            Log::debug("Position x:", vector.x, " y:", vector.y);
 
-                                std::thread([this, mtx, movementVector, &user, command, &protocol, &messageId, delta]()
-                                            {
+                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+
+                            if (!currentRoom)
+                            {
+                                Log::warning("Client not currently in room.");
+                                return Result::failure;
+                            }
+
+                            user.getObject2D().setPosition(vector);
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"x", boost::json::value(vector.x)},
+                                    {"y", boost::json::value(vector.y)}};
+
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
+                        }
+
+                        // Dimensions 2D
+                        case 1:
+                        {
+                            Log::debug("Command Room::dimensions(vector2)");
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto vector = Util::convertToVector2(payload);
+                            Log::debug("Dimension x:", vector.x, " y:", vector.y);
+
+                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+                            if (!currentRoom)
+                            {
+                                Log::error("Client not currently in room.");
+                                return Result::failure;
+                            }
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"x", boost::json::value(vector.x)},
+                                    {"y", boost::json::value(vector.y)}};
+
+                            user.getObject2D().setDimensions(vector);
+
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
+                        }
+
+                        // Movement 2D, creates a thread that sends the new position with time of delta.
+                        // In 16 thread CPU: when delta = 0.1f -> ~6 updates.
+                        case 2:
+                        {
+                            Log::debug("Command Room::movement(vector2 movementVector, float delta)");
+
+                            // Get messagedata
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto vecX = Util::floatFromFront(payload);
+                            auto vecY = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
+                            auto delta = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+                            auto movementVector = Vector2f(vecX, vecY);
+                            auto mtx = std::make_shared<std::mutex>();
+
+                            std::thread([this, mtx, movementVector, &user, command, &protocol, &messageId, delta]()
+                                        {
                                     try
                                     {
                                         runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, &user, command, &protocol, &messageId](double progress)
@@ -452,224 +485,244 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     {
                                         Log::error(e.what());
                                     } })
-                                        .detach();
+                                    .detach();
 
-                                return Result::success;
-                            }
-
-                            default:
-                                return Result::not_found;
+                            return Result::success;
                         }
-                    }
 
-                    // Object2D
-                    case 2:
+                        default:
+                            return Result::not_found;
+                    }
+                }
+
+                // Object2D
+                case 3:
+                {
+                    switch (roomArg)
                     {
-                        switch (roomArg)
+                        case 0:
                         {
-                            case 0:
-                            {
-                                Log::debug("Command Room::Object2D::create(Vector2f position, Vector2f dimensions, std::string filepath)");
+                            Log::debug("Command Room::Object3D::create(Vector2f position, Vector2f dimensions, std::string filepath)");
 
-                                // Get messagedata
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto position = Util::vector2fFromFront(payload);
-                                auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                                auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
-                                auto filepath = Util::convertToString(fileBytes);
+                            // Get messagedata
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto position = Util::vector2fFromFront(payload);
+                            auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+                            auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
+                            auto filepath = Util::convertToString(fileBytes);
 
-                                // Create server object.
-                                auto object = Object2D(Util::getRandomUint64(), position, dimensions);
-                                object.setFilepath(filepath);
-                                uint64_t objectId = object.getId();
-                                Log::info("Created object with id: ", objectId);
+                            // Create server object.
+                            auto object = Object2D(Util::getRandomUint64(), position, dimensions);
+                            object.setFilepath(filepath);
+                            uint64_t objectId = object.getId();
+                            Log::info("Created object with id: ", objectId);
 
-                                // Add to storage.
-                                auto room = RoomStorage::getRoomById(user.getRoomId());
-                                room->addObject(std::move(object));
+                            // Add to storage.
+                            auto room = RoomStorage::getRoomById(user.getRoomId());
+                            room->addObject(std::move(object));
 
-                                std::map<std::string, boost::json::value> params{
-                                        {"positionX", boost::json::value(position.x)},
-                                        {"positionY", boost::json::value(position.y)},
-                                        {"dimensionX", boost::json::value(dimensions.x)},
-                                        {"dimensionY", boost::json::value(dimensions.y)},
-                                        {"filepath", boost::json::value(filepath)},
-                                        {"id", boost::json::value(objectId)}};
+                            std::map<std::string, boost::json::value> params{
+                                    {"positionX", boost::json::value(position.x)},
+                                    {"positionY", boost::json::value(position.y)},
+                                    {"dimensionX", boost::json::value(dimensions.x)},
+                                    {"dimensionY", boost::json::value(dimensions.y)},
+                                    {"filepath", boost::json::value(filepath)},
+                                    {"id", boost::json::value(objectId)}};
 
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
-                            }
-
-                            case 1:
-                            {
-                                Log::debug("Command Room::Object2D::destroy");
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto objectId = Util::uint64FromFront(payload);
-
-                                // Remove from storage.
-                                auto room = RoomStorage::getRoomById(user.getRoomId());
-                                room->deleteObject2D(objectId);
-
-                                std::map<std::string, boost::json::value> params{
-                                        {"id", boost::json::value(objectId)}};
-
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
-                            }
-
-                            case 2:
-                            {
-                                Log::debug("Command Room::Object2D::move");
-
-                                // Get messagedata.
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto objectId = Util::uint64FromFront(payload);
-                                auto position = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-
-                                // Get object from server storage.
-                                auto room = RoomStorage::getRoomById(user.getRoomId());
-                                if (!room)
-                                {
-                                    Log::error("Client room not found!");
-                                    return Result::failure;
-                                }
-
-                                auto object = room->getObject2DById(objectId);
-                                if (!object)
-                                {
-                                    Log::error("Object not found with id: ", objectId);
-                                    return Result::failure;
-                                }
-
-                                auto oldPosition = object->getPosition();
-                                auto newPosition = oldPosition + position;
-
-                                std::map<std::string, boost::json::value> params{
-                                        {"objectId", boost::json::value(objectId)},
-                                        {"x", boost::json::value(newPosition.x)},
-                                        {"y", boost::json::value(newPosition.y)}};
-
-                                // Move object in server storage.
-                                object->setPosition(newPosition);
-
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
-                            }
-
-                            case 3:
-                            {
-                                Log::debug("Command Room::Object2D::createMoving");
-
-                                // Get messagedata.
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto startingPosition = Util::vector2fFromFront(payload);
-                                auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                                auto movement = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 16));
-                                auto deltaTime = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 24));
-                                auto movementType = static_cast<MovementType>(payload[28]);
-                                auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 29);
-                                auto filepath = Util::convertToString(fileBytes);
-
-                                // Create new object.
-                                auto object = Object2D(Util::getRandomUint64(), startingPosition, dimensions);
-                                object.setFilepath(filepath);
-                                uint64_t objectId = object.getId();
-                                Log::info("Created object with id: ", objectId);
-
-                                // Add newly created object to storage.
-                                auto room = RoomStorage::getRoomById(user.getRoomId());
-                                room->addObject(std::move(object));
-
-                                std::map<std::string, boost::json::value> params{
-                                        {"createMovingType", boost::json::value("create")},
-                                        {"positionX", boost::json::value(startingPosition.x)},
-                                        {"positionY", boost::json::value(startingPosition.y)},
-                                        {"dimensionX", boost::json::value(dimensions.x)},
-                                        {"dimensionY", boost::json::value(dimensions.y)},
-                                        {"filepath", boost::json::value(filepath)},
-                                        {"id", boost::json::value(objectId)}};
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-
-                                std::function<double(double, double)> movementFunction;
-                                switch (movementType)
-                                {
-                                    case MovementType::eased:
-                                        movementFunction = [this](double progress, double totalDistance) -> double
-                                        {
-                                            return this->easing(progress, totalDistance);
-                                        };
-                                        break;
-                                    case MovementType::linear:
-                                        movementFunction = [this](double progress, double totalDistance) -> double
-                                        {
-                                            return this->linear(progress, totalDistance);
-                                        };
-                                        break;
-                                    default:
-                                        Log::error("Undefined movement type!");
-                                }
-
-                                auto base_move = Movement2D(Movement::Data(objectId, deltaTime, command, messageId), movement, movementFunction);
-                                object2DMovement(base_move, user, protocol).detach();
-                                return Result::success;
-                            }
-
-                            default:
-                                return Result::not_found;
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
                         }
-                    }
 
-                    // Communicate
-                    case 3:
+                        case 1:
+                        {
+                            Log::debug("Command Room::Object2D::destroy");
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto objectId = Util::uint64FromFront(payload);
+
+                            // Remove from storage.
+                            auto room = RoomStorage::getRoomById(user.getRoomId());
+                            room->deleteObject2D(objectId);
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"id", boost::json::value(objectId)}};
+
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
+                        }
+
+                        case 2:
+                        {
+                            Log::debug("Command Room::Object2D::move");
+
+                            // Get messagedata.
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto objectId = Util::uint64FromFront(payload);
+                            auto position = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+
+                            // Get object from server storage.
+                            auto room = RoomStorage::getRoomById(user.getRoomId());
+                            if (!room)
+                            {
+                                Log::error("Client room not found!");
+                                return Result::failure;
+                            }
+
+                            auto object = room->getObject2DById(objectId);
+                            if (!object)
+                            {
+                                Log::error("Object not found with id: ", objectId);
+                                return Result::failure;
+                            }
+
+                            auto oldPosition = object->getPosition();
+                            auto newPosition = oldPosition + position;
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"objectId", boost::json::value(objectId)},
+                                    {"x", boost::json::value(newPosition.x)},
+                                    {"y", boost::json::value(newPosition.y)}};
+
+                            // Move object in server storage.
+                            object->setPosition(newPosition);
+
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
+                        }
+
+                        case 3:
+                        {
+                            Log::debug("Command Room::Object2D::createMoving");
+
+                            // Get messagedata.
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto startingPosition = Util::vector2fFromFront(payload);
+                            auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
+                            auto movement = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 16));
+                            auto deltaTime = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 24));
+                            auto movementType = static_cast<MovementType>(payload[28]);
+                            auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 29);
+                            auto filepath = Util::convertToString(fileBytes);
+
+                            // Create new object.
+                            auto object = Object2D(Util::getRandomUint64(), startingPosition, dimensions);
+                            object.setFilepath(filepath);
+                            uint64_t objectId = object.getId();
+                            Log::info("Created object with id: ", objectId);
+
+                            // Add newly created object to storage.
+                            auto room = RoomStorage::getRoomById(user.getRoomId());
+                            room->addObject(std::move(object));
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"createMovingType", boost::json::value("create")},
+                                    {"positionX", boost::json::value(startingPosition.x)},
+                                    {"positionY", boost::json::value(startingPosition.y)},
+                                    {"dimensionX", boost::json::value(dimensions.x)},
+                                    {"dimensionY", boost::json::value(dimensions.y)},
+                                    {"filepath", boost::json::value(filepath)},
+                                    {"id", boost::json::value(objectId)}};
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+
+                            std::function<double(double, double)> movementFunction;
+                            switch (movementType)
+                            {
+                                case MovementType::eased:
+                                    movementFunction = [this](double progress, double totalDistance) -> double
+                                    {
+                                        return this->easing(progress, totalDistance);
+                                    };
+                                    break;
+                                case MovementType::linear:
+                                    movementFunction = [this](double progress, double totalDistance) -> double
+                                    {
+                                        return this->linear(progress, totalDistance);
+                                    };
+                                    break;
+                                default:
+                                    Log::error("Undefined movement type!");
+                            }
+
+                            auto base_move = Movement2D(Movement::Data(objectId, deltaTime, command, messageId), movement, movementFunction);
+                            object2DMovement(base_move, user, protocol).detach();
+                            return Result::success;
+                        }
+
+                        default:
+                            return Result::not_found;
+                    }
+                }
+                // Player3D
+                case 4:
+                {
+                    switch (roomArg)
                     {
-                        switch (roomArg)
+                        /// Position 3D
+                        case 0:
                         {
-                            // broadcast
-                            case 0:
+                            Log::debug("Command Room::position3D(vector3)");
+                            if (user.getRoomId() == 0)
                             {
-                                Log::debug("Command Room::Communicate::broadcast");
-
-                                // Get messagedata.
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                                auto messageData = Util::convertToString(payload);
-
-                                if (user.getRoomId() == 0)
-                                {
-                                    Log::error("User not currently in room!");
-                                    return Result::error;
-                                }
-
-                                std::map<std::string, boost::json::value> params{
-                                        {"id", boost::json::value(user.getId())},
-                                        {"roomId", boost::json::value(user.getRoomId())},
-                                        {"message", boost::json::value(messageData)}};
-
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
+                                Log::error("User not in room!");
+                                return Result::error;
                             }
 
-                            // othercast
-                            case 1:
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto vector = Util::convertToVector3(payload);
+                            Log::debug("Position x:", vector.x, " y:", vector.y, " z: ", vector.z);
+
+                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+
+                            if (!currentRoom)
                             {
-                                Log::debug("Command Room::Communicate::othercast");
-                                return Result::unimplemented;
+                                Log::warning("Client not currently in room.");
+                                return Result::failure;
                             }
 
-                            // unicast
-                            case 2:
-                            {
-                                Log::debug("Command Room::Communicate::unicast");
-                                return Result::unimplemented;
-                            }
+                            user.getObject3D().setPosition(vector);
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"x", boost::json::value(vector.x)},
+                                    {"y", boost::json::value(vector.y)},
+                                    {"z", boost::json::value(vector.z)}};
+
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
                         }
+
+                        // Dimensions 3D
+                        case 1:
+                        {
+                            Log::debug("Command Room::dimensions(vector3)");
+                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto vector = Util::convertToVector3(payload);
+                            Log::debug("Dimension x:", vector.x, " y:", vector.y, " z:", vector.z);
+
+                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
+                            if (!currentRoom)
+                            {
+                                Log::error("Client not currently in room.");
+                                return Result::failure;
+                            }
+
+                            std::map<std::string, boost::json::value> params{
+                                    {"x", boost::json::value(vector.x)},
+                                    {"y", boost::json::value(vector.y)},
+                                    {"z", boost::json::value(vector.z)}};
+
+                            user.getObject3D().setDimensions(vector);
+
+                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                            sendRoomCommand(roomCommand, user, protocol);
+                            return Result::success;
+                        }
+                        default:
+                            return Result::not_found;
                     }
-                    default:
-                        return Result::not_found;
                 }
             }
         }
@@ -903,17 +956,32 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
         }
         case RoomCommandType::Root::player2D:
         {
-            roomCommandAction = RoomCommandType::Player2DTypeToString(static_cast<RoomCommandType::Player2D>(action));
+            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::Player2D>(action));
             break;
         }
         case RoomCommandType::Root::object2D:
         {
-            roomCommandAction = RoomCommandType::Object2DTypeToString(static_cast<RoomCommandType::Object2D>(action));
+            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::Object2D>(action));
+            break;
+        }
+        case RoomCommandType::Root::player3D:
+        {
+            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::Player3D>(action));
+            break;
+        }
+        case RoomCommandType::Root::object3D:
+        {
+            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::Object3D>(action));
             break;
         }
         case RoomCommandType::Root::communication:
         {
             roomCommandAction = RoomCommandType::CommunicationTypeToString(static_cast<RoomCommandType::Communication>(action));
+            break;
+        }
+        case RoomCommandType::Root::undefined:
+        {
+            Log::error("Command: Undefined roomCommandAction");
             break;
         }
     }

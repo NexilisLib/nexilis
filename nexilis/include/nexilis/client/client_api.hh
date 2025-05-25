@@ -1,8 +1,11 @@
 #ifndef NEXILIS_CLIENT_API_HH
 #define NEXILIS_CLIENT_API_HH
 
+#include <nexilis/logger/file_log.hh>
+
 #include <nexilis/client/room.hh>
 #include <nexilis/client/server_data.hh>
+
 #include <nexilis/json.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/object/object2d.hh>
@@ -179,6 +182,7 @@ public:
     /// Return a reference of the currently active rooms.
     std::vector<Room>& getActiveRooms()
     {
+        nexilis::FileLog::debug("Rooms amount in cpp: ", m_currentlyActiveRooms.size());
         return m_currentlyActiveRooms;
     }
 
@@ -236,6 +240,7 @@ private:
     std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
 
     /// Can the elements overlap each other.
+    // TODO this is 2D overlapping allowed.
     bool m_overlappingAllowed = false;
 
     /// Is the server aware of the client, is "Packet" initialized.

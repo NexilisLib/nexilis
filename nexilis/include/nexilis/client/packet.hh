@@ -41,72 +41,6 @@ public:
     class Room
     {
     public:
-        class Player2D
-        {
-        public:
-            static nx_data position(Vector2f position);
-            static nx_data dimensions(Vector2f dimensions);
-            static nx_data movement(Vector2f movement, float deltaTime);
-        };
-
-        template <typename VectorType>
-        class Object
-        {
-        public:
-            static nx_data create(VectorType position, VectorType dimensions, const std::string& filePath)
-            {
-                auto id = clientIdentification();
-                id.emplace_back(static_cast<uint8_t>(CommandType::room));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::create));
-
-                emplaceAll(id, position, dimensions, filePath);
-                return id;
-            }
-
-            static nx_data destroy(uint64_t objectId)
-            {
-                auto id = clientIdentification();
-                id.emplace_back(static_cast<uint8_t>(CommandType::room));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::destroy));
-
-                emplaceAll(id, objectId);
-                return id;
-            }
-
-            static nx_data move(uint64_t objectId, VectorType newPosition)
-            {
-                auto id = clientIdentification();
-                id.emplace_back(static_cast<uint8_t>(CommandType::room));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::move));
-
-                emplaceAll(id, objectId, newPosition);
-                return id;
-            }
-
-            static nx_data createMoving(VectorType startingPosition, VectorType dimensions, VectorType movement,
-                                        float deltaTime, MovementType movementType, const std::string& filepath)
-            {
-                auto id = clientIdentification();
-                id.emplace_back(static_cast<uint8_t>(CommandType::room));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-                id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMoving));
-
-                emplaceAll(id, startingPosition, dimensions, movement, deltaTime, movementType, filepath);
-                return id;
-            }
-        };
-
-        class Object2D : public Object<Vector2f>
-        {
-        };
-
-        class Object3D : public Object<Vector3f>
-        {
-        };
-
         class Management
         {
         public:
@@ -126,6 +60,42 @@ public:
 
             /// Send message to specific user.
             static nx_data unicast(uint64_t userId, const std::string& message);
+        };
+
+        class Player2D
+        {
+        public:
+            static nx_data position(Vector2f position);
+            static nx_data dimensions(Vector2f dimensions);
+            static nx_data movement(Vector2f movement, float deltaTime);
+        };
+
+        class Object2D
+        {
+        public:
+            static nx_data create(Vector2f position, Vector2f dimensions, const std::string& filePath);
+            static nx_data destroy(uint64_t objectId);
+            static nx_data move(uint64_t objectId, Vector2f newPosition);
+            static nx_data createMoving(Vector2f startingPosition, Vector2f dimensions, Vector2f movement,
+                                        float deltaTime, MovementType movementType, const std::string& filepath);
+        };
+
+        class Player3D
+        {
+        public:
+            static nx_data position(Vector3f position);
+            static nx_data dimensions(Vector3f dimensions);
+            static nx_data movement(Vector3f movement, float deltaTime);
+        };
+
+        class Object3D
+        {
+        public:
+            static nx_data create(Vector3f position, Vector3f dimensions, const std::string& filePath);
+            static nx_data destroy(uint64_t objectId);
+            static nx_data move(uint64_t objectId, Vector3f newPosition);
+            static nx_data createMoving(Vector3f startingPosition, Vector3f dimensions, Vector3f movement,
+                                        float deltaTime, MovementType movementType, const std::string& filepath);
         };
     };
 

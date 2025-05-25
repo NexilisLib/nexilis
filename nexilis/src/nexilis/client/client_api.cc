@@ -552,6 +552,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "room_data")
             {
+                FileLog::debug("ClientAPI: INFO, room data called");
                 if (json.find("rooms") != json.end())
                 {
                     auto rooms = json.at("rooms").as_array();
@@ -593,6 +594,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         newRooms.emplace_back(Room(roomData, std::move(roomClients)));
                     }
                     m_currentlyActiveRooms = std::move(newRooms);
+                    FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
                     return ReadResult::success;
                 }
             }

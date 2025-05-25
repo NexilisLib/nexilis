@@ -28,69 +28,6 @@ nx_data Packet::Get::clientId()
     return id;
 }
 
-nx_data Packet::Info::general()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::info));
-    id.emplace_back(0);
-    return id;
-}
-
-nx_data Packet::Info::clients()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::info));
-    id.emplace_back(1);
-    return id;
-}
-
-nx_data Packet::Info::rooms()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::info));
-    id.emplace_back(2);
-    return id;
-}
-
-/**
- *  2:1      Player2D
- *  2:1:0    Set position; Vec2f position
- *  2:1:1    Set dimensions; Vec2f dimensions
- *  2:1:2    2D movement vector; Vec2f movement
- */
-nx_data Packet::Room::Player2D::position(Vector2f position)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::position));
-
-    emplaceAll(id, position);
-    return id;
-}
-
-nx_data Packet::Room::Player2D::dimensions(Vector2f dimensions)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::dimensions));
-
-    emplaceAll(id, dimensions);
-    return id;
-}
-
-nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::movement));
-
-    emplaceAll(id, movement, deltaTime);
-    return id;
-}
-
 /**
  *  2:0      Management
  *  2:0:0    Join room; uint64_t roomId
@@ -159,6 +96,114 @@ nx_data Packet::Room::Communicate::unicast(uint64_t userId, const std::string& m
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::unicast));
     emplaceAll(id, userId, message);
+    return id;
+}
+
+/**
+ *  2:1      Player2D
+ *  2:1:0    Set position; Vec2f position
+ *  2:1:1    Set dimensions; Vec2f dimensions
+ *  2:1:2    2D movement vector; Vec2f movement
+ */
+nx_data Packet::Room::Player2D::position(Vector2f position)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::position));
+
+    emplaceAll(id, position);
+    return id;
+}
+
+nx_data Packet::Room::Player2D::dimensions(Vector2f dimensions)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::dimensions));
+
+    emplaceAll(id, dimensions);
+    return id;
+}
+
+nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::movement));
+
+    emplaceAll(id, movement, deltaTime);
+    return id;
+}
+
+nx_data Packet::Room::Object2D::create(Vector2f position, Vector2f dimensions, const std::string& filePath)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::create));
+
+    emplaceAll(id, position, dimensions, filePath);
+    return id;
+}
+
+nx_data Packet::Room::Object2D::destroy(uint64_t objectId)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::destroy));
+
+    emplaceAll(id, objectId);
+    return id;
+}
+
+nx_data Packet::Room::Object2D::move(uint64_t objectId, Vector2f newPosition)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::move));
+
+    emplaceAll(id, objectId, newPosition);
+    return id;
+}
+
+nx_data Packet::Room::Object2D::createMoving(Vector2f startingPosition, Vector2f dimensions, Vector2f movement,
+                                             float deltaTime, MovementType movementType, const std::string& filepath)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Object2D::createMoving));
+
+    emplaceAll(id, startingPosition, dimensions, movement, deltaTime, movementType, filepath);
+    return id;
+}
+
+nx_data Packet::Info::general()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::info));
+    id.emplace_back(0);
+    return id;
+}
+
+nx_data Packet::Info::clients()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::info));
+    id.emplace_back(1);
+    return id;
+}
+
+nx_data Packet::Info::rooms()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::info));
+    id.emplace_back(2);
     return id;
 }
 
