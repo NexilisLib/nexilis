@@ -1,5 +1,6 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_util.hh>
 #include <nexilis/util.hh>
 
 #include <boost/json/serialize.hpp>
@@ -116,6 +117,14 @@ nx_data Util::convertToByteVector(Vector2f value)
     return vec1;
 }
 
+nx_data Util::convertToByteVector(Vector3f vector)
+{
+    auto x = convertToByteVector(vector.x);
+    auto y = convertToByteVector(vector.y);
+    auto z = convertToByteVector(vector.z);
+    return nx_create(x, y, z);
+}
+
 nx_data Util::convertToByteVector(const char* command_data, uint64_t length)
 {
     nx_data result;
@@ -157,6 +166,9 @@ uint64_t Util::getRandomUint64()
     } while (std::bitset<64>(randomValue).count() < 32); // Ensure at least 32 bits are set
 
     assert((std::is_same<decltype(randomValue), uint64_t>::value));
+
+    if (randomValue == 0)
+        return getRandomUint64();
 
     return randomValue;
 }

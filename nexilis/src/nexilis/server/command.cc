@@ -93,6 +93,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         Log::error("Client needs root access for changing id");
                         return Result::unauthorized;
                     }
+                    // We are parsing Command, so remove two bytes from this switch statement.
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     uint64_t id = Util::convertToType<uint64_t>(payload);
 
@@ -118,22 +119,19 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 {
                     Log::debug("Called Command::Set::username");
 
-                    // Create string data.
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string username = Util::convertToString(payload);
 
-                    // Perform server-side operations.
-                    auto& clients = ClientStorage::getAllClients();
-
+                    auto* client = ClientStorage::getClientById(user.getId());
                     bool setUserName = false;
-                    for (auto c = clients.begin(); c != clients.end(); c++)
+                    if (client)
                     {
-                        if (*c == user)
-                        {
-                            Log::debug("Client username reset!");
-                            c->setUsername(username);
-                            setUserName = true;
-                        }
+                        client->setUsername(username);
+                        setUserName = true;
+                    }
+                    else
+                    {
+                        return Result::error;
                     }
 
                     if (!setUserName)
@@ -141,7 +139,6 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         return Result::error;
                     }
 
-                    // Send data back to "this" client.
                     std::map<std::string, boost::json::value> header{
                             {"command", boost::json::value("set")},
                             {"type", boost::json::value("username")},

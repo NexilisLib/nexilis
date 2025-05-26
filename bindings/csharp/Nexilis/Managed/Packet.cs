@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Nexilis.Client
+namespace Nexilis
 {
     public static class Packet
     {
@@ -12,28 +12,11 @@ namespace Nexilis.Client
             _logger.SetMinimumLevel(Logger.LogLevel.DEBUG);
         }
 
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_info_general();
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_info_clients();
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_info_rooms();
-
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_room_management_join(ulong roomId);
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_room_management_leave();
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_room_management_create(RoomContext context, string roomName);
-
         public static NxData InfoRooms()
         {
             return NativeInterop.ExecuteSafe(() =>
             {
-                var raw = nexilis_packet_info_rooms();
+                var raw = PacketNative.nexilis_packet_info_rooms();
                 if (raw.data == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Failed to get packet info rooms.");
@@ -46,7 +29,7 @@ namespace Nexilis.Client
         {
             return NativeInterop.ExecuteSafe(() =>
             {
-                var raw = nexilis_packet_room_management_create(context, roomName);
+                var raw = PacketNative.nexilis_packet_room_management_create(context, roomName);
                 if (raw.data == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Failed to get room management create.");
@@ -58,13 +41,31 @@ namespace Nexilis.Client
         {
             return NativeInterop.ExecuteSafe(() =>
             {
-                var raw = nexilis_packet_room_management_join(roomId);
+                var raw = PacketNative.nexilis_packet_room_management_join(roomId);
                 if (raw.data == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Failed to get room management join.");
                 }
                 return NxData.Create(raw);
             }, "RoomManagementJoin");
+        }
+
+        public static NxData Player3DPosition(Vector3<float> position)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var nativePointer = position.getNative();
+                if (nativePointer.vector == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Nativepointer fails");
+                }
+                var raw = PacketNative.nexilis_packet_room_player3D_position(position.getNative());
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room management join.");
+                }
+                return NxData.Create(raw);
+            }, "Player3DPosition");
         }
     }
 }

@@ -1,5 +1,5 @@
-#ifndef NEXILIS_VECTOR3_HH
-#define NEXILIS_VECTOR3_HH
+#ifndef NEXILIS_TYPES_VECTOR3_HH
+#define NEXILIS_TYPES_VECTOR3_HH
 
 #include <nexilis/nx_data.hh>
 #include <nexilis/types/vector.hh>
@@ -30,6 +30,9 @@ public:
         : x(0), y(0), z(0)
     {
     }
+
+    /// Virtual destructor.
+    virtual ~Vector3() = default;
 
     /// Vector::getType implementation.
     VectorType getType() override

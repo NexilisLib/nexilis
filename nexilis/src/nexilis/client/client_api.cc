@@ -336,7 +336,46 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else
                 {
-                    return ReadResult::failure;
+                    return ReadResult::not_found;
+                }
+            }
+            else if (type == "player3D")
+            {
+                if (roomAction == "position")
+                {
+                    float x = readFloat(json, "x");
+                    float y = readFloat(json, "y");
+                    float z = readFloat(json, "z");
+                    auto client = getClientFromRoom(clientId);
+                    if (client)
+                    {
+                        client->getObject3D().setPosition(Vector3(x, y, z));
+                        return ReadResult::success;
+                    }
+                    else
+                    {
+                        return ReadResult::client_missing_room;
+                    }
+                }
+                else if (roomAction == "dimensions")
+                {
+                    float x = readFloat(json, "x");
+                    float y = readFloat(json, "y");
+                    float z = readFloat(json, "z");
+                    auto client = getClientFromRoom(clientId);
+                    if (client)
+                    {
+                        client->getObject3D().setDimensions(Vector3(x, y, z));
+                        return ReadResult::success;
+                    }
+                    else
+                    {
+                        return ReadResult::client_missing_room;
+                    }
+                }
+                else
+                {
+                    return ReadResult::not_found;
                 }
             }
             else if (type == "object2D")
@@ -752,6 +791,23 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
         }
         promise.set_value();
     };
+}
+
+ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
+{
+    // TODO better
+    ClientSession* returned_client = nullptr;
+    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+    {
+        for (auto& client : room->getClients())
+        {
+            if (client.getId() == client_id)
+            {
+                returned_client = &client;
+            }
+        }
+    }
+    return returned_client;
 }
 
 } // namespace nexilis::client

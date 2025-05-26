@@ -83,28 +83,31 @@ public:
     /// Result from ClientAPI::readMessage(const nx_data&).
     enum class ReadResult
     {
-        // The payload does nothing with nexilis.
+        /// The payload has nothing with nexilis.
         clean,
 
-        // Command success.
+        /// Command success.
         success,
 
-        // Logical failure in the command, failing is ok.
+        /// Allowed failure.
         failure,
 
-        // Command is not found.
+        /// Something wrong with the command data.
         not_found,
 
-        // The input for command is not correct.
+        /// The input for command is not correct.
         invalid_input,
 
-        // There is an error implementing command.
+        /// Internal error.
         error,
 
-        // The command usage is unauthorized.
+        /// The command usage is unauthorized.
         unauthorized,
 
-        // Not implemented.
+        /// Client is not found in the correct room.
+        client_missing_room,
+
+        /// Missing feature.
         not_implemented
     };
 
@@ -222,6 +225,7 @@ private:
     std::string readString(const boost::json::value& context, const std::string& key);
     uint64_t readUint64(const boost::json::value& context, const std::string& key);
     float readFloat(const boost::json::value& context, const std::string& key);
+    ClientSession* getClientFromRoom(uint64_t client_id);
 
 private:
     /// The initialization data for the ClientAPI.

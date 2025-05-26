@@ -111,6 +111,7 @@ set(SOURCES
     src/nexilisc/nexilis_waiter.cc
     src/nexilisc/protocol_manager_c.cc
     src/nexilisc/nx_data_c.cc
+    src/nexilisc/types/vector3_c.cc
 
     src/nexilisc/logger/logger_c.cc
     src/nexilisc/logger/console_handler_c.cc
