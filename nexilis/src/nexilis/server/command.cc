@@ -140,7 +140,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     }
 
                     std::map<std::string, boost::json::value> header{
-                            {"command", boost::json::value("set")},
+                            {"command", boost::json::value("setting")},
                             {"type", boost::json::value("username")},
                             {"callback", boost::json::value(messageId)},
                             {"username", boost::json::value(username)}};
@@ -165,7 +165,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 case 0:
                 {
                     std::map<std::string, boost::json::value> data{
-                            {"command", boost::json::value("get")},
+                            {"command", boost::json::value("getting")},
                             {"type", boost::json::value("client_id")},
                             {"client_id", boost::json::value(user.getId())}};
 
@@ -417,71 +417,73 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             auto movementVector = Vector2f(vecX, vecY);
                             auto mtx = std::make_shared<std::mutex>();
 
+                            // clang-format off
                             std::thread([this, mtx, movementVector, &user, command, &protocol, &messageId, delta]()
-                                        {
-                                    try
+                            {
+                                try
+                                {
+                            // clang-format on
+                                    runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, &user, command, &protocol, &messageId](double progress)
                                     {
-                                        runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, &user, command, &protocol, &messageId](double progress)
+                                        auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
+                                        assert(clientRoom);
+
+                                        double easedX = easing(progress, movementVector.x);
+                                        double easedY = easing(progress, movementVector.y);
+
+                                        Vector2f currentPosition = user.getObject2D().getPosition();
+                                        Vector2f dimensions = user.getObject2D().getDimensions();
+
+                                        auto newMovedPosition = Vector2f(easedX + currentPosition.x, easedY + currentPosition.y);
+                                        bool limitedMovement = false;
+                                        for (auto& c : clientRoom->getClients())
                                         {
-                                            auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
-                                            assert(clientRoom);
+                                            User* roomClient = ClientStorage::getClientById(c);
 
-                                            double easedX = easing(progress, movementVector.x);
-                                            double easedY = easing(progress, movementVector.y);
-
-                                            Vector2f currentPosition = user.getObject2D().getPosition();
-                                            Vector2f dimensions = user.getObject2D().getDimensions();
-
-                                            auto newMovedPosition = Vector2f(easedX + currentPosition.x, easedY + currentPosition.y);
-                                            bool limitedMovement = false;
-                                            for (auto& c : clientRoom->getClients())
+                                            if (roomClient && roomClient->getId() != user.getId())
                                             {
-                                                User* roomClient = ClientStorage::getClientById(c);
-
-                                                if (roomClient && roomClient->getId() != user.getId())
-                                                {
-                                                    Vector2f roomClientPosition;
-                                                    Vector2f roomClientDimensions;
-                                                    {
-                                                        std::lock_guard<std::mutex> lock(*mtx);
-                                                        roomClientPosition = roomClient->getObject2D().getPosition();
-                                                        roomClientDimensions = roomClient->getObject2D().getDimensions();
-                                                    }
-
-                                                    // Assumed square.
-                                                    if (
-                                                            newMovedPosition.x - dimensions.x / 2 < roomClientPosition.x + roomClientDimensions.x / 2 &&
-                                                            newMovedPosition.x + dimensions.x / 2 > roomClientPosition.x - roomClientDimensions.x / 2 &&
-                                                            newMovedPosition.y - dimensions.y / 2 < roomClientPosition.y + roomClientDimensions.y / 2 &&
-                                                            newMovedPosition.y + dimensions.y / 2 > roomClientPosition.y - roomClientDimensions.y / 2
-                                                       )
-                                                    {
-                                                        Log::info("Players tried to hit each other!");
-                                                        limitedMovement = true;
-                                                        return;
-                                                    }
-                                                }
-                                            }
-
-                                            if (!limitedMovement)
-                                            {
+                                                Vector2f roomClientPosition;
+                                                Vector2f roomClientDimensions;
                                                 {
                                                     std::lock_guard<std::mutex> lock(*mtx);
-                                                    user.getObject2D().setPosition(newMovedPosition);
-                                                    std::map<std::string, boost::json::value> params = {
-                                                        {"x", boost::json::value(newMovedPosition.x)},
-                                                        {"y", boost::json::value(newMovedPosition.y)},
-                                                    };
-                                                    auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                                    sendRoomCommand(roomCommand, user, protocol);
+                                                    roomClientPosition = roomClient->getObject2D().getPosition();
+                                                    roomClientDimensions = roomClient->getObject2D().getDimensions();
+                                                }
+
+                                                // Assumed square.
+                                                if (
+                                                        newMovedPosition.x - dimensions.x / 2 < roomClientPosition.x + roomClientDimensions.x / 2 &&
+                                                        newMovedPosition.x + dimensions.x / 2 > roomClientPosition.x - roomClientDimensions.x / 2 &&
+                                                        newMovedPosition.y - dimensions.y / 2 < roomClientPosition.y + roomClientDimensions.y / 2 &&
+                                                        newMovedPosition.y + dimensions.y / 2 > roomClientPosition.y - roomClientDimensions.y / 2
+                                                   )
+                                                {
+                                                    Log::info("Players tried to hit each other!");
+                                                    limitedMovement = true;
+                                                    return;
                                                 }
                                             }
-                                        });
-                                    }
-                                    catch (std::exception& e)
-                                    {
-                                        Log::error(e.what());
-                                    } })
+                                        }
+
+                                        if (!limitedMovement)
+                                        {
+                                            {
+                                                std::lock_guard<std::mutex> lock(*mtx);
+                                                user.getObject2D().setPosition(newMovedPosition);
+                                                std::map<std::string, boost::json::value> params = {
+                                                    {"x", boost::json::value(newMovedPosition.x)},
+                                                    {"y", boost::json::value(newMovedPosition.y)},
+                                                };
+                                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                                sendRoomCommand(roomCommand, user, protocol);
+                                            }
+                                        }
+                                    });
+                                }
+                                catch (std::exception& e)
+                                {
+                                    Log::error(e.what());
+                                } })
                                     .detach();
 
                             return Result::success;

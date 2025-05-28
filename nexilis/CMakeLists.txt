@@ -49,6 +49,7 @@ set(SOURCES
     src/nexilis/room_command_type.cc
     src/nexilis/json.cc
     src/nexilis/room_data.cc
+    src/nexilis/command_type.cc
 
     # Movement
     src/nexilis/movement/movement.cc

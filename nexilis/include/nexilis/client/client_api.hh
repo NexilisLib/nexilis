@@ -111,6 +111,10 @@ public:
         not_implemented
     };
 
+    /// Get ReadResult string value.
+    /// \param res The ReadResult enum from "readMessage"
+    static std::string readResultStr(ReadResult res);
+
     /// Read incoming message to client.
     ReadResult readMessage(const nx_data& message);
     void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
@@ -225,6 +229,8 @@ private:
     std::string readString(const boost::json::value& context, const std::string& key);
     uint64_t readUint64(const boost::json::value& context, const std::string& key);
     float readFloat(const boost::json::value& context, const std::string& key);
+
+    /// Get any client from any room.
     ClientSession* getClientFromRoom(uint64_t client_id);
 
 private:

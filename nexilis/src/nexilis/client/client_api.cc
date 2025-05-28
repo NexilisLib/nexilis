@@ -1,10 +1,12 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/client_session.hh>
 #include <nexilis/client/packet.hh>
+#include <nexilis/command_type.hh>
 #include <nexilis/json.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/util.hh>
 
+#include <string>
 #include <thread>
 
 namespace nexilis::client
@@ -154,7 +156,6 @@ uint64_t ClientAPI::clientRoomId()
             }
         }
     }
-
     return 0;
 }
 
@@ -180,40 +181,38 @@ void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()
 
 ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 {
-    if (json.contains("command") && json.contains("type"))
+    if (!json.contains("command") || !json.contains("type"))
     {
-        auto command = json["command"];
-        auto type = json["type"];
+        return ReadResult::error;
+    }
 
-        if (command == "set")
+    auto command = stringAsCommandType(json["command"].as_string().c_str());
+    auto type = json["type"];
+
+    switch (command)
+    {
+        case CommandType::setting:
         {
             if (type == "username")
             {
                 std::string username = readString(json, "username");
 
-                // Set own m_data.
+                // Internal clientAPI init.
                 m_data.setUserName(username);
 
-                for (auto&& rooms : m_currentlyActiveRooms)
+                auto client = getClientFromRoom(m_clientId);
+                if (client)
                 {
-                    for (auto&& client : rooms.getClients())
-                    {
-                        if (client.getId() == m_clientId)
-                        {
-                            client.setUsername(username);
-                            return ReadResult::success;
-                        }
-                    }
+                    client->setUsername(username);
                 }
                 return ReadResult::success;
             }
             else
             {
-                return ReadResult::error;
+                return ReadResult::not_found;
             }
         }
-
-        else if (command == "get")
+        case CommandType::getting:
         {
             if (type == "client_id")
             {
@@ -230,11 +229,21 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 return ReadResult::not_found;
             }
         }
-        else if (command == "room")
+
+        case CommandType::room:
         {
             uint64_t roomId = readUint64(json, "roomId");
             uint64_t clientId = readUint64(json, "clientId");
             std::string roomAction = readString(json, "action");
+
+            // Skipping messages where the client does not have to be in a room.
+            if (!(type == "management" && (roomAction == "join" || roomAction == "create")))
+            {
+                if (!clientInRoom())
+                {
+                    return ReadResult::client_missing_room;
+                }
+            }
 
             if (type == "management")
             {
@@ -587,7 +596,14 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
             }
         }
-        else if (command == "info")
+        case CommandType::authentication:
+        case CommandType::server_management:
+        case CommandType::player_management:
+            break;
+        case CommandType::error:
+            return ReadResult::error;
+
+        case CommandType::info:
         {
             if (type == "room_data")
             {
@@ -650,16 +666,42 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             else
             {
                 Log::error("Wrong type!");
-                return ReadResult::not_implemented;
+                return ReadResult::not_found;
             }
-        }
-        else
-        {
-            Log::error("UNDEFINED COMMAND");
             return ReadResult::not_found;
         }
+        case CommandType::undefined:
+            return ReadResult::error;
+        default:
+            return ReadResult::error;
     }
     return ReadResult::not_found;
+}
+
+std::string ClientAPI::readResultStr(ReadResult res)
+{
+    switch (res)
+    {
+        case ReadResult::not_found:
+            return "not_found";
+        case ReadResult::error:
+            return "error";
+        case ReadResult::success:
+            return "success";
+        case ReadResult::client_missing_room:
+            return "client_missing_room";
+        case ReadResult::failure:
+            return "failure";
+        case ReadResult::not_implemented:
+            return "not_implemented";
+        case ReadResult::clean:
+            return "clean";
+        case ReadResult::unauthorized:
+            return "unauthorized";
+        case ReadResult::invalid_input:
+            return "invalid_input";
+    }
+    return "not_found";
 }
 
 ClientAPI::ReadResult ClientAPI::readMessage(const nx_data& message)
@@ -686,13 +728,10 @@ ClientAPI::ReadResult ClientAPI::readMessage(const nx_data& message)
     {
         return result;
     }
-    else if (result == ReadResult::failure)
-    {
-        Log::warning("Failure in command: ", Util::convertToString(message));
-    }
     else
     {
-        Log::error("Received message that is not read by the server");
+        Log::error("Server returned other than \"success\"");
+        Log::debug("ReadResult value: ", readResultStr(result));
         std::string stringMessage = Util::convertToString(message);
         Log::error("Data: ", stringMessage);
     }
