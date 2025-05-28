@@ -292,7 +292,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         {
                             if (client.getId() == clientId)
                             {
-                                if (overlappingAllowed())
+                                if (overlappingAllowed2D())
                                 {
                                     client.getObject2D().setPosition({vectorX, vectorY});
                                     return ReadResult::success;

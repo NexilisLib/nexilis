@@ -1,4 +1,3 @@
-#include <nexilis/logger/loggable.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/util.hh>

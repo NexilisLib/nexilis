@@ -13,12 +13,14 @@ namespace nexilis::server
 {
 
 Command::Command(const Settings& settings)
-    : m_settings(settings)
+    : NxClass("Command", __FILE__),
+      m_settings(settings)
 {
 }
 
 Command::Command(Command&& other)
-    : m_settings(std::move(other.m_settings))
+    : NxClass(std::move(other)),
+      m_settings(std::move(other.m_settings))
 {
 }
 
@@ -27,6 +29,7 @@ Command& Command::operator=(Command&& other)
     if (this != &other)
     {
         m_settings = std::move(other.m_settings);
+        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -88,6 +91,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 /// requires privileges.
                 case 0:
                 {
+                    Log::debug(getLogName(), " setting::clientid");
+
                     if (!user.hasRootAccess())
                     {
                         Log::error("Client needs root access for changing id");
@@ -117,7 +122,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 // Set username to the client.
                 case 1:
                 {
-                    Log::debug("Called Command::Set::username");
+                    Log::debug(getLogName(), " setting::username");
 
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string username = Util::convertToString(payload);
@@ -195,7 +200,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         // Join room.
                         case 0:
                         {
-                            Log::debug("Command: Room::Join()");
+                            Log::debug(getLogName(), " room::management::join");
 
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                             uint64_t roomId = Util::convertToType<uint64_t>(payload);
@@ -230,7 +235,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         // Leave current room.
                         case 1:
                         {
-                            Log::debug("Command Room::leave()");
+                            Log::debug(getLogName(), " Room::leave");
                             auto* currentRoom = RoomStorage::getRoomById(user.getRoomId());
 
                             if (!currentRoom)
@@ -252,7 +257,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         /// Create room.
                         case 2:
                         {
-                            Log::debug("Command Room::create()");
+                            Log::debug(getLogName(), "Room::create");
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                             uint8_t context = payload[0];
                             std::string roomName = Util::convertToString(Util::removeAmountOfBytesFromVector(payload, 1));
@@ -299,7 +304,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             // broadcast
                             case 0:
                             {
-                                Log::debug("Command Room::Communicate::broadcast");
+                                Log::debug(getLogName(), " Room::Communicate::broadcast");
 
                                 // Get messagedata.
                                 auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
@@ -324,14 +329,12 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             // othercast
                             case 1:
                             {
-                                Log::debug("Command Room::Communicate::othercast");
                                 return Result::unimplemented;
                             }
 
                             // unicast
                             case 2:
                             {
-                                Log::debug("Command Room::Communicate::unicast");
                                 return Result::unimplemented;
                             }
                         }
@@ -347,7 +350,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         /// Position 2D
                         case 0:
                         {
-                            Log::debug("Command Room::position2D(vector2)");
+                            Log::debug(getLogName(), "Room::position2D(vector2)");
                             if (user.getRoomId() == 0)
                             {
                                 Log::error("User not in room!");

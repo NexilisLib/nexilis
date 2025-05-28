@@ -3,7 +3,6 @@
 #ifndef NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
-#include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/server_protocol.hh>
 #include <nexilis/server/settings.hh>

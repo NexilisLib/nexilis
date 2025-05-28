@@ -1,6 +1,7 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
+#include <nexilis/nx_class.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/movement/movement_2D.hh>
 #include <nexilis/protocol.hh>
@@ -19,7 +20,7 @@ namespace nexilis::server
 /// Nexilis Server-side API.
 /// Command contains functionality for reading nexilis byte sequence.
 /// These bytes have been cleared from MessageHandler and contains vector<uint8>& which triggers all the actions of nexilis.
-class Command
+class Command : public NxClass
 {
 public:
     /// Result for reading the Nexilis command sequence.

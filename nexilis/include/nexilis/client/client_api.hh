@@ -196,14 +196,16 @@ public:
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 
+    /// Set the value of 2D overlapping.
     void setOverlapStatus(bool status)
     {
-        m_overlappingAllowed = status;
+        m_2DoverlappingAllowed = status;
     }
 
-    bool overlappingAllowed() const
+    /// Get the value of 2D overlapping.
+    bool overlappingAllowed2D() const
     {
-        return m_overlappingAllowed;
+        return m_2DoverlappingAllowed;
     }
 
 public:
@@ -251,7 +253,7 @@ private:
 
     /// Can the elements overlap each other.
     // TODO this is 2D overlapping allowed.
-    bool m_overlappingAllowed = false;
+    bool m_2DoverlappingAllowed = false;
 
     /// Is the server aware of the client, is "Packet" initialized.
     bool m_isInitialized = false;

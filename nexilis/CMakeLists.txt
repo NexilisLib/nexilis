@@ -40,6 +40,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
 set(SOURCES
     # Base
+    src/nexilis/nx_class.cc
     src/nexilis/cmd_line_options.cc
     src/nexilis/protocol.cc
     src/nexilis/protocol_manager.cc
@@ -62,7 +63,6 @@ set(SOURCES
     src/nexilis/logger/logger.cc
     src/nexilis/logger/log.cc
     src/nexilis/logger/file_log.cc
-    src/nexilis/logger/loggable.cc
 
     # Server
     src/nexilis/server/server_protocol.cc

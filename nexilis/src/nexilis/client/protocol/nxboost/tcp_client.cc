@@ -1,5 +1,7 @@
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 
+#include <nexilis/logger/log.hh>
+
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/read.hpp>
@@ -283,6 +285,7 @@ void TCPClient::receiveLoop()
                 else
                 {
                     Log::info("Received unexpected message: ");
+                    // Log::debug("Type: ", result)
                     Util::debugUint8Vector(buffer);
                 }
             }
