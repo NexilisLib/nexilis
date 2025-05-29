@@ -1,6 +1,8 @@
 #ifndef NEXILIS_AUTHENTICATION_HH
 #define NEXILIS_AUTHENTICATION_HH
 
+#include <nexilis/server/authentication_mode.hh>
+
 #include <cassert>
 #include <string>
 
@@ -29,13 +31,6 @@ public:
         return m_rootPassword;
     }
 
-    enum class AuthenticationMode
-    {
-        free,
-        passwordProtected,
-        whiteListed
-    };
-
     void setMode(AuthenticationMode mode)
     {
         m_mode = mode;
@@ -56,7 +51,7 @@ public:
 private:
     std::string m_rootPassword;
     std::string m_password;
-    AuthenticationMode m_mode = AuthenticationMode::free;
+    AuthenticationMode m_mode = AuthenticationMode::empty;
     float m_tickrate = 60.f;
 };
 

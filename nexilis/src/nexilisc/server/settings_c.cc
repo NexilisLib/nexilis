@@ -82,14 +82,20 @@ void nexilis_settings_set_mode(nexilis_server_SettingsC* settings, nexilis_serve
     {
         switch (mode)
         {
-            case AUTHENTICATION_MODE_FREE:
-                settings->settings->setMode(nexilis::server::Settings::AuthenticationMode::free);
+            case AUTHENTICATION_MODE_EMPTY:
+                settings->settings->setMode(nexilis::server::AuthenticationMode::empty);
+                break;
+            case AUTHENTICATION_MODE_SKIP:
+                settings->settings->setMode(nexilis::server::AuthenticationMode::skip);
                 break;
             case AUTHENTICATION_MODE_PASSWORD_PROTECTED:
-                settings->settings->setMode(nexilis::server::Settings::AuthenticationMode::passwordProtected);
+                settings->settings->setMode(nexilis::server::AuthenticationMode::password_protected);
                 break;
-            case AUTHENTICATION_MODE_WHITELISTED:
-                settings->settings->setMode(nexilis::server::Settings::AuthenticationMode::whiteListed);
+            case AUTHENTICATION_MODE_ADMIN_ACCESS:
+                settings->settings->setMode(nexilis::server::AuthenticationMode::admin_access);
+                break;
+            case AUTHENTICATION_MODE_ROOT_ACCESS:
+                settings->settings->setMode(nexilis::server::AuthenticationMode::root_access);
                 break;
         }
     }
@@ -97,7 +103,7 @@ void nexilis_settings_set_mode(nexilis_server_SettingsC* settings, nexilis_serve
 
 nexilis_server_AuthenticationModeC nexilis_settings_get_mode(nexilis_server_SettingsC* settings)
 {
-    return settings ? static_cast<nexilis_server_AuthenticationModeC>(settings->settings->getMode()) : AUTHENTICATION_MODE_FREE;
+    return settings ? static_cast<nexilis_server_AuthenticationModeC>(settings->settings->getMode()) : AUTHENTICATION_MODE_EMPTY;
 }
 
 void nexilis_settings_set_tickrate(nexilis_server_SettingsC* settings, float tickrate)

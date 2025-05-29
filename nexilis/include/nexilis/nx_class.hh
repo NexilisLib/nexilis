@@ -10,9 +10,8 @@ class NxClass
 {
 public:
     /// Constructor.
-    /// \param name The classname of the user, derived class.
-    /// \param file The source file of the class.
-    NxClass(const std::string& name, const char* file);
+    /// \param name The classname of the user class.
+    explicit NxClass(const std::string& name);
 
     /// Move constructor.
     NxClass(NxClass&& other);
@@ -27,29 +26,22 @@ public:
     NxClass& operator=(const NxClass&) = delete;
 
     /// Get the associated name.
-    const std::string& getLogName() const
+    const std::string& classname() const
     {
         return m_classname;
     }
 
     /// Get the classes name as header for log messages.
-    const std::string& logHeader() const
+    const std::string& header() const
     {
         return m_logHeader;
     }
 
-    /// Get the file name.
-    const std::string& getFile() const
-    {
-        return m_file;
-    }
-
 private:
     std::string m_classname;
-    std::string m_file;
     std::string m_logHeader;
 };
 
-}
+} // namespace nexilis
 
 #endif

@@ -12,6 +12,7 @@ namespace nexilis::server::nxboost
 
 TCPServer::TCPServer(const Settings& settings) noexcept
     : ServerProtocol(settings),
+      NxClass("server::nxboost::TCPServer"),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
@@ -24,6 +25,7 @@ TCPServer::TCPServer(const Settings& settings) noexcept
 TCPServer::TCPServer(TCPServer&& other) noexcept
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      NxClass(std::move(other)),
       m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
       m_mutex(std::move(other.m_mutex)),
       m_ioContext(std::move(other.m_ioContext)),
@@ -52,6 +54,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
 
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -223,46 +226,44 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     {
                         if (sendToClient(bytes, newSocket))
                         {
-                            Log::info("Sent message to client succesfully");
+                            Log::info(header(), "Sent message to client succesfully");
                         }
                         else
                         {
-                            Log::error("Error sending message to client");
+                            Log::error(header(), "Error sending message to client");
                         }
                     });
                 }
 
                 Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
 
-                // TODO Command handling.
-
                 if (passCommand == Command::Result::success)
                 {
-                    Log::info("Passed");
+                    Log::info(header(), "command success");
                 }
                 else
                 {
-                    Log::info("Failed");
+                    Log::info(header(), "Result: ", Command::resultTypeAsString(passCommand));
                 }
             }
             boost::system::error_code ec;
             if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
             {
-                Log::error("Error in client socket shutdown");
+                Log::error(header(), "Error in client socket shutdown");
             }
             if (newSocket.close(ec))
             {
-                Log::error("Error in client socket close");
+                Log::error(header(), "Error in client socket close");
             }
         }
         catch (const boost::system::system_error& e)
         {
             // Handle errors or client disconnect here
-            Log::error("Error in client thread: ", e.what());
+            Log::error(header(), "Error in client thread: ", e.what());
         }
         catch (const std::exception& e)
         {
-            Log::error("Exception in client thread: ", e.what());
+            Log::error(header(), "Exception in client thread: ", e.what());
         }
     ServerProtocol::connectionClosed(); });
 
@@ -296,7 +297,7 @@ bool TCPServer::acceptClients()
                 {
                     // Successfully accepted a connection
                     auto remote_endpoint = newSocket.remote_endpoint();
-                    Log::debug("Accepted connection from: ", remote_endpoint.address().to_string(), ":", remote_endpoint.port());
+                    Log::debug(header(), "Accepted connection from: ", remote_endpoint.address().to_string(), ":", remote_endpoint.port());
                     accepted = true;
                     break;
                 }
@@ -306,7 +307,7 @@ bool TCPServer::acceptClients()
                     // Real error occurred
                     if (ec != boost::asio::error::operation_aborted)
                     {
-                        Log::error("Accept error: ", ec.message());
+                        Log::error(header(), "Accept error: ", ec.message());
                     }
                     return false;
                 }
@@ -348,7 +349,7 @@ bool TCPServer::sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& 
         boost::asio::write(clientSocket, boost::asio::buffer(data), ec);
         if (ec)
         {
-            Log::error("Failed to send data: ", ec.message());
+            Log::error(header(), "Failed to send data: ", ec.message());
             return false;
         }
         return true;

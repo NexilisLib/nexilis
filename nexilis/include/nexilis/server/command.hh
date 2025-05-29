@@ -1,9 +1,9 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
-#include <nexilis/nx_class.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/movement/movement_2D.hh>
+#include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
@@ -47,6 +47,9 @@ public:
         // The command usage is unauthorized.
         unauthorized
     };
+
+    /// Get string value of the Result type.
+    static std::string resultTypeAsString(Result res);
 
     /// Constructor.
     /// \param settings The settings of the server.

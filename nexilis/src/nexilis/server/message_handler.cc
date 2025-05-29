@@ -13,6 +13,11 @@
 namespace nexilis::server
 {
 
+MessageHandler::MessageHandler()
+    : NxClass("server::MessageHandler")
+{
+}
+
 // Payload handled by this class:
 // Client id 8 bytes
 // Message id 8 bytes
@@ -20,7 +25,7 @@ namespace nexilis::server
 
 MessageHandler::Message MessageHandler::readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication)
 {
-    Log::debug("Payload size: ", payload.size());
+    Log::debug(header(), "Payload size: ", payload.size());
     Util::debugUint8Vector(payload);
 
     // TODO
@@ -31,18 +36,22 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
     auto clientId = Util::uint64FromFront(payload);
     if (clientId == 0)
     {
-        Log::error("Client id is zero");
+        Log::error(header(), "Client id is zero");
         return errorMessage;
     }
-    auto* user = ClientStorage::getClientById(clientId);
+
+    // FIXME
+    // First message is ussumed different in AuthenticationMode::passwordProtected.
     bool userAlreadyExists = true;
 
+    // Does the user actually exist?
+    auto* user = ClientStorage::getClientById(clientId);
     if (!user)
     {
         // Create a new user.
         uint64_t newId = Util::getRandomUint64();
         User newUser(newId, address);
-        Log::info("Created new user: ", newId);
+        Log::info(header(), "Created new user: ", newId);
         auto username = Util::getRandomString(10);
         newUser.setUsername(username);
         user = &newUser;
@@ -52,44 +61,34 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
 
     switch (authentication->getMode())
     {
-        case Settings::AuthenticationMode::free:
+        case AuthenticationMode::empty:
         {
-            Log::error("Not implemented!");
             return errorMessage;
         }
-        case Settings::AuthenticationMode::whiteListed:
+        case AuthenticationMode::skip:
         {
-            Log::error("Not implemented!");
+            return handlePayload(payload, user, address, port);
+        }
+        case AuthenticationMode::admin_access:
+        case AuthenticationMode::root_access:
+        {
+            Log::error(header(), "Not implemented!");
             return errorMessage;
         }
-        case Settings::AuthenticationMode::passwordProtected:
+        case AuthenticationMode::password_protected:
         {
             if (userAlreadyExists)
             {
                 if (user->hasCommonAccess())
                 {
-                    Log::info("Known client sends a message!");
+                    Log::info(header(), "Access successfull");
 
-                    // Vector without client id (8 bytes).
-                    auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 8);
-
-                    // Next eight bytes is the message id.
-                    uint64_t messageId = Util::uint64FromFront(vectorWithoutClientId);
-
-                    // Vector without message id (8 bytes).
-                    auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 8);
-
-                    return Message(
-                            address,
-                            messageVector,
-                            port,
-                            user,
-                            messageId);
+                    return handlePayload(payload, user, address, port);
                 }
                 // Message from verified client that has no access.
                 else
                 {
-                    Log::error("Message from verified client that has no access");
+                    Log::error(header(), "Message from verified client that has no access");
                     return errorMessage;
                 }
             }
@@ -99,7 +98,7 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
                 // Normally string conversion is avoided throughout nexilis, but this one stays for obvious reasons.
                 if (authentication->isPassphrase(Util::convertToString(payload)))
                 {
-                    Log::info("Correct password by user ", user->getId());
+                    Log::info(header(), "Correct password by user ", user->getId());
                     user->setCommonAccess(true);
 
                     uint64_t newClientId = user->getId();
@@ -126,17 +125,36 @@ MessageHandler::Message MessageHandler::readMessage(std::string address, const n
                 }
                 else
                 {
-                    Log::error("NEW MESSAGE WHICH IS NOT PASSWORD");
+                    Log::error(header(), "Authentication error");
                     return errorMessage;
                 }
             }
         }
         default:
         {
-            Log::error("Missing authentication mode");
+            Log::error(header(), "Missing authentication mode");
             return errorMessage;
         }
     }
+}
+
+MessageHandler::Message MessageHandler::handlePayload(const nx_data& payload, User* user, const std::string& address, uint16_t port)
+{
+    // Vector without client id (8 bytes).
+    auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 8);
+
+    // Next eight bytes is the message id.
+    uint64_t messageId = Util::uint64FromFront(vectorWithoutClientId);
+
+    // Vector without message id (8 bytes).
+    auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 8);
+
+    return Message(
+            address,
+            messageVector,
+            port,
+            user,
+            messageId);
 }
 
 } // namespace nexilis::server

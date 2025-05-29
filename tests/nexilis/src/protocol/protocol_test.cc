@@ -42,7 +42,7 @@ protected:
 
     void createSettings()
     {
-        settings.setMode(nexilis::server::Settings::AuthenticationMode::passwordProtected);
+        settings.setMode(nexilis::server::AuthenticationMode::password_protected);
         settings.setPassphrase("salasana");
         settings.setRootPassword("root");
     }
