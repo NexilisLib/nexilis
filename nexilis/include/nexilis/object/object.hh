@@ -1,8 +1,7 @@
 #ifndef NEXILIS_OBJECT_HH
 #define NEXILIS_OBJECT_HH
 
-#include <nexilis/nx_emplace.hh>
-#include <nexilis/util.hh>
+#include <nexilis/nx_util.hh>
 
 namespace nexilis
 {

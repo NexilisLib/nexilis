@@ -23,6 +23,8 @@ namespace nexilis::server
 class Command : public NxClass
 {
 public:
+    using ClientMsgType = std::map<std::string, boost::json::value>;
+
     /// Result for reading the Nexilis command sequence.
     enum class Result
     {
@@ -102,7 +104,7 @@ private:
     /// Send message to every protocol that is avainable for a client;
     void sendMessageToClient(nx_data data, User& user, Protocol& protocol);
 
-    nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
+    nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
     void sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
 
     /// Send multiple messages with specified tickrate.
@@ -116,6 +118,8 @@ private:
 
     /// 2D movement thread.
     std::thread object2DMovement(const Movement2D& params, User& user, Protocol& protocol);
+
+    static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
 private:
     /// The "settings" of the server protocol.

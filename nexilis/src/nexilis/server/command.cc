@@ -31,7 +31,7 @@ std::string Command::resultTypeAsString(Result res)
         case Result::unimplemented:
             return "unimplemented";
     }
-    return std::string();
+    return "";
 }
 
 Command::Command(const Settings& settings)
@@ -154,29 +154,16 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     std::string username = Util::convertToString(payload);
 
                     auto* client = ClientStorage::getClientById(user.getId());
-                    bool setUserName = false;
                     if (client)
                     {
                         client->setUsername(username);
-                        setUserName = true;
                     }
                     else
                     {
                         return Result::error;
                     }
 
-                    if (!setUserName)
-                    {
-                        return Result::error;
-                    }
-
-                    std::map<std::string, boost::json::value> header{
-                            {"command", boost::json::value("setting")},
-                            {"type", boost::json::value("username")},
-                            {"callback", boost::json::value(messageId)},
-                            {"username", boost::json::value(username)}};
-
-                    auto data = Util::convertToByteVector(Json::createJSON(header));
+                    auto data = clientMessageData(CommandType::setting, "username", messageId, {{"username", boost::json::value(username)}});
                     sendMessageToClient(data, user, protocol);
 
                     return Result::success;
@@ -204,7 +191,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     nx_data message = Util::convertToByteVector(json);
                     sendMessageToClient(message, user, protocol);
 
-                    Log::info("Sent message GET CLIENTID to client");
+                    Log::info(header(), "Sent message GET CLIENTID to client");
                     return Result::success;
                 }
                 default:
@@ -372,7 +359,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         {
                             if (user.getRoomId() == 0)
                             {
-                                Log::error("User not in room!");
+                                Log::error(header(), "User not in room!");
                                 return Result::error;
                             }
 
@@ -1100,6 +1087,17 @@ std::thread Command::object2DMovement(const Movement2D& movement, User& user, Pr
         {
             Log::error(e.what());
         } });
+}
+
+nx_data Command::clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)
+{
+    auto data = ClientMsgType{
+            {"command", boost::json::value(commandTypeAsString(cmd))},
+            {"type", boost::json::value(type)},
+            {"callback", boost::json::value(message_id)}};
+    data.insert(params.begin(), params.end());
+
+    return Util::convertToByteVector(Json::createJSON(data));
 }
 
 } // namespace nexilis::server

@@ -6,6 +6,8 @@
 namespace nexilis
 {
 
+/// \note This class has nothing to do with "nx_data" or "nx_util".
+
 class NxClass
 {
 public:

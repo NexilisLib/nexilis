@@ -1,9 +1,7 @@
 #ifndef NEXILIS_NX_CREATE_HH
 #define NEXILIS_NX_CREATE_HH
 
-#include <nexilis/nx_data.hh>
-
-// TODO add nx_emplace here
+#include <nexilis/util.hh>
 
 namespace nexilis
 {
@@ -28,6 +26,17 @@ nx_data nx_create(Args&&... args)
              0)...};
 
     return result;
+}
+
+template <typename... Args>
+static void nx_emplace(nx_data& originalData, Args&&... args)
+{
+    ([&originalData](const auto& data)
+     {
+         const auto& byteVector = Util::convertToByteVector(data);
+         originalData.reserve(originalData.size() + byteVector.size());
+         std::copy(byteVector.begin(), byteVector.end(), std::back_inserter(originalData)); }(std::forward<Args>(args)),
+     ...);
 }
 
 } // namespace nexilis
