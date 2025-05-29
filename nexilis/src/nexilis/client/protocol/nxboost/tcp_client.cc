@@ -14,6 +14,7 @@ namespace nexilis::client::nxboost
 TCPClient::TCPClient(ClientAPI& api)
     : Protocol(),
       ClientProtocol(&api),
+      NxClass("server::nxboost::TCPClient"),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
@@ -28,6 +29,7 @@ TCPClient::TCPClient(ClientAPI& api)
 TCPClient::TCPClient(TCPClient&& other)
     : Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
+      NxClass(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveThread(std::move(other.m_receiveThread)),
       m_stopped(std::move(other.m_stopped)),
@@ -65,6 +67,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
 
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
+        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -87,16 +90,16 @@ void TCPClient::stop()
     boost::system::error_code ec;
     if (m_socket.cancel(ec))
     {
-        Log::error("Error cancelling socket operations: ", ec.message());
+        Log::error(header(), "Error cancelling socket operations: ", ec.message());
     }
     if (ec)
     {
-        Log::error("Cancel error: ", ec.message());
+        Log::error(header(), "Cancel error: ", ec.message());
     }
     if (m_ioContext)
     {
         m_ioContext->stop();
-        Log::debug("BoostTCPClient io_context stopped");
+        Log::debug(header(), "BoostTCPClient io_context stopped");
     }
     if (m_ioContextThread.joinable())
     {
@@ -108,11 +111,11 @@ void TCPClient::stop()
     }
     if (m_socket.close(ec))
     {
-        Log::error("Error closing socket: ", ec.message());
+        Log::error(header(), "Error closing socket: ", ec.message());
     }
     if (ec)
     {
-        Log::error("Closing error: ", ec.message());
+        Log::error(header(), "Closing error: ", ec.message());
     }
 }
 
@@ -133,7 +136,7 @@ bool TCPClient::connectToServer()
         auto port = Util::readPortFromFile(Protocol::Type::BOOST_TCP_SERVER);
         if (!port)
         {
-            Log::error("Could not read TCP server port from a file.");
+            Log::error(header(), "Could not read TCP server port from a file.");
             return false;
         }
         try
@@ -142,12 +145,12 @@ bool TCPClient::connectToServer()
         }
         catch (...)
         {
-            Log::error("Connection failed!");
+            Log::error(header(), "Connection failed!");
         }
     }
     catch (...)
     {
-        Log::error("Could not connect to server!");
+        Log::error(header(), "Could not connect to server!");
     }
     return m_socket.is_open();
 }
@@ -156,13 +159,13 @@ bool TCPClient::send(const nx_data& data)
 {
     if (!m_sendMutex)
     {
-        Log::error("Send mutex is invalid");
+        Log::error(header(), "Send mutex is invalid");
         return false;
     }
     std::unique_lock<std::mutex> lock(*m_sendMutex, std::defer_lock);
     if (!m_socket.is_open())
     {
-        Log::error("TCPClient socket is not open SOCKET SEND");
+        Log::error(header(), "TCPClient socket is not open SOCKET SEND");
         return false;
     }
 
@@ -171,11 +174,11 @@ bool TCPClient::send(const nx_data& data)
                              {
                                  if (!error)
                                  {
-                                     Log::info("Message sent successfully.");
+                                     Log::info(header(), "Message sent successfully.");
                                  }
                                  else
                                  {
-                                     Log::error("Send error: " + error.message());
+                                     Log::error(header(), "Send error: " + error.message());
                                      m_socket.close();
                                  }
                              });
@@ -187,7 +190,7 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
 {
     if (!m_socket.is_open())
     {
-        Log::error("TCPClient socket is not open for receiving.");
+        Log::error(header(), "TCPClient socket is not open for receiving.");
         return;
     }
     if (m_stopped->load())
@@ -207,20 +210,20 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
                 {
                     m_socket.close();
                 }
-                Log::error("Receive error: ", ec.message());
+                Log::error(header(), "Receive error: ", ec.message());
                 return;
             }
 
             if (bytes_transferred == 0)
             {
-                Log::warning("No data received!");
+                Log::warning(header(), "No data received!");
                 return;
             }
 
             nx_data buffer(bytes_transferred);
             std::istream is(receiveBuffer.get());
             is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
-            Log::info("Received message of size: ", bytes_transferred);
+            Log::info(header(), "Received message of size: ", bytes_transferred);
 
             if (callback)
             {
@@ -239,21 +242,21 @@ void TCPClient::start()
 {
     if (connectToServer())
     {
-        Log::info("Connected to server!");
+        Log::info(header(), "Connected to server!");
 
         // clang-format off
         m_ioContextThread = std::thread([this]()
         {
-            Log::debug("BoostTCPClient io_context thread started.");
+            Log::debug(header(), "BoostTCPClient io_context thread started.");
             m_ioContext->run();
-            Log::debug("BoostTCPClient io_context thread stopped.");
+            Log::debug(header(), "BoostTCPClient io_context thread stopped.");
         });
 
         m_receiveThread = std::thread([this]()
         {
-            Log::debug("BoostTCPClient Receive loop started");
+            Log::debug(header(), "BoostTCPClient Receive loop started");
             receiveLoop();
-            Log::debug("BoostTCPClient Receive loop stopped");
+            Log::debug(header(), "BoostTCPClient Receive loop stopped");
         });
         // clang-format on
 
@@ -261,7 +264,7 @@ void TCPClient::start()
     }
     else
     {
-        Log::error("Failed to connect to the server");
+        Log::error(header(), "Failed to connect to the server");
     }
 }
 
@@ -280,22 +283,22 @@ void TCPClient::receiveLoop()
                 auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
                 if (result == ClientAPI::ReadResult::success)
                 {
-                    Log::info("Message read successfully");
+                    Log::info(header(), "Message read successfully");
                 }
                 else
                 {
-                    Log::info("Received unexpected message: ");
-                    // Log::debug("Type: ", result)
+                    Log::warning(header(), "Received unexpected message: ");
+                    Log::warning(header(), "Type: ", ClientAPI::readResultStr(result));
                     Util::debugUint8Vector(buffer);
                 }
             }
             catch (const std::exception& e)
             {
-                Log::error("Exception in receive callback: ", e.what());
+                Log::error(header(), "Exception in receive callback: ", e.what());
             }
             catch (...)
             {
-                Log::error("Unknown error in receive callback");
+                Log::error(header(), "Unknown error in receive callback");
             }
         };
 

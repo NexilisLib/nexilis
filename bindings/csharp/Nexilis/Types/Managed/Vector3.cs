@@ -24,6 +24,7 @@ public class Vector3<T> : IDisposable
     {
         public RawVector3 Create(T x, T y, T z)
         {
+            _logger.Debug("Vector3 created: x:"+ x + " y:" + y + " z:" + z);
             return Vector3Native.nexilis_vector3f_create((float)(object)x, (float)(object)y, (float)(object)z);
         }
 
@@ -90,9 +91,17 @@ public class Vector3<T> : IDisposable
 
     public Vector3(T x, T y, T z)
     {
-        _nativePtr = _operations.Create(x, y, z);
-        if (_nativePtr.vector == IntPtr.Zero)
-            throw new Exception("Failed to create native Vector3");
+        try
+        {
+            _nativePtr = _operations.Create(x, y, z);
+            if (_nativePtr.vector == IntPtr.Zero)
+                throw new Exception("Failed to create native Vector3");
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to create Vector3: {ex}");
+            throw;
+        }
     }
 
     public RawVector3 getNative()

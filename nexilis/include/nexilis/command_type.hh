@@ -59,7 +59,7 @@ enum class CommandType : uint8_t
 };
 
 std::string commandTypeAsString(CommandType command_type);
-CommandType stringAsCommandType(const std::string& str);
+CommandType commandTypeFromString(const std::string& str);
 
 } // namespace nexilis
 

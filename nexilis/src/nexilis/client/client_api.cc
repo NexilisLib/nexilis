@@ -186,7 +186,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         return ReadResult::error;
     }
 
-    auto command = stringAsCommandType(json["command"].as_string().c_str());
+    auto command = commandTypeFromString(json["command"].as_string().c_str());
     auto type = json["type"];
 
     switch (command)

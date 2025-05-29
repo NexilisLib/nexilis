@@ -29,7 +29,7 @@ std::string commandTypeAsString(CommandType command_type)
     return "undefined";
 }
 
-CommandType stringAsCommandType(const std::string& str)
+CommandType commandTypeFromString(const std::string& str)
 {
     if (str == "setting")
         return CommandType::setting;

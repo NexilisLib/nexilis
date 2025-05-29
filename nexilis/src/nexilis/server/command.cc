@@ -644,7 +644,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     };
                                     break;
                                 default:
-                                    Log::error("Undefined movement type!");
+                                    Log::error(header(), "Undefined movement type!");
                             }
 
                             auto base_move = Movement2D(Movement::Data(objectId, deltaTime, command, messageId), movement, movementFunction);
@@ -666,19 +666,19 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         {
                             if (user.getRoomId() == 0)
                             {
-                                Log::error("User not in room!");
+                                Log::error(header(), "User not in room!");
                                 return Result::error;
                             }
 
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                             auto vector = Util::convertToVector3(payload);
-                            Log::debug("Position x:", vector.x, " y:", vector.y, " z: ", vector.z);
+                            Log::debug(header(), "Position x:", vector.x, " y:", vector.y, " z: ", vector.z);
 
                             auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
 
                             if (!currentRoom)
                             {
-                                Log::warning("Client not currently in room.");
+                                Log::warning(header(), "Client not currently in room.");
                                 return Result::failure;
                             }
 
@@ -988,17 +988,15 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
     assert(!roomCommandType.empty());
     assert(!roomCommandAction.empty());
 
-    /// Create message.
-    std::map<std::string, boost::json::value> header{
-            {"command", boost::json::value("room")},
-            {"type", boost::json::value(roomCommandType)},
-            {"action", boost::json::value(roomCommandAction)},
-            {"roomId", boost::json::value(roomId)},
-            {"clientId", boost::json::value(user.getId())},
-            {"callback", boost::json::value(messageId)}};
-    header.insert(params.begin(), params.end());
-    auto json = Json::createJSON(header);
-    return Util::convertToByteVector(json);
+    auto all_params = ClientMsgType {
+        {"type", boost::json::value(roomCommandType)},
+        {"action", boost::json::value(roomCommandAction)},
+        {"roomId", boost::json::value(roomId)},
+        {"clientId", boost::json::value(user.getId())},
+    };
+    all_params.insert(params.begin(), params.end());
+
+    return clientMessageData(CommandType::room, "room", messageId, all_params);
 }
 
 void Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)
@@ -1091,13 +1089,17 @@ std::thread Command::object2DMovement(const Movement2D& movement, User& user, Pr
 
 nx_data Command::clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)
 {
+    return Util::convertToByteVector(Json::createJSON(clientMessageMap(cmd, type, message_id, params)));
+}
+
+Command::ClientMsgType Command::clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)
+{
     auto data = ClientMsgType{
             {"command", boost::json::value(commandTypeAsString(cmd))},
             {"type", boost::json::value(type)},
             {"callback", boost::json::value(message_id)}};
     data.insert(params.begin(), params.end());
-
-    return Util::convertToByteVector(Json::createJSON(data));
+    return data;
 }
 
 } // namespace nexilis::server

@@ -3,6 +3,7 @@
 
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/nx_class.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -13,7 +14,8 @@ namespace nexilis::client::nxboost
 {
 
 class TCPClient : public Protocol,
-                  public ClientProtocol
+                  public ClientProtocol,
+                  public NxClass
 {
 public:
     /// Constructor.

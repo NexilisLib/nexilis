@@ -1,9 +1,9 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
+#include <nexilis/nx_class.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/movement/movement_2D.hh>
-#include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
@@ -120,6 +120,7 @@ private:
     std::thread object2DMovement(const Movement2D& params, User& user, Protocol& protocol);
 
     static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
+    static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
 private:
     /// The "settings" of the server protocol.
