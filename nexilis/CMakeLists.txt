@@ -13,28 +13,6 @@ set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-# Boost subrepos
-add_subdirectory(third-party/boost/libs/static_assert)
-add_subdirectory(third-party/boost/libs/intrusive)
-add_subdirectory(third-party/boost/libs/endian)
-add_subdirectory(third-party/boost/libs/predef)
-add_subdirectory(third-party/boost/libs/mp11)
-add_subdirectory(third-party/boost/libs/winapi)
-add_subdirectory(third-party/boost/libs/core)
-add_subdirectory(third-party/boost/libs/move)
-add_subdirectory(third-party/boost/libs/container_hash)
-add_subdirectory(third-party/boost/libs/describe)
-add_subdirectory(third-party/boost/libs/container)
-add_subdirectory(third-party/boost/libs/variant)
-add_subdirectory(third-party/boost/libs/variant2)
-add_subdirectory(third-party/boost/libs/throw_exception)
-add_subdirectory(third-party/boost/libs/align)
-add_subdirectory(third-party/boost/libs/config)
-add_subdirectory(third-party/boost/libs/assert)
-add_subdirectory(third-party/boost/libs/system)
-add_subdirectory(third-party/boost/libs/asio)
-add_subdirectory(third-party/boost/libs/json)
-
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
@@ -136,11 +114,9 @@ set(SOURCES
 add_library(nexilis SHARED ${SOURCES})
 target_include_directories(nexilis PUBLIC include
     ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost
-    ${BOOST_ROOT}/libs/asio/include
 )
-target_link_libraries(nexilis PRIVATE
-    Boost::system
-    Boost::json
+target_link_libraries(nexilis PUBLIC
+    boost_json
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
