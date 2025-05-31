@@ -2,8 +2,8 @@
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
 #include <nexilis/client/client_protocol.hh>
-#include <nexilis/protocol.hh>
 #include <nexilis/nx_class.hh>
+#include <nexilis/protocol.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>

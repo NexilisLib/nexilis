@@ -9,14 +9,22 @@
 namespace nexilis
 {
 
-class Movement3D : public Movement
+class Movement3D : public Movement<Vector3f>
 {
 public:
     using MovementFunc = std::function<double(double, double, double)>;
-    /// Constructor.
-    explicit Movement3D(const Movement::Data& params, Vector3f movement_amount, const MovementFunc& movement_function);
 
-    Vector3f getMovementAmount() const
+    /// Constructor.
+    explicit Movement3D(const MovementData& params, Vector3f movement_amount, const MovementFunc& movement_function);
+
+    /// Movement::getType implementation.
+    Type getType() const override
+    {
+        return Type::_3D;
+    }
+
+    /// Movement::getAmount implementation.
+    Vector3f getAmount() const override
     {
         return m_movementAmount;
     }
@@ -28,7 +36,7 @@ public:
 
 private:
     Vector3f m_movementAmount;
-    std::function<double(double, double, double)> m_movementFunction;
+    MovementFunc m_movementFunction;
 };
 
 } // namespace nexilis

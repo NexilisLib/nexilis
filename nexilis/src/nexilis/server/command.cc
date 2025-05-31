@@ -201,6 +201,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
         case CommandType::room:
         {
+            // Payload for room commands start after the third byte.
             const uint8_t roomCommandPayloadAmount = 3;
             auto roomArg = command[2];
             switch (arg)
@@ -647,8 +648,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     Log::error(header(), "Undefined movement type!");
                             }
 
-                            auto base_move = Movement2D(Movement::Data(objectId, deltaTime, command, messageId), movement, movementFunction);
-                            object2DMovement(base_move, user, protocol).detach();
+                            auto base_move = std::make_unique<Movement2D>(MovementData(objectId, deltaTime, command, messageId), movement, movementFunction);
+                            object2DMovement(std::move(base_move), user, protocol).detach();
                             return Result::success;
                         }
 
@@ -672,7 +673,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                             auto vector = Util::convertToVector3(payload);
-                            Log::debug(header(), "Position x:", vector.x, " y:", vector.y, " z: ", vector.z);
+                            Log::debug(header(), "Position x:", vector.x, " y:", vector.y, " z:", vector.z);
 
                             auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
 
@@ -988,15 +989,14 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
     assert(!roomCommandType.empty());
     assert(!roomCommandAction.empty());
 
-    auto all_params = ClientMsgType {
-        {"type", boost::json::value(roomCommandType)},
-        {"action", boost::json::value(roomCommandAction)},
-        {"roomId", boost::json::value(roomId)},
-        {"clientId", boost::json::value(user.getId())},
+    auto all_params = ClientMsgType{
+            {"action", boost::json::value(roomCommandAction)},
+            {"roomId", boost::json::value(roomId)},
+            {"clientId", boost::json::value(user.getId())},
     };
     all_params.insert(params.begin(), params.end());
 
-    return clientMessageData(CommandType::room, "room", messageId, all_params);
+    return clientMessageData(CommandType::room, roomCommandType, messageId, all_params);
 }
 
 void Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)
@@ -1047,21 +1047,21 @@ double Command::linear(double progress, double totalDistance)
     return totalDistance * progress;
 }
 
-std::thread Command::object2DMovement(const Movement2D& movement, User& user, Protocol& protocol)
+std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User& user, Protocol& protocol)
 {
     // clang-format off
-    return std::thread([this, movement, &user, &protocol]()
+    return std::thread([this, &movement, &user, &protocol]()
     {
     // clang-format on
         try
         {
-            runWithTickrate(m_settings.getTickrate(), movement.getDeltatime(), [this, &movement, &user, &protocol](double progress)
+            runWithTickrate(m_settings.getTickrate(), movement->getDeltatime(), [this, &movement, &user, &protocol](double progress)
             {
-                auto func = movement.getMovementFunc();
-                auto amount = movement.getMovementAmount();
+                auto func = movement->getMovementFunc();
+                auto amount = movement->getAmount();
 
                 auto* room = RoomStorage::getRoomById(user.getRoomId());
-                auto* serverObject = room->getObject2DById(movement.getObjectId());
+                auto* serverObject = room->getObject2DById(movement->getObjectId());
 
                 double movementY = func(progress, amount.y);
                 double movementX = func(progress, amount.x);
@@ -1077,7 +1077,7 @@ std::thread Command::object2DMovement(const Movement2D& movement, User& user, Pr
                     {"x", boost::json::value(newPosition.x)},
                     {"y", boost::json::value(newPosition.y)}
                 };
-                auto roomCommand = createRoomCommand(user.getRoomId(), user, movement.getMessageData(), messageParams, movement.getMessageId());
+                auto roomCommand = createRoomCommand(user.getRoomId(), user, movement->getMessageData(), messageParams, movement->getMessageId());
                 sendRoomCommand(roomCommand, user, protocol);
             });
         }

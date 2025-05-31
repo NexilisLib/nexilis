@@ -53,7 +53,7 @@ set(SOURCES
     src/nexilis/command_type.cc
 
     # Movement
-    src/nexilis/movement/movement.cc
+    src/nexilis/movement/movement_data.cc
     src/nexilis/movement/movement_2D.cc
     src/nexilis/movement/movement_3D.cc
 

@@ -237,10 +237,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             std::string roomAction = readString(json, "action");
 
             // Skipping messages where the client does not have to be in a room.
-            if (!(type == "management" && (roomAction == "join" || roomAction == "create")))
+            if (type != "management")
             {
                 if (!clientInRoom())
                 {
+                    Log::error("Client is missing room for type: ", type, " roomaction: ", roomAction);
                     return ReadResult::client_missing_room;
                 }
             }
@@ -733,6 +734,7 @@ ClientAPI::ReadResult ClientAPI::readMessage(const nx_data& message)
         Log::error("Server returned other than \"success\"");
         Log::debug("ReadResult value: ", readResultStr(result));
         std::string stringMessage = Util::convertToString(message);
+        // TODO format output json
         Log::error("Data: ", stringMessage);
     }
     return result;

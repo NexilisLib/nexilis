@@ -1,9 +1,10 @@
 #ifndef NEXILIS_COMMAND_HH
 #define NEXILIS_COMMAND_HH
 
-#include <nexilis/nx_class.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/movement/movement_2D.hh>
+#include <nexilis/movement/movement_3D.hh>
+#include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
@@ -11,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -117,13 +119,25 @@ private:
     double linear(double progress, double totalDistance);
 
     /// 2D movement thread.
-    std::thread object2DMovement(const Movement2D& params, User& user, Protocol& protocol);
+    std::thread object2DMovement(std::unique_ptr<Movement2D> movement, User& user, Protocol& protocol);
+
+    struct MovementParams
+    {
+        MovementData movement_data;
+        User* user;
+        Protocol& protocol;
+        float tickrate;
+        float delta_time;
+    };
+
+    // std::thread player2DMovement(Movement2D movement, const MovementParams& params);
+    // std::thread player3DMovement(Movement3D movement, const MovementParams& params);
 
     static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
     static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
 private:
-    /// The "settings" of the server protocol.
+    /// The server side configuration.
     Settings m_settings;
 };
 

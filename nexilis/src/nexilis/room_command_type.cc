@@ -10,15 +10,19 @@ std::string RoomCommandType::RoomTypeToString(RoomCommandType::Root type)
     {
         case RoomCommandType::Root::management:
             return "management";
+        case RoomCommandType::Root::communication:
+            return "communication";
         case RoomCommandType::Root::player2D:
             return "player2D";
         case RoomCommandType::Root::object2D:
             return "object2D";
-        case RoomCommandType::Root::communication:
-            return "communication";
+        case RoomCommandType::Root::player3D:
+            return "player3D";
+        case RoomCommandType::Root::object3D:
+            return "object3D";
         default:
             Log::error("RoomTypeToString no type found!");
-            return "";
+            return "undefined";
     }
 }
 
