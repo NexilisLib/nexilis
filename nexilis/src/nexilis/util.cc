@@ -38,6 +38,20 @@ std::string Util::convertToNumbers(const nx_data& bytes)
     return ss.str();
 }
 
+// Big-endian float conversion helper.
+float bytesToFloatBigEndian(const uint8_t* bytes)
+{
+    uint32_t temp = 0;
+    temp |= static_cast<uint32_t>(bytes[0]) << 24;
+    temp |= static_cast<uint32_t>(bytes[1]) << 16;
+    temp |= static_cast<uint32_t>(bytes[2]) << 8;
+    temp |= static_cast<uint32_t>(bytes[3]);
+
+    float result;
+    memcpy(&result, &temp, sizeof(float));
+    return result;
+}
+
 Vector2f Util::convertToVector2(const nx_data& bytes)
 {
     // Ensure the vector has enough bytes for two floats
@@ -47,11 +61,18 @@ Vector2f Util::convertToVector2(const nx_data& bytes)
     }
     float x, y;
 
-    // Copy the first 4 bytes.
-    memcpy(&x, bytes.data(), sizeof(float));
-    // Copy the next 4 bytes.
-    memcpy(&y, bytes.data() + sizeof(float), sizeof(float));
-
+    if (server::Config::getBigEndian())
+    {
+        x = bytesToFloatBigEndian(bytes.data());
+        y = bytesToFloatBigEndian(bytes.data() + sizeof(float));
+    }
+    else
+    {
+        // Copy the first 4 bytes.
+        memcpy(&x, bytes.data(), sizeof(float));
+        // Copy the next 4 bytes.
+        memcpy(&y, bytes.data() + sizeof(float), sizeof(float));
+    }
     return Vector2f(x, y);
 }
 
@@ -63,10 +84,18 @@ Vector3f Util::convertToVector3(const nx_data& bytes)
     }
     float x, y, z;
 
-    memcpy(&x, bytes.data(), sizeof(float));
-    memcpy(&y, bytes.data() + sizeof(float), sizeof(float));
-    memcpy(&z, bytes.data() + sizeof(float) * 2, sizeof(float));
-
+    if (server::Config::getBigEndian())
+    {
+        x = bytesToFloatBigEndian(bytes.data());
+        y = bytesToFloatBigEndian(bytes.data() + sizeof(float));
+        z = bytesToFloatBigEndian(bytes.data() + 2 * sizeof(float));
+    }
+    else
+    {
+        memcpy(&x, bytes.data(), sizeof(float));
+        memcpy(&y, bytes.data() + sizeof(float), sizeof(float));
+        memcpy(&z, bytes.data() + sizeof(float) * 2, sizeof(float));
+    }
     return Vector3f(x, y, z);
 }
 
