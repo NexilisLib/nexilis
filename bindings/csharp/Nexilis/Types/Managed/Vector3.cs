@@ -13,7 +13,7 @@ public class Vector3<T> : IDisposable
     {
         RawVector3 Create(T x, T y, T z);
         RawVector3 CreateDefault();
-        void Destroy(RawVector3 vector);
+        void Destroy(ref RawVector3 vector);
         void GetComponents(RawVector3 vector, out T x, out T y, out T z);
         void SetComponents(RawVector3 vector, T x, T y, T z);
         byte[] Serialize(RawVector3 vector);
@@ -24,40 +24,65 @@ public class Vector3<T> : IDisposable
     {
         public RawVector3 Create(T x, T y, T z)
         {
-            _logger.Debug("Vector3 created: x:"+ x + " y:" + y + " z:" + z);
-            return Vector3Native.nexilis_vector3f_create((float)(object)x, (float)(object)y, (float)(object)z);
+            IntPtr wrapper = Vector3Native.nexilis_vector3f_create((float)(object)x, (float)(object)y, (float)(object)z);
+            if (wrapper == IntPtr.Zero)
+            {
+                throw new Exception("Native vector creation failed");
+            }
+            return new RawVector3 { vec = wrapper };
         }
 
-        public RawVector3 CreateDefault() => Vector3Native.nexilis_vector3f_create_default();
+        public RawVector3 CreateDefault()
+        {
+            IntPtr wrapper = Vector3Native.nexilis_vector3f_create_default();
+            return new RawVector3 { vec = wrapper };
+        }
 
-        public void Destroy(RawVector3 vector) => Vector3Native.nexilis_vector3f_destroy(vector);
+        public void Destroy(ref RawVector3 vector) => Vector3Native.nexilis_vector3f_destroy(vector.vec);
 
         public void GetComponents(RawVector3 vector, out T x, out T y, out T z)
         {
-            float _x = Vector3Native.nexilis_vector3f_get_x(vector);
-            float _y = Vector3Native.nexilis_vector3f_get_y(vector);
-            float _z = Vector3Native.nexilis_vector3f_get_z(vector);
+            if (vector.vec == IntPtr.Zero)
+            {
+                throw new NullReferenceException("Native vector pointer is null");
+            }
 
-            x = (T)(object)_x;
-            y = (T)(object)_y;
-            z = (T)(object)_z;
+            try
+            {
+                float _x = Vector3Native.nexilis_vector3f_get_x(vector.vec);
+                float _y = Vector3Native.nexilis_vector3f_get_y(vector.vec);
+                float _z = Vector3Native.nexilis_vector3f_get_z(vector.vec);
+
+                x = (T)(object)_x;
+                y = (T)(object)_y;
+                z = (T)(object)_z;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to get components: {ex}");
+                throw;
+            }
         }
 
         public void SetComponents(RawVector3 vector, T? x, T? y, T? z)
         {
-            Vector3Native.nexilis_vector3f_set_x(vector, (float)(object)x!);
-            Vector3Native.nexilis_vector3f_set_y(vector, (float)(object)y!);
-            Vector3Native.nexilis_vector3f_set_z(vector, (float)(object)z!);
+            Vector3Native.nexilis_vector3f_set_x(vector.vec, (float)(object)x!);
+            Vector3Native.nexilis_vector3f_set_y(vector.vec, (float)(object)y!);
+            Vector3Native.nexilis_vector3f_set_z(vector.vec, (float)(object)z!);
         }
 
         public byte[] Serialize(RawVector3 vector)
         {
             byte[] data = new byte[12]; // 3 floats
-            Vector3Native.nexilis_vector3f_serialize(vector, data);
+            Vector3Native.nexilis_vector3f_serialize(vector.vec, data);
             return data;
         }
 
-        public RawVector3 Deserialize(byte[] data) => Vector3Native.nexilis_vector3f_deserialize(data);
+        public RawVector3 Deserialize(byte[] data)
+        {
+            IntPtr wrapper = Vector3Native.nexilis_vector3f_deserialize(data);
+            return new RawVector3 { vec = wrapper };
+        }
     }
 
     /*
@@ -94,7 +119,7 @@ public class Vector3<T> : IDisposable
         try
         {
             _nativePtr = _operations.Create(x, y, z);
-            if (_nativePtr.vector == IntPtr.Zero)
+            if (_nativePtr.vec == IntPtr.Zero)
                 throw new Exception("Failed to create native Vector3");
         }
         catch (Exception ex)
@@ -106,6 +131,12 @@ public class Vector3<T> : IDisposable
 
     public RawVector3 getNative()
     {
+        if (_disposed) throw new ObjectDisposedException("Vector3<T>");
+        if (_nativePtr.vec == IntPtr.Zero) throw new InvalidOperationException("Native pointer is null");
+
+        _logger.Debug($"Getting native pointer: 0x{_nativePtr.vec.ToInt64():X}");
+        _operations.GetComponents(_nativePtr, out T x, out T y, out T z);
+        _logger.Debug($"Current values in native: {x}, {y}, {z}");
         return _nativePtr;
     }
 
@@ -166,19 +197,20 @@ public class Vector3<T> : IDisposable
     public static Vector3<T> Deserialize(byte[] data)
     {
         var nativePtr = _operations.Deserialize(data);
-        if (nativePtr.vector == IntPtr.Zero)
+        if (nativePtr.vec == IntPtr.Zero)
             throw new Exception("Failed to deserialize Vector3<T>");
 
-        return new Vector3<T>(nativePtr.vector);
+        return new Vector3<T>(nativePtr.vec);
     }
 
     Vector3(IntPtr nativePtr)
     {
-        _nativePtr.vector = nativePtr;
+        _nativePtr.vec = nativePtr;
     }
 
     ~Vector3()
     {
+        _logger.Debug("Disposing Vector3<T>");
         Dispose(false);
     }
 
@@ -192,10 +224,11 @@ public class Vector3<T> : IDisposable
     {
         if (!_disposed)
         {
-            if (_nativePtr.vector != IntPtr.Zero)
+            _logger.Debug($"Disposing Vector3 (disposing={disposing})");
+            if (_nativePtr.vec != IntPtr.Zero)
             {
-                _operations.Destroy(_nativePtr);
-                _nativePtr.vector = IntPtr.Zero;
+                _operations.Destroy(ref _nativePtr);
+                _nativePtr.vec = IntPtr.Zero;
             }
             _disposed = true;
         }

@@ -60,10 +60,10 @@ namespace Nexilis
 
             var size = Size;
             if (size == 0) return Array.Empty<byte>();
-            
+
             var dataPtr = RawNxDataNative.nexilis_nx_data_get_data(ref _rawData);
             if (dataPtr == IntPtr.Zero) return Array.Empty<byte>();
-            
+
             byte[] bytes = new byte[(int)size];
             Marshal.Copy(dataPtr, bytes, 0, (int)size);
             return bytes;

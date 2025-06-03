@@ -4,9 +4,12 @@
 #include <cstring>
 #include <vector>
 
+#include <nexilis/logger/file_log.hh>
+
 // nexilis_Vector3f implementation
 nexilis_Vector3f* nexilis_vector3f_create(float x, float y, float z)
 {
+    nexilis::FileLog::debug("Creating vector with x: ", x, "y: ", y, " z: ", z);
     auto* vector = new nexilis_Vector3f;
     vector->vec = new nexilis::Vector3f(x, y, z);
     return vector;

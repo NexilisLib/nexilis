@@ -54,15 +54,32 @@ namespace Nexilis
         {
             return NativeInterop.ExecuteSafe(() =>
             {
+                if (position == null)
+                {
+                    throw new ArgumentNullException(nameof(position));
+                }
+
                 var nativePointer = position.getNative();
-                if (nativePointer.vector == IntPtr.Zero)
+                if (nativePointer.vec == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Nativepointer fails");
                 }
-                var raw = PacketNative.nexilis_packet_room_player3D_position(position.getNative());
+                var raw = PacketNative.nexilis_packet_room_player3D_position(nativePointer);
                 if (raw.data == IntPtr.Zero)
                 {
-                    throw new InvalidOperationException("Failed to get room management join.");
+                    throw new InvalidOperationException("Failed to get room player3 position.");
+                }
+                return NxData.Create(raw);
+            }, "Player3DPosition");
+        }
+        public static NxData Player3DPositionDirect(float x, float y, float z)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_room_player3D_position_direct(x, y, z);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Native call returned null");
                 }
                 return NxData.Create(raw);
             }, "Player3DPosition");

@@ -22,6 +22,7 @@ nx_data_c nexilis_packet_room_management_create(nexilis_RoomContext ctx, const c
 
 // Room player3D
 nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f position);
+nx_data_c nexilis_packet_room_player3D_position_direct(float x, float y, float z);
 nx_data_c nexilis_packet_room_player3D_dimensions(nexilis_Vector3f dimensions);
 nx_data_c nexilis_packet_room_player3D_movement(nexilis_Vector3f movement, float deltaTime);
 
