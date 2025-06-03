@@ -8,11 +8,12 @@ static nx_data_c convert_nx_data(const nexilis::nx_data& data)
     return nexilis_nx_data_create_from(data.data(), data.size());
 }
 
-static nexilis::Vector3f convert_vector3f(nexilis_Vector3f vector)
+static nexilis::Vector3f convert_vector3f(nexilis_Vector3f* vector)
 {
-    float x = nexilis_vector3f_get_x(&vector);
-    float y = nexilis_vector3f_get_y(&vector);
-    float z = nexilis_vector3f_get_z(&vector);
+    float x = vector->vec->x;
+    float y = vector->vec->y;
+    float z = vector->vec->z;
+    nexilis::FileLog::debug("Converted position x:", x, " y:", y, " z:", z);
     return nexilis::Vector3f(x, y, z);
 }
 
@@ -32,17 +33,27 @@ nx_data_c nexilis_packet_room_management_create(nexilis_RoomContext ctx, const c
             nexilis::RoomData::Context(ctx), std::string(room_name)));
 }
 
-nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f position)
+nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f* position)
 {
+    if (!position || !position->vec)
+    {
+        nexilis::FileLog::error("Incorrect vector for nexilis_packet_room_player3D_position");
+        return nx_data_c{};
+    }
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::position(convert_vector3f(position)));
 }
 
-nx_data_c nexilis_packet_room_player3D_dimensions(nexilis_Vector3f dimensions)
+nx_data_c nexilis_packet_room_player3D_position_direct(float x, float y, float z)
+{
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::position(nexilis::Vector3f(x, y, z)));
+}
+
+nx_data_c nexilis_packet_room_player3D_dimensions(nexilis_Vector3f* dimensions)
 {
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimensions(convert_vector3f(dimensions)));
 }
 
-nx_data_c nexilis_packet_room_player3D_movement(nexilis_Vector3f movement, float deltaTime)
+nx_data_c nexilis_packet_room_player3D_movement(nexilis_Vector3f* movement, float deltaTime)
 {
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(convert_vector3f(movement), deltaTime));
 }

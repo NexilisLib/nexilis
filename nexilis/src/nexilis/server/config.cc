@@ -4,7 +4,7 @@
 namespace nexilis::server
 {
 
-bool Config::m_bigEndian = false;
+bool Config::m_bigEndian = isSystemBigEndian();
 
 bool Config::isSystemBigEndian()
 {

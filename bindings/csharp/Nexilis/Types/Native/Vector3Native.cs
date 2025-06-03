@@ -7,6 +7,17 @@ namespace Nexilis
     public struct RawVector3
     {
         public IntPtr vec;
+
+        public bool IsValid => vec != IntPtr.Zero;
+
+        public void Destroy()
+        {
+            if (IsValid)
+            {
+                Vector3Native.nexilis_vector3f_destroy(vec);
+                vec = IntPtr.Zero;
+            }
+        }
     }
 
     public static class Vector3Native

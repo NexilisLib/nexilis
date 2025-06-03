@@ -1,5 +1,6 @@
 using System;
 using Nexilis.Logger;
+using System.Runtime.InteropServices;
 
 namespace Nexilis
 {
@@ -38,7 +39,14 @@ public class Vector3<T> : IDisposable
             return new RawVector3 { vec = wrapper };
         }
 
-        public void Destroy(ref RawVector3 vector) => Vector3Native.nexilis_vector3f_destroy(vector.vec);
+        public void Destroy(ref RawVector3 vector)
+        {
+            if (vector.IsValid)
+            {
+                Vector3Native.nexilis_vector3f_destroy(vector.vec);
+                vector.vec = IntPtr.Zero;
+            }
+        }
 
         public void GetComponents(RawVector3 vector, out T x, out T y, out T z)
         {
@@ -135,8 +143,6 @@ public class Vector3<T> : IDisposable
         if (_nativePtr.vec == IntPtr.Zero) throw new InvalidOperationException("Native pointer is null");
 
         _logger.Debug($"Getting native pointer: 0x{_nativePtr.vec.ToInt64():X}");
-        _operations.GetComponents(_nativePtr, out T x, out T y, out T z);
-        _logger.Debug($"Current values in native: {x}, {y}, {z}");
         return _nativePtr;
     }
 
@@ -225,7 +231,7 @@ public class Vector3<T> : IDisposable
         if (!_disposed)
         {
             _logger.Debug($"Disposing Vector3 (disposing={disposing})");
-            if (_nativePtr.vec != IntPtr.Zero)
+            if (_nativePtr.IsValid)
             {
                 _operations.Destroy(ref _nativePtr);
                 _nativePtr.vec = IntPtr.Zero;

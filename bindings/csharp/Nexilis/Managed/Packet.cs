@@ -52,25 +52,20 @@ namespace Nexilis
 
         public static NxData Player3DPosition(Vector3<float> position)
         {
-            return NativeInterop.ExecuteSafe(() =>
+            using (position)
             {
-                if (position == null)
+                return NativeInterop.ExecuteSafe(() =>
                 {
-                    throw new ArgumentNullException(nameof(position));
-                }
+                    IntPtr nativeVecPtr = position.getNative().vec;
+                    var raw = PacketNative.nexilis_packet_room_player3D_position(nativeVecPtr);
 
-                var nativePointer = position.getNative();
-                if (nativePointer.vec == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Nativepointer fails");
-                }
-                var raw = PacketNative.nexilis_packet_room_player3D_position(nativePointer);
-                if (raw.data == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Failed to get room player3 position.");
-                }
-                return NxData.Create(raw);
-            }, "Player3DPosition");
+                    if (raw.data == IntPtr.Zero)
+                    {
+                        throw new InvalidOperationException("Player3DPosition native call failed");
+                    }
+                    return NxData.Create(raw);
+                }, "Player3DPosition");
+            }
         }
         public static NxData Player3DPositionDirect(float x, float y, float z)
         {
@@ -82,7 +77,7 @@ namespace Nexilis
                     throw new InvalidOperationException("Native call returned null");
                 }
                 return NxData.Create(raw);
-            }, "Player3DPosition");
+            }, "Player3DPositionDirect");
         }
     }
 }
