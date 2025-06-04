@@ -52,20 +52,11 @@ namespace Nexilis
 
         public static NxData Player3DPosition(Vector3<float> position)
         {
-            using (position)
+            // TODO fix this
+            return NativeInterop.ExecuteSafe(() =>
             {
-                return NativeInterop.ExecuteSafe(() =>
-                {
-                    IntPtr nativeVecPtr = position.getNative().vec;
-                    var raw = PacketNative.nexilis_packet_room_player3D_position(nativeVecPtr);
-
-                    if (raw.data == IntPtr.Zero)
-                    {
-                        throw new InvalidOperationException("Player3DPosition native call failed");
-                    }
-                    return NxData.Create(raw);
-                }, "Player3DPosition");
-            }
+                return Packet.Player3DPositionDirect(position.X, position.Y, position.Z);
+            }, "Player3DPosition");
         }
         public static NxData Player3DPositionDirect(float x, float y, float z)
         {
