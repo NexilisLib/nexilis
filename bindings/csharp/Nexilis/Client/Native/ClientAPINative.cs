@@ -37,5 +37,7 @@ namespace Nexilis.Client
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr nexilis_client_api_get_active_rooms(IntPtr client_api);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int nexilis_client_api_rooms_count(IntPtr client_api);
     }
 }

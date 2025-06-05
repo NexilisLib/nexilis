@@ -40,6 +40,7 @@ const char* nexilis_client_api_get_unix_dgram_path(const nexilis_ClientAPI* clie
 const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* client_api);
 
 nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api);
+size_t nexilis_client_api_rooms_count(const nexilis_ClientAPI* client_api);
 
 #ifdef __cplusplus
 }

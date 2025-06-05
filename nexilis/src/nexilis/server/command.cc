@@ -109,8 +109,6 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
     auto arg = command[1];
 
     Log::debug(header(), commandTypeAsString(main_arg));
-    Log::debug(header(), "Arg:", arg);
-
     switch (main_arg)
     {
         case CommandType::setting:
@@ -121,9 +119,10 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 /// requires privileges.
                 case 0:
                 {
+                    Log::debug(header(), "setting::client_id");
                     if (!user.hasRootAccess())
                     {
-                        Log::error("Client needs root access for changing id");
+                        Log::error(header(), "Client needs root access for changing id");
                         return Result::unauthorized;
                     }
                     // We are parsing Command, so remove two bytes from this switch statement.
@@ -143,13 +142,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         }
                     }
 
-                    Log::error("Error in CommandType::set::clientID");
+                    Log::error(header(), "Error in CommandType::set::clientID");
                     return Result::error;
                 }
 
                 // Set username to the client.
                 case 1:
                 {
+                    Log::debug(header(), "setting::username");
                     auto payload = Util::removeAmountOfBytesFromVector(command, 2);
                     std::string username = Util::convertToString(payload);
 
@@ -182,6 +182,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 // Get client id.
                 case 0:
                 {
+                    Log::debug(header(), "getting::client_id");
                     std::map<std::string, boost::json::value> data{
                             {"command", boost::json::value("getting")},
                             {"type", boost::json::value("client_id")},
@@ -832,6 +833,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 // Get all public information from a server.
                 case 0:
                 {
+                    Log::debug(header(), "info::server_data");
                     std::map<std::string, boost::json::value> header{
                             {"command", boost::json::value("info")},
                             {"type", boost::json::value("server_data")},
@@ -849,6 +851,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 // Get data from the clients existing on the server.
                 case 1:
                 {
+                    Log::debug(header(), "info::client_data");
                     std::map<std::string, boost::json::value> header{
                             {"command", boost::json::value("info")},
                             {"type", boost::json::value("client_data")},
@@ -866,6 +869,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 // Get data from the rooms existing on the server.
                 case 2:
                 {
+                    Log::debug(header(), "info::room_data");
                     std::map<std::string, boost::json::value> header{
                             {"command", boost::json::value("info")},
                             {"type", boost::json::value("room_data")},

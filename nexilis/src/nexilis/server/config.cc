@@ -1,5 +1,5 @@
-#include <nexilis/server/config.hh>
 #include <cstdint>
+#include <nexilis/server/config.hh>
 
 namespace nexilis::server
 {
@@ -8,7 +8,8 @@ bool Config::m_bigEndian = isSystemBigEndian();
 
 bool Config::isSystemBigEndian()
 {
-    union {
+    union
+    {
         uint16_t value;
         uint8_t bytes[2];
     } test = {0x0102};
