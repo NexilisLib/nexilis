@@ -16,26 +16,6 @@ set(BUILD_SHARED_LIBS ON)
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
-add_subdirectory(third-party/boost/libs/json)
-add_subdirectory(third-party/boost/libs/system)
-add_subdirectory(third-party/boost/libs/assert)
-add_subdirectory(third-party/boost/libs/align)
-add_subdirectory(third-party/boost/libs/config)
-add_subdirectory(third-party/boost/libs/core)
-add_subdirectory(third-party/boost/libs/static_assert)
-add_subdirectory(third-party/boost/libs/throw_exception)
-add_subdirectory(third-party/boost/libs/container)
-add_subdirectory(third-party/boost/libs/variant)
-add_subdirectory(third-party/boost/libs/variant2)
-add_subdirectory(third-party/boost/libs/intrusive)
-add_subdirectory(third-party/boost/libs/mp11)
-add_subdirectory(third-party/boost/libs/move)
-add_subdirectory(third-party/boost/libs/container_hash)
-add_subdirectory(third-party/boost/libs/winapi)
-add_subdirectory(third-party/boost/libs/describe)
-add_subdirectory(third-party/boost/libs/predef)
-add_subdirectory(third-party/boost/libs/endian)
-
 set(SOURCES
     # Base
     src/nexilis/nx_class.cc
@@ -132,6 +112,18 @@ set(SOURCES
 )
 
 add_library(nexilis SHARED ${SOURCES})
+
+set(BOOST_LIBS
+    json system assert align config core static_assert
+    throw_exception container variant variant2 intrusive
+    mp11 move container_hash winapi describe predef endian
+)
+
+foreach(lib ${BOOST_LIBS})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/${lib}/CMakeLists.txt)
+        add_subdirectory(third-party/boost/libs/${lib})
+    endif()
+endforeach()
 
 target_include_directories(nexilis PUBLIC include)
 
