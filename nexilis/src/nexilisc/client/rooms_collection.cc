@@ -9,7 +9,7 @@ size_t nexilis_rooms_collection_rooms_count(const nexilis_RoomsCollection* colle
     return collection->rooms->size();
 }
 
-const nexilis_ConstRoom* nexilis_rooms_collection_rooms_get(const nexilis_RoomsCollection* collection, size_t index)
+nexilis_Room* nexilis_rooms_collection_room_get(nexilis_RoomsCollection* collection, size_t index)
 {
     if (!collection || !collection->rooms || index >= collection->rooms->size())
     {
@@ -17,7 +17,7 @@ const nexilis_ConstRoom* nexilis_rooms_collection_rooms_get(const nexilis_RoomsC
     }
 
     // Static storage to avoid allocation.
-    static thread_local nexilis_ConstRoom room_wrapper;
+    static thread_local nexilis_Room room_wrapper;
     room_wrapper.room = &(*collection->rooms)[index];
     return &room_wrapper;
 }

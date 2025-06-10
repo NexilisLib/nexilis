@@ -42,6 +42,10 @@ const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* cli
 nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api);
 size_t nexilis_client_api_rooms_count(const nexilis_ClientAPI* client_api);
 
+// Get id of the room where the client is currently in.
+size_t nexilis_client_api_client_room_id(const nexilis_ClientAPI* client_api);
+nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, uint64_t room_id);
+
 #ifdef __cplusplus
 }
 #endif

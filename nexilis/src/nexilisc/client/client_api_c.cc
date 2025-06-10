@@ -274,5 +274,30 @@ nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_Clien
 
 size_t nexilis_client_api_rooms_count(const nexilis_ClientAPI* client_api)
 {
-    return client_api->api->getActiveRooms().size();
+    if (client_api && client_api->api)
+    {
+        return client_api->api->getActiveRooms().size();
+    }
+    return 0;
+}
+
+size_t nexilis_client_api_client_room_id(const nexilis_ClientAPI* client_api)
+{
+    if (client_api && client_api->api)
+    {
+        return client_api->api->clientRoomId();
+    }
+    return 0;
+}
+
+nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, uint64_t room_id)
+{
+    if (client_api && client_api->api)
+    {
+        auto room = client_api->api->getRoom(room_id);
+        auto const_room = new nexilis_Room;
+        const_room->room = room;
+        return const_room;
+    }
+    return nullptr;
 }

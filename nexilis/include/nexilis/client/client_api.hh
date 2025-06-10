@@ -193,6 +193,9 @@ public:
         return m_currentlyActiveRooms;
     }
 
+    /// Get a reference to a room from room id.
+    Room* getRoom(uint64_t room_id);
+
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 

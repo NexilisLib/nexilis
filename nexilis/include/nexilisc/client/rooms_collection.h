@@ -11,11 +11,16 @@ extern "C" {
 
 struct nexilis_RoomsCollection
 {
-    const std::vector<nexilis::client::Room>* rooms;
+    std::vector<nexilis::client::Room>* rooms;
+};
+
+struct nexilis_RoomsCollectionClients
+{
+    const std::vector<nexilis::client::ClientSession>* clients;
 };
 
 size_t nexilis_rooms_collection_rooms_count(const nexilis_RoomsCollection* collection);
-const nexilis_ConstRoom* nexilis_rooms_collection_rooms_get(const nexilis_RoomsCollection* collection, size_t index);
+nexilis_Room* nexilis_rooms_collection_room_get(nexilis_RoomsCollection* collection, size_t index);
 void nexilis_rooms_collection_free(nexilis_RoomsCollection* collection);
 
 #ifdef __cplusplus

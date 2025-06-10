@@ -834,6 +834,18 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
     };
 }
 
+Room* ClientAPI::getRoom(uint64_t room_id)
+{
+    for (auto& room : m_currentlyActiveRooms)
+    {
+        if (room.getId() == room_id)
+        {
+            return &room;
+        }
+    }
+    return nullptr;
+}
+
 ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
 {
     // TODO better

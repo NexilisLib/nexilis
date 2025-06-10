@@ -44,7 +44,7 @@ void nexilis_room_destroy(nexilis_Room* room)
     }
 }
 
-uint64_t nexilis_room_get_id(nexilis_ConstRoom* room)
+uint64_t nexilis_room_get_id(nexilis_Room* room)
 {
     if (room && room->room)
     {
