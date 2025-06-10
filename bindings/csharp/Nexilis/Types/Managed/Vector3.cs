@@ -25,6 +25,10 @@ public class Vector3<T> : IDisposable
     {
         public RawVector3 Create(T x, T y, T z)
         {
+            if (x is null) throw new ArgumentNullException(nameof(x));
+            if (y is null) throw new ArgumentNullException(nameof(y));
+            if (z is null) throw new ArgumentNullException(nameof(z));
+
             IntPtr wrapper = Vector3Native.nexilis_vector3f_create((float)(object)x, (float)(object)y, (float)(object)z);
             if (wrapper == IntPtr.Zero)
             {
