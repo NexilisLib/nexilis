@@ -100,6 +100,7 @@ set(SOURCES
 
     src/nexilisc/server/settings_c.cc
 
+    src/nexilisc/client/client_session_c.cc
     src/nexilisc/client/client_api_c.cc
     src/nexilisc/client/server_data_c.cc
     src/nexilisc/client/packet_c.cc
