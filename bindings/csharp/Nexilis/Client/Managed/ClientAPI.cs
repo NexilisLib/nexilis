@@ -43,6 +43,7 @@ namespace Nexilis.Client
         public Room GetRoomFromId(ulong room_id)
         {
             var room_ptr = ClientAPINative.nexilis_client_api_get_room(_clientApiPtr, room_id);
+            // Construct room from native pointer.
             return new Room(room_ptr);
         }
 

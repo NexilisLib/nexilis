@@ -25,7 +25,7 @@ struct nexilis_RoomClients
     const std::vector<nexilis_ClientSession>* clients;
 };
 
-nexilis_Room* nexilis_room_create(const char* room_data, nexilis_ClientSession** clients, size_t num_clients);
+nexilis_Room* nexilis_room_create(nexilis_RoomData* room_data, nexilis_RoomClients* clients);
 void nexilis_room_destroy(nexilis_Room* room);
 
 uint64_t nexilis_room_get_id(nexilis_Room* room);
