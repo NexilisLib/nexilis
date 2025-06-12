@@ -5,7 +5,6 @@ namespace Nexilis.Server
 {
     public static class SettingsNative
     {
-        // Import the native functions
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr nexilis_settings_create();
 

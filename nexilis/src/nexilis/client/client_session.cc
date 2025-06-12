@@ -4,6 +4,7 @@ namespace nexilis::client
 {
 
 ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI)
+    // TODO Construction with id is useful, but we might need constructor without id as well.
     : BaseClient(id),
       m_clientAPI(clientAPI)
 {
