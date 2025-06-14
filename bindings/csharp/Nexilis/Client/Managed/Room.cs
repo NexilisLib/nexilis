@@ -7,15 +7,17 @@ namespace Nexilis.Client
     {
         IntPtr _nativePtr;
         bool _disposed = false;
+        List<ClientSession> _clients = new List<ClientSession>();
 
         // TODO add clients to constructor.
-        public Room(RoomData roomData)
+        public Room(RoomData roomData, List<ClientSession> clients)
         {
             if (roomData.NativePointer == IntPtr.Zero)
             {
                 throw new ArgumentNullException(nameof(roomData));
             }
-            RoomNative.nexilis_room_create(roomData.NativePointer, IntPtr.Zero);
+            _nativePtr = RoomNative.nexilis_room_create(roomData.NativePointer, IntPtr.Zero);
+            _clients = new List<ClientSession>(clients);
         }
 
         public Room(IntPtr nativePointer)
@@ -32,10 +34,45 @@ namespace Nexilis.Client
             return RoomNative.nexilis_room_get_id(_nativePtr);
         }
 
+        public void AddClient(ClientSession client)
+        {
+            ThrowIfDisposed();
+            _clients.Add(client);
+        }
+
+        public void RemoveClient(ulong clientId)
+        {
+            ThrowIfDisposed();
+            _clients.RemoveAll(session => clientId == session.GetId());
+        }
+
+        public IReadOnlyList<ClientSession> GetClients()
+        {
+            ThrowIfDisposed();
+            return _clients.AsReadOnly();
+        }
+
+        void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Room));
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
+                if (disposing)
+                {
+                    foreach (var client in _clients)
+                    {
+                        client.Dispose();
+                    }
+                    _clients.Clear();
+                }
+
                 if (_nativePtr != IntPtr.Zero)
                 {
                     RoomDataNative.nexilis_room_data_destroy(_nativePtr);
@@ -55,6 +92,5 @@ namespace Nexilis.Client
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
     }
 }

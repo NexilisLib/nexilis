@@ -4,6 +4,7 @@ namespace Nexilis.Client
     {
         IntPtr _nativePointer;
         bool _disposed = false;
+        ulong _id;
 
         public ClientSession(ulong id, IntPtr clientApiHandle)
         {
@@ -11,8 +12,11 @@ namespace Nexilis.Client
             {
                 throw new ArgumentNullException(nameof(clientApiHandle));
             }
-            _nativePointer = ClientSessionNative.nexilis_client_session_create(id, clientApiHandle);
+            _id = id;
+            _nativePointer = ClientSessionNative.nexilis_client_session_create(_id, clientApiHandle);
         }
+
+        public ulong GetId() => _id;
 
         // TODO implement move semantics
 

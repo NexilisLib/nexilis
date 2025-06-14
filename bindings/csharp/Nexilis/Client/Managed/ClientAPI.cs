@@ -30,6 +30,14 @@ namespace Nexilis.Client
         }
 
         /// <summary>
+        /// Get the unique id of "this" client.
+        /// </summary>
+        public ulong GetClientId()
+        {
+            return ClientAPINative.nexilis_client_api_get_client_id(_clientApiPtr);
+        }
+
+        /// <summary>
         /// Get the id of the room where this client currently is.
         /// </summary>
         public ulong ClientRoomId()
