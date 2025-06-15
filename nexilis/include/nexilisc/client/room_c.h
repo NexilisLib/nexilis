@@ -29,6 +29,7 @@ nexilis_Room* nexilis_room_create(nexilis_RoomData* room_data, nexilis_RoomClien
 void nexilis_room_destroy(nexilis_Room* room);
 
 uint64_t nexilis_room_get_id(nexilis_Room* room);
+uint64_t nexilis_room_get_client_amount(nexilis_Room* room);
 
 void nexilis_room_add_client(nexilis_Room* room, nexilis_ClientSession* client);
 void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id);

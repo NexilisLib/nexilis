@@ -16,6 +16,15 @@ void nexilis_client_session_destroy(nexilis_ClientSession* client)
     }
 }
 
+uint64_t nexilis_client_session_get_id(nexilis_ClientSession* session)
+{
+    if (session && session->client)
+    {
+        return session->client->getId();
+    }
+    return 0;
+}
+
 nexilis_ClientSession* nexilis_client_session_move(nexilis_ClientSession* other)
 {
     if (!other)

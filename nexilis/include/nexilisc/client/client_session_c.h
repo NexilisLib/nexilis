@@ -20,6 +20,8 @@ struct nexilis_ClientSession
 nexilis_ClientSession* nexilis_client_session_create(uint64_t id, nexilis_ClientAPI* client_api);
 void nexilis_client_session_destroy(nexilis_ClientSession* session);
 
+uint64_t nexilis_client_session_get_id(nexilis_ClientSession* session);
+
 nexilis_ClientSession* nexilis_client_session_move(nexilis_ClientSession* other);
 void nexilis_client_session_move_assign(nexilis_ClientSession* dest, nexilis_ClientSession* src);
 

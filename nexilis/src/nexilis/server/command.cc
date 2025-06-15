@@ -215,6 +215,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         // Join room.
                         case 0:
                         {
+                            Log::debug(header(), "room::management::join");
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
                             uint64_t roomId = Util::convertToType<uint64_t>(payload);
                             auto* room = RoomStorage::getRoomById(roomId);

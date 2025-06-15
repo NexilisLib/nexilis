@@ -45,6 +45,15 @@ void nexilis_room_destroy(nexilis_Room* room)
     }
 }
 
+uint64_t nexilis_room_get_client_amount(nexilis_Room* room)
+{
+    if (room && room->room)
+    {
+        return room->room->getClients().size();
+    }
+    return 0;
+}
+
 uint64_t nexilis_room_get_id(nexilis_Room* room)
 {
     if (room && room->room)

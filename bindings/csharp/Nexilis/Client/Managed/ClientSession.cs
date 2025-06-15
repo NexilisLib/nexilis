@@ -18,6 +18,8 @@ namespace Nexilis.Client
 
         public ulong GetId() => _id;
 
+        public IntPtr GetNativePointer() => _nativePointer;
+
         // TODO implement move semantics
 
         public void SetUsername(string username)
