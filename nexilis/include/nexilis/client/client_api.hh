@@ -135,6 +135,7 @@ public:
     /// General.
     uint64_t getClientId() const
     {
+        assert(m_isInitialized);
         return m_clientId;
     }
 
@@ -189,7 +190,6 @@ public:
     /// Return a reference of the currently active rooms.
     std::vector<Room>& getActiveRooms()
     {
-        nexilis::FileLog::debug("Rooms amount in cpp: ", m_currentlyActiveRooms.size());
         return m_currentlyActiveRooms;
     }
 
@@ -254,8 +254,7 @@ private:
     /// Currently existing callbacks.
     std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
 
-    /// Can the elements overlap each other.
-    // TODO this is 2D overlapping allowed.
+    /// Can the 2D elements overlap each other.
     bool m_2DoverlappingAllowed = false;
 
     /// Is the server aware of the client, is "Packet" initialized.

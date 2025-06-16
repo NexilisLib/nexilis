@@ -96,8 +96,7 @@ nexilis_ClientSession** nexilis_room_get_clients(const nexilis_Room* room, size_
 
     // Allocate array of pointers.
     nexilis_ClientSession** client_array = static_cast<nexilis_ClientSession**>(
-        malloc(sizeof(nexilis_ClientSession*) * (*num_clients))
-    );
+            malloc(sizeof(nexilis_ClientSession*) * (*num_clients)));
 
     // Convert each client to C struct pointer.
     for (size_t i = 0; i < *num_clients; ++i)
