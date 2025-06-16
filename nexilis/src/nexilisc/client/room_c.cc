@@ -79,20 +79,50 @@ void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id)
     }
 }
 
-nexilis_ClientSession** nexilis_room_get_clients(nexilis_ClientAPI* client_api, const nexilis_Room* room, size_t* num_clients)
+nexilis_ClientSession** nexilis_room_get_clients(const nexilis_Room* room, size_t* num_clients)
 {
-    if (client_api && client_api->api && room && room->room && num_clients)
+    if (!room || !room->room || !num_clients)
     {
-        const auto& clients = room->room->getClients();
-        *num_clients = clients.size();
-        nexilis_ClientSession** client_array = (nexilis_ClientSession**)malloc(sizeof(nexilis_ClientSession*) * (*num_clients));
-        for (size_t i = 0; i < *num_clients; ++i)
-        {
-            client_array[i]->session = new nexilis::client::ClientSession(clients[i].getId(), client_api->api);
-        }
-        return client_array;
+        return nullptr;
     }
-    return nullptr;
+
+    const auto& clients = room->room->getClients();
+    *num_clients = clients.size();
+
+    if (*num_clients == 0)
+    {
+        return nullptr;
+    }
+
+    // Allocate array of pointers.
+    nexilis_ClientSession** client_array = static_cast<nexilis_ClientSession**>(
+        malloc(sizeof(nexilis_ClientSession*) * (*num_clients))
+    );
+
+    // Convert each client to C struct pointer.
+    for (size_t i = 0; i < *num_clients; ++i)
+    {
+        client_array[i] = new nexilis_ClientSession();
+        client_array[i]->session = const_cast<nexilis::client::ClientSession*>(&clients[i]);
+    }
+    return client_array;
+}
+
+void nexilis_room_free_client_array(nexilis_ClientSession** client_array, size_t num_clients)
+{
+    if (!client_array)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < num_clients; ++i)
+    {
+        if (client_array[i])
+        {
+            delete client_array[i];
+        }
+    }
+    free(client_array);
 }
 
 void nexilis_room_add_message(nexilis_Room* room, nexilis_Communication* communication)

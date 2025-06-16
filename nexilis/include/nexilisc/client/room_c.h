@@ -35,6 +35,8 @@ void nexilis_room_add_client(nexilis_Room* room, nexilis_ClientSession* client);
 void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id);
 
 nexilis_ClientSession** nexilis_room_get_clients(const nexilis_Room* room, size_t* num_clients);
+void nexilis_room_free_client_array(nexilis_ClientSession** client_array, size_t num_clients);
+
 void nexilis_room_add_message(nexilis_Room* room, nexilis_Communication* communication);
 nexilis_Communication** nexilis_room_get_messages(const nexilis_Room* room, size_t* num_messages);
 bool nexilis_room_contains_communication(const nexilis_Room* room, const nexilis_Communication* communication);

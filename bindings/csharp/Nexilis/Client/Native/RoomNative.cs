@@ -23,6 +23,9 @@ namespace Nexilis.Client
         public static extern ulong nexilis_room_get_client_amount(IntPtr room);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr nexilis_room_get_clients(IntPtr room, out IntPtr clients, out ulong num_clients);
+        public static extern IntPtr nexilis_room_get_clients(IntPtr room, out ulong num_clients);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void nexilis_room_free_client_array(IntPtr clientArray, ulong num_clients);
     }
 }

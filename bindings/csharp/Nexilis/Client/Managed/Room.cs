@@ -8,8 +8,7 @@ namespace Nexilis.Client
         IntPtr _nativePtr;
         bool _disposed = false;
 
-        // TODO add clients to constructor.
-        public Room(RoomData roomData, List<ClientSession> clients)
+        public Room(RoomData roomData)
         {
             if (roomData.NativePointer == IntPtr.Zero)
             {
@@ -25,6 +24,42 @@ namespace Nexilis.Client
                 throw new ArgumentNullException(nameof(nativePointer));
             }
             _nativePtr = nativePointer;
+        }
+
+        public IReadOnlyList<ClientSession> GetClients()
+        {
+            ThrowIfDisposed();
+
+            ulong numClients;
+            IntPtr clientsArrayPtr = RoomNative.nexilis_room_get_clients(_nativePtr, out numClients);
+
+            if (clientsArrayPtr == IntPtr.Zero || numClients == 0)
+            {
+                return Array.Empty<ClientSession>();
+            }
+
+            var clientSessions = new List<ClientSession>();
+            IntPtr[] clientPointers = new IntPtr[numClients];
+
+            try
+            {
+                Marshal.Copy(clientsArrayPtr, clientPointers, 0, (int)numClients);
+
+                // Create managed wrappers.
+                foreach (var ptr in clientPointers)
+                {
+                    if (ptr != IntPtr.Zero)
+                    {
+                        clientSessions.Add(new ClientSession(ptr, ownsNativeInstance: false));
+                    }
+                }
+                return clientSessions.AsReadOnly();
+            }
+            finally
+            {
+                RoomNative.nexilis_room_free_client_array(clientsArrayPtr, numClients);
+            }
+
         }
 
         public ulong GetClientAmount()

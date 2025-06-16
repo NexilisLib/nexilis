@@ -5,6 +5,7 @@ namespace Nexilis.Client
         IntPtr _nativePointer;
         bool _disposed = false;
         ulong _id;
+        readonly bool _ownsNativeInstance;
 
         public ClientSession(ulong id, IntPtr clientApiHandle)
         {
@@ -14,6 +15,18 @@ namespace Nexilis.Client
             }
             _id = id;
             _nativePointer = ClientSessionNative.nexilis_client_session_create(_id, clientApiHandle);
+            _ownsNativeInstance = true;
+        }
+
+        public ClientSession(IntPtr nativePointer, bool ownsNativeInstance)
+        {
+            if (nativePointer == IntPtr.Zero)
+            {
+                throw new ArgumentNullException(nameof(nativePointer));
+            }
+            _nativePointer = nativePointer;
+            _id = ClientSessionNative.nexilis_client_session_get_id(_nativePointer);
+            _ownsNativeInstance = ownsNativeInstance;
         }
 
         public ulong GetId() => _id;
@@ -40,7 +53,7 @@ namespace Nexilis.Client
         {
             if (!_disposed)
             {
-                if (_nativePointer != IntPtr.Zero)
+                if (_ownsNativeInstance && _nativePointer != IntPtr.Zero)
                 {
                     ClientSessionNative.nexilis_client_session_destroy(_nativePointer);
                     _nativePointer = IntPtr.Zero;
