@@ -10,6 +10,11 @@ public class Vector3<T> : IDisposable
     static NxLogger _logger = new NxLogger("Vector3");
     public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback) => _logger.Setup(logCallback);
 
+    static readonly IVector3Operations _operations;
+    RawVector3 _nativePtr;
+    bool _disposed = false;
+    bool _ownsNativePointer;
+
     interface IVector3Operations
     {
         RawVector3 Create(T x, T y, T z);
@@ -113,10 +118,6 @@ public class Vector3<T> : IDisposable
     }
     */
 
-    static readonly IVector3Operations _operations;
-    RawVector3 _nativePtr;
-    bool _disposed = false;
-
     static Vector3()
     {
         Type type = typeof(T);
@@ -139,6 +140,28 @@ public class Vector3<T> : IDisposable
             _logger.Error($"Failed to create Vector3: {ex}");
             throw;
         }
+    }
+
+    public Vector3(IntPtr nativePtr, bool ownsNativePointer = true)
+    {
+        if (nativePtr == IntPtr.Zero)
+        {
+            throw new ArgumentNullException(nameof(nativePtr));
+        }
+        _nativePtr.vec = nativePtr;
+        _ownsNativePointer = ownsNativePointer;
+    }
+
+    public Vector3(Vector3<T> other)
+    {
+        if (other == null) throw new ArgumentNullException(nameof(other));
+        if (other._disposed) throw new ObjectDisposedException("Source Vector3 is disposed");
+
+        var x = other.X;
+        var y = other.Y;
+        var z = other.Z;
+        _nativePtr = _operations.Create(x, y, z);
+        _disposed = false;
     }
 
     public RawVector3 getNative()
@@ -206,16 +229,14 @@ public class Vector3<T> : IDisposable
 
     public static Vector3<T> Deserialize(byte[] data)
     {
+        if (data == null) throw new ArgumentNullException(nameof(data));
+        if (data.Length != 12) throw new ArgumentException("Data must be 12 bytes for Vector3<float>");
+
         var nativePtr = _operations.Deserialize(data);
         if (nativePtr.vec == IntPtr.Zero)
             throw new Exception("Failed to deserialize Vector3<T>");
 
         return new Vector3<T>(nativePtr.vec);
-    }
-
-    Vector3(IntPtr nativePtr)
-    {
-        _nativePtr.vec = nativePtr;
     }
 
     ~Vector3()
@@ -230,17 +251,29 @@ public class Vector3<T> : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    public bool IsDisposed => _disposed;
+
     protected virtual void Dispose(bool disposing)
     {
         if (!_disposed)
         {
             _logger.Debug($"Disposing Vector3 (disposing={disposing})");
-            if (_nativePtr.IsValid)
+            try
             {
-                _operations.Destroy(ref _nativePtr);
-                _nativePtr.vec = IntPtr.Zero;
+                if (_ownsNativePointer && _nativePtr.IsValid)
+                {
+                    _operations.Destroy(ref _nativePtr);
+                    _nativePtr.vec = IntPtr.Zero;
+                }
             }
-            _disposed = true;
+            catch (Exception ex)
+            {
+                _logger.Error($"Error during disposal: {ex}");
+            }
+            finally
+            {
+                _disposed = true;
+            }
         }
     }
 

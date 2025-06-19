@@ -29,9 +29,34 @@ namespace Nexilis.Client
             _ownsNativeInstance = ownsNativeInstance;
         }
 
-        public ulong GetId() => _id;
+        public void SetPosition3D(float x, float y, float z)
+        {
+            ThrowIfDisposed();
+            ClientSessionNative.nexilis_client_session_set_position_3D(_nativePointer, x, y, z);
+        }
 
-        public IntPtr GetNativePointer() => _nativePointer;
+        public Vector3<float> GetPosition3D()
+        {
+            ThrowIfDisposed();
+            var positionPtr = ClientSessionNative.nexilis_client_session_get_position_3D(_nativePointer);
+            if (positionPtr == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Failed to get position");
+            }
+            return new Vector3<float>(positionPtr, ownsNativePointer: true);
+        }
+
+        public ulong GetId()
+        {
+            ThrowIfDisposed();
+            return _id;
+        }
+
+        public IntPtr GetNativePointer()
+        {
+            ThrowIfDisposed();
+            return _nativePointer;
+        }
 
         // TODO implement move semantics
 

@@ -11,7 +11,6 @@ nexilis_Vector3f* nexilis_vector3f_create(float x, float y, float z)
 {
     auto* vector = new nexilis_Vector3f;
     vector->vec = new nexilis::Vector3f(x, y, z);
-    nexilis::FileLog::debug("Created wrapper ", vector, " with vector ", vector->vec);
     return vector;
 }
 
@@ -70,12 +69,21 @@ void nexilis_vector3f_serialize(const nexilis_Vector3f* vec, uint8_t* out_data)
 
 nexilis_Vector3f* nexilis_vector3f_deserialize(const uint8_t* data)
 {
-    size_t size = sizeof(data) * 3;
-    nexilis::nx_data converted_data(data, data + size);
-    auto* deserialized = new nexilis::Vector3f(nexilis::Vector3<float>::deserialize(converted_data));
-    auto* new_vector = new nexilis_Vector3f;
-    new_vector->vec = deserialized;
-    return new_vector;
+    const size_t expected_size = sizeof(float) * 3;
+    if (!data) return nullptr;
+
+    nexilis::nx_data converted_data(data, data + expected_size);
+    try
+    {
+        auto* deserialized = new nexilis::Vector3f(nexilis::Vector3<float>::deserialize(converted_data));
+        auto* new_vector = new nexilis_Vector3f;
+        new_vector->vec = deserialized;
+        return new_vector;
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
 }
 
 /*

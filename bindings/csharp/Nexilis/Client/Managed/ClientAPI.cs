@@ -55,6 +55,12 @@ namespace Nexilis.Client
             return new Room(room_ptr);
         }
 
+        public ClientSession GetClientFromClientId(ulong clientId)
+        {
+            var client_ptr = ClientAPINative.nexilis_client_api_get_client_from_room(_clientApiPtr, clientId);
+            return new ClientSession(client_ptr, true);
+        }
+
         /// <summary>
         /// Releases the resources used by the <see cref="ClientAPI"/>.
         /// </summary>

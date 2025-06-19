@@ -14,6 +14,12 @@ namespace Nexilis.Client
         public static extern ulong nexilis_client_session_get_id(IntPtr client);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void nexilis_client_session_set_position_3D(IntPtr client, float x, float y, float z);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr nexilis_client_session_get_position_3D(IntPtr client);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr nexilis_client_session_move(IntPtr client);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]

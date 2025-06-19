@@ -25,6 +25,33 @@ uint64_t nexilis_client_session_get_id(nexilis_ClientSession* session)
     return 0;
 }
 
+void nexilis_client_session_set_position_3D(nexilis_ClientSession* client, float x, float y, float z)
+{
+    if (client && client->client)
+    {
+        client->client->setPosition3D(x, y, z);
+    }
+}
+
+nexilis_Vector3f* nexilis_client_session_get_position_3D(nexilis_ClientSession* client)
+{
+    if (!client || !client->client)
+    {
+        return nullptr;
+    }
+    try
+    {
+        auto* vector = new nexilis_Vector3f;
+        vector->vec = new nexilis::Vector3f(client->client->getPosition3D());
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Problem with nexilis_client_session_get_position_3D");
+        return nullptr;
+    }
+}
+
 nexilis_ClientSession* nexilis_client_session_move(nexilis_ClientSession* other)
 {
     if (!other)

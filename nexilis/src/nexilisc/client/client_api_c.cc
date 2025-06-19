@@ -1,6 +1,6 @@
-#include <nexilis/logger/file_log.hh>
 #include <nexilisc/client/client_api_c.h>
 #include <nexilisc/room_data_c.h>
+#include <nexilisc/client/client_session_c.h>
 
 nexilis_ClientAPI* nexilis_client_api_create(nexilis_ServerData* server_data)
 {
@@ -254,7 +254,7 @@ size_t nexilis_client_api_client_room_id(const nexilis_ClientAPI* client_api)
 
 nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, uint64_t room_id)
 {
-    if (!client_api && !client_api->api)
+    if (!client_api || !client_api->api)
     {
         return nullptr;
     }
@@ -264,3 +264,17 @@ nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, u
     const_room->room = room;
     return const_room;
 }
+
+nexilis_ClientSession* nexilis_client_api_get_client_from_room(const nexilis_ClientAPI* client_api, uint64_t client_id)
+{
+    if (!client_api || !client_api->api)
+    {
+        return nullptr;
+    }
+
+    auto client = client_api->api->getClientFromRoom(client_id);
+    auto client_session = new nexilis_ClientSession;
+    client_session->client = client;
+    return client_session;
+}
+

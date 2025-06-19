@@ -196,6 +196,9 @@ public:
     /// Get a reference to a room from room id.
     Room* getRoom(uint64_t room_id);
 
+    /// Get client pointer from any room.
+    ClientSession* getClientFromRoom(uint64_t client_id);
+
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 
@@ -234,9 +237,6 @@ private:
     std::string readString(const boost::json::value& context, const std::string& key);
     uint64_t readUint64(const boost::json::value& context, const std::string& key);
     float readFloat(const boost::json::value& context, const std::string& key);
-
-    /// Get any client from any room.
-    ClientSession* getClientFromRoom(uint64_t client_id);
 
 private:
     /// The initialization data for the ClientAPI.

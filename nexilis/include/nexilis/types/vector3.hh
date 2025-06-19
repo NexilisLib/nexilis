@@ -31,6 +31,46 @@ public:
     {
     }
 
+    /// Copy constructor.
+    Vector3(const Vector3& other)
+        : x(other.x),
+          y(other.y),
+          z(other.z)
+    {
+    }
+
+    /// Copy assignment operator.
+    Vector3& operator=(const Vector3& other)
+    {
+        if (this != &other)
+        {
+            x = other.x;
+            y = other.y;
+            z = other.z;
+        }
+        return *this;
+    }
+
+    /// Move constructor.
+    Vector3(Vector3&& other) noexcept
+        : x(std::move(other.x)),
+          y(std::move(other.y)),
+          z(std::move(other.z))
+    {
+    }
+
+    /// Move assignment operator.
+    Vector3& operator=(Vector3&& other) noexcept
+    {
+        if (this != &other)
+        {
+            x = std::move(other.x);
+            y = std::move(other.y);
+            z = std::move(other.z);
+        }
+        return *this;
+    }
+
     /// Virtual destructor.
     virtual ~Vector3() = default;
 
