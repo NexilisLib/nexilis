@@ -18,7 +18,7 @@ TEST(ProtocolTest_c, CreateProtocol_UnixStreamServer)
     auto protocol_settings = nexilis_unix_stream_server_get_settings(server);
 
     EXPECT_EQ(nexilis_unix_stream_server_get_type(server), PROTOCOL_TYPE_AF_UNIX_SOCK_STREAM_SERVER);
-    EXPECT_EQ(protocol_settings.settings->getMode(), nexilis::server::Settings::AuthenticationMode::passwordProtected);
+    EXPECT_EQ(protocol_settings.settings->getMode(), nexilis::server::AuthenticationMode::password_protected);
     EXPECT_EQ(protocol_settings.settings->getPassphrase(), "salasana");
     EXPECT_EQ(protocol_settings.settings->getRootPassword(), "root");
 
@@ -40,7 +40,7 @@ TEST(ProtocolTest_c, CreateProtocol_BoostTCPServer)
     auto protocol_settings = nexilis_boost_tcp_server_get_settings(server);
 
     EXPECT_EQ(nexilis_boost_tcp_server_get_type(server), PROTOCOL_TYPE_BOOST_TCP_SERVER);
-    EXPECT_EQ(protocol_settings.settings->getMode(), nexilis::server::Settings::AuthenticationMode::passwordProtected);
+    EXPECT_EQ(protocol_settings.settings->getMode(), nexilis::server::AuthenticationMode::password_protected);
     EXPECT_EQ(protocol_settings.settings->getPassphrase(), "salasana");
     EXPECT_EQ(protocol_settings.settings->getRootPassword(), "root");
 

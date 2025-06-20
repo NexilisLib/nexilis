@@ -16,7 +16,7 @@ struct nexilis_RoomData
     nexilis::RoomData* data;
 };
 
-nexilis_RoomData* nexilis_room_data_create(uint64_t creator_id, const char* name, uint64_t room_id, nexilis_RoomContext context, uint32_t max_size);
+nexilis_RoomData* nexilis_room_data_create(uint64_t creator_id, const char* name, nexilis_RoomContext context, uint32_t max_size);
 void nexilis_room_data_destroy(nexilis_RoomData* room_data);
 
 const char* nexilis_room_data_get_name(const nexilis_RoomData* room_data);

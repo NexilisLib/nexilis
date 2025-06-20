@@ -1,7 +1,6 @@
 #ifndef NEXILIS_BOOST_UDP_SERVER_HH
 #define NEXILIS_BOOST_UDP_SERVER_HH
 
-#include <nexilis/logger/loggable.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/server_protocol.hh>
 #include <nexilis/server/settings.hh>

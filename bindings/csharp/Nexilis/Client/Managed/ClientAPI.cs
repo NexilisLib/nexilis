@@ -20,13 +20,45 @@ namespace Nexilis.Client
         /// </summary>
         public IntPtr ClientApiPtr => _clientApiPtr;
 
-        /// <symmary>
+        /// <summary>
         /// Get active rooms from the server.
-        /// </symmary>
+        /// </summary>
         public RoomsCollection GetActiveRooms()
         {
             var ptr = ClientAPINative.nexilis_client_api_get_active_rooms(_clientApiPtr);
             return new RoomsCollection(ptr);
+        }
+
+        /// <summary>
+        /// Get the unique id of "this" client.
+        /// </summary>
+        public ulong GetClientId()
+        {
+            return ClientAPINative.nexilis_client_api_get_client_id(_clientApiPtr);
+        }
+
+        /// <summary>
+        /// Get the id of the room where this client currently is.
+        /// </summary>
+        public ulong ClientRoomId()
+        {
+            return ClientAPINative.nexilis_client_api_client_room_id(_clientApiPtr);
+        }
+
+        /// <summary>
+        /// Get room object from the root id.
+        /// </summary>
+        public Room GetRoomFromId(ulong room_id)
+        {
+            var room_ptr = ClientAPINative.nexilis_client_api_get_room(_clientApiPtr, room_id);
+            // Construct room from native pointer.
+            return new Room(room_ptr);
+        }
+
+        public ClientSession GetClientFromClientId(ulong clientId)
+        {
+            var client_ptr = ClientAPINative.nexilis_client_api_get_client_from_room(_clientApiPtr, clientId);
+            return new ClientSession(client_ptr, true);
         }
 
         /// <summary>

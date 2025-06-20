@@ -1,6 +1,7 @@
 #ifndef NEXILIS_MOVEMENT_MOVEMENT_HH
 #define NEXILIS_MOVEMENT_MOVEMENT_HH
 
+#include <nexilis/movement/movement_data.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/nx_data.hh>
 #include <nexilis/types/vector2.hh>
@@ -8,44 +9,24 @@
 namespace nexilis
 {
 
+template <typename T>
 class Movement
 {
 public:
-    class Data
+    enum class Type
     {
-    public:
-        /// Constructor.
-        explicit Data(uint64_t m_objectId, float m_deltaTime, const nx_data& m_messageData, uint64_t m_messageId);
-
-        uint64_t getObjectId() const
-        {
-            return m_objectId;
-        }
-
-        float getDeltatime() const
-        {
-            return m_deltaTime;
-        }
-
-        nx_data getMessageData() const
-        {
-            return m_messageData;
-        }
-
-        uint64_t getMessageId() const
-        {
-            return m_messageId;
-        }
-
-    private:
-        uint64_t m_objectId;
-        float m_deltaTime;
-        nx_data m_messageData;
-        uint64_t m_messageId;
+        _2D,
+        _3D
     };
 
     /// Constructor.
-    explicit Movement(const Data& data);
+    explicit Movement(const MovementData& data)
+        : m_data(data)
+    {
+    }
+
+    virtual Type getType() const = 0;
+    virtual T getAmount() const = 0;
 
     uint64_t getObjectId() const
     {
@@ -68,7 +49,7 @@ public:
     }
 
 private:
-    Data m_data;
+    MovementData m_data;
 };
 
 } // namespace nexilis

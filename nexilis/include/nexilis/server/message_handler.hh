@@ -1,6 +1,7 @@
 #ifndef NEXILIS_MESSAGE_HANDLER_HH
 #define NEXILIS_MESSAGE_HANDLER_HH
 
+#include <nexilis/nx_class.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
 
@@ -17,9 +18,12 @@ namespace nexilis::server
 ///
 /// `MessageHandler::Message.message` is nexilis bytevector containing pure command data.
 
-class MessageHandler
+class MessageHandler : public NxClass
 {
 public:
+    /// Default constructor.
+    MessageHandler();
+
     class Message
     {
     public:
@@ -71,6 +75,9 @@ public:
     /// \param port The incoming message sender port.
     /// \param authentication The server authentication levels.
     Message readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication);
+
+private:
+    Message handlePayload(const nx_data& payload, User* user, const std::string& address, uint16_t port);
 };
 
 } // namespace nexilis::server

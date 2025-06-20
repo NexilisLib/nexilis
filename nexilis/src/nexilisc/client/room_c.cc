@@ -12,22 +12,23 @@ struct nexilis_Communication
     nexilis::client::Room::Communication* communication;
 };
 
-nexilis_Room* nexilis_room_create(nexilis_ClientSession** clients, size_t num_clients, uint64_t creator_id, const char* name, nexilis_RoomContext context, uint32_t max_size)
+nexilis_Room* nexilis_room_create(nexilis_RoomData* room_data, nexilis_RoomClients* clients)
 {
-    std::vector<nexilis::client::ClientSession> client_sessions;
-    for (size_t i = 0; i < num_clients; ++i)
+    std::vector<nexilis::client::ClientSession> clientSessions;
+
+    if (clients && clients->clients)
     {
-        client_sessions.emplace_back(std::move(*clients[i]->session));
+        clientSessions.reserve(clients->clients->size());
+
+        for (const auto& client : *(clients->clients))
+        {
+            auto cpp_client = static_cast<nexilis::client::ClientSession*>(client.session);
+            clientSessions.emplace_back(std::move(*cpp_client));
+        }
     }
-    uint64_t room_id = nexilis::Util::getRandomUint64();
-    auto room_data = new nexilis_RoomData();
-    room_data->data = new nexilis::RoomData(creator_id, std::string(name), room_id, static_cast<nexilis::RoomData::Context>(context), max_size);
 
-    auto room = new nexilis_Room();
-    room->room = new nexilis::client::Room(*room_data->data, std::move(client_sessions));
-
-    delete room_data;
-    delete room_data->data;
+    auto room = new nexilis_Room;
+    room->room = new nexilis::client::Room(*room_data->data, std::move(clientSessions));
     return room;
 }
 
@@ -44,7 +45,16 @@ void nexilis_room_destroy(nexilis_Room* room)
     }
 }
 
-uint64_t nexilis_room_get_id(nexilis_ConstRoom* room)
+uint64_t nexilis_room_get_client_amount(nexilis_Room* room)
+{
+    if (room && room->room)
+    {
+        return room->room->getClients().size();
+    }
+    return 0;
+}
+
+uint64_t nexilis_room_get_id(nexilis_Room* room)
 {
     if (room && room->room)
     {
@@ -69,20 +79,49 @@ void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id)
     }
 }
 
-nexilis_ClientSession** nexilis_room_get_clients(nexilis_ClientAPI* client_api, const nexilis_Room* room, size_t* num_clients)
+nexilis_ClientSession** nexilis_room_get_clients(const nexilis_Room* room, size_t* num_clients)
 {
-    if (client_api && client_api->api && room && room->room && num_clients)
+    if (!room || !room->room || !num_clients)
     {
-        const auto& clients = room->room->getClients();
-        *num_clients = clients.size();
-        nexilis_ClientSession** client_array = (nexilis_ClientSession**)malloc(sizeof(nexilis_ClientSession*) * (*num_clients));
-        for (size_t i = 0; i < *num_clients; ++i)
-        {
-            client_array[i]->session = new nexilis::client::ClientSession(clients[i].getId(), client_api->api);
-        }
-        return client_array;
+        return nullptr;
     }
-    return nullptr;
+
+    const auto& clients = room->room->getClients();
+    *num_clients = clients.size();
+
+    if (*num_clients == 0)
+    {
+        return nullptr;
+    }
+
+    // Allocate array of pointers.
+    nexilis_ClientSession** client_array = static_cast<nexilis_ClientSession**>(
+            malloc(sizeof(nexilis_ClientSession*) * (*num_clients)));
+
+    // Convert each client to C struct pointer.
+    for (size_t i = 0; i < *num_clients; ++i)
+    {
+        client_array[i] = new nexilis_ClientSession();
+        client_array[i]->session = const_cast<nexilis::client::ClientSession*>(&clients[i]);
+    }
+    return client_array;
+}
+
+void nexilis_room_free_client_array(nexilis_ClientSession** client_array, size_t num_clients)
+{
+    if (!client_array)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < num_clients; ++i)
+    {
+        if (client_array[i])
+        {
+            delete client_array[i];
+        }
+    }
+    free(client_array);
 }
 
 void nexilis_room_add_message(nexilis_Room* room, nexilis_Communication* communication)

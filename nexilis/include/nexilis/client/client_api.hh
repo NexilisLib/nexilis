@@ -83,30 +83,37 @@ public:
     /// Result from ClientAPI::readMessage(const nx_data&).
     enum class ReadResult
     {
-        // The payload does nothing with nexilis.
+        /// The payload has nothing with nexilis.
         clean,
 
-        // Command success.
+        /// Command success.
         success,
 
-        // Logical failure in the command, failing is ok.
+        /// Allowed failure.
         failure,
 
-        // Command is not found.
+        /// Something wrong with the command data.
         not_found,
 
-        // The input for command is not correct.
+        /// The input for command is not correct.
         invalid_input,
 
-        // There is an error implementing command.
+        /// Internal error.
         error,
 
-        // The command usage is unauthorized.
+        /// The command usage is unauthorized.
         unauthorized,
 
-        // Not implemented.
+        /// Client is not found in the correct room.
+        client_missing_room,
+
+        /// Missing feature.
         not_implemented
     };
+
+    /// Get ReadResult string value.
+    /// \param res The ReadResult enum from "readMessage"
+    static std::string readResultStr(ReadResult res);
 
     /// Read incoming message to client.
     ReadResult readMessage(const nx_data& message);
@@ -128,6 +135,7 @@ public:
     /// General.
     uint64_t getClientId() const
     {
+        assert(m_isInitialized);
         return m_clientId;
     }
 
@@ -182,21 +190,28 @@ public:
     /// Return a reference of the currently active rooms.
     std::vector<Room>& getActiveRooms()
     {
-        nexilis::FileLog::debug("Rooms amount in cpp: ", m_currentlyActiveRooms.size());
         return m_currentlyActiveRooms;
     }
+
+    /// Get a reference to a room from room id.
+    Room* getRoom(uint64_t room_id);
+
+    /// Get client pointer from any room.
+    ClientSession* getClientFromRoom(uint64_t client_id);
 
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 
+    /// Set the value of 2D overlapping.
     void setOverlapStatus(bool status)
     {
-        m_overlappingAllowed = status;
+        m_2DoverlappingAllowed = status;
     }
 
-    bool overlappingAllowed() const
+    /// Get the value of 2D overlapping.
+    bool overlappingAllowed2D() const
     {
-        return m_overlappingAllowed;
+        return m_2DoverlappingAllowed;
     }
 
 public:
@@ -239,9 +254,8 @@ private:
     /// Currently existing callbacks.
     std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
 
-    /// Can the elements overlap each other.
-    // TODO this is 2D overlapping allowed.
-    bool m_overlappingAllowed = false;
+    /// Can the 2D elements overlap each other.
+    bool m_2DoverlappingAllowed = false;
 
     /// Is the server aware of the client, is "Packet" initialized.
     bool m_isInitialized = false;

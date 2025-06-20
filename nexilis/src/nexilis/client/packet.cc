@@ -183,6 +183,39 @@ nx_data Packet::Room::Object2D::createMoving(Vector2f startingPosition, Vector2f
     return id;
 }
 
+nx_data Packet::Room::Player3D::position(Vector3f position)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::position));
+
+    emplaceAll(id, position);
+    return id;
+}
+
+nx_data Packet::Room::Player3D::dimensions(Vector3f dimensions)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player3D::dimensions));
+
+    emplaceAll(id, dimensions);
+    return id;
+}
+
+nx_data Packet::Room::Player3D::movement(Vector3f movement, float deltaTime)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player3D::movement));
+
+    emplaceAll(id, movement, deltaTime);
+    return id;
+}
+
 nx_data Packet::Info::general()
 {
     auto id = clientIdentification();

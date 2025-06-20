@@ -46,6 +46,13 @@ public class NxLogger : IDisposable
         }
     }
 
+    public NxLogger Setup(Action<Logger.LogLevel, string> logFunction)
+    {
+        AddHandler(logFunction);
+        SetMinimumLevel(Logger.LogLevel.DEBUG);
+        return this;
+    }
+
     public void Debug(string message)
     {
         _logger.Debug(AddLogContext(message));

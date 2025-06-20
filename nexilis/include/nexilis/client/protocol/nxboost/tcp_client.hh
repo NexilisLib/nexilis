@@ -2,7 +2,7 @@
 #define NEXILIS_BOOST_TCP_CLIENT_HH
 
 #include <nexilis/client/client_protocol.hh>
-#include <nexilis/logger/loggable.hh>
+#include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 
 #include <boost/asio/io_context.hpp>
@@ -14,7 +14,8 @@ namespace nexilis::client::nxboost
 {
 
 class TCPClient : public Protocol,
-                  public ClientProtocol
+                  public ClientProtocol,
+                  public NxClass
 {
 public:
     /// Constructor.

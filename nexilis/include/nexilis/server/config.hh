@@ -12,15 +12,12 @@ public:
         return m_bigEndian;
     }
 
-    static void setBigEndian()
+    static void setBigEndian(bool bigEndian)
     {
-        m_bigEndian = true;
+        m_bigEndian = bigEndian;
     }
 
-    static void setLittleEndian()
-    {
-        m_bigEndian = false;
-    }
+    static bool isSystemBigEndian();
 
 private:
     static bool m_bigEndian;

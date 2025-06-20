@@ -12,7 +12,9 @@ class ClientSession : public BaseClient
 {
 public:
     /// Constuctor.
-    ClientSession(uint64_t id, ClientAPI* clientAPI);
+    /// \param id The server side id of the client.
+    /// \param client_api Pointer to the client api.
+    ClientSession(uint64_t id, ClientAPI* client_api);
 
     /// Virtual destructor.
     virtual ~ClientSession() = default;
@@ -43,6 +45,17 @@ public:
         BaseClient::setBaseUsername(newUsername);
     }
 
+    void setPosition3D(float x, float y, float z)
+    {
+        BaseClient::getObject3D().setPosition(Vector3<float>(x, y, z));
+    }
+
+    Vector3<float> getPosition3D()
+    {
+        return BaseClient::getObject3D().getPosition();
+    }
+
+    // TODO setter and getter for 2D position.
 private:
     /// ClientAPI instance what the client is using.
     ClientAPI* const m_clientAPI = nullptr;

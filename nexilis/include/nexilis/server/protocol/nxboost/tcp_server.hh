@@ -1,6 +1,7 @@
 #ifndef NEXILIS_BOOST_TCP_SERVER_HH
 #define NEXILIS_BOOST_TCP_SERVER_HH
 
+#include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/message_handler.hh>
 #include <nexilis/server/server_protocol.hh>
@@ -15,7 +16,8 @@ namespace nexilis::server::nxboost
 {
 
 class TCPServer : public Protocol,
-                  public ServerProtocol
+                  public ServerProtocol,
+                  public NxClass
 {
 public:
     /// Constructor.

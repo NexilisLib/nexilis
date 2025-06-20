@@ -3,6 +3,8 @@
 
 #include <nexilis/command_type.hh>
 #include <nexilis/movement/movement_2D.hh>
+#include <nexilis/movement/movement_3D.hh>
+#include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
@@ -10,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -19,9 +22,11 @@ namespace nexilis::server
 /// Nexilis Server-side API.
 /// Command contains functionality for reading nexilis byte sequence.
 /// These bytes have been cleared from MessageHandler and contains vector<uint8>& which triggers all the actions of nexilis.
-class Command
+class Command : public NxClass
 {
 public:
+    using ClientMsgType = std::map<std::string, boost::json::value>;
+
     /// Result for reading the Nexilis command sequence.
     enum class Result
     {
@@ -46,6 +51,9 @@ public:
         // The command usage is unauthorized.
         unauthorized
     };
+
+    /// Get string value of the Result type.
+    static std::string resultTypeAsString(Result res);
 
     /// Constructor.
     /// \param settings The settings of the server.
@@ -98,7 +106,7 @@ private:
     /// Send message to every protocol that is avainable for a client;
     void sendMessageToClient(nx_data data, User& user, Protocol& protocol);
 
-    nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId);
+    nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
     void sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
 
     /// Send multiple messages with specified tickrate.
@@ -111,10 +119,25 @@ private:
     double linear(double progress, double totalDistance);
 
     /// 2D movement thread.
-    std::thread object2DMovement(const Movement2D& params, User& user, Protocol& protocol);
+    std::thread object2DMovement(std::unique_ptr<Movement2D> movement, User& user, Protocol& protocol);
+
+    struct MovementParams
+    {
+        MovementData movement_data;
+        User* user;
+        Protocol& protocol;
+        float tickrate;
+        float delta_time;
+    };
+
+    // std::thread player2DMovement(Movement2D movement, const MovementParams& params);
+    // std::thread player3DMovement(Movement3D movement, const MovementParams& params);
+
+    static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
+    static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
 private:
-    /// The "settings" of the server protocol.
+    /// The server side configuration.
     Settings m_settings;
 };
 

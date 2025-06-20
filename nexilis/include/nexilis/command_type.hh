@@ -2,6 +2,7 @@
 #define NEXILIX_COMMAND_TYPE_HH
 
 #include <cstdint>
+#include <string>
 
 namespace nexilis
 {
@@ -54,7 +55,11 @@ enum class CommandType : uint8_t
     player_management = 5,
     error = 7,
     info = 8,
+    undefined = 9
 };
+
+std::string commandTypeAsString(CommandType command_type);
+CommandType commandTypeFromString(const std::string& str);
 
 } // namespace nexilis
 

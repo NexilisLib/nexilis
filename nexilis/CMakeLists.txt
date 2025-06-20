@@ -13,28 +13,6 @@ set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-# Boost subrepos
-add_subdirectory(third-party/boost/libs/static_assert)
-add_subdirectory(third-party/boost/libs/intrusive)
-add_subdirectory(third-party/boost/libs/endian)
-add_subdirectory(third-party/boost/libs/predef)
-add_subdirectory(third-party/boost/libs/mp11)
-add_subdirectory(third-party/boost/libs/winapi)
-add_subdirectory(third-party/boost/libs/core)
-add_subdirectory(third-party/boost/libs/move)
-add_subdirectory(third-party/boost/libs/container_hash)
-add_subdirectory(third-party/boost/libs/describe)
-add_subdirectory(third-party/boost/libs/container)
-add_subdirectory(third-party/boost/libs/variant)
-add_subdirectory(third-party/boost/libs/variant2)
-add_subdirectory(third-party/boost/libs/throw_exception)
-add_subdirectory(third-party/boost/libs/align)
-add_subdirectory(third-party/boost/libs/config)
-add_subdirectory(third-party/boost/libs/assert)
-add_subdirectory(third-party/boost/libs/system)
-add_subdirectory(third-party/boost/libs/asio)
-add_subdirectory(third-party/boost/libs/json)
-
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
@@ -45,6 +23,7 @@ endif()
 
 set(SOURCES
     # Base
+    src/nexilis/nx_class.cc
     src/nexilis/cmd_line_options.cc
     src/nexilis/protocol.cc
     src/nexilis/protocol_manager.cc
@@ -54,9 +33,10 @@ set(SOURCES
     src/nexilis/room_command_type.cc
     src/nexilis/json.cc
     src/nexilis/room_data.cc
+    src/nexilis/command_type.cc
 
     # Movement
-    src/nexilis/movement/movement.cc
+    src/nexilis/movement/movement_data.cc
     src/nexilis/movement/movement_2D.cc
     src/nexilis/movement/movement_3D.cc
 
@@ -66,7 +46,6 @@ set(SOURCES
     src/nexilis/logger/logger.cc
     src/nexilis/logger/log.cc
     src/nexilis/logger/file_log.cc
-    src/nexilis/logger/loggable.cc
 
     # Server
     src/nexilis/server/server_protocol.cc
@@ -116,6 +95,7 @@ set(SOURCES
     src/nexilisc/nexilis_waiter.cc
     src/nexilisc/protocol_manager_c.cc
     src/nexilisc/nx_data_c.cc
+    src/nexilisc/types/vector3_c.cc
 
     src/nexilisc/logger/logger_c.cc
     src/nexilisc/logger/console_handler_c.cc
@@ -125,6 +105,7 @@ set(SOURCES
 
     src/nexilisc/server/settings_c.cc
 
+    src/nexilisc/client/client_session_c.cc
     src/nexilisc/client/client_api_c.cc
     src/nexilisc/client/server_data_c.cc
     src/nexilisc/client/packet_c.cc
@@ -137,13 +118,23 @@ set(SOURCES
 )
 
 add_library(nexilis SHARED ${SOURCES})
-target_include_directories(nexilis PUBLIC include
-    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost
-    ${BOOST_ROOT}/libs/asio/include
+
+set(BOOST_LIBS
+    json system assert align config core static_assert
+    throw_exception container variant variant2 intrusive
+    mp11 move container_hash winapi describe predef endian
 )
-target_link_libraries(nexilis PRIVATE
-    Boost::system
-    Boost::json
+
+foreach(lib ${BOOST_LIBS})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/${lib}/CMakeLists.txt)
+        add_subdirectory(third-party/boost/libs/${lib})
+    endif()
+endforeach()
+
+target_include_directories(nexilis PUBLIC include)
+
+target_link_libraries(nexilis PUBLIC
+    boost_json
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
