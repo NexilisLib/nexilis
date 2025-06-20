@@ -34,6 +34,7 @@ void nexilis_vector3f_set_y(nexilis_Vector3f* vec, float y);
 void nexilis_vector3f_set_z(nexilis_Vector3f* vec, float z);
 void nexilis_vector3f_serialize(const nexilis_Vector3f* vec, uint8_t* out_data);
 nexilis_Vector3f* nexilis_vector3f_deserialize(const uint8_t* data);
+bool nexilis_vector3f_is_valid(void* vector_ptr);
 
 // nexilis_Vector3u API
 /*

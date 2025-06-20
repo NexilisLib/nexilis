@@ -6,6 +6,35 @@
 
 #include <nexilis/logger/file_log.hh>
 
+template<typename VectorType>
+bool nexilis_vector3_is_valid(void* vector_ptr)
+{
+    if (!vector_ptr)
+    {
+        return false;
+    }
+
+    try
+    {
+        VectorType* vec = reinterpret_cast<VectorType*>(vector_ptr);
+
+        if (!vec->vec)
+        {
+            return false;
+        }
+
+        volatile auto x = vec->vec->x;
+        volatile auto y = vec->vec->y;
+        volatile auto z = vec->vec->z;
+        (void)x; (void)y; (void)z;
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 // nexilis_Vector3f implementation
 nexilis_Vector3f* nexilis_vector3f_create(float x, float y, float z)
 {
@@ -86,6 +115,10 @@ nexilis_Vector3f* nexilis_vector3f_deserialize(const uint8_t* data)
     }
 }
 
+bool nexilis_vector3f_is_valid(void* vector_ptr)
+{
+    return nexilis_vector3_is_valid<nexilis_Vector3f>(vector_ptr);
+}
 /*
 
 // nexilis_Vector3u implementation
