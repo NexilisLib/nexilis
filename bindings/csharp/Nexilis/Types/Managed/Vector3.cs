@@ -24,6 +24,7 @@ public class Vector3<T> : IDisposable
         void SetComponents(RawVector3 vector, T x, T y, T z);
         byte[] Serialize(RawVector3 vector);
         RawVector3 Deserialize(byte[] data);
+        bool IsValid();
     }
 
     class FloatOperations : IVector3Operations
@@ -99,6 +100,16 @@ public class Vector3<T> : IDisposable
         {
             IntPtr wrapper = Vector3Native.nexilis_vector3f_deserialize(data);
             return new RawVector3 { vec = wrapper };
+        }
+
+        public bool IsValid()
+        {
+            if (!_nativePtr.IsValid)
+            {
+                return false;
+            }
+
+            return Vector3Native.nexilis_vector3f_is_valid(_nativePtr);
         }
     }
 
