@@ -7,7 +7,7 @@ namespace Nexilis.Client
         ulong _id;
         readonly bool _ownsNativeInstance;
 
-        public ClientSession(ulong id, IntPtr clientApiHandle)
+        public ClientSession(ulong id, IntPtr clientApiHandle, bool ownsNativeInstance)
         {
             if (clientApiHandle == IntPtr.Zero)
             {
@@ -15,7 +15,7 @@ namespace Nexilis.Client
             }
             _id = id;
             _nativePointer = ClientSessionNative.nexilis_client_session_create(_id, clientApiHandle);
-            _ownsNativeInstance = true;
+            _ownsNativeInstance = ownsNativeInstance;
         }
 
         public ClientSession(IntPtr nativePointer, bool ownsNativeInstance)
@@ -38,12 +38,19 @@ namespace Nexilis.Client
         public Vector3<float> GetPosition3D()
         {
             ThrowIfDisposed();
-            var positionPtr = ClientSessionNative.nexilis_client_session_get_position_3D(_nativePointer);
-            if (positionPtr == IntPtr.Zero)
+            if (_nativePointer == IntPtr.Zero)
             {
-                throw new InvalidOperationException("Failed to get position");
+                throw new InvalidOperationException("Native pointer is null");
             }
-            return new Vector3<float>(positionPtr, ownsNativePointer: true);
+            float x, y, z;
+            var success = ClientSessionNative.nexilis_client_session_get_position_3D_values(_nativePointer, out x, out y, out z);
+            if (!success)
+            {
+                throw new InvalidOperationException("Failed to get position values");
+            }
+            string l = "Got valid position x:" + x + " y:" + y + " z:" + z;
+            FileLog.Log(l);
+            return new Vector3<float>(x, y, z);
         }
 
         public ulong GetId()
@@ -70,6 +77,7 @@ namespace Nexilis.Client
         {
             if (_disposed)
             {
+                FileLog.Log($"Accessing disposed ClientSession (ID: {_id}, Ptr: 0x{_nativePointer.ToInt64():X})");
                 throw new ObjectDisposedException(nameof(RoomData));
             }
         }

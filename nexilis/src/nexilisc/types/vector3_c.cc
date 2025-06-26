@@ -27,7 +27,10 @@ bool nexilis_vector3_is_valid(void* vector_ptr)
         volatile auto y = vec->vec->y;
         volatile auto z = vec->vec->z;
         (void)x; (void)y; (void)z;
-        return true;
+
+        return std::isfinite(x) &&
+               std::isfinite(y) &&
+               std::isfinite(z);
     }
     catch (...)
     {
@@ -38,9 +41,26 @@ bool nexilis_vector3_is_valid(void* vector_ptr)
 // nexilis_Vector3f implementation
 nexilis_Vector3f* nexilis_vector3f_create(float x, float y, float z)
 {
-    auto* vector = new nexilis_Vector3f;
-    vector->vec = new nexilis::Vector3f(x, y, z);
-    return vector;
+    try
+    {
+        auto* vector = new (std::nothrow) nexilis_Vector3f;
+        if (!vector)
+        {
+            return nullptr;
+        }
+        vector->vec = new nexilis::Vector3f(x, y, z);
+        if (!vector->vec)
+        {
+            delete vector;
+            return nullptr;
+        }
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Vector3f creation failed");
+        return nullptr;
+    }
 }
 
 nexilis_Vector3f* nexilis_vector3f_create_default()

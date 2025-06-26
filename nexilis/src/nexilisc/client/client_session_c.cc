@@ -1,6 +1,8 @@
 #include <nexilis/client/client_session.hh>
 #include <nexilisc/client/client_session_c.h>
 
+#include <float.h>
+
 nexilis_ClientSession* nexilis_client_session_create(uint64_t id, nexilis_ClientAPI* client_api)
 {
     auto session = new nexilis::client::ClientSession(id, client_api->api);
@@ -37,6 +39,7 @@ nexilis_Vector3f* nexilis_client_session_get_position_3D(nexilis_ClientSession* 
 {
     if (!client || !client->client)
     {
+        nexilis::FileLog::critical("nexilis_client_session_get_position_3D: client or client->client is null");
         return nullptr;
     }
     try
@@ -49,6 +52,40 @@ nexilis_Vector3f* nexilis_client_session_get_position_3D(nexilis_ClientSession* 
     {
         nexilis::FileLog::critical("Problem with nexilis_client_session_get_position_3D");
         return nullptr;
+    }
+}
+
+bool nexilis_client_session_get_position_3D_values(nexilis_ClientSession* client, float* x, float* y, float* z)
+{
+    if (!client || !client->client || !x || !y || !z)
+    {
+        return false;
+    }
+
+    try
+    {
+        auto pos = client->client->getPosition3D();
+
+        if (pos.x < -FLT_MAX || pos.x > FLT_MAX ||
+            pos.y < -FLT_MAX || pos.y > FLT_MAX ||
+            pos.z < -FLT_MAX || pos.z > FLT_MAX)
+        {
+            return false;
+        }
+
+        if (!std::isfinite(pos.x)) return false;
+        if (!std::isfinite(pos.y)) return false;
+        if (!std::isfinite(pos.z)) return false;
+
+        *x = pos.x;
+        *y = pos.y;
+        *z = pos.z;
+        return true;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("nexilis_client_session_get_position_3D_values: Failed to get values");
+        return false;
     }
 }
 

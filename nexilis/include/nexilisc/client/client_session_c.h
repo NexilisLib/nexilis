@@ -25,6 +25,7 @@ uint64_t nexilis_client_session_get_id(nexilis_ClientSession* session);
 
 void nexilis_client_session_set_position_3D(nexilis_ClientSession* client, float x, float y, float z);
 nexilis_Vector3f* nexilis_client_session_get_position_3D(nexilis_ClientSession* client);
+bool nexilis_client_session_get_position_3D_values(nexilis_ClientSession* client, float* x, float* y, float* z);
 
 nexilis_ClientSession* nexilis_client_session_move(nexilis_ClientSession* other);
 void nexilis_client_session_move_assign(nexilis_ClientSession* dest, nexilis_ClientSession* src);

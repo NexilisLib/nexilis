@@ -140,6 +140,7 @@ public class Vector3<T> : IDisposable
             _nativePtr = _operations.Create(x, y, z);
             if (_nativePtr.vec == IntPtr.Zero)
                 throw new Exception("Failed to create native Vector3");
+
         }
         catch (Exception ex)
         {
@@ -154,8 +155,14 @@ public class Vector3<T> : IDisposable
         {
             throw new ArgumentNullException(nameof(nativePtr));
         }
+
+        if (!_operations.IsValid(nativePtr))
+        {
+            throw new InvalidOperationException("Invalid native pointer");
+        }
         _nativePtr.vec = nativePtr;
         _ownsNativePointer = ownsNativePointer;
+        _disposed = false;
     }
 
     public Vector3(Vector3<T> other)
@@ -263,13 +270,12 @@ public class Vector3<T> : IDisposable
     {
         if (!_disposed)
         {
-            _logger.Debug($"Disposing Vector3 (disposing={disposing})");
             try
             {
                 if (_ownsNativePointer && _nativePtr.IsValid)
                 {
+                    _logger.Debug($"Disposing Vector3:{_nativePtr.vec} (disposing={disposing})");
                     _operations.Destroy(ref _nativePtr);
-                    _nativePtr.vec = IntPtr.Zero;
                 }
             }
             catch (Exception ex)
@@ -278,6 +284,7 @@ public class Vector3<T> : IDisposable
             }
             finally
             {
+                _nativePtr.vec = IntPtr.Zero;
                 _disposed = true;
             }
         }

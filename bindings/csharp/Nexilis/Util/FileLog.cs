@@ -1,11 +1,7 @@
-using System;
-using System.IO;
-using System.Threading;
-
 public static class FileLog
 {
-    private static readonly object _lock = new object();
-    private static readonly string _logFilePath = "/tmp/nexilis/csharp-bindings-log.txt";
+    static readonly object _lock = new object();
+    static readonly string _logFilePath = "/tmp/nexilis/csharp-bindings-log.txt";
 
     static FileLog()
     {
