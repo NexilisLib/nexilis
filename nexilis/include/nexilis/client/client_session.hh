@@ -45,15 +45,9 @@ public:
         BaseClient::setBaseUsername(newUsername);
     }
 
-    void setPosition3D(float x, float y, float z)
-    {
-        BaseClient::getObject3D().setPosition(Vector3<float>(x, y, z));
-    }
+    void setPosition3D(float x, float y, float z);
 
-    Vector3<float> getPosition3D()
-    {
-        return BaseClient::getObject3D().getPosition();
-    }
+    Vector3<float> getPosition3D();
 
     // TODO setter and getter for 2D position.
 private:

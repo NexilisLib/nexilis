@@ -11,10 +11,10 @@ namespace nexilis
 {
 
 template <typename T>
-class Vector3 : public Vector<T>
+class Vector3 : public Vector
 {
 public:
-    T x, y, z;
+    T x{0}, y{0}, z{0};
 
     /// Constructor.
     /// \param x The x value of the vector3.
@@ -26,10 +26,7 @@ public:
     }
 
     /// Default constructor.
-    Vector3()
-        : x(0), y(0), z(0)
-    {
-    }
+    Vector3() = default;
 
     /// Copy constructor.
     Vector3(const Vector3& other)

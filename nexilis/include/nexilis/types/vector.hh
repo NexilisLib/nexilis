@@ -6,7 +6,6 @@
 namespace nexilis
 {
 
-template <typename T>
 class Vector
 {
 public:

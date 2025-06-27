@@ -10,7 +10,7 @@ namespace nexilis
 {
 
 template <typename T>
-class Vector2 : public Vector<T>
+class Vector2 : public Vector
 {
 public:
     T x;

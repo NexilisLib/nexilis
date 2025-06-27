@@ -10,7 +10,7 @@ namespace nexilis
 class Object2D : public Object<Vector2f>
 {
 public:
-    explicit Object2D(uint64_t id, const Vector2f& position = Vector2f(), const Vector2f& dimensions = Vector2f())
+    explicit Object2D(uint64_t id, const Vector2f& position = Vector2f(), const Vector2f& dimensions = Vector2f(1.f, 1.f))
         : Object(id, position, dimensions)
     {
     }
