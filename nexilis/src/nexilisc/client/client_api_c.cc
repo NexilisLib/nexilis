@@ -1,6 +1,6 @@
 #include <nexilisc/client/client_api_c.h>
-#include <nexilisc/room_data_c.h>
 #include <nexilisc/client/client_session_c.h>
+#include <nexilisc/room_data_c.h>
 
 nexilis_ClientAPI* nexilis_client_api_create(nexilis_ServerData* server_data)
 {
@@ -277,4 +277,3 @@ nexilis_ClientSession* nexilis_client_api_get_client_from_room(const nexilis_Cli
     client_session->client = client;
     return client_session;
 }
-

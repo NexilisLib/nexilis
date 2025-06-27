@@ -82,14 +82,20 @@ nexilis::Vector3f get_verified_position(nexilis_ClientSession* client)
 bool validate_position(const nexilis::Vector3f& pos)
 {
     // Check for NaN/infinity.
-    if (!std::isfinite(pos.x)) return false;
-    if (!std::isfinite(pos.y)) return false;
-    if (!std::isfinite(pos.z)) return false;
+    if (!std::isfinite(pos.x))
+        return false;
+    if (!std::isfinite(pos.y))
+        return false;
+    if (!std::isfinite(pos.z))
+        return false;
 
     // Check for denormal numbers.
-    if (std::fpclassify(pos.x) == FP_SUBNORMAL) return false;
-    if (std::fpclassify(pos.y) == FP_SUBNORMAL) return false;
-    if (std::fpclassify(pos.z) == FP_SUBNORMAL) return false;
+    if (std::fpclassify(pos.x) == FP_SUBNORMAL)
+        return false;
+    if (std::fpclassify(pos.y) == FP_SUBNORMAL)
+        return false;
+    if (std::fpclassify(pos.z) == FP_SUBNORMAL)
+        return false;
 
     // Game world limits.
     if (fabs(pos.x) > nexilis::NEXILIS_MAX_POSITION)

@@ -6,7 +6,7 @@
 
 #include <nexilis/logger/file_log.hh>
 
-template<typename VectorType>
+template <typename VectorType>
 bool nexilis_vector3_is_valid(void* vector_ptr)
 {
     if (!vector_ptr)
@@ -26,7 +26,9 @@ bool nexilis_vector3_is_valid(void* vector_ptr)
         volatile auto x = vec->vec->x;
         volatile auto y = vec->vec->y;
         volatile auto z = vec->vec->z;
-        (void)x; (void)y; (void)z;
+        (void)x;
+        (void)y;
+        (void)z;
 
         return std::isfinite(x) &&
                std::isfinite(y) &&
@@ -119,7 +121,8 @@ void nexilis_vector3f_serialize(const nexilis_Vector3f* vec, uint8_t* out_data)
 nexilis_Vector3f* nexilis_vector3f_deserialize(const uint8_t* data)
 {
     const size_t expected_size = sizeof(float) * 3;
-    if (!data) return nullptr;
+    if (!data)
+        return nullptr;
 
     nexilis::nx_data converted_data(data, data + expected_size);
     try
