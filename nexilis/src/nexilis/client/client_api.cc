@@ -608,7 +608,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "room_data")
             {
-                FileLog::debug("ClientAPI: INFO, room data called");
                 if (json.find("rooms") != json.end())
                 {
                     auto rooms = json.at("rooms").as_array();

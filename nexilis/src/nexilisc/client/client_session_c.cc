@@ -1,7 +1,10 @@
 #include <nexilis/client/client_session.hh>
 #include <nexilisc/client/client_session_c.h>
 
+#include <nexilis/nexilis_constants.hh>
+
 #include <float.h>
+#include <math.h>
 
 nexilis_ClientSession* nexilis_client_session_create(uint64_t id, nexilis_ClientAPI* client_api)
 {
@@ -55,6 +58,58 @@ nexilis_Vector3f* nexilis_client_session_get_position_3D(nexilis_ClientSession* 
     }
 }
 
+nexilis::Vector3f get_verified_position(nexilis_ClientSession* client)
+{
+    auto pos = client->client->getPosition3D();
+
+    // Check for common memory corruption patterns.
+    const uint32_t x_bits = *(uint32_t*)&pos.x;
+    const uint32_t y_bits = *(uint32_t*)&pos.y;
+    const uint32_t z_bits = *(uint32_t*)&pos.z;
+
+    // Common bad patterns.
+    if (x_bits == 0xCDCDCDCD || y_bits == 0xCDCDCDCD || z_bits == 0xCDCDCDCD)
+    {
+        nexilis::FileLog::critical("get_verified_position: Uninitialized memory detected");
+    }
+    if (x_bits == 0xFEEEFEEE || y_bits == 0xFEEEFEEE || z_bits == 0xFEEEFEEE)
+    {
+        nexilis::FileLog::critical("get_verified_position: Freed memory detected");
+    }
+    return pos;
+}
+
+bool validate_position(const nexilis::Vector3f& pos)
+{
+    // Check for NaN/infinity.
+    if (!std::isfinite(pos.x)) return false;
+    if (!std::isfinite(pos.y)) return false;
+    if (!std::isfinite(pos.z)) return false;
+
+    // Check for denormal numbers.
+    if (std::fpclassify(pos.x) == FP_SUBNORMAL) return false;
+    if (std::fpclassify(pos.y) == FP_SUBNORMAL) return false;
+    if (std::fpclassify(pos.z) == FP_SUBNORMAL) return false;
+
+    // Game world limits.
+    if (fabs(pos.x) > nexilis::NEXILIS_MAX_POSITION)
+    {
+        nexilis::FileLog::critical("validate_position: x size exceeded");
+        return false;
+    }
+    if (fabs(pos.y) > nexilis::NEXILIS_MAX_POSITION)
+    {
+        nexilis::FileLog::critical("validate_position: y size exceeded");
+        return false;
+    }
+    if (fabs(pos.z) > nexilis::NEXILIS_MAX_POSITION)
+    {
+        nexilis::FileLog::critical("validate_position: z size exceeded");
+        return false;
+    }
+    return true;
+}
+
 bool nexilis_client_session_get_position_3D_values(nexilis_ClientSession* client, float* x, float* y, float* z)
 {
     if (!client || !client->client || !x || !y || !z)
@@ -64,18 +119,13 @@ bool nexilis_client_session_get_position_3D_values(nexilis_ClientSession* client
 
     try
     {
-        auto pos = client->client->getPosition3D();
+        auto pos = get_verified_position(client);
 
-        if (pos.x < -FLT_MAX || pos.x > FLT_MAX ||
-            pos.y < -FLT_MAX || pos.y > FLT_MAX ||
-            pos.z < -FLT_MAX || pos.z > FLT_MAX)
+        if (!validate_position(pos))
         {
+            nexilis::FileLog::critical("nexilis_client_session_get_position_3D_values: Invalid position values");
             return false;
         }
-
-        if (!std::isfinite(pos.x)) return false;
-        if (!std::isfinite(pos.y)) return false;
-        if (!std::isfinite(pos.z)) return false;
 
         *x = pos.x;
         *y = pos.y;
