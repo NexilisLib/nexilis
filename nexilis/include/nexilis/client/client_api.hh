@@ -8,8 +8,8 @@
 
 #include <nexilis/json.hh>
 #include <nexilis/nexilis_constants.hh>
-#include <nexilis/object/object2d.hh>
-#include <nexilis/object/object3d.hh>
+#include <nexilis/object/object_2d.hh>
+#include <nexilis/object/object_3d.hh>
 #include <nexilis/types/vector2.hh>
 #include <nexilis/types/vector3.hh>
 

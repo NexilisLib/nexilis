@@ -30,6 +30,9 @@ set(SOURCES
     src/nexilis/room_data.cc
     src/nexilis/command_type.cc
 
+    src/nexilis/object/object_2d.cc
+    src/nexilis/object/object_3d.cc
+
     # Movement
     src/nexilis/movement/movement_data.cc
     src/nexilis/movement/movement_2D.cc

@@ -1,8 +1,8 @@
 #ifndef NEXILIS_BASE_ROOM_HH
 #define NEXILIS_BASE_ROOM_HH
 
-#include <nexilis/object/object2d.hh>
-#include <nexilis/object/object3d.hh>
+#include <nexilis/object/object_2d.hh>
+#include <nexilis/object/object_3d.hh>
 #include <nexilis/room_data.hh>
 
 namespace nexilis

@@ -2,8 +2,8 @@
 #define NEXILIS_SERVER_ROOM_HH
 
 #include <nexilis/base_room.hh>
-#include <nexilis/object/object2d.hh>
-#include <nexilis/object/object3d.hh>
+#include <nexilis/object/object_2d.hh>
+#include <nexilis/object/object_3d.hh>
 #include <nexilis/room_data.hh>
 #include <nexilis/server/user.hh>
 

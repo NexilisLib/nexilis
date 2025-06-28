@@ -18,6 +18,44 @@ public:
     {
     }
 
+    /// Deleted copy constructor.
+    Object(const Object&) = delete;
+
+    /// Deleted copy assingment operator.
+    Object& operator=(const Object&) = delete;
+
+    /// Move constructor.
+    Object(Object&& other)
+        : m_id(std::move(other.m_id)),
+          m_position(std::move(other.m_position)),
+          m_dimensions(std::move(other.m_dimensions)),
+          m_filepath(std::move(other.m_filepath)),
+          m_positionMutex(std::move(other.m_positionMutex))
+    {
+        if (!m_positionMutex)
+        {
+            m_positionMutex = std::make_unique<std::mutex>();
+        }
+    }
+
+
+    /// Move assignment operator.
+    Object& operator=(Object&& other) noexcept
+    {
+        if (this != &other)
+        {
+            m_id = std::move(other.m_id);
+            m_position = std::move(other.m_position);
+            m_dimensions = std::move(other.m_dimensions);
+            m_filepath = std::move(other.m_filepath);
+            if (!m_positionMutex)
+            {
+                m_positionMutex = std::make_unique<std::mutex>();
+            }
+        }
+        return *this;
+    }
+
     /// Virtual destructor.
     virtual ~Object() = default;
 
@@ -35,6 +73,7 @@ public:
 
     void setPosition(const VectorType& pos)
     {
+        //std::lock_guard lock(m_positionMutex);
         m_position = pos;
     }
 
@@ -66,10 +105,14 @@ protected:
         return startingData;
     }
 
+    /// Object data.
     uint64_t m_id;
     VectorType m_position;
     VectorType m_dimensions;
     std::string m_filepath;
+
+    /// Mutex for setting position.
+    std::unique_ptr<std::mutex> m_positionMutex;
 };
 
 } // namespace nexilis

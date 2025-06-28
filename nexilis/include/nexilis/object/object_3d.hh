@@ -16,6 +16,18 @@ public:
     {
     }
 
+    /// Deleted copy constructor.
+    Object3D(const Object3D& other) = delete;
+
+    /// Deleted copy assignment operator.
+    Object3D& operator=(const Object3D& other) = delete;
+
+    /// Move constructor.
+    Object3D(Object3D&& other) noexcept;
+
+    /// Move assignment operator.
+    Object3D& operator=(Object3D&& other) noexcept;
+
     nx_data getData() override
     {
         nx_data a;
