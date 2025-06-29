@@ -176,17 +176,17 @@ void StreamServer::handleMessages()
             nx_data payload = Util::convertToByteVector(message);
             auto msg = getMessageHandler().readMessage("127.0.0.1", payload, -1, &getCommand().getSettings());
 
-            if (msg.getClient())
+            if (msg.getUser())
             {
                 auto handledMessage = getMessageHandler().readMessage(msg.getAddress(), payload, msg.getPort(), &getCommand().getSettings());
 
-                if (!handledMessage.getClient()->isUnixStreamSet())
+                if (!handledMessage.getUser()->isUnixStreamSet())
                 {
-                    handledMessage.getClient()->setUnixStreamSend([this, &clientSocket](const nx_data& bytes)
-                                                                  { sendMessage(clientSocket, bytes); });
+                    handledMessage.getUser()->setUnixStreamSend([this, &clientSocket](const nx_data& bytes)
+                                                                { sendMessage(clientSocket, bytes); });
                 }
 
-                Command::Result result = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+                Command::Result result = getCommand().read(handledMessage.getData(), *handledMessage.getUser(), *this, handledMessage.getMessageId());
                 getCommand().checkResult(result);
 
                 if (result == Command::Result::success)

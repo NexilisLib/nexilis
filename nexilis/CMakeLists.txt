@@ -46,16 +46,21 @@ set(SOURCES
     src/nexilis/logger/file_log.cc
 
     # Server
+    src/nexilis/server/message/base_message.cc
+    src/nexilis/server/message/message.cc
+    src/nexilis/server/message/auth_message.cc
+    src/nexilis/server/message/message_handler.cc
+
     src/nexilis/server/server_protocol.cc
     src/nexilis/server/user.cc
     src/nexilis/server/command.cc
-    src/nexilis/server/message_handler.cc
     src/nexilis/server/server_json.cc
     src/nexilis/server/room.cc
     src/nexilis/server/config.cc
     src/nexilis/server/settings.cc
     src/nexilis/server/client_storage.cc
     src/nexilis/server/room_storage.cc
+
 
     # Server protocols
     src/nexilis/server/protocol/nxboost/tcp_server.cc

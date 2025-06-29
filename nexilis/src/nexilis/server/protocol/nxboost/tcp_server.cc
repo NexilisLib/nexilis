@@ -220,9 +220,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
                 auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
 
-                if (!handledMessage.getClient()->isBoostTCPSet())
+                if (!handledMessage.getUser()->isBoostTCPSet())
                 {
-                    handledMessage.getClient()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
+                    handledMessage.getUser()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
                     {
                         if (sendToClient(bytes, newSocket))
                         {
@@ -235,7 +235,7 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     });
                 }
 
-                Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+                Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getUser(), *this, handledMessage.getMessageId());
 
                 if (passCommand == Command::Result::success)
                 {

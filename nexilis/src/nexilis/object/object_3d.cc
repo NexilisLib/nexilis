@@ -17,5 +17,4 @@ Object3D& Object3D::operator=(Object3D&& other) noexcept
     return *this;
 }
 
-
-}
+} // namespace nexilis

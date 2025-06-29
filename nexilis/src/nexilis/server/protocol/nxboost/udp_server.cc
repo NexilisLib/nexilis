@@ -154,9 +154,9 @@ void UDPServer::receiveFromClients()
             auto handledMessage = getMessageHandler().readMessage(address, received_message, port, &getCommand().getSettings());
 
             // clang-format off
-            if (!handledMessage.getClient()->isBoostUDPSet())
+            if (!handledMessage.getUser()->isBoostUDPSet())
             {
-                handledMessage.getClient()->setBoostUDPSend([this](const nx_data& bytes)
+                handledMessage.getUser()->setBoostUDPSend([this](const nx_data& bytes)
                 {
                     if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
                     {
@@ -166,7 +166,7 @@ void UDPServer::receiveFromClients()
             }
             // clang-format on
 
-            Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getClient(), *this, handledMessage.getMessageId());
+            Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getUser(), *this, handledMessage.getMessageId());
 
             switch (passCommand)
             {

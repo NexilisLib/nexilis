@@ -38,7 +38,6 @@ public:
         }
     }
 
-
     /// Move assignment operator.
     Object& operator=(Object&& other) noexcept
     {
@@ -73,7 +72,7 @@ public:
 
     void setPosition(const VectorType& pos)
     {
-        //std::lock_guard lock(m_positionMutex);
+        // std::lock_guard lock(m_positionMutex);
         m_position = pos;
     }
 
