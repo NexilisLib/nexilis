@@ -5,12 +5,8 @@ namespace Nexilis
 {
     public static class Packet
     {
-        private static NxLogger _logger = new NxLogger("Packet");
-        public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback)
-        {
-            _logger.AddHandler(logCallback);
-            _logger.SetMinimumLevel(Logger.LogLevel.DEBUG);
-        }
+        static NxLogger _logger = new NxLogger("Packet");
+        public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback) => _logger.Setup(logCallback);
 
         public static NxData InfoRooms()
         {

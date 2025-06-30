@@ -7,17 +7,17 @@ namespace Nexilis
 public class NxLogger : IDisposable
 {
     // Nexilis logger.
-    private static Logger.Logger _logger = new Logger.Logger();
+    static Logger.Logger _logger = new Logger.Logger();
 
     // Nexilis logger function handler.
-    private Logger.FunctionHandler _functionHandler;
+    Logger.FunctionHandler _functionHandler;
 
     // Logging callback.
-    private Action<Logger.LogLevel, string>? _logCallback;
+    Action<Logger.LogLevel, string>? _logCallback;
 
-    private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
-    private bool _disposed = false;
-    private string _logContext;
+    readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+    bool _disposed = false;
+    string _logContext;
 
     public NxLogger(string logContext)
     {

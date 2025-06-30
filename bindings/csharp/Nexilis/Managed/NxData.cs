@@ -5,14 +5,11 @@ namespace Nexilis
 {
     public sealed class NxData : IDisposable
     {
-        private static NxLogger _logger = new NxLogger("NxData");
-        public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback)
-        {
-            _logger.AddHandler(logCallback);
-            _logger.SetMinimumLevel(Logger.LogLevel.DEBUG);
-        }
-        private RawNxData _rawData;
-        private bool _disposed = false;
+        static NxLogger _logger = new NxLogger("NxData");
+        public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback) => _logger.Setup(logCallback);
+
+        RawNxData _rawData;
+        bool _disposed = false;
 
         public ulong Size
         {
