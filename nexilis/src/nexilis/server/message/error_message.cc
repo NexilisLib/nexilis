@@ -4,7 +4,7 @@ namespace nexilis::server
 {
 
 ErrorMessage::ErrorMessage(const std::string& address, Type errorType)
-    : BaseMessage(BaseMessage::Data(0, address,  nullptr)),
+    : BaseMessage(BaseMessage::Data(0, address, nullptr)),
       m_errorType(errorType)
 {
 }

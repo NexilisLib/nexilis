@@ -150,7 +150,6 @@ bool TCPServer::startListening()
     return true;
 }
 
-
 nx_data TCPServer::receiveMessage(boost::asio::ip::tcp::socket& socket)
 {
     nx_data data;
@@ -191,10 +190,26 @@ nx_data TCPServer::receiveMessage(boost::asio::ip::tcp::socket& socket)
     return data;
 }
 
+std::string TCPServer::getClientAddress(boost::asio::ip::tcp::socket& socket)
+{
+    std::string clientAddress;
+    try
+    {
+        boost::asio::ip::tcp::endpoint remoteEndpoint = socket.remote_endpoint();
+        boost::asio::ip::address remoteAddress = remoteEndpoint.address();
+        clientAddress = remoteAddress.to_string();
+    }
+    catch (const std::exception& e)
+    {
+        Log::error("Error getting info from remote, reason: ", e.what());
+    }
+    return clientAddress;
+}
+
 void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket)
 {
     auto thread = std::thread([this, hsSocket = std::move(socket)]() mutable
-    {
+                              {
         try
         {
             boost::asio::streambuf buf;
@@ -203,8 +218,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket)
         catch (...)
         {
             Log::debug(header(), "Problem with handshake");
-        }
-    });
+        } });
 }
 
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
@@ -216,19 +230,7 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         ServerProtocol::connectionEstablished();
         try
         {
-            std::string clientAddress;
-
-            try
-            {
-                boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
-                boost::asio::ip::address remoteAddress = remoteEndpoint.address();
-                clientAddress = remoteAddress.to_string();
-                Log::debug("Remote IP address: ", clientAddress);
-            }
-            catch (const std::exception& e)
-            {
-                Log::debug("Error getting info from remote, reason: ", e.what());
-            }
+            std::string clientAddress = getClientAddress(newSocket);
 
             while (!m_stopped->load())
             {
