@@ -174,11 +174,11 @@ void StreamServer::handleMessages()
         else
         {
             nx_data payload = Util::convertToByteVector(message);
-            auto msg = getMessageHandler().readMessage("127.0.0.1", payload, -1, &getCommand().getSettings());
+            auto msg = getMessageHandler().readMessage("127.0.0.1", payload, &getCommand().getSettings());
 
             if (msg->getUser())
             {
-                auto handledMessage = getMessageHandler().readMessage(msg->getAddress(), payload, msg->getPort(), &getCommand().getSettings());
+                auto handledMessage = getMessageHandler().readMessage(msg->getAddress(), payload, &getCommand().getSettings());
 
                 if (!handledMessage->getUser()->isUnixStreamSet())
                 {

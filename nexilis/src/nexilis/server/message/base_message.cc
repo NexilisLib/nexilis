@@ -3,10 +3,9 @@
 namespace nexilis::server
 {
 
-BaseMessage::Data::Data(uint64_t messageId, const std::string& address, uint16_t port, User* user)
+BaseMessage::Data::Data(uint64_t messageId, const std::string& address, User* user)
     : m_messageId(messageId),
       m_address(address),
-      m_port(port),
       m_user(user)
 {
 }
@@ -14,7 +13,6 @@ BaseMessage::Data::Data(uint64_t messageId, const std::string& address, uint16_t
 BaseMessage::Data::Data(Data&& other) noexcept
     : m_messageId(std::move(other.m_messageId)),
       m_address(std::move(other.m_address)),
-      m_port(std::move(other.m_port)),
       m_user(std::move(other.m_user))
 {
 }
@@ -25,7 +23,6 @@ BaseMessage::Data& BaseMessage::Data::operator=(Data&& other) noexcept
     {
         m_messageId = std::move(other.m_messageId);
         m_address = std::move(other.m_address);
-        m_port = std::move(other.m_port);
         m_user = std::move(other.m_user);
         other.m_user = nullptr;
     }
@@ -40,11 +37,6 @@ uint64_t BaseMessage::Data::getMessageId() const
 const std::string& BaseMessage::Data::getAddress() const
 {
     return m_address;
-}
-
-uint16_t BaseMessage::Data::getPort() const
-{
-    return m_port;
 }
 
 User* BaseMessage::Data::getUser() const
@@ -79,11 +71,6 @@ uint64_t BaseMessage::getMessageId() const
 const std::string& BaseMessage::getAddress() const
 {
     return m_data.getAddress();
-}
-
-uint16_t BaseMessage::getPort() const
-{
-    return m_data.getPort();
 }
 
 User* BaseMessage::getUser() const

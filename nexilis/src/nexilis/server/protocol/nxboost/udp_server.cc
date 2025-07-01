@@ -148,13 +148,12 @@ void UDPServer::receiveFromClients()
             size_t bytes_received = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
 
             std::string address = m_remoteEndpoint.address().to_string();
-            uint16_t port = m_remoteEndpoint.port();
-            Log::info("Received from ", address, " port:", port, " ", bytes_received, " bytes.", " Data: ", m_receiveBuffer.data());
+            Log::info("Received from ", address, bytes_received, " bytes.", " Data: ", m_receiveBuffer.data());
 
             // Create a new buffer containing only the received bytes.
             nx_data received_message(m_receiveBuffer.begin(), m_receiveBuffer.begin() + bytes_received);
 
-            auto handledMessage = getMessageHandler().readMessage(address, received_message, port, &getCommand().getSettings());
+            auto handledMessage = getMessageHandler().readMessage(address, received_message, &getCommand().getSettings());
 
             // clang-format off
             if (!handledMessage->getUser()->isBoostUDPSet())

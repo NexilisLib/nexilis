@@ -217,14 +217,12 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         try
         {
             std::string clientAddress;
-            uint16_t clientPort;
 
             try
             {
                 boost::asio::ip::tcp::endpoint remoteEndpoint = newSocket.remote_endpoint();
                 boost::asio::ip::address remoteAddress = remoteEndpoint.address();
                 clientAddress = remoteAddress.to_string();
-                clientPort = remoteEndpoint.port();
                 Log::debug("Remote IP address: ", clientAddress);
             }
             catch (const std::exception& e)
@@ -245,7 +243,7 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     continue;
                 }
 
-                auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
+                auto handledMessage = getMessageHandler().readMessage(clientAddress, data, &getCommand().getSettings());
 
                 if (!handledMessage->getUser()->isBoostTCPSet())
                 {

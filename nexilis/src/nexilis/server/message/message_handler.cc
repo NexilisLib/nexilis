@@ -24,7 +24,7 @@ MessageHandler::MessageHandler()
 // Message id 8 bytes
 // Command bytes (at least 2 bytes), second parameter of MessageHandler::Message.
 
-std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication)
+std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, const nx_data& payload, Settings* authentication)
 {
     Log::debug(header(), "Payload size: ", payload.size());
     Util::debugUint8Vector(payload);
@@ -61,7 +61,7 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
         }
         case AuthenticationMode::skip:
         {
-            return std::make_unique<Message>(handlePayload(payload, user, address, port));
+            return std::make_unique<Message>(handlePayload(payload, user, address));
         }
         case AuthenticationMode::admin_access:
         case AuthenticationMode::root_access:
@@ -76,7 +76,7 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
                 if (user->hasCommonAccess())
                 {
                     Log::info(header(), "Message from known user");
-                    return std::make_unique<Message>(handlePayload(payload, user, address, port));
+                    return std::make_unique<Message>(handlePayload(payload, user, address));
                 }
                 // Message from verified client that has no access.
                 else
@@ -113,7 +113,7 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
 
                     auto new_message_id = Util::getRandomUint64();
 
-                    BaseMessage::Data base_message(new_message_id, address, port, realNewClient);
+                    BaseMessage::Data base_message(new_message_id, address, realNewClient);
 
                     // TODO
                     // Return auth message here
@@ -135,7 +135,7 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
     }
 }
 
-Message MessageHandler::handlePayload(const nx_data& payload, User* user, const std::string& address, uint16_t port)
+Message MessageHandler::handlePayload(const nx_data& payload, User* user, const std::string& address)
 {
     // Vector without client id (8 bytes).
     auto vectorWithoutClientId = Util::removeAmountOfBytesFromVector(payload, 8);
@@ -146,7 +146,7 @@ Message MessageHandler::handlePayload(const nx_data& payload, User* user, const 
     // Vector without message id (8 bytes).
     auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 8);
 
-    BaseMessage::Data base_data(messageId, address, port, user);
+    BaseMessage::Data base_data(messageId, address, user);
     return Message(std::move(base_data), messageVector);
 }
 

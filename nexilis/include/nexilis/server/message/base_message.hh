@@ -21,7 +21,7 @@ public:
     {
     public:
         /// Constructor.
-        explicit Data(uint64_t messageId, const std::string& address, uint16_t port, User* user);
+        explicit Data(uint64_t messageId, const std::string& address, User* user);
 
         /// Deleted copy constructor.
         Data(const Data&) = delete;
@@ -38,9 +38,6 @@ public:
         uint64_t getMessageId() const;
 
         const std::string& getAddress() const;
-
-        // TODO This is bad, not all protocols have ports.
-        uint16_t getPort() const;
 
         User* getUser() const;
 
@@ -77,9 +74,6 @@ public:
 
     /// Get the address where the message is assigned.
     const std::string& getAddress() const;
-
-    /// Get the port number where the message is assigned.
-    uint16_t getPort() const;
 
     /// Get pointer to the user that is associated with the message.
     User* getUser() const;
