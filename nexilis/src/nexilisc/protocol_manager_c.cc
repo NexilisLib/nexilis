@@ -58,15 +58,6 @@ nexilis_ProtocolTypeC nexilis_protocol_data_get_type(const nexilis_ProtocolDataC
     return PROTOCOL_TYPE_UNKNOWN;
 }
 
-nexilis_ProtocolStatusC nexilis_protocol_data_get_status(const nexilis_ProtocolDataC* data)
-{
-    if (data && data->data)
-    {
-        return static_cast<nexilis_ProtocolStatusC>(data->data->getStatus());
-    }
-    return PROTOCOL_STATUS_UNDEFINED;
-}
-
 size_t nexilis_protocol_data_get_id(const nexilis_ProtocolDataC* data)
 {
     if (data && data->data)

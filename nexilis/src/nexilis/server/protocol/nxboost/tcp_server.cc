@@ -150,6 +150,63 @@ bool TCPServer::startListening()
     return true;
 }
 
+
+nx_data TCPServer::receiveMessage(boost::asio::ip::tcp::socket& socket)
+{
+    nx_data data;
+
+    boost::asio::streambuf receiveBuffer;
+    boost::system::error_code error_code;
+
+    boost::asio::read(socket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
+
+    if (error_code == boost::asio::error::eof)
+    {
+        return data;
+    }
+    else if (error_code)
+    {
+        // Handle other errors
+        Log::error(header(), "Error reading from client: ", error_code.message());
+        return data;
+    }
+
+    // Get the sequence of const buffers from the streambuf.
+    const boost::asio::const_buffer& receive_buffer = receiveBuffer.data();
+
+    // Check if the buffer is empty.
+    if (receive_buffer.size() == 0)
+    {
+        Log::info(header(), "Empty data");
+        return data;
+    }
+
+    // Extract the data.
+    const uint8_t* buffer_data = static_cast<const uint8_t*>(receive_buffer.data());
+    size_t buffer_size = receive_buffer.size();
+
+    // Insert the data from the buffer into the vector.
+    data.insert(data.end(), buffer_data, buffer_data + buffer_size);
+
+    return data;
+}
+
+void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket)
+{
+    auto thread = std::thread([this, hsSocket = std::move(socket)]() mutable
+    {
+        try
+        {
+            boost::asio::streambuf buf;
+            boost::asio::read(hsSocket, buf, boost::asio::transfer_at_least(1));
+        }
+        catch (...)
+        {
+            Log::debug(header(), "Problem with handshake");
+        }
+    });
+}
+
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
     // clang-format off
@@ -177,42 +234,16 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
             while (!m_stopped->load())
             {
-                boost::asio::streambuf receiveBuffer;
-                boost::system::error_code error_code;
+                auto data = receiveMessage(newSocket);
 
-                boost::asio::read(newSocket, receiveBuffer, boost::asio::transfer_at_least(1), error_code);
-
-                if (error_code == boost::asio::error::eof)
+                if (data.empty())
                 {
-                    Log::debug("End receive ", clientAddress);
-                    break;
-                }
-                else if (error_code)
-                {
-                    // Handle other errors
-                    Log::error("TCPServer Error reading from client: ", error_code.message());
-                    break;
-                }
-
-                // Create a vector to hold the data.
-                nx_data data;
-
-                // Get the sequence of const buffers from the streambuf.
-                const boost::asio::const_buffer& receive_buffer = receiveBuffer.data();
-
-                // Check if the buffer is empty.
-                if (receive_buffer.size() == 0)
-                {
-                    Log::info("Empty data");
+                    if (!newSocket.is_open())
+                    {
+                        break;
+                    }
                     continue;
                 }
-
-                // Extract the data.
-                const uint8_t* buffer_data = static_cast<const uint8_t*>(receive_buffer.data());
-                size_t buffer_size = receive_buffer.size();
-
-                // Insert the data from the buffer into the vector.
-                data.insert(data.end(), buffer_data, buffer_data + buffer_size);
 
                 auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
 
@@ -236,6 +267,8 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
                 if (type == BaseMessage::Type::auth_message)
                 {
+                    // First message, switch the port.
+                    uint16_t newPort = switchToRandomPort();
                 }
                 else if (type == BaseMessage::Type::message)
                 {
@@ -287,6 +320,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
 bool TCPServer::acceptClients()
 {
+    // TODO switch
+    bool handshakeComplete = true;
+
     try
     {
         while (!m_stopped->load())
@@ -335,13 +371,20 @@ bool TCPServer::acceptClients()
 
             if (m_stopped->load())
             {
+                Log::debug(header(), "m_stopped->load() called");
                 break;
             }
 
-            // Handle the new client
             if (accepted)
             {
-                handleClient(std::move(newSocket));
+                if (!handshakeComplete)
+                {
+                    Log::debug("Unimplemented");
+                }
+                else
+                {
+                    handleClient(std::move(newSocket));
+                }
             }
         }
     }
@@ -367,6 +410,31 @@ bool TCPServer::sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& 
         return true;
     }
     return false;
+}
+
+uint16_t TCPServer::switchToRandomPort()
+{
+    // Close the current acceptor (fixed port).
+    boost::system::error_code ec;
+    if (!m_acceptor.close(ec))
+    {
+        Log::error("Failed to close acceptor: ", ec.message());
+        return 0;
+    }
+    if (ec)
+    {
+        Log::error("Failed to close acceptor: ", ec.message());
+        return 0;
+    }
+
+    // Rebind to a random port.
+    m_acceptor.open(boost::asio::ip::tcp::v4());
+    m_acceptor.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 0));
+    m_acceptor.listen();
+
+    m_serverPort = m_acceptor.local_endpoint().port();
+    Log::debug("Switched to a random port: ", m_serverPort);
+    return m_serverPort;
 }
 
 } // namespace nexilis::server::nxboost

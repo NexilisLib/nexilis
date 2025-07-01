@@ -61,6 +61,9 @@ private:
     bool startListening();
     bool acceptClients();
     void handleClient(boost::asio::ip::tcp::socket socket);
+    void handleHandshake(boost::asio::ip::tcp::socket socket);
+    nx_data receiveMessage(boost::asio::ip::tcp::socket& socket);
+    uint16_t switchToRandomPort();
 
 private:
     std::unique_ptr<std::atomic<bool>> m_stopped;

@@ -11,14 +11,6 @@ namespace nexilis
 class ProtocolManager
 {
 public:
-    enum class Status
-    {
-        undefined,
-        unconnected,
-        connecting,
-        connected
-    };
-
     class ProtocolData
     {
     public:
@@ -37,12 +29,6 @@ public:
         /// Move assignment operator.
         ProtocolData& operator=(ProtocolData&& other);
 
-        /// Get the status of the protocol.
-        Status getStatus() const
-        {
-            return m_status;
-        }
-
         /// Get the Protocol::Type.
         Protocol::Type getType() const
         {
@@ -57,7 +43,6 @@ public:
 
     private:
         Protocol::Type m_type;
-        Status m_status = Status::undefined;
         size_t m_id;
     };
 

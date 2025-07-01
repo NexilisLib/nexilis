@@ -4,6 +4,7 @@
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/protocol_status.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
