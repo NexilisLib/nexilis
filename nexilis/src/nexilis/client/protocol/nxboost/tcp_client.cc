@@ -1,6 +1,6 @@
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
-
 #include <nexilis/logger/log.hh>
+#include <nexilis/ports.hh>
 
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/asio/connect.hpp>
@@ -133,15 +133,10 @@ bool TCPClient::connectToServer()
 {
     try
     {
-        auto port = Util::readPortFromFile(Protocol::Type::BOOST_TCP_SERVER);
-        if (!port)
-        {
-            Log::error(header(), "Could not read TCP server port from a file.");
-            return false;
-        }
+        auto port = Ports::getBoostTCPPort();
         try
         {
-            boost::asio::connect(m_socket, m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(*port)));
+            boost::asio::connect(m_socket, m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(port)));
         }
         catch (...)
         {

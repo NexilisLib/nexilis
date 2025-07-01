@@ -1,3 +1,4 @@
+#include <nexilis/ports.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/util.hh>
@@ -16,7 +17,7 @@ TCPServer::TCPServer(const Settings& settings) noexcept
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_mutex(std::make_unique<std::mutex>()),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
-      m_acceptor(*m_ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 0))
+      m_acceptor(*m_ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), Ports::getBoostTCPPort()))
 {
     // Enable SO_REUSEADDR to allow port reuse.
     m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -62,7 +63,6 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
 TCPServer::~TCPServer()
 {
     stop();
-    Util::cleanupPortFile(getType());
 }
 
 void TCPServer::start()
@@ -147,10 +147,6 @@ bool TCPServer::startListening()
     m_acceptor.listen();
     m_serverPort = m_acceptor.local_endpoint().port();
     Log::debug("Boost TCP server started on port: ", m_serverPort);
-    if (!Util::writePortToFile(m_serverPort, getType()))
-    {
-        Log::error("Failed to write Boost TCP server port to a file.");
-    }
     return true;
 }
 

@@ -36,9 +36,7 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
         return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::client_id_failure);
     }
 
-    // FIXME
-    // First message is ussumed different in AuthenticationMode::passwordProtected.
-    bool userAlreadyExists = true;
+    bool newUser = false;
 
     // Does the user actually exist?
     auto* user = ClientStorage::getClientById(clientId);
@@ -46,12 +44,12 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
     {
         // Create a new user.
         uint64_t newId = Util::getRandomUint64();
-        User newUser(newId, address);
+        User newlyCreatedUser(newId, address);
         Log::info(header(), "Created new user: ", newId);
         auto username = Util::getRandomString(10);
-        newUser.setUsername(username);
-        user = &newUser;
-        userAlreadyExists = false;
+        newlyCreatedUser.setUsername(username);
+        user = &newlyCreatedUser;
+        newUser = true;
     }
     assert(user);
 
@@ -73,11 +71,11 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
         }
         case AuthenticationMode::password_protected:
         {
-            if (userAlreadyExists)
+            if (!newUser)
             {
                 if (user->hasCommonAccess())
                 {
-                    Log::info(header(), "Access successfull");
+                    Log::info(header(), "Message from known user");
                     return std::make_unique<Message>(handlePayload(payload, user, address, port));
                 }
                 // Message from verified client that has no access.

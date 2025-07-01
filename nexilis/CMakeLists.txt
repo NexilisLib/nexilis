@@ -29,6 +29,7 @@ set(SOURCES
     src/nexilis/json.cc
     src/nexilis/room_data.cc
     src/nexilis/command_type.cc
+    src/nexilis/ports.cc
 
     src/nexilis/object/object_2d.cc
     src/nexilis/object/object_3d.cc

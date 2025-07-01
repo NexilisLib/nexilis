@@ -6,8 +6,6 @@
 
 #include <nexilis/server/message/message.hh>
 
-#include <cstdint>
-
 namespace nexilis::server
 {
 
@@ -17,7 +15,7 @@ namespace nexilis::server
 ///
 /// `Protocol` then sends the `MessageHandler::Message` to `Command` for parsing.
 ///
-/// `MessageHandler::Message.message` is nexilis bytevector containing pure command data.
+/// `Message` holds the nexilis bytevector containing pure command data.
 
 class MessageHandler : public NxClass
 {
