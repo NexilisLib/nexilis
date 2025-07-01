@@ -10,6 +10,7 @@ namespace nexilis::server::nxboost
 
 UDPServer::UDPServer(const Settings& settings)
     : ServerProtocol(settings),
+      NxClass("server::nxboost::UDPServer"),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
@@ -31,6 +32,7 @@ UDPServer::~UDPServer()
 UDPServer::UDPServer(UDPServer&& other)
     : Protocol(std::move(other)),
       ServerProtocol(std::move(other)),
+      NxClass(std::move(other)),
       m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::move(other.m_ioContext)),
       m_mutex(std::move(other.m_mutex)),
@@ -61,6 +63,7 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
 
         Protocol::operator=(std::move(other));
         ServerProtocol::operator=(std::move(other));
+        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -154,9 +157,9 @@ void UDPServer::receiveFromClients()
             auto handledMessage = getMessageHandler().readMessage(address, received_message, port, &getCommand().getSettings());
 
             // clang-format off
-            if (!handledMessage.getUser()->isBoostUDPSet())
+            if (!handledMessage->getUser()->isBoostUDPSet())
             {
-                handledMessage.getUser()->setBoostUDPSend([this](const nx_data& bytes)
+                handledMessage->getUser()->setBoostUDPSend([this](const nx_data& bytes)
                 {
                     if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
                     {
@@ -165,17 +168,29 @@ void UDPServer::receiveFromClients()
                 });
             }
             // clang-format on
+            auto msg_type = handledMessage->getType();
 
-            Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getUser(), *this, handledMessage.getMessageId());
-
-            switch (passCommand)
+            if (msg_type == BaseMessage::Type::auth_message)
             {
-                case Command::Result::success:
-                    Log::info("UDPServer: Passed");
-                    break;
+            }
+            else if (msg_type == BaseMessage::Type::message)
+            {
+                auto msg_ptr = static_cast<Message*>(handledMessage.get());
 
-                default:
-                    Log::error("UDPServer: Something FAILED");
+                Command::Result passCommand = getCommand().read(msg_ptr->getData(), *msg_ptr->getUser(), *this, msg_ptr->getMessageId());
+                switch (passCommand)
+                {
+                    case Command::Result::success:
+                        Log::info("UDPServer: Passed");
+                        break;
+
+                    default:
+                        Log::error("UDPServer: Something FAILED");
+                }
+            }
+            else
+            {
+                Log::critical(header(), "Unrecognized message type");
             }
         }
         catch (const boost::system::system_error& e)

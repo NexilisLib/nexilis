@@ -14,7 +14,8 @@ namespace nexilis::server::nxboost
 {
 
 class UDPServer : public Protocol,
-                  public ServerProtocol
+                  public ServerProtocol,
+                  public NxClass
 {
 public:
     /// Constructor.

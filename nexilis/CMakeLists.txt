@@ -49,6 +49,7 @@ set(SOURCES
     src/nexilis/server/message/base_message.cc
     src/nexilis/server/message/message.cc
     src/nexilis/server/message/auth_message.cc
+    src/nexilis/server/message/error_message.cc
     src/nexilis/server/message/message_handler.cc
 
     src/nexilis/server/server_protocol.cc

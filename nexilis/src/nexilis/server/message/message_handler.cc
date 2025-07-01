@@ -1,6 +1,7 @@
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/config.hh>
+#include <nexilis/server/message/error_message.hh>
 #include <nexilis/server/message/message_handler.hh>
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/server/server_json.hh>
@@ -23,22 +24,16 @@ MessageHandler::MessageHandler()
 // Message id 8 bytes
 // Command bytes (at least 2 bytes), second parameter of MessageHandler::Message.
 
-Message MessageHandler::readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication)
+std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication)
 {
     Log::debug(header(), "Payload size: ", payload.size());
     Util::debugUint8Vector(payload);
-
-    // TODO
-    // Error Messages.
-    nx_data errordata = {9, 0, 0};
-    BaseMessage base_error_message(0, "", -1, nullptr);
-    Message errorMessage(std::move(base_error_message), errordata);
 
     auto clientId = Util::uint64FromFront(payload);
     if (clientId == 0)
     {
         Log::error(header(), "Client id is zero");
-        return errorMessage;
+        return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::client_id_failure);
     }
 
     // FIXME
@@ -64,17 +59,17 @@ Message MessageHandler::readMessage(std::string address, const nx_data& payload,
     {
         case AuthenticationMode::empty:
         {
-            return errorMessage;
+            return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::empty_authentication_mode);
         }
         case AuthenticationMode::skip:
         {
-            return handlePayload(payload, user, address, port);
+            return std::make_unique<Message>(handlePayload(payload, user, address, port));
         }
         case AuthenticationMode::admin_access:
         case AuthenticationMode::root_access:
         {
             Log::error(header(), "Not implemented!");
-            return errorMessage;
+            return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::not_implemented);
         }
         case AuthenticationMode::password_protected:
         {
@@ -83,14 +78,13 @@ Message MessageHandler::readMessage(std::string address, const nx_data& payload,
                 if (user->hasCommonAccess())
                 {
                     Log::info(header(), "Access successfull");
-
-                    return handlePayload(payload, user, address, port);
+                    return std::make_unique<Message>(handlePayload(payload, user, address, port));
                 }
                 // Message from verified client that has no access.
                 else
                 {
                     Log::error(header(), "Message from verified client that has no access");
-                    return errorMessage;
+                    return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::no_access);
                 }
             }
             else
@@ -121,21 +115,24 @@ Message MessageHandler::readMessage(std::string address, const nx_data& payload,
 
                     auto new_message_id = Util::getRandomUint64();
 
-                    BaseMessage base_message(new_message_id, address, port, realNewClient);
+                    BaseMessage::Data base_message(new_message_id, address, port, realNewClient);
 
-                    return Message(std::move(base_message), message);
+                    // TODO
+                    // Return auth message here
+                    auto a = Message(std::move(base_message), message);
+                    return std::make_unique<Message>(std::move(a));
                 }
                 else
                 {
                     Log::error(header(), "Authentication error");
-                    return errorMessage;
+                    return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::authentication_error);
                 }
             }
         }
         default:
         {
             Log::error(header(), "Missing authentication mode");
-            return errorMessage;
+            return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::missing_authentication_mode);
         }
     }
 }
@@ -151,9 +148,8 @@ Message MessageHandler::handlePayload(const nx_data& payload, User* user, const 
     // Vector without message id (8 bytes).
     auto messageVector = Util::removeAmountOfBytesFromVector(vectorWithoutClientId, 8);
 
-    BaseMessage base_message(messageId, address, port, user);
-
-    return Message(std::move(base_message), messageVector);
+    BaseMessage::Data base_data(messageId, address, port, user);
+    return Message(std::move(base_data), messageVector);
 }
 
 } // namespace nexilis::server

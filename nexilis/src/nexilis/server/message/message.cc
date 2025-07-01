@@ -3,8 +3,8 @@
 namespace nexilis::server
 {
 
-Message::Message(BaseMessage&& baseMessage, const nx_data& data)
-    : BaseMessage(std::move(baseMessage)),
+Message::Message(BaseMessage::Data&& baseData, const nx_data& data)
+    : BaseMessage(std::move(baseData)),
       m_data(data)
 {
 }

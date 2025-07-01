@@ -10,7 +10,7 @@ class Message : public BaseMessage
 {
 public:
     /// Constructor.
-    Message(BaseMessage&& baseMessage, const nx_data& data);
+    Message(BaseMessage::Data&& baseData, const nx_data& data);
 
     /// Deleted copy constructor.
     Message(const Message&) = delete;
@@ -23,6 +23,12 @@ public:
 
     /// Move assignment operator.
     Message& operator=(Message&& other) noexcept;
+
+    /// Type info.
+    BaseMessage::Type getType() override
+    {
+        return BaseMessage::Type::message;
+    }
 
     /// Get the message data.
     nx_data getData() const;

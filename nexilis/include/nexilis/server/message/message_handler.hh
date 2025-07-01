@@ -30,7 +30,7 @@ public:
     /// \param message The incoming message data.
     /// \param port The incoming message sender port.
     /// \param authentication The server authentication levels.
-    Message readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication);
+    std::unique_ptr<BaseMessage> readMessage(std::string address, const nx_data& payload, uint16_t port, Settings* authentication);
 
 private:
     Message handlePayload(const nx_data& payload, User* user, const std::string& address, uint16_t port);

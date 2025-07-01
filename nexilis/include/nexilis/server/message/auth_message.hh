@@ -24,6 +24,12 @@ public:
     /// Move assignment operator.
     AuthMessage& operator=(AuthMessage&& other) noexcept;
 
+    /// Type info.
+    BaseMessage::Type getType() override
+    {
+        return BaseMessage::Type::auth_message;
+    }
+
 private:
     std::vector<nx_data> m_data;
 };

@@ -220,9 +220,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
                 auto handledMessage = getMessageHandler().readMessage(clientAddress, data, clientPort, &getCommand().getSettings());
 
-                if (!handledMessage.getUser()->isBoostTCPSet())
+                if (!handledMessage->getUser()->isBoostTCPSet())
                 {
-                    handledMessage.getUser()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
+                    handledMessage->getUser()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
                     {
                         if (sendToClient(bytes, newSocket))
                         {
@@ -235,15 +235,31 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     });
                 }
 
-                Command::Result passCommand = getCommand().read(handledMessage.getData(), *handledMessage.getUser(), *this, handledMessage.getMessageId());
+                /// Get the type of the message.
+                auto type = handledMessage->getType();
 
-                if (passCommand == Command::Result::success)
+                if (type == BaseMessage::Type::auth_message)
                 {
-                    Log::info(header(), "command success");
+                }
+                else if (type == BaseMessage::Type::message)
+                {
+                    auto msgPtr = static_cast<Message*>(handledMessage.get());
+
+                    // Everything ok with initialization.
+                    Command::Result passCommand = getCommand().read(msgPtr->getData(), *msgPtr->getUser(), *this, msgPtr->getMessageId());
+
+                    if (passCommand == Command::Result::success)
+                    {
+                        Log::info(header(), "command success");
+                    }
+                    else
+                    {
+                        Log::info(header(), "Result: ", Command::resultTypeAsString(passCommand));
+                    }
                 }
                 else
                 {
-                    Log::info(header(), "Result: ", Command::resultTypeAsString(passCommand));
+                    Log::critical(header(), "Unrecognized message type");
                 }
             }
             boost::system::error_code ec;
