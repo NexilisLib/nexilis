@@ -57,6 +57,9 @@ public:
     /// Convert nx_data to number values.
     static std::string convertToNumbers(const nx_data& bytes);
 
+    /// Convert nx_data to uint16_t
+    static uint16_t convertoToUint16(const nx_data& bytes);
+
     /// Convert nx_data to Vec2f.
     static Vector2f convertToVector2(const nx_data& bytes);
 
@@ -125,6 +128,9 @@ public:
 
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(uint64_t value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(uint16_t value);
 
     /// \ingroup BytevectorConversions
     static nx_data convertToByteVector(const boost::json::object& obj);

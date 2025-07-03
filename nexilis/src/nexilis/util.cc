@@ -38,6 +38,23 @@ std::string Util::convertToNumbers(const nx_data& bytes)
     return ss.str();
 }
 
+uint16_t Util::convertoToUint16(const nx_data& bytes)
+{
+    if (bytes.size() < 2)
+    {
+        throw std::invalid_argument("Input nx_data must contain at least 2 bytes");
+    }
+
+    if (server::Config::getBigEndian())
+    {
+        return static_cast<uint16_t>((bytes[0] << 8) | bytes[1]);
+    }
+    else
+    {
+        return static_cast<uint16_t>(bytes[0] | static_cast<uint16_t>(bytes[1]) << 8);
+    }
+}
+
 // Big-endian float conversion helper.
 float bytesToFloatBigEndian(const uint8_t* bytes)
 {
@@ -126,6 +143,27 @@ nx_data Util::convertToByteVector(uint64_t value)
         for (uint64_t i = 0; i < sizeof(uint64_t); ++i)
         {
             result[i] = static_cast<uint8_t>((value >> (8 * i)) & 0xFF);
+        }
+    }
+    return result;
+}
+
+nx_data Util::convertToByteVector(uint16_t value)
+{
+    nx_data result(sizeof(uint16_t));
+
+    if (server::Config::getBigEndian())
+    {
+        for (uint16_t i = 0; i < sizeof(uint16_t); ++i)
+        {
+            result[sizeof(uint16_t) - 1 - i] = static_cast<uint8_t>((value >> (8 * i) & 0xFF));
+        }
+    }
+    else
+    {
+        for (uint16_t i = 0; i < sizeof(uint16_t); ++i)
+        {
+            result[i] = static_cast<uint8_t>((value >> (8 * i) & 0xFF));
         }
     }
     return result;
