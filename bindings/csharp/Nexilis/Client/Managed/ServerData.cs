@@ -113,9 +113,9 @@ namespace Nexilis.Client
         /// Sets the Boost TCP server address for the server data.
         /// </summary>
         /// <param name="address">The Boost TCP server address to set.</param>
-        public void SetBoostTCP(string address)
+        public void SetBoostTCPAddress(string address)
         {
-            ServerDataNative.nexilis_server_data_set_boost_tcp(_serverDataPtr, address);
+            ServerDataNative.nexilis_server_data_set_boost_tcp_address(_serverDataPtr, address);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Nexilis.Client
         /// <param name="address">The Boost TCP server address to set.</param>
         public ServerData BoostTCP(string address)
         {
-            ServerDataNative.nexilis_server_data_set_boost_tcp(_serverDataPtr, address);
+            ServerDataNative.nexilis_server_data_set_boost_tcp_address(_serverDataPtr, address);
             return this;
         }
 
@@ -134,7 +134,7 @@ namespace Nexilis.Client
         /// <returns>The Boost TCP server address from the server data.</returns>
         public string GetBoostTCPServerAddress()
         {
-            return ServerDataNative.nexilis_server_data_get_boost_tcp_server_adress(_serverDataPtr);
+            return ServerDataNative.nexilis_server_data_get_boost_tcp_server_address(_serverDataPtr);
         }
 
         /// <summary>

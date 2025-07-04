@@ -58,14 +58,17 @@ public:
 protected:
     std::thread m_ioContextThread;
     std::thread m_receiveThread;
+    std::thread m_portSwitchingThread;
 
 private:
     void receiveLoop();
     bool connectToServer();
     bool send(const nx_data& data);
     void receive(const std::function<void(nx_data)>& buffer);
+    void handlePortSwitch();
 
 private:
+    std::unique_ptr<std::atomic<ProtocolStatus>> m_protocolStatus;
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::shared_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
@@ -74,6 +77,7 @@ private:
 
     std::shared_ptr<std::mutex> m_sendMutex;
     std::shared_ptr<std::mutex> m_receiveMutex;
+    uint16_t m_serverPort;
 };
 
 } // namespace nexilis::client::nxboost

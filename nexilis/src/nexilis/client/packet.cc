@@ -8,10 +8,24 @@ namespace nexilis::client
 
 ClientAPI* Packet::m_clientApi = nullptr;
 
+nx_data Packet::Set::clientId(uint64_t newId)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::setting));
+    id.emplace_back(0);
+    id.emplace_back(0);
+
+    auto id_vector = Util::convertToByteVector(newId);
+    id.reserve(id.size() + id_vector.size());
+    std::copy(id_vector.begin(), id_vector.end(), std::back_inserter(id));
+    return id;
+}
+
 nx_data Packet::Set::username(const std::string& name)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::setting));
+    id.emplace_back(0);
     id.emplace_back(1);
 
     auto nameVector = Util::convertToByteVector(name.c_str(), name.size());
@@ -24,6 +38,7 @@ nx_data Packet::Get::clientId()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
+    id.emplace_back(0);
     id.emplace_back(0);
     return id;
 }

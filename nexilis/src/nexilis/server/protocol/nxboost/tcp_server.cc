@@ -1,5 +1,6 @@
 #include <nexilis/ports.hh>
 #include <nexilis/server/command.hh>
+#include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/util.hh>
 
@@ -206,27 +207,134 @@ std::string TCPServer::getClientAddress(boost::asio::ip::tcp::socket& socket)
     return clientAddress;
 }
 
-void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket)
+void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::function<void()> onCompleted)
 {
-    auto thread = std::thread([this, hsSocket = std::move(socket)]() mutable
-                              {
-        try
+    try
+    {
+        // clang-format off
+        auto thread = std::thread([this, hs_socket = std::move(socket), cb = std::move(onCompleted)]() mutable
         {
-            boost::asio::streambuf buf;
-            boost::asio::read(hsSocket, buf, boost::asio::transfer_at_least(1));
-        }
-        catch (...)
-        {
-            Log::debug(header(), "Problem with handshake");
-        } });
+            try
+            {
+                while (!m_stopped->load() && hs_socket.is_open())
+                {
+                    auto clientAddress = getClientAddress(hs_socket);
+                    auto data = receiveMessage(hs_socket);
+                    Log::debug(header(), "Received handshake message");
+
+                    if (data.empty())
+                    {
+                        if (!hs_socket.is_open())
+                        {
+                            Log::error(header(), "Stopping handleHandshake thread");
+                            break;
+                        }
+                        continue;
+                    }
+
+                    // TODO this maybe should be it's own function in MessageHandler.
+                    auto handled_message = getMessageHandler().readMessage(clientAddress, data, &getCommand().getSettings());
+
+                    if (!handled_message)
+                    {
+                        continue;
+                    }
+
+                    // TODO fix this as well
+                    handled_message->getUser()->setBoostTCPSend([this, &hs_socket](const nx_data& bytes)
+                    {
+                        if (sendToClient(bytes, hs_socket))
+                        {
+                            Log::info(header(), "Sent message to client succesfully");
+                        }
+                        else
+                        {
+                            Log::error(header(), "Error sending message to client");
+                        }
+                    });
+
+                    auto type = handled_message->getType();
+
+                    if (type == BaseMessage::Type::auth_message)
+                    {
+                        auto msgPtr = static_cast<AuthMessage*>(handled_message.get());
+
+                        // TODO fix this also
+                        Command::Result passCommand = getCommand().read(msgPtr->getData()[0], *msgPtr->getUser(), *this, msgPtr->getMessageId());
+
+                        if (passCommand == Command::Result::success)
+                        {
+                            Log::info("Auth part 1 success");
+
+                            switchToRandomPort();
+
+                            nx_data command_data = { 0, 1, 0, 1 };
+                            auto port_data = Util::convertToByteVector(m_serverPort);
+
+                            for (auto&& data : port_data)
+                            {
+                                command_data.emplace_back(data);
+                            }
+
+                            Command::Result portCommand = getCommand().read(command_data, *msgPtr->getUser(), *this, msgPtr->getMessageId());
+
+                            if (portCommand == Command::Result::success)
+                            {
+                                Log::info("Auth fully complete");
+                                handled_message->getUser()->setBoostTCPSend(nullptr);
+                                cb();
+                                break;
+                            }
+                            else
+                            {
+                                Log::error("Auth failed to port data");
+                            }
+                        }
+                        else
+                        {
+                            Log::info(header(), "Result: ", Command::resultTypeAsString(passCommand));
+                        }
+                    }
+                    else
+                    {
+                        Log::critical(header(), "Wrong message type");
+                    }
+                }
+                boost::system::error_code ec;
+                if (hs_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+                {
+                    Log::error(header(), "Error in client socket shutdown");
+                }
+                if (hs_socket.close(ec))
+                {
+                    Log::error(header(), "Error in client socket close");
+                }
+            }
+            catch (...)
+            {
+                Log::debug(header(), "Error with handshake");
+            }
+        });
+        thread.detach();
+    }
+    catch (const std::exception& e)
+    {
+        Log::error(header(), "Failed to create handshake thread: ", e.what());
+    }
+    catch (...)
+    {
+        Log::error(header(), "Other failure in handshake thread");
+    }
+    // clang-format on
 }
 
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
+    Log::warning(header(), "Handleclient called");
+
     // clang-format off
     auto client_thread = std::thread([this, newSocket = std::move(socket)]() mutable
     {
-    // clang-format on
         ServerProtocol::connectionEstablished();
         try
         {
@@ -247,6 +355,12 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
                 auto handledMessage = getMessageHandler().readMessage(clientAddress, data, &getCommand().getSettings());
 
+                if (!handledMessage)
+                {
+                    Log::error(header(), "Received invalid message");
+                    continue;
+                }
+
                 if (!handledMessage->getUser()->isBoostTCPSet())
                 {
                     handledMessage->getUser()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
@@ -265,12 +379,7 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                 /// Get the type of the message.
                 auto type = handledMessage->getType();
 
-                if (type == BaseMessage::Type::auth_message)
-                {
-                    // First message, switch the port.
-                    uint16_t newPort = switchToRandomPort();
-                }
-                else if (type == BaseMessage::Type::message)
+                if (type == BaseMessage::Type::message)
                 {
                     auto msgPtr = static_cast<Message*>(handledMessage.get());
 
@@ -283,22 +392,13 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     }
                     else
                     {
-                        Log::info(header(), "Result: ", Command::resultTypeAsString(passCommand));
+                        Log::warning(header(), "Result: ", Command::resultTypeAsString(passCommand));
                     }
                 }
                 else
                 {
-                    Log::critical(header(), "Unrecognized message type");
+                    Log::critical(header(), "Wrong message type");
                 }
-            }
-            boost::system::error_code ec;
-            if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
-            {
-                Log::error(header(), "Error in client socket shutdown");
-            }
-            if (newSocket.close(ec))
-            {
-                Log::error(header(), "Error in client socket close");
             }
         }
         catch (const boost::system::system_error& e)
@@ -310,19 +410,28 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         {
             Log::error(header(), "Exception in client thread: ", e.what());
         }
-    ServerProtocol::connectionClosed(); });
+
+        boost::system::error_code ec;
+        if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+        {
+            Log::error(header(), "Error in client socket shutdown");
+        }
+        if (newSocket.close(ec))
+        {
+            Log::error(header(), "Error in client socket close");
+        }
+        ServerProtocol::connectionClosed(); });
 
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
         m_clientThreads.emplace_back(std::move(client_thread));
     }
+    // clang-format on
 }
 
 bool TCPServer::acceptClients()
 {
-    // TODO switch
-    bool handshakeComplete = true;
-
+    auto handshakeComplete = std::make_shared<std::atomic<bool>>(false);
     try
     {
         while (!m_stopped->load())
@@ -371,18 +480,26 @@ bool TCPServer::acceptClients()
 
             if (m_stopped->load())
             {
-                Log::debug(header(), "m_stopped->load() called");
+                Log::debug(header(), "Server stopping");
                 break;
             }
 
             if (accepted)
             {
-                if (!handshakeComplete)
+                if (!handshakeComplete->load())
                 {
-                    Log::debug("Unimplemented");
+                    Log::warning(header(), "BEFORE HANDLEHANDSHAKE");
+                    // clang-format off
+                    handleHandshake(std::move(newSocket), [&handshakeComplete]()
+                    {
+                        handshakeComplete->store(true);
+                        Log::warning("Handshake completed!");
+                    });
+                    // clang-format on
                 }
                 else
                 {
+                    Log::warning(header(), "BEFORE HANDLECLIENT");
                     handleClient(std::move(newSocket));
                 }
             }
@@ -416,7 +533,7 @@ uint16_t TCPServer::switchToRandomPort()
 {
     // Close the current acceptor (fixed port).
     boost::system::error_code ec;
-    if (!m_acceptor.close(ec))
+    if (m_acceptor.close(ec))
     {
         Log::error("Failed to close acceptor: ", ec.message());
         return 0;

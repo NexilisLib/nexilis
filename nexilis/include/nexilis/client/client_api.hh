@@ -2,9 +2,11 @@
 #define NEXILIS_CLIENT_API_HH
 
 #include <nexilis/logger/file_log.hh>
+#include <nexilis/logger/log.hh>
 
 #include <nexilis/client/room.hh>
 #include <nexilis/client/server_data.hh>
+#include <nexilis/nx_class.hh>
 
 #include <nexilis/json.hh>
 #include <nexilis/nexilis_constants.hh>
@@ -23,7 +25,7 @@
 namespace nexilis::client
 {
 
-class ClientAPI
+class ClientAPI : public NxClass
 {
 public:
     /// Constructor.
@@ -167,6 +169,16 @@ public:
         return m_data.getBoostTCPServerAddress();
     }
 
+    uint16_t getBoostTCPServerPortNumber() const
+    {
+        return m_data.getBoostTCPServerPortNumber();
+    }
+
+    void setBoostTCPPortNumber(uint16_t port)
+    {
+        m_data.setBoostTCPPortNumber(port);
+    }
+
     /// boost UDP
     std::string getBoostUDPServerAddress() const
     {
@@ -225,6 +237,7 @@ private:
     /// Setters.
     void setClientId(uint64_t id)
     {
+        Log::debug(header(), "Client ID set");
         m_clientId = id;
     }
 

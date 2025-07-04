@@ -10,7 +10,7 @@ class AuthMessage : public BaseMessage
 {
 public:
     /// Constructor.
-    AuthMessage(BaseMessage&& baseMessage, const std::vector<nx_data>& data);
+    AuthMessage(BaseMessage::Data&& baseData, const std::vector<nx_data>& data);
 
     /// Deleted copy constructor.
     AuthMessage(const AuthMessage&) = delete;
@@ -28,6 +28,11 @@ public:
     BaseMessage::Type getType() override
     {
         return BaseMessage::Type::auth_message;
+    }
+
+    const std::vector<nx_data>& getData() const
+    {
+        return m_data;
     }
 
 private:

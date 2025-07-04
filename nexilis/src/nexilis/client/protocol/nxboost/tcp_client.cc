@@ -15,6 +15,7 @@ TCPClient::TCPClient(ClientAPI& api)
     : Protocol(),
       ClientProtocol(&api),
       NxClass("server::nxboost::TCPClient"),
+      m_protocolStatus(std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined)),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
@@ -32,13 +33,16 @@ TCPClient::TCPClient(TCPClient&& other)
       NxClass(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveThread(std::move(other.m_receiveThread)),
+      m_portSwitchingThread(std::move(other.m_portSwitchingThread)),
+      m_protocolStatus(std::move(other.m_protocolStatus)),
       m_stopped(std::move(other.m_stopped)),
       m_ioContext(std::move(other.m_ioContext)),
       m_workGuard(std::move(other.m_workGuard)),
       m_socket(std::move(other.m_socket)),
       m_resolver(std::move(other.m_resolver)),
       m_sendMutex(std::move(other.m_sendMutex)),
-      m_receiveMutex(std::move(other.m_receiveMutex))
+      m_receiveMutex(std::move(other.m_receiveMutex)),
+      m_serverPort(std::move(other.m_serverPort))
 {
 }
 
@@ -57,13 +61,16 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
 
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
+        m_portSwitchingThread = std::move(other.m_portSwitchingThread);
         m_stopped = std::move(other.m_stopped);
+        m_protocolStatus = std::move(other.m_protocolStatus);
         m_ioContext = std::move(other.m_ioContext);
         m_workGuard = std::move(other.m_workGuard);
         m_socket = std::move(other.m_socket);
         m_resolver = std::move(other.m_resolver);
         m_sendMutex = std::move(other.m_sendMutex);
         m_receiveMutex = std::move(other.m_receiveMutex);
+        m_serverPort = std::move(other.m_serverPort);
 
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
@@ -101,6 +108,10 @@ void TCPClient::stop()
         m_ioContext->stop();
         Log::debug(header(), "BoostTCPClient io_context stopped");
     }
+    if (m_portSwitchingThread.joinable())
+    {
+        m_portSwitchingThread.join();
+    }
     if (m_ioContextThread.joinable())
     {
         m_ioContextThread.join();
@@ -131,23 +142,38 @@ void TCPClient::sendMessage(const nx_data& message, const std::function<void()>&
 
 bool TCPClient::connectToServer()
 {
+    if (m_protocolStatus.get()->load() != ProtocolStatus::undefined)
+    {
+        return false;
+    }
+
     try
     {
-        auto port = Ports::getBoostTCPPort();
+        m_protocolStatus = std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::connecting);
+        m_serverPort = Ports::getBoostTCPPort();
+        auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
+
         try
         {
-            boost::asio::connect(m_socket, m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(port)));
+            boost::asio::connect(m_socket, endpoints);
+            Log::debug(header(), "Initial connection success");
         }
         catch (...)
         {
-            Log::error(header(), "Connection failed!");
+            Log::error(header(), "Initial connection failed!");
         }
+
+        return m_socket.is_open();
     }
     catch (...)
     {
-        Log::error(header(), "Could not connect to server!");
+        if (m_protocolStatus)
+        {
+            m_protocolStatus->store(ProtocolStatus::error);
+        }
+        m_socket.close();
+        return false;
     }
-    return m_socket.is_open();
 }
 
 bool TCPClient::send(const nx_data& data)
@@ -181,11 +207,73 @@ bool TCPClient::send(const nx_data& data)
     return true;
 }
 
+void TCPClient::handlePortSwitch()
+{
+    while (!m_stopped->load())
+    {
+        auto port = getClientAPI()->getBoostTCPServerPortNumber();
+        if (port == 0xFF || port == m_serverPort)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
+        // Port switch detected.
+        std::lock_guard<std::mutex> lock(*m_receiveMutex);
+
+        try
+        {
+            // Close existing socket
+            boost::system::error_code ec;
+            if (m_socket.is_open())
+            {
+                if (m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+                {
+                    Log::error(header(), "Error shutting down socket");
+                }
+                if (m_socket.close(ec))
+                {
+                    Log::error(header(), "Error closing socket");
+                }
+            }
+
+            m_serverPort = port;
+            auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
+            boost::asio::connect(m_socket, endpoints);
+
+            if (m_protocolStatus)
+            {
+                m_protocolStatus->store(ProtocolStatus::connected);
+            }
+            Log::info(header(), "Successfully switched to port ", m_serverPort);
+
+            // Exit thread after succesfull switch.
+            break;
+        }
+        catch (const std::exception& e)
+        {
+            Log::error(header(), "Port switch failed: ", e.what());
+            if (m_protocolStatus)
+            {
+                m_protocolStatus->store(ProtocolStatus::error);
+            }
+        }
+        catch (...)
+        {
+            Log::error(header(), "Unknown error during port switch");
+            if (m_protocolStatus)
+            {
+                m_protocolStatus->store(ProtocolStatus::error);
+            }
+        }
+    }
+}
+
 void TCPClient::receive(const std::function<void(nx_data)>& callback)
 {
     if (!m_socket.is_open())
     {
-        Log::error(header(), "TCPClient socket is not open for receiving.");
+        // Log::error(header(), "TCPClient socket is not open for receiving.");
         return;
     }
     if (m_stopped->load())
@@ -205,13 +293,13 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
                 {
                     m_socket.close();
                 }
-                Log::error(header(), "Receive error: ", ec.message());
+                //Log::error(header(), "Receive error: ", ec.message());
                 return;
             }
 
             if (bytes_transferred == 0)
             {
-                Log::warning(header(), "No data received!");
+                //Log::warning(header(), "No data received!");
                 return;
             }
 
@@ -237,24 +325,29 @@ void TCPClient::start()
 {
     if (connectToServer())
     {
-        Log::info(header(), "Connected to server!");
-
         // clang-format off
         m_ioContextThread = std::thread([this]()
         {
-            Log::debug(header(), "BoostTCPClient io_context thread started.");
+            Log::warning(header(), "io_context thread started.");
             m_ioContext->run();
-            Log::debug(header(), "BoostTCPClient io_context thread stopped.");
+            Log::warning(header(), "io_context thread stopped.");
         });
 
         m_receiveThread = std::thread([this]()
         {
-            Log::debug(header(), "BoostTCPClient Receive loop started");
+            Log::warning(header(), "Receive loop started");
             receiveLoop();
-            Log::debug(header(), "BoostTCPClient Receive loop stopped");
+            Log::warning(header(), "Receive loop stopped");
         });
-        // clang-format on
 
+        m_portSwitchingThread = std::thread([this]()
+        {
+            Log::warning(header(), "Port switching thread started");
+            handlePortSwitch();
+            Log::warning(header(), "Port switching thread stopped");
+        });
+
+        // clang-format on
         ClientProtocol::start(getType());
     }
     else
@@ -298,7 +391,6 @@ void TCPClient::receiveLoop()
         };
 
         receive(cb);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
