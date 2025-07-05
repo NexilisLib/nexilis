@@ -96,7 +96,7 @@ class ProtocolTestBoostTCP : public ProtocolTest<Server, Client>
 protected:
     void setup() override
     {
-        this->server_data.setBoostTCP("127.0.0.1");
+        this->server_data.setBoostTCPAddress("127.0.0.1");
     }
 };
 

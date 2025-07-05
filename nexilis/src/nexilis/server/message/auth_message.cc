@@ -3,8 +3,8 @@
 namespace nexilis::server
 {
 
-AuthMessage::AuthMessage(BaseMessage&& baseMessage, const std::vector<nx_data>& data)
-    : BaseMessage(std::move(baseMessage)),
+AuthMessage::AuthMessage(BaseMessage::Data&& baseData, const std::vector<nx_data>& data)
+    : BaseMessage(std::move(baseData)),
       m_data(data)
 {
 }

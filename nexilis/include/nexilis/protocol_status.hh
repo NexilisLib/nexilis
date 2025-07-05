@@ -7,9 +7,9 @@ namespace nexilis
 enum class ProtocolStatus
 {
     undefined,
-    unconnected,
     connecting,
-    connected
+    connected,
+    error
 };
 
 }

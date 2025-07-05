@@ -103,114 +103,170 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
     Util::debugUint8Vector(command);
 
     // The first byte.
-    auto main_arg = static_cast<CommandType>(command.front());
+    auto arg = static_cast<CommandType>(command.front());
 
     // The second byte.
-    auto arg = command[1];
+    auto arg2 = command[1];
 
-    Log::debug(header(), commandTypeAsString(main_arg));
-    switch (main_arg)
+    uint8_t arg3, arg4;
+
+    if (command.size() > 2)
+    {
+        arg3 = command[2];
+    }
+    if (command.size() > 3)
+    {
+        arg4 = command[3];
+    }
+
+    Log::debug(header(), commandTypeAsString(arg));
+    switch (arg)
     {
         case CommandType::setting:
         {
-            switch (arg)
+            switch (arg2)
             {
-                /// Reset your client id.
-                /// requires privileges.
+                // General settings.
                 case 0:
                 {
-                    Log::debug(header(), "setting::client_id");
-                    if (!user.hasRootAccess())
+                    switch (arg3)
                     {
-                        Log::error(header(), "Client needs root access for changing id");
-                        return Result::unauthorized;
-                    }
-                    // We are parsing Command, so remove two bytes from this switch statement.
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    uint64_t id = Util::convertToType<uint64_t>(payload);
-
-                    auto& clients = ClientStorage::getAllClients();
-
-                    for (auto c = clients.begin(); c != clients.end(); c++)
-                    {
-                        if (*c == user)
+                        // Reset your client id.
+                        // requires privileges.
+                        case 0:
                         {
-                            assert(c->hasRootAccess());
-                            assert(user.hasRootAccess());
-                            c->setId(id);
+                            Log::debug(header(), "setting::general::client_id");
+                            if (!user.hasRootAccess())
+                            {
+                                Log::error(header(), "Client needs root access for changing id");
+                                return Result::unauthorized;
+                            }
+                            // We are parsing Command, so remove two bytes from this switch statement.
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                            uint64_t id = Util::convertToType<uint64_t>(payload);
+
+                            auto& clients = ClientStorage::getAllClients();
+
+                            for (auto c = clients.begin(); c != clients.end(); c++)
+                            {
+                                if (*c == user)
+                                {
+                                    assert(c->hasRootAccess());
+                                    assert(user.hasRootAccess());
+                                    c->setId(id);
+                                    return Result::success;
+                                }
+                            }
+
+                            Log::error(header(), "Error in CommandType::set::clientID");
+                            return Result::error;
+                        }
+
+                        // Set username to the client.
+                        case 1:
+                        {
+                            Log::debug(header(), "setting::general::username");
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
+                            std::string username = Util::convertToString(payload);
+
+                            auto* client = ClientStorage::getClientById(user.getId());
+                            if (client)
+                            {
+                                client->setUsername(username);
+                            }
+                            else
+                            {
+                                return Result::error;
+                            }
+
+                            auto data = clientMessageData(CommandType::setting, "username", messageId, {{"username", boost::json::value(username)}});
+                            sendMessageToClient(data, user, protocol);
+
                             return Result::success;
                         }
                     }
-
-                    Log::error(header(), "Error in CommandType::set::clientID");
-                    return Result::error;
+                    return Result::not_found;
                 }
 
-                // Set username to the client.
+                // Protocol specific setting
                 case 1:
                 {
-                    Log::debug(header(), "setting::username");
-                    auto payload = Util::removeAmountOfBytesFromVector(command, 2);
-                    std::string username = Util::convertToString(payload);
-
-                    auto* client = ClientStorage::getClientById(user.getId());
-                    if (client)
+                    switch (arg3)
                     {
-                        client->setUsername(username);
+                        // Boost TCP
+                        case 0:
+                        {
+                            switch (arg4)
+                            {
+                                // Server address
+                                case 0:
+                                {
+                                    Log::debug(header(), "setting::protocol::boostTCP::server_address");
+                                    return Result::unimplemented;
+                                }
+
+                                // Server port number
+                                case 1:
+                                {
+                                    Log::debug(header(), "setting::protocol::boostTCP::server_port_number");
+                                    auto payload = Util::removeAmountOfBytesFromVector(command, 4);
+                                    uint16_t port = Util::convertoToUint16(payload);
+
+                                    // TODO the following functions needs refactoring
+                                    auto data = clientMessageData(CommandType::setting, "port", messageId, {{"port", boost::json::value(port)}});
+                                    sendMessageToClient(data, user, protocol);
+                                    return Result::success;
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        return Result::error;
-                    }
-
-                    auto data = clientMessageData(CommandType::setting, "username", messageId, {{"username", boost::json::value(username)}});
-                    sendMessageToClient(data, user, protocol);
-
-                    return Result::success;
-                }
-
-                default:
                     return Result::not_found;
+                }
             }
             return Result::not_found;
         }
 
         case CommandType::getting:
         {
-            switch (arg)
+            switch (arg2)
             {
-                // Get client id.
+                // General getting
                 case 0:
                 {
-                    Log::debug(header(), "getting::client_id");
-                    std::map<std::string, boost::json::value> data{
-                            {"command", boost::json::value("getting")},
-                            {"type", boost::json::value("client_id")},
-                            {"client_id", boost::json::value(user.getId())}};
+                    switch (arg3)
+                    {
+                        // Get client id.
+                        case 0:
+                        {
+                            Log::debug(header(), "getting::general::client_id");
+                            std::map<std::string, boost::json::value> data{
+                                    {"command", boost::json::value("getting")},
+                                    {"type", boost::json::value("client_id")},
+                                    {"client_id", boost::json::value(user.getId())}};
 
-                    auto json = Json::createJSON(data);
-                    nx_data message = Util::convertToByteVector(json);
-                    sendMessageToClient(message, user, protocol);
+                            auto json = Json::createJSON(data);
+                            nx_data message = Util::convertToByteVector(json);
+                            sendMessageToClient(message, user, protocol);
 
-                    Log::info(header(), "Sent message GET CLIENTID to client");
-                    return Result::success;
+                            Log::info(header(), "Sent message GET CLIENTID to client");
+                            return Result::success;
+                        }
+                    }
                 }
-                default:
-                    return Result::not_found;
             }
+            return Result::not_found;
         }
 
         case CommandType::room:
         {
             // Payload for room commands start after the third byte.
             const uint8_t roomCommandPayloadAmount = 3;
-            auto roomArg = command[2];
-            switch (arg)
+            switch (arg2)
             {
                 // Management
                 case 0:
                 {
-                    switch (roomArg)
+                    switch (arg3)
                     {
                         // Join room.
                         case 0:
@@ -311,7 +367,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     // Communicate
                     case 1:
                     {
-                        switch (roomArg)
+                        switch (arg3)
                         {
                             // broadcast
                             case 0:
@@ -349,13 +405,12 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
                         }
                     }
-                    default:
                         return Result::not_found;
                 }
                 // Player 2D
                 case 2:
                 {
-                    switch (roomArg)
+                    switch (arg3)
                     {
                         /// Position 2D
                         case 0:
@@ -497,16 +552,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             return Result::success;
                         }
-
-                        default:
-                            return Result::not_found;
                     }
+                    return Result::not_found;
                 }
 
                 // Object2D
                 case 3:
                 {
-                    switch (roomArg)
+                    switch (arg3)
                     {
                         // Create object
                         case 0:
@@ -654,15 +707,13 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             object2DMovement(std::move(base_move), user, protocol).detach();
                             return Result::success;
                         }
-
-                        default:
-                            return Result::not_found;
                     }
+                    return Result::not_found;
                 }
                 // Player3D
                 case 4:
                 {
-                    switch (roomArg)
+                    switch (arg3)
                     {
                         /// Position 3D
                         case 0:
@@ -723,16 +774,15 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             sendRoomCommand(roomCommand, user, protocol);
                             return Result::success;
                         }
-                        default:
-                            return Result::not_found;
                     }
                 }
             }
+            return Result::not_found;
         }
 
         case CommandType::authentication:
         {
-            switch (arg)
+            switch (arg2)
             {
                 // Setup authentication.
                 case 0:
@@ -795,10 +845,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         return Result::unauthorized;
                     }
                 }
-
-                default:
-                    return Result::not_found;
             }
+            return Result::not_found;
         }
 
         case CommandType::server_management:
@@ -814,7 +862,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
         case CommandType::error:
         {
             // Internal server error
-            switch (arg)
+            switch (arg2)
             {
                 // Classname X
                 case 0:
@@ -822,14 +870,13 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     Log::critical("Internal server error: x");
                     return Result::error;
                 }
-                default:
-                    return Result::not_found;
             }
+            return Result::not_found;
         }
 
         case CommandType::info:
         {
-            switch (arg)
+            switch (arg2)
             {
                 // Get all public information from a server.
                 case 0:
@@ -883,14 +930,15 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     Log::info("Used Info::roomInfo");
                     return Result::success;
                 }
-                default:
-                    return Result::not_found;
             }
             return Result::not_found;
         }
-        default:
-            return Result::not_found;
+        case CommandType::undefined:
+        {
+            return Result::error;
+        }
     }
+    return Result::not_found;
 }
 
 void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)

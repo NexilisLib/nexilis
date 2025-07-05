@@ -16,18 +16,19 @@ namespace nexilis::client
 class Packet
 {
 public:
+    class Set
+    {
+    public:
+        static nx_data clientId(uint64_t newId);
+        static nx_data username(const std::string& name);
+    };
+
     class Get
     {
     public:
         // The server sends the client identification to server.
         // This is mandatory packet to establish client connection.
         static nx_data clientId();
-    };
-
-    class Set
-    {
-    public:
-        static nx_data username(const std::string& name);
     };
 
     class Info

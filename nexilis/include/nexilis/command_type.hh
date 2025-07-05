@@ -10,7 +10,24 @@ namespace nexilis
 enum class CommandType : uint8_t
 {
     setting = 0,
+    /**
+     * 0:0      General
+     * 0:0:0    Client ID, uint64_t id
+     * 0:0:1    Username; string
+     *
+     * 0:1      Protocol specific
+     *
+     * 0:1:0    Boost TCP
+     * 0:1:0:0  Server address; string
+     * 0:1:0:1  Server port number; uint16_t
+     *
+     */
+
     getting = 1,
+    /**
+     * 1:0      General
+     * 1:0:0    Client ID
+     */
 
     room = 2,
     /**

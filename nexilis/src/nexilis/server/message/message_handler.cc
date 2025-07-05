@@ -1,8 +1,10 @@
+#include <nexilis/server/message/auth_message.hh>
+#include <nexilis/server/message/error_message.hh>
+#include <nexilis/server/message/message_handler.hh>
+
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/config.hh>
-#include <nexilis/server/message/error_message.hh>
-#include <nexilis/server/message/message_handler.hh>
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/server/server_json.hh>
 #include <nexilis/server/settings.hh>
@@ -104,21 +106,17 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
 
                     // This message is equal to Packet::getId (without client id).
                     // TODO add other data such as port number.
-                    nx_data message{1, 0};
+                    nx_data message{1, 0, 0};
                     auto idBytes = Util::convertToByteVector(user->getId());
                     for (auto&& byte : idBytes)
                     {
                         message.emplace_back(byte);
                     }
+                    std::vector<nx_data> test{message};
 
                     auto new_message_id = Util::getRandomUint64();
-
-                    BaseMessage::Data base_message(new_message_id, address, realNewClient);
-
-                    // TODO
-                    // Return auth message here
-                    auto a = Message(std::move(base_message), message);
-                    return std::make_unique<Message>(std::move(a));
+                    BaseMessage::Data base_data(new_message_id, address, realNewClient);
+                    return std::make_unique<AuthMessage>(std::move(base_data), test);
                 }
                 else
                 {

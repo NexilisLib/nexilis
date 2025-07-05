@@ -113,11 +113,11 @@ const char* nexilis_server_data_get_inet_tcp_server_address(const nexilis_Server
     return nullptr;
 }
 
-void nexilis_server_data_set_boost_tcp(nexilis_ServerData* server_data, const char* server_address)
+void nexilis_server_data_set_boost_tcp_address(nexilis_ServerData* server_data, const char* server_address)
 {
     if (server_data && server_data->data && server_address)
     {
-        server_data->data->setBoostTCP(server_address);
+        server_data->data->setBoostTCPAddress(server_address);
     }
 }
 

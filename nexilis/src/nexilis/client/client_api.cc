@@ -13,12 +13,14 @@ namespace nexilis::client
 {
 
 ClientAPI::ClientAPI(ServerData data)
-    : m_data(data)
+    : NxClass("ClientAPI"),
+      m_data(data)
 {
 }
 
 ClientAPI::ClientAPI(ClientAPI&& other)
-    : m_data(std::move(other.m_data)),
+    : NxClass(std::move(other)),
+      m_data(std::move(other.m_data)),
       m_clientId(std::move(other.m_clientId)),
       m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
       m_messageIds(std::move(other.m_messageIds)),
@@ -35,6 +37,8 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
         m_callbacks = std::move(other.m_callbacks);
+
+        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -205,6 +209,13 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     client->setUsername(username);
                 }
+                return ReadResult::success;
+            }
+            // FIXME this is so bad.
+            else if (type == "port")
+            {
+                uint16_t port = readUint64(json, "port");
+                m_data.setBoostTCPPortNumber(port);
                 return ReadResult::success;
             }
             else

@@ -1,6 +1,7 @@
 #ifndef NEXILIS_CLIENT_SERVER_DATA_HH
 #define NEXILIS_CLIENT_SERVER_DATA_HH
 
+#include <cstdint>
 #include <string>
 
 namespace nexilis::client
@@ -72,9 +73,19 @@ public:
         return m_boostTCPServerAddress;
     }
 
-    void setBoostTCP(const std::string& serverAddress)
+    void setBoostTCPAddress(const std::string& serverAddress)
     {
         m_boostTCPServerAddress = serverAddress;
+    }
+
+    uint16_t getBoostTCPServerPortNumber() const
+    {
+        return m_boostTCPServerPort;
+    }
+
+    void setBoostTCPPortNumber(uint16_t port)
+    {
+        m_boostTCPServerPort = port;
     }
 
     /// boost UDP.
@@ -123,6 +134,7 @@ private:
 
     /// boost TCP
     std::string m_boostTCPServerAddress;
+    uint16_t m_boostTCPServerPort = 0xFF;
 
     /// boost UDP
     std::string m_boostUDPServerAddress;

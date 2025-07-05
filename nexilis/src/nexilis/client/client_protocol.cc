@@ -100,7 +100,7 @@ void ClientProtocol::start(Protocol::Type type)
             Log::error("This function called via unknown protocol");
             return;
     }
-    sendMessage(nexilis::client::Packet::Set::username(username));
+    // sendMessage(nexilis::client::Packet::Set::username(username));
 }
 
 } // namespace nexilis::client

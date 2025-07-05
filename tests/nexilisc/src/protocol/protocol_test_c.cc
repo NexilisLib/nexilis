@@ -203,7 +203,7 @@ protected:
         this->stop_client = nexilis_boost_tcp_client_stop;
         this->destroy_client = nexilis_boost_tcp_client_destroy;
         this->is_connected = nexilis_boost_tcp_client_is_connected;
-        this->set_address = nexilis_server_data_set_boost_tcp;
+        this->set_address = nexilis_server_data_set_boost_tcp_address;
         this->send_message = nexilis_boost_tcp_client_send_message;
     }
 };

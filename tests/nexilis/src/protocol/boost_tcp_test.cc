@@ -28,7 +28,7 @@ protected:
         nexilis::client::ServerData server_data;
         server_data.setPassword("salasana");
         server_data.setUserName("example_user");
-        server_data.setBoostTCP("127.0.0.1");
+        server_data.setBoostTCPAddress("127.0.0.1");
 
         api = std::make_unique<nexilis::client::ClientAPI>(server_data);
         client = std::make_shared<nexilis::client::nxboost::TCPClient>(protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(*api));
