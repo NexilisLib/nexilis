@@ -6,6 +6,7 @@
 #include <nexilis/server/message/message_handler.hh>
 #include <nexilis/server/server_protocol.hh>
 #include <nexilis/server/settings.hh>
+#include <nexilis/ports.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -51,10 +52,7 @@ public:
     }
 
     /// Get the port where the server is running.
-    uint16_t getPort() const
-    {
-        return m_serverPort;
-    }
+    uint16_t getPort() const;
 
 private:
     bool sendToClient(const nx_data& data, boost::asio::ip::tcp::socket& clientSocket);
@@ -64,19 +62,23 @@ private:
     void handleHandshake(boost::asio::ip::tcp::socket socket, std::function<void()> onCompleted);
     nx_data receiveMessage(boost::asio::ip::tcp::socket& socket);
     std::string getClientAddress(boost::asio::ip::tcp::socket& socket);
+    void startSwitchedAccepting();
     uint16_t switchToRandomPort();
 
 private:
+    const uint16_t m_defaultServerPort = Ports::getBoostTCPPort();
+    std::unique_ptr<std::atomic<bool>> m_firstClientConnected;
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::unique_ptr<std::mutex> m_mutex;
     std::unique_ptr<boost::asio::io_context> m_ioContext;
     boost::asio::ip::tcp::acceptor m_acceptor;
+    boost::asio::ip::tcp::acceptor m_switchedAcceptor;
+    std::unique_ptr<std::atomic<uint16_t>> m_switchedPort;
 
     std::thread m_listenThread;
     std::thread m_ioContextThread;
+    std::thread m_switchedAcceptThread;
     std::vector<std::thread> m_clientThreads;
-
-    uint16_t m_serverPort;
 };
 
 } // namespace nexilis::server::nxboost

@@ -227,7 +227,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "client_id")
             {
-                Log::warning("Received Get::clientId command");
+                Log::debug("Received Get::clientId command");
                 uint64_t clientId = readUint64(json, "client_id");
                 setClientId(clientId);
                 Packet::_initialize(*this);

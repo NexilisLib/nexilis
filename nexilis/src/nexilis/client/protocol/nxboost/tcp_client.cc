@@ -95,13 +95,13 @@ void TCPClient::stop()
     m_workGuard.reset();
 
     boost::system::error_code ec;
-    if (m_socket.cancel(ec))
+    if (m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+    {
+        Log::error(header(), "Error shutting down socket: ", ec.message());
+    }
+    if (m_socket.close(ec))
     {
         Log::error(header(), "Error cancelling socket operations: ", ec.message());
-    }
-    if (ec)
-    {
-        Log::error(header(), "Cancel error: ", ec.message());
     }
     if (m_ioContext)
     {
@@ -120,13 +120,9 @@ void TCPClient::stop()
     {
         m_receiveThread.join();
     }
-    if (m_socket.close(ec))
-    {
-        Log::error(header(), "Error closing socket: ", ec.message());
-    }
     if (ec)
     {
-        Log::error(header(), "Closing error: ", ec.message());
+        Log::error(header(), "Stopping error: ", ec.message());
     }
 }
 
@@ -191,11 +187,11 @@ bool TCPClient::send(const nx_data& data)
     }
 
     boost::asio::async_write(m_socket, boost::asio::buffer(data),
-                             [this](const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
+                             [this](const boost::system::error_code& error, std::size_t size)
                              {
                                  if (!error)
                                  {
-                                     Log::info(header(), "Message sent successfully.");
+                                     Log::info(header(), "Message sent successfully with size of: ", size, " bytes");
                                  }
                                  else
                                  {
