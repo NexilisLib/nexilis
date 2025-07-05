@@ -19,7 +19,7 @@ add_executable(nexilis_c_tests
     src/logging/log_test_c.cc
 
     src/protocol/protocol_manager_test_c.cc
-    #src/protocol/protocol_test_c.cc
+    src/protocol/protocol_test_c.cc
 )
 
 target_link_libraries(nexilis_c_tests nexilis ${GTEST_LIBRARIES})

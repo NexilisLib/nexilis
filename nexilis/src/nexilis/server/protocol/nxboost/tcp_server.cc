@@ -4,10 +4,10 @@
 #include <nexilis/util.hh>
 
 #include <boost/asio/buffer.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/asio/deadline_timer.hpp>
 
 namespace nexilis::server::nxboost
 {
@@ -142,13 +142,16 @@ void TCPServer::stop()
     {
         Log::debug(header(), "closing switchAcceptThread");
         m_switchedAcceptThread.join();
+        Log::debug(header(), "switchAcceptThread finished");
     }
 
     if (m_listenThread.joinable())
     {
         Log::debug(header(), "closing listenThread");
         m_listenThread.join();
+        Log::debug(header(), "listenThread finished");
     }
+
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
         Log::debug("BoostTCPServer closing ", m_clientThreads.size(), " client connections...");
@@ -166,6 +169,7 @@ void TCPServer::stop()
     {
         Log::debug(header(), "closing ioContextThread");
         m_ioContextThread.join();
+        Log::debug(header(), "ioContextThread finished");
     }
 
     Log::debug("BoostTCPServer stopped.");
@@ -174,39 +178,67 @@ void TCPServer::stop()
 void TCPServer::startSwitchedAccepting()
 {
     m_switchedAcceptThread = std::thread([this]()
-    {
-        while (!m_stopped->load())
-        {
-            try
-            {
+                                         {
+        while (!m_stopped->load()) {
+            try {
                 boost::asio::ip::tcp::socket socket(*m_ioContext);
-
                 boost::system::error_code ec;
-                ec = m_switchedAcceptor.accept(socket, ec);
 
-                if (ec == boost::asio::error::would_block)
+                if (!m_switchedAcceptor.is_open())
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    continue;
-                }
-
-                if (m_stopped->load())
-                {
+                    if (!m_stopped->load())
+                    {
+                        Log::warning(header(), "Acceptor closed unexpectedly");
+                    }
                     break;
                 }
 
-                Log::debug(header(), "Accepted connection on switched port: ", socket.remote_endpoint().address().to_string());
-                handleClient(std::move(socket));
-            }
-            catch (...)
-            {
-                if (!m_stopped->load())
-                {
-                    Log::error(header(), "Error accepting on switched port");
+                // Same select-based approach for switched acceptor
+                fd_set read_fds;
+                FD_ZERO(&read_fds);
+                FD_SET(m_switchedAcceptor.native_handle(), &read_fds);
+
+                timeval timeout;
+                timeout.tv_sec = 0;
+                timeout.tv_usec = 100000; // 100ms timeout
+
+                int result = select(m_switchedAcceptor.native_handle() + 1, &read_fds, nullptr, nullptr, &timeout);
+
+                if (result > 0) {
+                    m_switchedAcceptor.accept(socket, ec);
+
+                    if (ec)
+                    {
+                        if (ec == boost::asio::error::bad_descriptor)
+                        {
+                            if (!m_stopped->load())
+                            {
+                                Log::warning(header(), "Accept on closed acceptor");
+                            }
+                            break;
+                        }
+                        else if (ec != boost::asio::error::operation_aborted)
+                        {
+                            Log::error(header(), "Accept error: ", ec.message());
+                        }
+                        continue;
+                    }
+
+                    if (socket.is_open()) {
+                        Log::debug(header(), "Accepted switched connection");
+                        handleClient(std::move(socket));
+                    }
+                }
+                else if (result < 0 && errno != EINTR) {
+                    Log::error(header(), "Switched select error: ", strerror(errno));
                 }
             }
-        }
-    });
+            catch (...) {
+                if (!m_stopped->load()) {
+                    Log::error(header(), "Error in switched accept");
+                }
+            }
+        } });
 }
 
 bool TCPServer::startListening()
@@ -227,6 +259,11 @@ nx_data TCPServer::receiveMessage(boost::asio::ip::tcp::socket& socket)
 
     if (error_code == boost::asio::error::eof)
     {
+        return data;
+    }
+    else if (error_code == boost::asio::error::operation_aborted)
+    {
+        Log::debug(header(), "receiveMessage aborted due to shutdown");
         return data;
     }
     else if (error_code)
@@ -281,19 +318,19 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
         {
             try
             {
-                while (!m_stopped->load() && hs_socket.is_open())
+                while (!m_stopped->load())
                 {
+                    if (!hs_socket.is_open())
+                    {
+                        break;
+                    }
+
                     auto clientAddress = getClientAddress(hs_socket);
                     auto data = receiveMessage(hs_socket);
                     Log::debug(header(), "Received handshake message");
 
                     if (data.empty())
                     {
-                        if (!hs_socket.is_open())
-                        {
-                            Log::error(header(), "Stopping handleHandshake thread");
-                            break;
-                        }
                         continue;
                     }
 
@@ -349,7 +386,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 
                             if (portCommand == Command::Result::success)
                             {
-                                Log::info("Auth fully complete");
+                                Log::info(header(), "Auth fully complete");
                                 handled_message->getUser()->setBoostTCPSend(nullptr);
                                 cb();
                                 break;
@@ -369,22 +406,27 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                         Log::critical(header(), "Wrong message type");
                     }
                 }
-                boost::system::error_code ec;
-                if (hs_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
-                {
-                    Log::error(header(), "Error in client socket shutdown");
-                }
-                if (hs_socket.close(ec))
-                {
-                    Log::error(header(), "Error in client socket close");
-                }
             }
             catch (...)
             {
                 Log::debug(header(), "Error with handshake");
             }
+
+            boost::system::error_code ec;
+            if (hs_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+            {
+                Log::error(header(), "Error in client socket shutdown");
+            }
+            if (hs_socket.close(ec))
+            {
+                Log::error(header(), "Error in client socket close");
+            }
         });
-        thread.detach();
+
+        {
+            std::lock_guard<std::mutex> lock(*m_mutex);
+            m_clientThreads.emplace_back(std::move(thread));
+        }
     }
     catch (const std::exception& e)
     {
@@ -504,55 +546,65 @@ bool TCPServer::acceptClients()
     {
         while (!m_stopped->load())
         {
-            // Create a new socket for each client connection
             boost::asio::ip::tcp::socket socket(*m_ioContext);
             boost::system::error_code ec;
 
-            // Setup a deadline timer to make accept interruptible.
-            boost::asio::deadline_timer timer(*m_ioContext);
-            timer.expires_from_now(boost::posix_time::milliseconds(100));
-
-            // Async wait the we can cancel.
-            bool timed_out = false;
-            timer.async_wait([&timed_out, this](const boost::system::error_code&)
+            if (!m_acceptor.is_open())
             {
-                timed_out = true;
-                m_acceptor.cancel();
-            });
-
-            ec = m_acceptor.accept(socket, ec);
-
-            // Cancel the timer.
-            timer.cancel();
-
-            if (ec)
-            {
-                if (ec != boost::asio::error::operation_aborted)
-                {
-                    break;
-                }
                 if (!m_stopped->load())
                 {
-                    Log::error(header(), "Accept error: ", ec.message());
+                    Log::warning(header(), "Acceptor closed suddenly");
                 }
-                continue;
+                break;
+            }
+
+            // Use select() for interruptible accept
+            fd_set read_fds;
+            FD_ZERO(&read_fds);
+            FD_SET(m_acceptor.native_handle(), &read_fds);
+
+            timeval timeout;
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 100000; // 100ms timeout
+
+            int result = select(m_acceptor.native_handle() + 1, &read_fds, nullptr, nullptr, &timeout);
+
+            if (result > 0)
+            {
+                m_acceptor.accept(socket, ec);
+
+                if (ec)
+                {
+                    if (ec == boost::asio::error::bad_descriptor)
+                    {
+                        if (!m_stopped->load())
+                        {
+                            Log::warning(header(), "Accept on closed acceptor");
+                        }
+                        break;
+                    }
+                    else if (ec != boost::asio::error::operation_aborted)
+                    {
+                        Log::error(header(), "Accept error: ", ec.message());
+                    }
+                    continue;
+                }
+
+                if (socket.is_open())
+                {
+                    Log::debug(header(), "New handshake connection");
+                    handleHandshake(std::move(socket), []()
+                                    { Log::info("Handshake completed!"); });
+                }
+            }
+            else if (result < 0 && errno != EINTR)
+            {
+                Log::error(header(), "Select error: ", strerror(errno));
             }
 
             if (m_stopped->load())
             {
                 break;
-            }
-
-            if (!ec)
-            {
-                Log::debug(header(), "New handshake connection from: ", socket.remote_endpoint().address().to_string());
-
-                // clang-format off
-                handleHandshake(std::move(socket), []()
-                {
-                    Log::info("server::nxboost::TCPServer: Handshake completed!");
-                });
-                // clang-format on
             }
         }
     }
@@ -560,7 +612,7 @@ bool TCPServer::acceptClients()
     {
         if (!m_stopped->load())
         {
-            Log::error(header(), "Exception in default port accept loop");
+            Log::error(header(), "Exception in accept loop");
         }
     }
     return true;

@@ -2,11 +2,11 @@
 #define NEXILIS_BOOST_TCP_SERVER_HH
 
 #include <nexilis/nx_class.hh>
+#include <nexilis/ports.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/message/message_handler.hh>
 #include <nexilis/server/server_protocol.hh>
 #include <nexilis/server/settings.hh>
-#include <nexilis/ports.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
