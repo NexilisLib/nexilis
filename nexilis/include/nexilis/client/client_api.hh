@@ -237,7 +237,6 @@ private:
     /// Setters.
     void setClientId(uint64_t id)
     {
-        Log::debug(header(), "Client ID set");
         m_clientId = id;
     }
 

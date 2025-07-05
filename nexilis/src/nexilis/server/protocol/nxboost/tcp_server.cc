@@ -177,10 +177,13 @@ void TCPServer::stop()
 
 void TCPServer::startSwitchedAccepting()
 {
+    // clang-format off
     m_switchedAcceptThread = std::thread([this]()
-                                         {
-        while (!m_stopped->load()) {
-            try {
+    {
+        while (!m_stopped->load())
+        {
+            try
+            {
                 boost::asio::ip::tcp::socket socket(*m_ioContext);
                 boost::system::error_code ec;
 
@@ -204,7 +207,8 @@ void TCPServer::startSwitchedAccepting()
 
                 int result = select(m_switchedAcceptor.native_handle() + 1, &read_fds, nullptr, nullptr, &timeout);
 
-                if (result > 0) {
+                if (result > 0)
+                {
                     m_switchedAcceptor.accept(socket, ec);
 
                     if (ec)
@@ -224,21 +228,27 @@ void TCPServer::startSwitchedAccepting()
                         continue;
                     }
 
-                    if (socket.is_open()) {
+                    if (socket.is_open())
+                    {
                         Log::debug(header(), "Accepted switched connection");
                         handleClient(std::move(socket));
                     }
                 }
-                else if (result < 0 && errno != EINTR) {
+                else if (result < 0 && errno != EINTR)
+                {
                     Log::error(header(), "Switched select error: ", strerror(errno));
                 }
             }
-            catch (...) {
-                if (!m_stopped->load()) {
+            catch (...)
+            {
+                if (!m_stopped->load())
+                {
                     Log::error(header(), "Error in switched accept");
                 }
             }
-        } });
+        }
+    });
+    // clang-format on
 }
 
 bool TCPServer::startListening()
@@ -441,8 +451,6 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
-    Log::warning(header(), "Handleclient called");
-
     // clang-format off
     auto client_thread = std::thread([this, newSocket = std::move(socket)]() mutable
     {

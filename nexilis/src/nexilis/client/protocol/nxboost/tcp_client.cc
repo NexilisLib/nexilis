@@ -269,7 +269,6 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
 {
     if (!m_socket.is_open())
     {
-        // Log::error(header(), "TCPClient socket is not open for receiving.");
         return;
     }
     if (m_stopped->load())
@@ -289,13 +288,11 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
                 {
                     m_socket.close();
                 }
-                //Log::error(header(), "Receive error: ", ec.message());
                 return;
             }
 
             if (bytes_transferred == 0)
             {
-                //Log::warning(header(), "No data received!");
                 return;
             }
 
@@ -324,23 +321,23 @@ void TCPClient::start()
         // clang-format off
         m_ioContextThread = std::thread([this]()
         {
-            Log::warning(header(), "io_context thread started.");
+            Log::debug(header(), "io_context thread started.");
             m_ioContext->run();
-            Log::warning(header(), "io_context thread stopped.");
+            Log::debug(header(), "io_context thread stopped.");
         });
 
         m_receiveThread = std::thread([this]()
         {
-            Log::warning(header(), "Receive loop started");
+            Log::debug(header(), "Receive loop started");
             receiveLoop();
-            Log::warning(header(), "Receive loop stopped");
+            Log::debug(header(), "Receive loop stopped");
         });
 
         m_portSwitchingThread = std::thread([this]()
         {
-            Log::warning(header(), "Port switching thread started");
+            Log::debug(header(), "Port switching thread started");
             handlePortSwitch();
-            Log::warning(header(), "Port switching thread stopped");
+            Log::debug(header(), "Port switching thread stopped");
         });
 
         // clang-format on
