@@ -104,28 +104,32 @@ void TCPServer::stop()
 {
     if (!m_stopped || m_stopped->exchange(true))
     {
-        Log::debug("TCPServer stop already in progress or completed.");
+        Log::debug(header(), "stop already in progress or completed.");
         return;
     }
 
     boost::system::error_code ec;
 
     // Cancel acceptors.
-    if (m_acceptor.cancel(ec))
+    ec = m_acceptor.cancel(ec);
+    if (ec)
     {
         Log::error(header(), "Error cancelling m_acceptor: ", ec.message());
     }
-    if (m_switchedAcceptor.cancel(ec))
+    ec = m_switchedAcceptor.cancel(ec);
+    if (ec)
     {
         Log::error(header(), "Error cancelling m_switchedAcceptor: ", ec.message());
     }
 
     // Close sockets.
-    if (m_acceptor.close(ec))
+    ec = m_acceptor.close(ec);
+    if (ec)
     {
         Log::error(header(), "Error closing m_acceptor: ", ec.message());
     }
-    if (m_switchedAcceptor.close(ec))
+    ec = m_switchedAcceptor.close(ec);
+    if (ec)
     {
         Log::error(header(), "Error closing m_switchedAcceptor: ", ec.message());
     }
@@ -209,7 +213,7 @@ void TCPServer::startSwitchedAccepting()
 
                 if (result > 0)
                 {
-                    m_switchedAcceptor.accept(socket, ec);
+                    ec = m_switchedAcceptor.accept(socket, ec);
 
                     if (ec)
                     {
@@ -337,7 +341,6 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 
                     auto clientAddress = getClientAddress(hs_socket);
                     auto data = receiveMessage(hs_socket);
-                    Log::debug(header(), "Received handshake message");
 
                     if (data.empty())
                     {
@@ -530,11 +533,13 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         }
 
         boost::system::error_code ec;
-        if (newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+        ec = newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+        if (ec)
         {
             Log::error(header(), "Error in client socket shutdown");
         }
-        if (newSocket.close(ec))
+        ec = newSocket.close(ec);
+        if (ec)
         {
             Log::error(header(), "Error in client socket close");
         }
@@ -579,8 +584,7 @@ bool TCPServer::acceptClients()
 
             if (result > 0)
             {
-                m_acceptor.accept(socket, ec);
-
+                ec = m_acceptor.accept(socket, ec);
                 if (ec)
                 {
                     if (ec == boost::asio::error::bad_descriptor)
@@ -647,25 +651,29 @@ uint16_t TCPServer::switchToRandomPort()
     boost::system::error_code ec;
 
     // Close the previous switched acceptor if any.
-    if (m_switchedAcceptor.close(ec))
+    ec = m_switchedAcceptor.close(ec);
+    if (ec)
     {
         Log::error(header(), "Failed to close previous m_switchedAcceptor");
     }
 
     // Configure new switched port.
-    if (m_switchedAcceptor.open(boost::asio::ip::tcp::v4(), ec))
+    ec = m_switchedAcceptor.open(boost::asio::ip::tcp::v4(), ec);
+    if (ec)
     {
         Log::error(header(), "Failed to open switched acceptor: ", ec.message());
         return 0;
     }
 
-    if (m_switchedAcceptor.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 0), ec))
+    ec = m_switchedAcceptor.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 0), ec);
+    if (ec)
     {
         Log::error(header(), "Failed to bind switched acceptor: ", ec.message());
         return 0;
     }
 
-    if (m_switchedAcceptor.listen(boost::asio::socket_base::max_listen_connections, ec))
+    ec = m_switchedAcceptor.listen(boost::asio::socket_base::max_listen_connections, ec);
+    if (ec)
     {
         Log::error(header(), "Failed to listen on switched acceptor: ", ec.message());
         return 0;
