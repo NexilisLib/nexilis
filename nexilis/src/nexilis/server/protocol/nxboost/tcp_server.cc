@@ -383,7 +383,6 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                                 Log::info(header(), "First client! Opening second port");
                                 switchToRandomPort();
                             }
-
                             nx_data command_data = { 0, 1, 0, 1 };
                             auto port_data = Util::convertToByteVector(getPort());
 
@@ -539,7 +538,8 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         {
             Log::error(header(), "Error in client socket close");
         }
-        ServerProtocol::connectionClosed(); });
+        ServerProtocol::connectionClosed();
+    });
 
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
@@ -602,7 +602,7 @@ bool TCPServer::acceptClients()
                 {
                     Log::debug(header(), "New handshake connection");
                     handleHandshake(std::move(socket), []()
-                                    { Log::info("Handshake completed!"); });
+                                    { Log::info("server::nxboost::TCPServer: Handshake completed!"); });
                 }
             }
             else if (result < 0 && errno != EINTR)

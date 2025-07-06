@@ -720,7 +720,8 @@ ClientAPI::ReadResult ClientAPI::readMessage(const nx_data& message)
     boost::json::object json;
     try
     {
-        json = Json::convertToJSON(message);
+        nx_data messageWithoutLastByte(message.begin(), message.end() - (message.empty() ? 0 : 1));
+        json = Json::convertToJSON(messageWithoutLastByte);
     }
     catch (...)
     {

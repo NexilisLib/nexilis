@@ -7,6 +7,7 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/asio/read_until.hpp>
 
 namespace nexilis::client::nxboost
 {
@@ -279,7 +280,7 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
     auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
 
     // clang-format off
-    boost::asio::async_read(m_socket, *receiveBuffer, boost::asio::transfer_at_least(1),
+    boost::asio::async_read_until(m_socket, *receiveBuffer, '\n',
         [this, receiveBuffer, callback](const boost::system::error_code& ec, size_t bytes_transferred)
         {
             if (ec || m_stopped->load())

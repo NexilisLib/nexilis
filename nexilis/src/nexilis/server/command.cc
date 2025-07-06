@@ -239,14 +239,13 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         case 0:
                         {
                             Log::debug(header(), "getting::general::client_id");
-                            std::map<std::string, boost::json::value> data{
-                                    {"command", boost::json::value("getting")},
-                                    {"type", boost::json::value("client_id")},
-                                    {"client_id", boost::json::value(user.getId())}};
 
-                            auto json = Json::createJSON(data);
-                            nx_data message = Util::convertToByteVector(json);
-                            sendMessageToClient(message, user, protocol);
+                            std::map<std::string, boost::json::value> params {
+                                    {"client_id", boost::json::value(user.getId())}
+                            };
+
+                            auto data = clientMessageData(CommandType::getting, "client_id", messageId, params);
+                            sendMessageToClient(data, user, protocol);
 
                             Log::info(header(), "Sent message GET CLIENTID to client");
                             return Result::success;
@@ -890,6 +889,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getServerData());
                     nx_data data = Util::convertToByteVector(json);
+                    data.emplace_back('\n');
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
@@ -908,6 +908,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getClientData());
                     nx_data data = Util::convertToByteVector(json);
+                    data.emplace_back('\n');
 
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::clientInfo");
@@ -926,6 +927,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     auto json = Json::createJSON(header);
                     Json::emplace(json, ServerJson::getRoomData());
                     auto data = Util::convertToByteVector(json);
+                    data.emplace_back('\n');
+
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::roomInfo");
                     return Result::success;
@@ -993,7 +996,7 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
 {
     if (messageData.size() < 3)
     {
-        Log::error(header(), "Insuffecient messageData");
+        Log::error(header(), "Insufficient messageData");
         return nx_data();
     }
 
@@ -1143,7 +1146,9 @@ std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User
 
 nx_data Command::clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)
 {
-    return Util::convertToByteVector(Json::createJSON(clientMessageMap(cmd, type, message_id, params)));
+    auto vector = Util::convertToByteVector(Json::createJSON(clientMessageMap(cmd, type, message_id, params)));
+    vector.emplace_back('\n');
+    return vector;
 }
 
 Command::ClientMsgType Command::clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)
