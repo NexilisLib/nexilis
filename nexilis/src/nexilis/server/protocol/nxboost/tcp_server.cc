@@ -453,28 +453,29 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
+    auto socket_ptr = std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+    auto client_address = getClientAddress(*socket_ptr);
+
     // clang-format off
-    auto client_thread = std::thread([this, newSocket = std::move(socket)]() mutable
+    auto client_thread = std::thread([this, socket_ptr, client_address]() mutable
     {
         ServerProtocol::connectionEstablished();
         try
         {
-            std::string clientAddress = getClientAddress(newSocket);
-
-            while (!m_stopped->load())
+            while (!m_stopped->load() && socket_ptr->is_open())
             {
-                auto data = receiveMessage(newSocket);
+                auto data = receiveMessage(*socket_ptr);
 
                 if (data.empty())
                 {
-                    if (!newSocket.is_open())
+                    if (!socket_ptr->is_open())
                     {
                         break;
                     }
                     continue;
                 }
 
-                auto handledMessage = getMessageHandler().readMessage(clientAddress, data, &getCommand().getSettings());
+                auto handledMessage = getMessageHandler().readMessage(client_address, data, &getCommand().getSettings());
 
                 if (!handledMessage)
                 {
@@ -484,9 +485,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
                 if (!handledMessage->getUser()->isBoostTCPSet())
                 {
-                    handledMessage->getUser()->setBoostTCPSend([this, &newSocket](const nx_data& bytes)
+                    handledMessage->getUser()->setBoostTCPSend([this, socket_ptr](const nx_data& bytes)
                     {
-                        if (sendToClient(bytes, newSocket))
+                        if (sendToClient(bytes, *socket_ptr))
                         {
                             Log::info(header(), "Sent message to client succesfully");
                         }
@@ -524,8 +525,10 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         }
         catch (const boost::system::system_error& e)
         {
-            // Handle errors or client disconnect here
-            Log::error(header(), "Error in client thread: ", e.what());
+            if (e.code() != boost::asio::error::operation_aborted)
+            {
+                Log::error(header(), "Error in client thread: ", e.what());
+            }
         }
         catch (const std::exception& e)
         {
@@ -533,15 +536,18 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         }
 
         boost::system::error_code ec;
-        ec = newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-        if (ec)
+        if (socket_ptr->is_open())
         {
-            Log::error(header(), "Error in client socket shutdown");
-        }
-        ec = newSocket.close(ec);
-        if (ec)
-        {
-            Log::error(header(), "Error in client socket close");
+            ec = socket_ptr->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+            if (ec)
+            {
+                Log::error(header(), "Error in client socket shutdown");
+            }
+            ec = socket_ptr->close(ec);
+            if (ec)
+            {
+                Log::error(header(), "Error in client socket close");
+            }
         }
         ServerProtocol::connectionClosed();
     });

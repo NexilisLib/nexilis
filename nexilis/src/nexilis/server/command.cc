@@ -240,9 +240,8 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         {
                             Log::debug(header(), "getting::general::client_id");
 
-                            std::map<std::string, boost::json::value> params {
-                                    {"client_id", boost::json::value(user.getId())}
-                            };
+                            std::map<std::string, boost::json::value> params{
+                                    {"client_id", boost::json::value(user.getId())}};
 
                             auto data = clientMessageData(CommandType::getting, "client_id", messageId, params);
                             sendMessageToClient(data, user, protocol);
