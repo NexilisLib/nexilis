@@ -459,7 +459,12 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
     // clang-format off
     auto client_thread = std::thread([this, socket_ptr, client_address]() mutable
     {
+        if (!socket_ptr->is_open())
+        {
+            return;
+        }
         ServerProtocol::connectionEstablished();
+
         try
         {
             while (!m_stopped->load() && socket_ptr->is_open())
@@ -552,9 +557,23 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         ServerProtocol::connectionClosed();
     });
 
+    try
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
         m_clientThreads.emplace_back(std::move(client_thread));
+    }
+    catch (...)
+    {
+        Log::critical(header(), "Failed to launch client thread");
+        if (socket_ptr->is_open())
+        {
+            boost::system::error_code ec;
+            ec = socket_ptr->close(ec);
+            if (ec)
+            {
+                Log::error(header(), "Failed to close socket");
+            }
+        }
     }
     // clang-format on
 }

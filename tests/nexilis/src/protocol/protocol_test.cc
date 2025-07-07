@@ -138,6 +138,15 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPClientConnected)
 TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPHasActiveConnections)
 {
     this->clientStart();
+
+    // Wait for the connection to be established (5 seconds).
+    int attemps = 0;
+    while (server->hasActiveConnections() && attemps < 50)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        attemps++;
+    }
+
     EXPECT_TRUE(server->hasActiveConnections());
 }
 
