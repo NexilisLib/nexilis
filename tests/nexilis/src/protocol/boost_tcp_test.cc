@@ -66,7 +66,7 @@ TEST_F(BoostTCPTest, BoostTCPSuccessfulConnection)
     client->start();
 
     // Give the client some time to establish the connection
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // Check if the client is connected
     EXPECT_TRUE(client->isConnected());

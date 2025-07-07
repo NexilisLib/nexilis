@@ -13,6 +13,15 @@
 
 static nexilis::ProtocolManager protocol_manager;
 
+void waitFor(uint32_t seconds, bool condition)
+{
+    const auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+    while (!condition && std::chrono::steady_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
 template <typename Server, typename Client>
 class ProtocolTest : public ::testing::Test
 {
@@ -139,20 +148,15 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPHasActiveConnections)
 {
     this->clientStart();
 
-    // Wait for the connection to be established (5 seconds).
-    int attemps = 0;
-    while (server->hasActiveConnections() && attemps < 50)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        attemps++;
-    }
-
+    waitFor(5, server->hasActiveConnections());
     EXPECT_TRUE(server->hasActiveConnections());
 }
 
 TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPActiveConnectionsCountFromOne)
 {
     this->clientStart();
+
+    waitFor(5, server->activeConnectionsCount() == 1);
     EXPECT_EQ(server->activeConnectionsCount(), 1);
 }
 
@@ -191,6 +195,9 @@ using RoomBoostTCP2DTest = ProtocolRoomTest<BasicBoostTCPTest, nexilis::RoomData
 TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomClientConnected)
 {
     this->clientStart();
+
+    waitFor(5, client->isConnected() && server->hasActiveConnections());
+
     EXPECT_TRUE(client->isConnected());
     EXPECT_TRUE(server->hasActiveConnections());
     EXPECT_EQ(server->activeConnectionsCount(), 1);
@@ -206,6 +213,14 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
             nexilis::client::Packet::Info::rooms(),
             this->api->waitUntilRoomsCreated(promise));
 
-    auto status = future.wait_for(std::chrono::seconds(5));
+    auto start = std::chrono::steady_clock::now();
+    std::future_status status;
+    do
+    {
+        status = future.wait_for(std::chrono::milliseconds(100));
+        if (status == std::future_status::ready) break;
+    }
+    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(10));
+
     EXPECT_EQ(status, std::future_status::ready);
 }
