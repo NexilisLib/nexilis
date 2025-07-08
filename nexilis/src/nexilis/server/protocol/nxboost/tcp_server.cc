@@ -325,6 +325,7 @@ std::string TCPServer::getClientAddress(boost::asio::ip::tcp::socket& socket)
 
 void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::function<void()> onCompleted)
 {
+    ServerProtocol::connectionEstablished();
     try
     {
         // clang-format off
@@ -442,10 +443,12 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
     }
     catch (const std::exception& e)
     {
+        ServerProtocol::connectionClosed();
         Log::error(header(), "Failed to create handshake thread: ", e.what());
     }
     catch (...)
     {
+        ServerProtocol::connectionClosed();
         Log::error(header(), "Other failure in handshake thread");
     }
     // clang-format on
@@ -463,7 +466,6 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         {
             return;
         }
-        ServerProtocol::connectionEstablished();
 
         try
         {
