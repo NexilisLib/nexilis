@@ -10,7 +10,8 @@ namespace nexilis::client::nxboost
 {
 
 UDPClient::UDPClient(ClientAPI& clientApi)
-    : ClientProtocol(&clientApi),
+    : NxClass("client::nxboost::UDPClient"),
+      ClientProtocol(&clientApi),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
@@ -25,7 +26,8 @@ UDPClient::~UDPClient()
 }
 
 UDPClient::UDPClient(UDPClient&& other)
-    : Protocol(std::move(other)),
+    : NxClass(std::move(other)),
+      Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::move(other.m_ioContext)),
@@ -57,6 +59,7 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
 
+        NxClass::operator=(std::move(other));
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
 

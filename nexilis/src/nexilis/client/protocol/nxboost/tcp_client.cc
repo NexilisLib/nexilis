@@ -13,9 +13,9 @@ namespace nexilis::client::nxboost
 {
 
 TCPClient::TCPClient(ClientAPI& api)
-    : Protocol(),
+    : NxClass("server::nxboost::TCPClient"),
+      Protocol(),
       ClientProtocol(&api),
-      NxClass("server::nxboost::TCPClient"),
       m_protocolStatus(std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined)),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_shared<boost::asio::io_context>()),
@@ -29,9 +29,9 @@ TCPClient::TCPClient(ClientAPI& api)
 }
 
 TCPClient::TCPClient(TCPClient&& other)
-    : Protocol(std::move(other)),
+    : NxClass(std::move(other)),
+      Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
-      NxClass(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveThread(std::move(other.m_receiveThread)),
       m_portSwitchingThread(std::move(other.m_portSwitchingThread)),
@@ -73,9 +73,9 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_receiveMutex = std::move(other.m_receiveMutex);
         m_serverPort = std::move(other.m_serverPort);
 
+        NxClass::operator=(std::move(other));
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
-        NxClass::operator=(std::move(other));
     }
     return *this;
 }

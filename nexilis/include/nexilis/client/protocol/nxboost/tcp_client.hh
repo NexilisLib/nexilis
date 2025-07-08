@@ -14,9 +14,9 @@
 namespace nexilis::client::nxboost
 {
 
-class TCPClient : public Protocol,
-                  public ClientProtocol,
-                  public NxClass
+class TCPClient : public virtual NxClass,
+                  public Protocol,
+                  public ClientProtocol
 {
 public:
     /// Constructor.

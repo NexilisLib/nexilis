@@ -7,12 +7,14 @@ namespace nexilis::client
 {
 
 ClientProtocol::ClientProtocol(ClientAPI* api)
-    : m_api(api)
+    : NxClass("ClientProtocol"),
+      m_api(api)
 {
 }
 
 ClientProtocol::ClientProtocol(ClientProtocol&& other)
-    : m_api(other.m_api)
+    : NxClass(std::move(other)),
+      m_api(other.m_api)
 {
     other.m_api = nullptr;
 }
@@ -23,6 +25,7 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     {
         m_api = other.m_api;
         other.m_api = nullptr;
+        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -48,29 +51,29 @@ void ClientProtocol::start(Protocol::Type type)
 {
     if (m_api->isInitialized())
     {
-        Log::error("Password already sent using another protocol!");
+        Log::error(header(), "Password already sent using another protocol!");
         return;
     }
 
     auto password = m_api->getClientPassword();
-    Log::debug("Trying server password: ", password);
+    Log::debug(header(), "Trying server password: ", password);
 
     // TODO We're assuming here that the server is password protected.
     auto message = Util::convertToByteVector(password.c_str(), password.size());
     sendMessage(message);
 
-    Log::debug("Client protocol type: ", Protocol::typeToString(type));
+    Log::debug(header(), "Client protocol type: ", Protocol::typeToString(type));
     switch (type)
     {
         case Protocol::Type::BOOST_TCP_CLIENT:
-            Log::debug("Waiting for Boost TCP to be ready");
+            Log::debug(header(), "Waiting for Boost TCP to be ready");
             getClientAPI()->waitUntilBoostTCPReady();
-            Log::debug("Boost TCP is ready");
+            Log::debug(header(), "Boost TCP is ready");
             break;
         case Protocol::Type::BOOST_UDP_CLIENT:
-            Log::debug("Waiting for Boost UDP to be ready");
+            Log::debug(header(), "Waiting for Boost UDP to be ready");
             getClientAPI()->waitUntilBoostUDPReady();
-            Log::debug("Boost UDP is ready");
+            Log::debug(header(), "Boost UDP is ready");
             break;
         case Protocol::Type::AF_INET_TCP_CLIENT:
             getClientAPI()->waitUntilInetTCPReady();
@@ -91,11 +94,11 @@ void ClientProtocol::start(Protocol::Type type)
         case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
         case Protocol::Type::BOOST_TCP_SERVER:
         case Protocol::Type::BOOST_UDP_SERVER:
-            Log::error("This function cannot be called via server protocol");
+            Log::error(header(), "This function cannot be called via server protocol");
             return;
 
         case Protocol::Type::UNKNOWN:
-            Log::error("This function called via unknown protocol");
+            Log::error(header(), "This function called via unknown protocol");
             return;
     }
     // sendMessage(nexilis::client::Packet::Set::username(username));

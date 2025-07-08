@@ -12,7 +12,8 @@ namespace nexilis::client::af_unix
 {
 
 StreamClient::StreamClient(ClientAPI& clientApi)
-    : ClientProtocol(&clientApi),
+    : NxClass("client::af_unix::StreamClient"),
+      ClientProtocol(&clientApi),
       m_serverSocketPath(clientApi.getUnixStreamPath()),
       m_mutex(std::make_unique<std::mutex>())
 {
@@ -34,7 +35,8 @@ StreamClient::~StreamClient()
 }
 
 StreamClient::StreamClient(StreamClient&& other)
-    : Protocol(std::move(other)),
+    : NxClass(std::move(other)),
+      Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       m_serverSocketPath(std::move(other.m_serverSocketPath)),
       m_clientSocket(std::move(other.m_clientSocket)),
@@ -54,6 +56,7 @@ StreamClient& StreamClient::operator=(StreamClient&& other)
         m_receiveThread = std::move(other.m_receiveThread);
         m_mutex = std::move(other.m_mutex);
 
+        NxClass::operator=(std::move(other));
         Protocol::operator=(std::move(other));
         ClientProtocol::operator=(std::move(other));
     }

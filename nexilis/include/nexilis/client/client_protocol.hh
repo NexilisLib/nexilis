@@ -8,7 +8,7 @@
 namespace nexilis::client
 {
 
-class ClientProtocol
+class ClientProtocol : public virtual NxClass
 {
 public:
     /// Constructor.

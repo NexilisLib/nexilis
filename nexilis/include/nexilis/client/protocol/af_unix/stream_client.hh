@@ -16,7 +16,9 @@
 namespace nexilis::client::af_unix
 {
 
-class StreamClient : public Protocol, public ClientProtocol
+class StreamClient : public virtual NxClass,
+                     public Protocol,
+                     public ClientProtocol
 {
 public:
     /// Constructor.

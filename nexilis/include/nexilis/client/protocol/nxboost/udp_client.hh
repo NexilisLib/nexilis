@@ -12,7 +12,8 @@
 namespace nexilis::client::nxboost
 {
 
-class UDPClient : public Protocol,
+class UDPClient : public virtual NxClass,
+                  public Protocol,
                   public ClientProtocol
 {
 public:
