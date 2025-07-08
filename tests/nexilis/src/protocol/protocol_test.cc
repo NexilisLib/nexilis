@@ -216,9 +216,9 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
     do
     {
         status = future.wait_for(std::chrono::milliseconds(100));
-        if (status == std::future_status::ready) break;
-    }
-    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(10));
+        if (status == std::future_status::ready)
+            break;
+    } while (std::chrono::steady_clock::now() - start < std::chrono::seconds(10));
 
     EXPECT_EQ(status, std::future_status::ready);
 }

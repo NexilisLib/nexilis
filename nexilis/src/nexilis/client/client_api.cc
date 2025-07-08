@@ -14,7 +14,8 @@ namespace nexilis::client
 
 ClientAPI::ClientAPI(ServerData data)
     : NxClass("ClientAPI"),
-      m_data(data)
+      m_data(data),
+      m_roomsMutex(std::make_unique<std::mutex>())
 {
 }
 
@@ -24,7 +25,8 @@ ClientAPI::ClientAPI(ClientAPI&& other)
       m_clientId(std::move(other.m_clientId)),
       m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
       m_messageIds(std::move(other.m_messageIds)),
-      m_callbacks(std::move(other.m_callbacks))
+      m_callbacks(std::move(other.m_callbacks)),
+      m_roomsMutex(std::move(other.m_roomsMutex))
 {
 }
 
@@ -37,6 +39,7 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
         m_callbacks = std::move(other.m_callbacks);
+        m_roomsMutex = std::move(other.m_roomsMutex);
 
         NxClass::operator=(std::move(other));
     }
@@ -832,14 +835,36 @@ float ClientAPI::readFloat(const boost::json::value& context, const std::string&
 
 std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promise)
 {
-    return [&promise, this]()
+    // Capture promise by value to avoid dangling reference.
+    return [promise_ptr = std::shared_ptr<std::promise<void>>(&promise, [](auto*) {}), this]()
     {
-        // Because all the rooms are created as once, we basically check if the rooms exist.
-        while (getActiveRooms().size() < 1)
+        try
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // Max 5 seconds waiting time.
+            constexpr int max_attempts = 50;
+            int attempts = 0;
+
+            while (attempts++ < max_attempts)
+            {
+                {
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    if (!getActiveRooms().empty())
+                    {
+                        promise_ptr->set_value();
+                        return;
+                    }
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+
+            // Timeout reached.
+            promise_ptr->set_exception(std::make_exception_ptr(
+                    std::runtime_error("Timeout waiting for rooms creation")));
         }
-        promise.set_value();
+        catch (...)
+        {
+            promise_ptr->set_exception(std::current_exception());
+        }
     };
 }
 

@@ -272,6 +272,8 @@ private:
 
     /// Is the server aware of the client, is "Packet" initialized.
     bool m_isInitialized = false;
+
+    std::unique_ptr<std::mutex> m_roomsMutex;
 };
 
 } // namespace nexilis::client

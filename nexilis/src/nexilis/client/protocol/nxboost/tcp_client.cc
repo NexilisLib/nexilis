@@ -195,6 +195,8 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const nx_data& data)
 {
+    std::lock_guard<std::mutex> lock(*m_sendMutex);
+
     if (m_stopped->load() || !m_socket.is_open())
     {
         Log::error(header(), "Cannot send, socket is not open or TCPClient is closed");
