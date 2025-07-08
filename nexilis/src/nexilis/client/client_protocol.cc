@@ -52,10 +52,8 @@ void ClientProtocol::start(Protocol::Type type)
         return;
     }
 
-    auto password = getClientAPI()->getClientPassword();
-    Log::debug("Client password: ", password);
-    auto username = getClientAPI()->getClientUserName();
-    Log::debug("Client username: ", username);
+    auto password = m_api->getClientPassword();
+    Log::debug("Trying server password: ", password);
 
     // TODO We're assuming here that the server is password protected.
     auto message = Util::convertToByteVector(password.c_str(), password.size());

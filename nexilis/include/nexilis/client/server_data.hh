@@ -25,16 +25,6 @@ public:
     /// Copy assignment operator.
     ServerData& operator=(const ServerData& other);
 
-    const std::string& getUsername() const
-    {
-        return m_username;
-    }
-
-    void setUserName(const std::string& username)
-    {
-        m_username = username;
-    }
-
     const std::string& getPassword() const
     {
         return m_password;
@@ -122,9 +112,8 @@ public:
     }
 
 private:
-    /// Client data.
+    /// The server password.
     std::string m_password;
-    std::string m_username;
 
     /// af_inet UDP
     std::string m_inetUDPServerAddress;

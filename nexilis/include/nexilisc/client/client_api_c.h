@@ -39,7 +39,7 @@ const char* nexilis_client_api_get_unix_dgram_path(const nexilis_ClientAPI* clie
 const char* nexilis_client_api_get_unix_stream_path(const nexilis_ClientAPI* client_api);
 
 uint64_t nexilis_client_api_get_client_id(const nexilis_ClientAPI* client_api);
-const char* nexilis_client_api_get_client_username(const nexilis_ClientAPI* client_api);
+const char* nexilis_client_api_get_client_username(const nexilis_ClientAPI* client_api, uint64_t client_id);
 const char* nexilis_client_api_get_client_password(const nexilis_ClientAPI* client_api);
 
 nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_ClientAPI* client_api);

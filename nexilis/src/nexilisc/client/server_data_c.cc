@@ -21,29 +21,6 @@ void nexilis_server_data_destroy(nexilis_ServerData* server_data)
     }
 }
 
-void nexilis_server_data_set_username(nexilis_ServerData* server_data, const char* username)
-{
-    if (server_data && server_data->data && username)
-    {
-        server_data->data->setUserName(username);
-    }
-}
-
-const char* nexilis_server_data_get_username(const nexilis_ServerData* server_data)
-{
-    if (server_data && server_data->data)
-    {
-        std::string address = server_data->data->getUsername();
-        char* cstr = (char*)malloc(address.size() + 1);
-        if (cstr)
-        {
-            std::strcpy(cstr, address.c_str());
-        }
-        return cstr;
-    }
-    return nullptr;
-}
-
 void nexilis_server_data_set_password(nexilis_ServerData* server_data, const char* password)
 {
     if (server_data && server_data->data && password)

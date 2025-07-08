@@ -103,12 +103,6 @@ protected:
     {
         server_data = nexilis_server_data_create();
         nexilis_server_data_set_password(server_data, "salasana");
-
-        char rnd[11];
-        generateRandomString(rnd, 10);
-        char username[20];
-        snprintf(username, sizeof(username), "user_%s", rnd);
-        nexilis_server_data_set_username(server_data, username);
     }
 
     void createClientAPI()

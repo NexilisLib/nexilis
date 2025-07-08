@@ -71,8 +71,6 @@ protected:
     void createDefaultServerData()
     {
         server_data.setPassword("salasana");
-        std::string rnd = nexilis::Util::getRandomString(10);
-        server_data.setUserName("user_" + rnd);
     }
 
     void createClientAPI()

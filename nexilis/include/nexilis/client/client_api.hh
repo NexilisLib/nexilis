@@ -146,9 +146,10 @@ public:
         return m_data.getPassword();
     }
 
-    std::string getClientUserName() const
+    std::string getClientUsername(uint64_t client_id)
     {
-        return m_data.getUsername();
+        auto* client = getClientFromRoom(client_id);
+        return client ? client->getUsername() : "";
     }
 
     /// af_inet UDP.

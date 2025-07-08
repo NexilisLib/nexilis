@@ -169,6 +169,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             std::string username = Util::convertToString(payload);
 
+                            // Setting the username for internal client.
                             auto* client = ClientStorage::getClientById(user.getId());
                             if (client)
                             {

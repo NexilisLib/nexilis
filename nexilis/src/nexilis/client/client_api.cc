@@ -201,9 +201,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 std::string username = readString(json, "username");
 
-                // Internal clientAPI init.
-                m_data.setUserName(username);
-
+                // The clients that we are avare of.
                 auto client = getClientFromRoom(m_clientId);
                 if (client)
                 {

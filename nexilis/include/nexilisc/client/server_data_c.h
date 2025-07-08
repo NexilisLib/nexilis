@@ -15,8 +15,6 @@ struct nexilis_ServerData
 nexilis_ServerData* nexilis_server_data_create();
 void nexilis_server_data_destroy(nexilis_ServerData* server_data);
 
-void nexilis_server_data_set_username(nexilis_ServerData* server_data, const char* username);
-const char* nexilis_server_data_get_username(const nexilis_ServerData* server_data);
 void nexilis_server_data_set_password(nexilis_ServerData* server_data, const char* password);
 const char* nexilis_server_data_get_password(const nexilis_ServerData* server_data);
 
