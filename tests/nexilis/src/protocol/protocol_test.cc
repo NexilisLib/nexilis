@@ -203,22 +203,35 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomClientConnected)
 
 TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
 {
+    // Fresh state.
+    ASSERT_FALSE(client->isConnected());
+    ASSERT_FALSE(server->hasActiveConnections());
+
     this->clientStart();
+    waitFor(5, client->isConnected() && server->hasActiveConnections());
 
     std::promise<void> promise;
     std::future<void> future = promise.get_future();
-    this->client->sendMessage(
-            nexilis::client::Packet::Info::rooms(),
-            this->api->waitUntilRoomsCreated(promise));
 
-    auto start = std::chrono::steady_clock::now();
-    std::future_status status;
-    do
+    try
     {
-        status = future.wait_for(std::chrono::milliseconds(100));
-        if (status == std::future_status::ready)
-            break;
-    } while (std::chrono::steady_clock::now() - start < std::chrono::seconds(10));
+        this->client->sendMessage(
+                nexilis::client::Packet::Info::rooms(),
+                this->api->waitUntilRoomsCreated(promise));
+    }
+    catch (const std::exception& e)
+    {
+        FAIL() << "Message send failed: " << e.what();
+    }
 
+    auto status = future.wait_for(std::chrono::seconds(5));
+
+    if (status != std::future_status::ready)
+    {
+        std::cerr << "Test failed:" << std::endl;
+        std::cerr << "Client connected: " << client->isConnected() << std::endl;
+        std::cerr << "Server connections: " << server->activeConnectionsCount() << std::endl;
+        std::cerr << "Rooms avainable" << api->getActiveRooms().size() << std::endl;
+    }
     EXPECT_EQ(status, std::future_status::ready);
 }
