@@ -247,19 +247,38 @@ bool TCPClient::send(const nx_data& data)
         return false;
     }
 
-    // Wait for port switch to complete
-    // clang-format off
-    std::unique_lock<std::mutex> portLock(*m_portSwitchingMutex);
-    if (!m_portSwitchCV->wait_for(portLock, std::chrono::seconds(1), [this]
+    // Retry up to 3 times if blocked by port switch
+    const int maxRetries = 3;
+    int retryCount = 0;
+
+    while (retryCount < maxRetries)
     {
-        return !m_portSwitchingInProgress->load();
-    }))
+        // Wait for port switch to complete.
+        std::unique_lock<std::mutex> portLock(*m_portSwitchingMutex);
+        if (m_portSwitchCV->wait_for(portLock, std::chrono::seconds(5), [this]
+                                     { return !m_portSwitchingInProgress->load(); }))
+        {
+            portLock.unlock();
+            // Port switching ok, ok to send.
+            break;
+        }
+
+        portLock.unlock();
+        retryCount++;
+
+        if (retryCount < maxRetries)
+        {
+            Log::warning(header(), "Send blocked by port switch, retrying (",
+                         retryCount, "/", maxRetries, ")");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    if (retryCount >= maxRetries)
     {
-        Log::error(header(), "Send blocked by port switch");
+        Log::error(header(), "Send blocked by port switch after ", maxRetries, " retries");
         return false;
     }
-    // clang-format on
-    portLock.unlock();
 
     std::lock_guard<std::mutex> lock(*m_sendMutex);
 
