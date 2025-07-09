@@ -54,34 +54,6 @@ namespace Nexilis.Client
         }
 
         /// <summary>
-        /// Sets the username for the server data.
-        /// </summary>
-        /// <param name="username">The username to set.</param>
-        public void SetUsername(string username)
-        {
-            ServerDataNative.nexilis_server_data_set_username(_serverDataPtr, username);
-        }
-
-        /// <summary>
-        /// Sets the username for the server data.
-        /// </summary>
-        /// <param name="username">The username to set.</param>
-        public ServerData Username(string username)
-        {
-            ServerDataNative.nexilis_server_data_set_username(_serverDataPtr, username);
-            return this;
-        }
-
-        /// <summary>
-        /// Gets the username from the server data.
-        /// </summary>
-        /// <returns>The username from the server data.</returns>
-        public string GetUsername()
-        {
-            return ServerDataNative.nexilis_server_data_get_username(_serverDataPtr);
-        }
-
-        /// <summary>
         /// Sets the password for the server data.
         /// </summary>
         /// <param name="password">The password to set.</param>

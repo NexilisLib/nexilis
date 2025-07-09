@@ -13,12 +13,6 @@ namespace Nexilis.Client
 
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexilis_server_data_set_username(IntPtr serverData, string username);
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern string nexilis_server_data_get_username(IntPtr serverData);
-
-        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_server_data_set_password(IntPtr serverData, string password);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
