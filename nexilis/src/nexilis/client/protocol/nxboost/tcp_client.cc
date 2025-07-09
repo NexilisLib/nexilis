@@ -13,7 +13,7 @@ namespace nexilis::client::nxboost
 {
 
 TCPClient::TCPClient(ClientAPI& api)
-    : NxClass("server::nxboost::TCPClient"),
+    : NxClass("client::nxboost::TCPClient"),
       Protocol(),
       ClientProtocol(&api),
       m_protocolStatus(std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined)),
@@ -24,8 +24,17 @@ TCPClient::TCPClient(ClientAPI& api)
       m_socket(*m_ioContext),
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
-      m_receiveMutex(std::make_shared<std::mutex>())
+      m_receiveMutex(std::make_shared<std::mutex>()),
+      m_portSwitchingMutex(std::make_shared<std::mutex>()),
+      m_portSwitchingInProgress(std::make_unique<std::atomic<bool>>(false)),
+      m_portSwitchCV(std::make_shared<std::condition_variable>())
 {
+    // Verify all shared pointers were created.
+    if (!m_sendMutex || !m_receiveMutex || !m_portSwitchingMutex ||
+        !m_portSwitchCV || !m_portSwitchingInProgress)
+    {
+        throw std::runtime_error("Failed to initialize synchronization objects");
+    }
 }
 
 TCPClient::TCPClient(TCPClient&& other)
@@ -43,8 +52,19 @@ TCPClient::TCPClient(TCPClient&& other)
       m_resolver(std::move(other.m_resolver)),
       m_sendMutex(std::move(other.m_sendMutex)),
       m_receiveMutex(std::move(other.m_receiveMutex)),
+      m_portSwitchingMutex(std::move(other.m_portSwitchingMutex)),
+      m_portSwitchingInProgress(std::move(other.m_portSwitchingInProgress)),
+      m_portSwitchCV(std::move(other.m_portSwitchCV)),
       m_serverPort(std::move(other.m_serverPort))
 {
+    other.m_protocolStatus.reset();
+    other.m_stopped.reset();
+    other.m_workGuard.reset();
+    other.m_sendMutex.reset();
+    other.m_receiveMutex.reset();
+    other.m_portSwitchingMutex.reset();
+    other.m_portSwitchCV.reset();
+    other.m_portSwitchingInProgress.reset();
 }
 
 TCPClient& TCPClient::operator=(TCPClient&& other)
@@ -71,7 +91,19 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_resolver = std::move(other.m_resolver);
         m_sendMutex = std::move(other.m_sendMutex);
         m_receiveMutex = std::move(other.m_receiveMutex);
+        m_portSwitchingMutex = std::move(other.m_portSwitchingMutex);
+        m_portSwitchingInProgress = std::move(other.m_portSwitchingInProgress);
+        m_portSwitchCV = std::move(other.m_portSwitchCV);
         m_serverPort = std::move(other.m_serverPort);
+
+        other.m_protocolStatus.reset();
+        other.m_stopped.reset();
+        other.m_workGuard.reset();
+        other.m_sendMutex.reset();
+        other.m_receiveMutex.reset();
+        other.m_portSwitchingMutex.reset();
+        other.m_portSwitchCV.reset();
+        other.m_portSwitchingInProgress.reset();
 
         NxClass::operator=(std::move(other));
         Protocol::operator=(std::move(other));
@@ -93,9 +125,18 @@ void TCPClient::stop()
         return;
     }
 
-    if (m_receiveMutex)
+    // Notify all waiting threads
+    if (m_portSwitchCV && m_portSwitchingInProgress)
     {
-        std::lock_guard<std::mutex> lock(*m_receiveMutex);
+        std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
+        m_portSwitchingInProgress->store(false);
+        m_portSwitchCV->notify_all();
+    }
+
+    if (m_receiveMutex && m_sendMutex)
+    {
+        std::lock_guard<std::mutex> recvLock(*m_receiveMutex);
+        std::lock_guard<std::mutex> sendLock(*m_sendMutex);
         if (m_socket.is_open())
         {
             boost::system::error_code ec;
@@ -170,17 +211,23 @@ bool TCPClient::connectToServer()
         m_serverPort = Ports::getBoostTCPPort();
         auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
 
-        try
+        boost::asio::connect(m_socket, endpoints);
+        Log::debug(header(), "Initial connection success");
+
+        // Wait for potential port switch completion
+        if (m_portSwitchingInProgress->load())
         {
-            boost::asio::connect(m_socket, endpoints);
-            Log::debug(header(), "Initial connection success");
-        }
-        catch (...)
-        {
-            Log::error(header(), "Initial connection failed!");
+            std::unique_lock<std::mutex> lock(*m_portSwitchingMutex);
+            // clang-format off
+            m_portSwitchCV->wait_for(lock, std::chrono::seconds(5), [this]
+            {
+                return !m_portSwitchingInProgress->load();
+            });
+            // clang-format on
         }
 
-        return m_socket.is_open();
+        m_protocolStatus->store(ProtocolStatus::connected);
+        return true;
     }
     catch (...)
     {
@@ -195,6 +242,25 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const nx_data& data)
 {
+    if (!m_portSwitchingMutex || !m_portSwitchCV || !m_portSwitchingInProgress)
+    {
+        return false;
+    }
+
+    // Wait for port switch to complete
+    // clang-format off
+    std::unique_lock<std::mutex> portLock(*m_portSwitchingMutex);
+    if (!m_portSwitchCV->wait_for(portLock, std::chrono::seconds(1), [this]
+    {
+        return !m_portSwitchingInProgress->load();
+    }))
+    {
+        Log::error(header(), "Send blocked by port switch");
+        return false;
+    }
+    // clang-format on
+    portLock.unlock();
+
     std::lock_guard<std::mutex> lock(*m_sendMutex);
 
     if (m_stopped->load() || !m_socket.is_open())
@@ -227,6 +293,16 @@ bool TCPClient::send(const nx_data& data)
 
 void TCPClient::handlePortSwitch()
 {
+    if (!m_portSwitchingMutex || !m_portSwitchCV || !m_portSwitchingInProgress)
+    {
+        return;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
+        m_portSwitchingInProgress->store(true);
+    }
+
     while (!m_stopped->load())
     {
         auto port = getClientAPI()->getBoostTCPServerPortNumber();
@@ -235,9 +311,6 @@ void TCPClient::handlePortSwitch()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
-
-        // Port switch detected.
-        std::lock_guard<std::mutex> lock(*m_receiveMutex);
 
         try
         {
@@ -255,14 +328,26 @@ void TCPClient::handlePortSwitch()
                 }
             }
 
-            m_serverPort = port;
-            auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
-            boost::asio::connect(m_socket, endpoints);
+            // Create new socket.
+            boost::asio::ip::tcp::socket newSocket(*m_ioContext);
+            auto endpoints = m_resolver.resolve(
+                    getClientAPI()->getBoostTCPServerAddress(),
+                    std::to_string(port));
+            boost::asio::connect(newSocket, endpoints);
 
-            if (m_protocolStatus)
+            // Atomically replace socket
             {
-                m_protocolStatus->store(ProtocolStatus::connected);
+                std::lock_guard<std::mutex> recvLock(*m_receiveMutex);
+                std::lock_guard<std::mutex> sendLock(*m_sendMutex);
+                m_socket = std::move(newSocket);
+                m_serverPort = port;
+
+                if (m_protocolStatus)
+                {
+                    m_protocolStatus->store(ProtocolStatus::connected);
+                }
             }
+
             Log::info(header(), "Successfully switched to port ", m_serverPort);
 
             // Exit thread after succesfull switch.
@@ -284,6 +369,12 @@ void TCPClient::handlePortSwitch()
                 m_protocolStatus->store(ProtocolStatus::error);
             }
         }
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
+        m_portSwitchingInProgress->store(false);
+        m_portSwitchCV->notify_all();
     }
 }
 

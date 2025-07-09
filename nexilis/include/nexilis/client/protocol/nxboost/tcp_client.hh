@@ -77,6 +77,9 @@ private:
 
     std::shared_ptr<std::mutex> m_sendMutex;
     std::shared_ptr<std::mutex> m_receiveMutex;
+    std::shared_ptr<std::mutex> m_portSwitchingMutex;
+    std::unique_ptr<std::atomic<bool>> m_portSwitchingInProgress;
+    std::shared_ptr<std::condition_variable> m_portSwitchCV;
     uint16_t m_serverPort;
 };
 
