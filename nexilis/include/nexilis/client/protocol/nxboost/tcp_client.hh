@@ -68,7 +68,6 @@ private:
     void handlePortSwitch();
 
 private:
-    std::unique_ptr<std::atomic<ProtocolStatus>> m_protocolStatus;
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::shared_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;

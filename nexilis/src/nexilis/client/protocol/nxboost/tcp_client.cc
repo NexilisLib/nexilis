@@ -16,7 +16,6 @@ TCPClient::TCPClient(ClientAPI& api)
     : NxClass("client::nxboost::TCPClient"),
       Protocol(),
       ClientProtocol(&api),
-      m_protocolStatus(std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined)),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
@@ -44,7 +43,6 @@ TCPClient::TCPClient(TCPClient&& other)
       m_ioContextThread(std::move(other.m_ioContextThread)),
       m_receiveThread(std::move(other.m_receiveThread)),
       m_portSwitchingThread(std::move(other.m_portSwitchingThread)),
-      m_protocolStatus(std::move(other.m_protocolStatus)),
       m_stopped(std::move(other.m_stopped)),
       m_ioContext(std::move(other.m_ioContext)),
       m_workGuard(std::move(other.m_workGuard)),
@@ -57,7 +55,6 @@ TCPClient::TCPClient(TCPClient&& other)
       m_portSwitchCV(std::move(other.m_portSwitchCV)),
       m_serverPort(std::move(other.m_serverPort))
 {
-    other.m_protocolStatus.reset();
     other.m_stopped.reset();
     other.m_workGuard.reset();
     other.m_sendMutex.reset();
@@ -84,7 +81,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_receiveThread = std::move(other.m_receiveThread);
         m_portSwitchingThread = std::move(other.m_portSwitchingThread);
         m_stopped = std::move(other.m_stopped);
-        m_protocolStatus = std::move(other.m_protocolStatus);
         m_ioContext = std::move(other.m_ioContext);
         m_workGuard = std::move(other.m_workGuard);
         m_socket = std::move(other.m_socket);
@@ -96,7 +92,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_portSwitchCV = std::move(other.m_portSwitchCV);
         m_serverPort = std::move(other.m_serverPort);
 
-        other.m_protocolStatus.reset();
         other.m_stopped.reset();
         other.m_workGuard.reset();
         other.m_sendMutex.reset();
@@ -197,17 +192,14 @@ void TCPClient::sendMessage(const nx_data& message, const std::function<void()>&
 
 bool TCPClient::connectToServer()
 {
-    if (m_protocolStatus.get()->load() != ProtocolStatus::undefined)
+    if (getProtocolStatus() != ProtocolStatus::undefined)
     {
         return false;
     }
 
     try
     {
-        if (m_protocolStatus)
-        {
-            m_protocolStatus->store(ProtocolStatus::connecting);
-        }
+        updateProtocolStatus(ProtocolStatus::connecting);
         m_serverPort = Ports::getBoostTCPPort();
         auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
 
@@ -226,15 +218,12 @@ bool TCPClient::connectToServer()
             // clang-format on
         }
 
-        m_protocolStatus->store(ProtocolStatus::connected);
+        updateProtocolStatus(ProtocolStatus::connected);
         return true;
     }
     catch (...)
     {
-        if (m_protocolStatus)
-        {
-            m_protocolStatus->store(ProtocolStatus::error);
-        }
+        updateProtocolStatus(ProtocolStatus::error);
         m_socket.close();
         return false;
     }
@@ -320,6 +309,7 @@ void TCPClient::handlePortSwitch()
     {
         std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
         m_portSwitchingInProgress->store(true);
+        updateProtocolStatus(ProtocolStatus::switching_ports);
     }
 
     while (!m_stopped->load())
@@ -360,11 +350,7 @@ void TCPClient::handlePortSwitch()
                 std::lock_guard<std::mutex> sendLock(*m_sendMutex);
                 m_socket = std::move(newSocket);
                 m_serverPort = port;
-
-                if (m_protocolStatus)
-                {
-                    m_protocolStatus->store(ProtocolStatus::connected);
-                }
+                updateProtocolStatus(ProtocolStatus::connected);
             }
 
             Log::info(header(), "Successfully switched to port ", m_serverPort);
@@ -375,18 +361,12 @@ void TCPClient::handlePortSwitch()
         catch (const std::exception& e)
         {
             Log::error(header(), "Port switch failed: ", e.what());
-            if (m_protocolStatus)
-            {
-                m_protocolStatus->store(ProtocolStatus::error);
-            }
+            return;
         }
         catch (...)
         {
             Log::error(header(), "Unknown error during port switch");
-            if (m_protocolStatus)
-            {
-                m_protocolStatus->store(ProtocolStatus::error);
-            }
+            return;
         }
     }
 

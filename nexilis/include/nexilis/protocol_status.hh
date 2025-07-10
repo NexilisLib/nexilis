@@ -9,6 +9,7 @@ enum class ProtocolStatus
     undefined,
     connecting,
     connected,
+    switching_ports,
     error
 };
 

@@ -8,15 +8,18 @@ namespace nexilis::client
 
 ClientProtocol::ClientProtocol(ClientAPI* api)
     : NxClass("ClientProtocol"),
-      m_api(api)
+      m_api(api),
+      m_protocolStatus(std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined))
 {
 }
 
 ClientProtocol::ClientProtocol(ClientProtocol&& other)
     : NxClass(std::move(other)),
-      m_api(other.m_api)
+      m_api(other.m_api),
+      m_protocolStatus(std::move(other.m_protocolStatus))
 {
     other.m_api = nullptr;
+    other.m_protocolStatus.reset();
 }
 
 ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
@@ -24,10 +27,25 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     if (this != &other)
     {
         m_api = other.m_api;
+        m_protocolStatus = std::move(other.m_protocolStatus);
         other.m_api = nullptr;
+        other.m_protocolStatus.reset();
         NxClass::operator=(std::move(other));
     }
     return *this;
+}
+
+ProtocolStatus ClientProtocol::getProtocolStatus() const
+{
+    return m_protocolStatus.get()->load();
+}
+
+void ClientProtocol::updateProtocolStatus(ProtocolStatus status)
+{
+    if (m_protocolStatus)
+    {
+        m_protocolStatus->store(status);
+    }
 }
 
 void ClientProtocol::sendMessageWithCallback(const nx_data& message, const std::function<void()>& callback)

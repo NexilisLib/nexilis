@@ -4,6 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/protocol_status.hh>
 
 namespace nexilis::client
 {
@@ -40,8 +41,14 @@ public:
 
     bool isConnected() const
     {
-        return m_api->isInitialized();
+        return m_api->isInitialized() && getProtocolStatus() == ProtocolStatus::connected;
     }
+
+    /// Get the connection status of client protocol.
+    ProtocolStatus getProtocolStatus() const;
+
+    /// Change the connection status of client protocol.
+    void updateProtocolStatus(ProtocolStatus status);
 
 protected:
     void start(Protocol::Type type);
@@ -54,6 +61,7 @@ private:
 
 private:
     ClientAPI* m_api;
+    std::unique_ptr<std::atomic<ProtocolStatus>> m_protocolStatus;
 };
 
 } // namespace nexilis::client
