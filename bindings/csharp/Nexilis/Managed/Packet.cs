@@ -66,5 +66,22 @@ namespace Nexilis
                 return NxData.Create(raw);
             }, "Player3DPositionDirect");
         }
+        public static NxData Player3DMovement(Vector3<float> movement, float deltatime)
+        {
+            return Player3DMovementDirect(movement.X, movement.Y, movement.Z, deltatime);
+        }
+
+        public static NxData Player3DMovementDirect(float x, float y, float z, float deltatime)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_room_player3D_movement_direct(x, y, z, deltatime);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to call nexilis_packet_room_player3D_movement_direct");
+                }
+                return NxData.Create(raw);
+            }, "Player3DMovementDirect");
+        }
     }
 }

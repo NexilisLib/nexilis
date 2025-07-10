@@ -61,7 +61,7 @@ enum class CommandType : uint8_t
      *  2:4      Player3D
      *  2:4:0    Set position; Vector3f position
      *  2:4:1    Set dimensions; Vector3f dimensions
-     *  2:4:2    3D movement vector; Vector3f movement
+     *  2:4:2    3D movement vector; Vector3f movement, float deltatime
      *
      *  2:5      Object3D
      *

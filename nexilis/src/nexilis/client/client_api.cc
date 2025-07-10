@@ -395,6 +395,28 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         return ReadResult::client_missing_room;
                     }
                 }
+                else if (roomAction == "movement")
+                {
+                    float vector_x = readFloat(json, "x");
+                    float vector_y = readFloat(json, "y");
+                    float vector_z = readFloat(json, "z");
+                    auto pos = Vector3f(vector_x, vector_y, vector_z);
+
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+
+                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    {
+                        for (auto& client : room->getClients())
+                        {
+                            if (client.getId() == clientId)
+                            {
+                                client.getObject3D().setPosition(pos);
+                                return ReadResult::success;
+                            }
+                        }
+                        return ReadResult::clean;
+                    }
+                }
                 else
                 {
                     return ReadResult::not_found;

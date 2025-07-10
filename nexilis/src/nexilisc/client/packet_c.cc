@@ -58,6 +58,11 @@ nx_data_c nexilis_packet_room_player3D_movement(nexilis_Vector3f* movement, floa
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(convert_vector3f(movement), deltaTime));
 }
 
+nx_data_c nexilis_packet_room_player3D_movement_direct(float x, float y, float z, float deltatime)
+{
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(nexilis::Vector3f(x, y, z), deltatime));
+}
+
 nx_data_c nexilis_packet_info_general()
 {
     return convert_nx_data(nexilis::client::Packet::Info::general());

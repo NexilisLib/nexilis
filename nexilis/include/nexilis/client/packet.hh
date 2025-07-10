@@ -68,7 +68,7 @@ public:
         public:
             static nx_data position(Vector2f position);
             static nx_data dimensions(Vector2f dimensions);
-            static nx_data movement(Vector2f movement, float deltaTime);
+            static nx_data movement(Vector2f movement, float deltatime);
         };
 
         class Object2D
@@ -86,7 +86,7 @@ public:
         public:
             static nx_data position(Vector3f position);
             static nx_data dimensions(Vector3f dimensions);
-            static nx_data movement(Vector3f movement, float deltaTime);
+            static nx_data movement(Vector3f movement, float deltatime);
         };
 
         class Object3D

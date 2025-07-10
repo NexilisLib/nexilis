@@ -142,14 +142,14 @@ nx_data Packet::Room::Player2D::dimensions(Vector2f dimensions)
     return id;
 }
 
-nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltaTime)
+nx_data Packet::Room::Player2D::movement(Vector2f movement, float deltatime)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player2D::movement));
 
-    emplaceAll(id, movement, deltaTime);
+    emplaceAll(id, movement, deltatime);
     return id;
 }
 
@@ -220,14 +220,14 @@ nx_data Packet::Room::Player3D::dimensions(Vector3f dimensions)
     return id;
 }
 
-nx_data Packet::Room::Player3D::movement(Vector3f movement, float deltaTime)
+nx_data Packet::Room::Player3D::movement(Vector3f movement, float deltatime)
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player3D::movement));
 
-    emplaceAll(id, movement, deltaTime);
+    emplaceAll(id, movement, deltatime);
     return id;
 }
 
