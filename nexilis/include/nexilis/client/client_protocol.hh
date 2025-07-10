@@ -39,9 +39,10 @@ public:
         return m_api;
     }
 
+    /// TODO add check that getProtocolStatus value is connected as well.
     bool isConnected() const
     {
-        return m_api->isInitialized() && getProtocolStatus() == ProtocolStatus::connected;
+        return m_api->isInitialized();
     }
 
     /// Get the connection status of client protocol.
