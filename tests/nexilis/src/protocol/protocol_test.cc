@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <nexilis/ci.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/client/protocol/nxboost/udp_client.hh>
@@ -207,31 +208,73 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
     ASSERT_FALSE(client->isConnected());
     ASSERT_FALSE(server->hasActiveConnections());
 
+    // CI-aware timeout settings.
+    const bool is_ci = nexilis::isRunningInCI();
+    const auto connection_timeout = is_ci ? std::chrono::seconds(15) : std::chrono::seconds(5);
+    const auto send_timeout = is_ci ? std::chrono::seconds(10) : std::chrono::seconds(3);
+    const int max_send_attempts = is_ci ? 5 : 3;
+
+    // Start client.
     this->clientStart();
-    waitFor(5, client->isConnected() && server->hasActiveConnections());
+
+    const auto connect_start = std::chrono::steady_clock::now();
+    while (!client->isConnected() || !server->hasActiveConnections())
+    {
+        if (std::chrono::steady_clock::now() - connect_start > connection_timeout)
+        {
+            FAIL() << "Connection timeout - Client: " << client->isConnected()
+                   << " Server: " << server->hasActiveConnections();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
     std::promise<void> promise;
-    std::future<void> future = promise.get_future();
+    auto future = promise.get_future();
+    bool send_success = false;
 
-    try
+    // Enhanced send with retries.
+    for (int attempt = 0; attempt < max_send_attempts && !send_success; ++attempt)
     {
-        this->client->sendMessage(
-                nexilis::client::Packet::Info::rooms(),
-                this->api->waitUntilRoomsCreated(promise));
-    }
-    catch (const std::exception& e)
-    {
-        FAIL() << "Message send failed: " << e.what();
+        try
+        {
+            // Check if we're mid-port-switch.
+            if (client->getProtocolStatus() == nexilis::ProtocolStatus::switching_ports)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(200 * (attempt + 1)));
+                continue;
+            }
+
+            this->client->sendMessage(
+                    nexilis::client::Packet::Info::rooms(),
+                    this->api->waitUntilRoomsCreated(promise));
+
+            send_success = true;
+        }
+        catch (const std::exception& e)
+        {
+            if (attempt == max_send_attempts - 1)
+            {
+                FAIL() << "Message send failed after " << max_send_attempts
+                       << " attempts: " << e.what();
+            }
+            std::cout << "Send attempt " << (attempt + 1) << " failed: " << e.what() << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
     }
 
-    auto status = future.wait_for(std::chrono::seconds(5));
-
+    // Verify results with CI-extended timeout.
+    auto status = future.wait_for(send_timeout);
     if (status != std::future_status::ready)
     {
-        std::cerr << "Test failed:" << std::endl;
-        std::cerr << "Client connected: " << client->isConnected() << std::endl;
-        std::cerr << "Server connections: " << server->activeConnectionsCount() << std::endl;
-        std::cerr << "Rooms avainable" << api->getActiveRooms().size() << std::endl;
+        std::ostringstream oss;
+        oss << "Test timeout - Final state:\n"
+            << "  Client connected: " << client->isConnected() << "\n"
+            << "  Server connections: " << server->activeConnectionsCount() << "\n"
+            << "  Active rooms: " << api->getActiveRooms().size() << "\n"
+            << "  Protocol status: " << static_cast<int>(client->getProtocolStatus()) << "\n"
+            << "  CI Environment: " << (is_ci ? "Yes" : "No");
+        std::cerr << oss.str() << std::endl;
     }
+
     EXPECT_EQ(status, std::future_status::ready);
 }

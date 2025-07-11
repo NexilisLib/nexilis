@@ -1,17 +1,15 @@
-#include <nexilis/ci.hh>
 #include <cstdlib>
+#include <nexilis/ci.hh>
 
 namespace nexilis
 {
 
 bool isRunningInCI()
 {
-    const char* ci_vars[]
-    {
-        "GITHUB_ACTIONS", // GitHub Actions
-        "GITLAB_CI",      // GitLab CI
-        nullptr
-    };
+    const char* ci_vars[]{
+            "GITHUB_ACTIONS", // GitHub Actions
+            "GITLAB_CI",      // GitLab CI
+            nullptr};
 
     for (const char** var = ci_vars; *var; var++)
     {
@@ -23,4 +21,4 @@ bool isRunningInCI()
     return false;
 }
 
-}
+} // namespace nexilis

@@ -7,6 +7,6 @@ namespace nexilis
 /// Return true if the code is running in CI environment.
 bool isRunningInCI();
 
-}
+} // namespace nexilis
 
 #endif

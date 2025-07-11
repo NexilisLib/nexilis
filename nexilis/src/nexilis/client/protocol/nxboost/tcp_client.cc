@@ -24,13 +24,10 @@ TCPClient::TCPClient(ClientAPI& api)
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
       m_receiveMutex(std::make_shared<std::mutex>()),
-      m_portSwitchingMutex(std::make_shared<std::mutex>()),
-      m_portSwitchingInProgress(std::make_unique<std::atomic<bool>>(false)),
-      m_portSwitchCV(std::make_shared<std::condition_variable>())
+      m_portSwitchingMutex(std::make_shared<std::mutex>())
 {
     // Verify all shared pointers were created.
-    if (!m_sendMutex || !m_receiveMutex || !m_portSwitchingMutex ||
-        !m_portSwitchCV || !m_portSwitchingInProgress)
+    if (!m_sendMutex || !m_receiveMutex || !m_portSwitchingMutex)
     {
         throw std::runtime_error("Failed to initialize synchronization objects");
     }
@@ -51,8 +48,6 @@ TCPClient::TCPClient(TCPClient&& other)
       m_sendMutex(std::move(other.m_sendMutex)),
       m_receiveMutex(std::move(other.m_receiveMutex)),
       m_portSwitchingMutex(std::move(other.m_portSwitchingMutex)),
-      m_portSwitchingInProgress(std::move(other.m_portSwitchingInProgress)),
-      m_portSwitchCV(std::move(other.m_portSwitchCV)),
       m_serverPort(std::move(other.m_serverPort))
 {
     other.m_stopped.reset();
@@ -60,8 +55,6 @@ TCPClient::TCPClient(TCPClient&& other)
     other.m_sendMutex.reset();
     other.m_receiveMutex.reset();
     other.m_portSwitchingMutex.reset();
-    other.m_portSwitchCV.reset();
-    other.m_portSwitchingInProgress.reset();
 }
 
 TCPClient& TCPClient::operator=(TCPClient&& other)
@@ -76,6 +69,10 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         {
             m_receiveThread.join();
         }
+        if (m_portSwitchingThread.joinable())
+        {
+            m_portSwitchingThread.join();
+        }
 
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
@@ -88,8 +85,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_sendMutex = std::move(other.m_sendMutex);
         m_receiveMutex = std::move(other.m_receiveMutex);
         m_portSwitchingMutex = std::move(other.m_portSwitchingMutex);
-        m_portSwitchingInProgress = std::move(other.m_portSwitchingInProgress);
-        m_portSwitchCV = std::move(other.m_portSwitchCV);
         m_serverPort = std::move(other.m_serverPort);
 
         other.m_stopped.reset();
@@ -97,8 +92,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         other.m_sendMutex.reset();
         other.m_receiveMutex.reset();
         other.m_portSwitchingMutex.reset();
-        other.m_portSwitchCV.reset();
-        other.m_portSwitchingInProgress.reset();
 
         NxClass::operator=(std::move(other));
         Protocol::operator=(std::move(other));
@@ -118,14 +111,6 @@ void TCPClient::stop()
     if (m_stopped && m_stopped->exchange(true))
     {
         return;
-    }
-
-    // Notify all waiting threads
-    if (m_portSwitchCV && m_portSwitchingInProgress)
-    {
-        std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
-        m_portSwitchingInProgress->store(false);
-        m_portSwitchCV->notify_all();
     }
 
     if (m_receiveMutex && m_sendMutex)
@@ -206,18 +191,6 @@ bool TCPClient::connectToServer()
         boost::asio::connect(m_socket, endpoints);
         Log::debug(header(), "Initial connection success");
 
-        // Wait for potential port switch completion
-        if (m_portSwitchingInProgress->load())
-        {
-            std::unique_lock<std::mutex> lock(*m_portSwitchingMutex);
-            // clang-format off
-            m_portSwitchCV->wait_for(lock, std::chrono::seconds(5), [this]
-            {
-                return !m_portSwitchingInProgress->load();
-            });
-            // clang-format on
-        }
-
         updateProtocolStatus(ProtocolStatus::connected);
         return true;
     }
@@ -231,46 +204,15 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const nx_data& data)
 {
-    if (!m_portSwitchingMutex || !m_portSwitchCV || !m_portSwitchingInProgress)
     {
-        return false;
-    }
-
-    // Retry up to 3 times if blocked by port switch
-    const int maxRetries = 3;
-    int retryCount = 0;
-
-    while (retryCount < maxRetries)
-    {
-        // Wait for port switch to complete.
-        std::unique_lock<std::mutex> portLock(*m_portSwitchingMutex);
-        if (m_portSwitchCV->wait_for(portLock, std::chrono::seconds(5), [this]
-                                     { return !m_portSwitchingInProgress->load(); }))
+        std::unique_lock<std::mutex> lock(*m_portSwitchingMutex);
+        if (getProtocolStatus() == ProtocolStatus::switching_ports)
         {
-            portLock.unlock();
-            // Port switching ok, ok to send.
-            break;
-        }
-
-        portLock.unlock();
-        retryCount++;
-
-        if (retryCount < maxRetries)
-        {
-            Log::warning(header(), "Send blocked by port switch, retrying (",
-                         retryCount, "/", maxRetries, ")");
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            return false; // retry
         }
     }
 
-    if (retryCount >= maxRetries)
-    {
-        Log::error(header(), "Send blocked by port switch after ", maxRetries, " retries");
-        return false;
-    }
-
-    std::lock_guard<std::mutex> lock(*m_sendMutex);
-
+    std::lock_guard<std::mutex> sockLock(*m_sendMutex);
     if (m_stopped->load() || !m_socket.is_open())
     {
         Log::error(header(), "Cannot send, socket is not open or TCPClient is closed");
@@ -301,16 +243,8 @@ bool TCPClient::send(const nx_data& data)
 
 void TCPClient::handlePortSwitch()
 {
-    if (!m_portSwitchingMutex || !m_portSwitchCV || !m_portSwitchingInProgress)
-    {
-        return;
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
-        m_portSwitchingInProgress->store(true);
-        updateProtocolStatus(ProtocolStatus::switching_ports);
-    }
+    std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
+    updateProtocolStatus(ProtocolStatus::switching_ports);
 
     while (!m_stopped->load())
     {
@@ -346,7 +280,6 @@ void TCPClient::handlePortSwitch()
 
             // Atomically replace socket
             {
-                std::lock_guard<std::mutex> recvLock(*m_receiveMutex);
                 std::lock_guard<std::mutex> sendLock(*m_sendMutex);
                 m_socket = std::move(newSocket);
                 m_serverPort = port;
@@ -368,12 +301,6 @@ void TCPClient::handlePortSwitch()
             Log::error(header(), "Unknown error during port switch");
             return;
         }
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
-        m_portSwitchingInProgress->store(false);
-        m_portSwitchCV->notify_all();
     }
 }
 
