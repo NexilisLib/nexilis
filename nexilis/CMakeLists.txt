@@ -18,6 +18,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
 
 set(SOURCES
     # Base
+    src/nexilis/ci.cc
     src/nexilis/nx_class.cc
     src/nexilis/cmd_line_options.cc
     src/nexilis/protocol.cc
