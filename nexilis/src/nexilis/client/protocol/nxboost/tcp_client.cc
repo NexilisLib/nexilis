@@ -61,6 +61,10 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
 {
     if (this != &other)
     {
+        static_cast<NxClass&>(*this) = static_cast<NxClass&&>(other);
+        static_cast<Protocol&>(*this) = static_cast<Protocol&&>(other);
+        static_cast<ClientProtocol&>(*this) = static_cast<ClientProtocol&&>(other);
+
         if (m_ioContextThread.joinable())
         {
             m_ioContextThread.join();
@@ -92,10 +96,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         other.m_sendMutex.reset();
         other.m_receiveMutex.reset();
         other.m_portSwitchingMutex.reset();
-
-        NxClass::operator=(std::move(other));
-        Protocol::operator=(std::move(other));
-        ClientProtocol::operator=(std::move(other));
     }
     return *this;
 }

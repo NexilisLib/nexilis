@@ -35,7 +35,7 @@ public:
         return m_id;
     }
 
-    std::string getUsername() const
+    const std::string& getUsername() const
     {
         return m_username;
     }

@@ -11,7 +11,7 @@ class Object3D : public Object<Vector3f>
 {
 public:
     /// Constructor.
-    Object3D(uint64_t id, const Vector3f& position = Vector3f(), const Vector3f& dimensions = Vector3f(1.f, 1.f, 1.f))
+    explicit Object3D(uint64_t id, const Vector3f& position = Vector3f(), const Vector3f& dimensions = Vector3f(1.f, 1.f, 1.f))
         : Object(id, position, dimensions)
     {
     }

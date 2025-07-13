@@ -50,15 +50,15 @@ StreamClient& StreamClient::operator=(StreamClient&& other)
 {
     if (this != &other)
     {
+        static_cast<NxClass&>(*this) = static_cast<NxClass&&>(other);
+        static_cast<Protocol&>(*this) = static_cast<Protocol&&>(other);
+        static_cast<ClientProtocol&>(*this) = static_cast<ClientProtocol&&>(other);
+
         m_serverSocketPath = std::move(other.m_serverSocketPath);
         m_clientSocket = std::move(other.m_clientSocket);
         m_serverAddr = std::move(other.m_serverAddr);
         m_receiveThread = std::move(other.m_receiveThread);
         m_mutex = std::move(other.m_mutex);
-
-        NxClass::operator=(std::move(other));
-        Protocol::operator=(std::move(other));
-        ClientProtocol::operator=(std::move(other));
     }
     return *this;
 }

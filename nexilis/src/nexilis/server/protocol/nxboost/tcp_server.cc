@@ -50,6 +50,10 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
 {
     if (this != &other)
     {
+        static_cast<Protocol&>(*this) = static_cast<Protocol&&>(other);
+        static_cast<ServerProtocol&>(*this) = static_cast<ServerProtocol&&>(other);
+        static_cast<NxClass&>(*this) = static_cast<NxClass&&>(other);
+
         m_firstClientConnected = std::move(other.m_firstClientConnected);
         if (!m_firstClientConnected)
         {
@@ -69,10 +73,6 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_switchedAcceptThread = std::move(other.m_switchedAcceptThread);
         m_clientThreads = std::move(other.m_clientThreads);
-
-        Protocol::operator=(std::move(other));
-        ServerProtocol::operator=(std::move(other));
-        NxClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -390,9 +390,9 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                             nx_data command_data = { 0, 1, 0, 1 };
                             auto port_data = Util::convertToByteVector(getPort());
 
-                            for (auto&& data : port_data)
+                            for (auto&& port_data_i : port_data)
                             {
-                                command_data.emplace_back(data);
+                                command_data.emplace_back(port_data_i);
                             }
 
                             Command::Result portCommand = getCommand().read(command_data, *msgPtr->getUser(), *this, msgPtr->getMessageId());

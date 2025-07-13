@@ -48,6 +48,10 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
 {
     if (this != &other)
     {
+        static_cast<Protocol&>(*this) = static_cast<Protocol&&>(other);
+        static_cast<ServerProtocol&>(*this) = static_cast<ServerProtocol&&>(other);
+        static_cast<NxClass&>(*this) = static_cast<NxClass&&>(other);
+
         m_stopped = std::move(other.m_stopped);
         if (!m_stopped)
         {
@@ -60,10 +64,6 @@ UDPServer& UDPServer::operator=(UDPServer&& other)
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_ioContextThread = std::move(other.m_ioContextThread);
         m_receiveThread = std::move(other.m_receiveThread);
-
-        Protocol::operator=(std::move(other));
-        ServerProtocol::operator=(std::move(other));
-        NxClass::operator=(std::move(other));
     }
     return *this;
 }

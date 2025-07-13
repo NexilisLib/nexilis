@@ -46,6 +46,10 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
 {
     if (this != &other)
     {
+        static_cast<NxClass&>(*this) = static_cast<NxClass&&>(other);
+        static_cast<ClientProtocol&>(*this) = static_cast<ClientProtocol&&>(other);
+        static_cast<Protocol&>(*this) = static_cast<Protocol&&>(other);
+
         m_stopped = std::move(other.m_stopped);
         if (!m_stopped)
         {
@@ -58,10 +62,6 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_socket = std::move(other.m_socket);
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
-
-        NxClass::operator=(std::move(other));
-        Protocol::operator=(std::move(other));
-        ClientProtocol::operator=(std::move(other));
 
         other.m_ioContext = nullptr;
         other.m_mutex = nullptr;

@@ -19,7 +19,7 @@ class UDPServer : public Protocol,
 {
 public:
     /// Constructor.
-    UDPServer(const Settings& settings);
+    explicit UDPServer(const Settings& settings);
 
     /// Destructor.
     ~UDPServer();

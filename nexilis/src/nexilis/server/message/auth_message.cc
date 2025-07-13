@@ -19,8 +19,8 @@ AuthMessage& AuthMessage::operator=(AuthMessage&& other) noexcept
 {
     if (this != &other)
     {
-        BaseMessage::operator=(std::move(other));
         m_data = std::move(other.m_data);
+        BaseMessage::operator=(std::move(other));
     }
     return *this;
 }

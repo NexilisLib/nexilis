@@ -45,13 +45,13 @@ StreamServer& StreamServer::operator=(StreamServer&& other)
 {
     if (this != &other)
     {
+        static_cast<Protocol&>(*this) = static_cast<Protocol&&>(other);
+        static_cast<ServerProtocol&>(*this) = static_cast<ServerProtocol&&>(other);
+
         m_socketPath = std::move(other.m_socketPath);
         m_serverSocket = std::move(other.m_serverSocket);
         m_buffer = std::move(other.m_buffer);
         m_receiveThread = std::move(other.m_receiveThread);
-
-        Protocol::operator=(std::move(other));
-        ServerProtocol::operator=(std::move(other));
     }
     return *this;
 }
