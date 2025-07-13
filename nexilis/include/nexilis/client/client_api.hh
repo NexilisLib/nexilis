@@ -43,44 +43,6 @@ public:
     /// Deleted copy assignment operator.
     ClientAPI& operator=(const ClientAPI& other) = delete;
 
-    /// Stuff related to specific connnections.
-public:
-    /// If the client UDP af_inet connection is ready.
-    bool IsInetUDPReady();
-
-    /// If the client TCP af_inet connection is ready.
-    bool isInetTCPReady();
-
-    /// If the client boost TCP connection is ready.
-    bool isBoostTCPReady();
-
-    /// If the client boost UDP connection is ready.
-    bool isBoostUDPReady();
-
-    /// If the client af_unix DGRAM connection is ready.
-    bool isUnixDgramReady();
-
-    /// If the client af_unix STREAM connection is ready.
-    bool isUnixStreamReady();
-
-    /// Steal the runtime until af_inet UDP connection is ready.
-    void waitUntilInetUDPReady();
-
-    /// Steal the runtime until af_inet TCP connection is ready.
-    void waitUntilInetTCPReady();
-
-    /// Steal the runtime until boost TCP connection is ready.
-    void waitUntilBoostTCPReady();
-
-    /// Steal the runtime until boost UDP connection is ready.
-    void waitUntilBoostUDPReady();
-
-    /// Steal the runtime until af_unix DGRAM connection is ready.
-    void waitUntilUnixDgramReady();
-
-    /// Steal the runtime until af_unix STREAM connection is ready.
-    void waitUntilUnixStreamReady();
-
 public:
     /// Result from ClientAPI::readMessage(const nx_data&).
     enum class ReadResult
@@ -121,6 +83,12 @@ public:
     ReadResult readMessage(const nx_data& message);
     void addCallback(const std::pair<uint64_t, const std::function<void()>>& callback);
 
+    /// Is the server aware of the client, is the ClientAPI and Packet ready for use.
+    bool isInitialized() const
+    {
+        return m_isInitialized;
+    }
+
 public:
     /// Room stuff
     /// Is client currently in a room.
@@ -130,8 +98,6 @@ public:
     /// The room id of the room that the client is currently in.
     uint64_t clientRoomId();
 
-public:
-    /// Getters.
     uint64_t getNewMessageId();
 
     /// General.
@@ -151,6 +117,72 @@ public:
         auto* client = getClientFromRoom(client_id);
         return client ? client->getUsername() : "";
     }
+
+    /// Return a reference of the currently active rooms.
+    std::vector<Room>& getActiveRooms()
+    {
+        return m_currentlyActiveRooms;
+    }
+
+    /// Get a reference to a room from room id.
+    Room* getRoom(uint64_t room_id);
+
+    /// Get client pointer from any room.
+    ClientSession* getClientFromRoom(uint64_t client_id);
+
+    /// Let the program wait until nexilis has created all the rooms.
+    std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
+
+    /// Set the value of 2D overlapping.
+    void set2DOverlapStatus(bool status)
+    {
+        m_2DoverlappingAllowed = status;
+    }
+
+    /// Get the value of 2D overlapping.
+    bool overlappingAllowed2D() const
+    {
+        return m_2DoverlappingAllowed;
+    }
+
+public:
+    /// Stuff related to specific connnections.
+
+    /// If the client UDP af_inet connection is ready.
+    bool IsInetUDPReady();
+
+    /// If the client TCP af_inet connection is ready.
+    bool isInetTCPReady();
+
+    /// If the client boost TCP connection is ready.
+    bool isBoostTCPReady();
+
+    /// If the client boost UDP connection is ready.
+    bool isBoostUDPReady();
+
+    /// If the client af_unix DGRAM connection is ready.
+    bool isUnixDgramReady();
+
+    /// If the client af_unix STREAM connection is ready.
+    bool isUnixStreamReady();
+
+    /// Steal the runtime until af_inet UDP connection is ready.
+    void waitUntilInetUDPReady();
+
+    /// Steal the runtime until af_inet TCP connection is ready.
+    void waitUntilInetTCPReady();
+
+    /// Steal the runtime until boost TCP connection is ready.
+    void waitUntilBoostTCPReady();
+
+    /// Steal the runtime until boost UDP connection is ready.
+    void waitUntilBoostUDPReady();
+
+    /// Steal the runtime until af_unix DGRAM connection is ready.
+    void waitUntilUnixDgramReady();
+
+    /// Steal the runtime until af_unix STREAM connection is ready.
+    void waitUntilUnixStreamReady();
 
     /// af_inet UDP.
     std::string getInetUDPServerAddress() const
@@ -198,42 +230,6 @@ public:
         return m_data.getUnixStreamServerPath();
     }
 
-public:
-    /// Room stuff.
-    /// Return a reference of the currently active rooms.
-    std::vector<Room>& getActiveRooms()
-    {
-        return m_currentlyActiveRooms;
-    }
-
-    /// Get a reference to a room from room id.
-    Room* getRoom(uint64_t room_id);
-
-    /// Get client pointer from any room.
-    ClientSession* getClientFromRoom(uint64_t client_id);
-
-    /// Let the program wait until nexilis has created all the rooms.
-    std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
-
-    /// Set the value of 2D overlapping.
-    void setOverlapStatus(bool status)
-    {
-        m_2DoverlappingAllowed = status;
-    }
-
-    /// Get the value of 2D overlapping.
-    bool overlappingAllowed2D() const
-    {
-        return m_2DoverlappingAllowed;
-    }
-
-public:
-    /// Is the server aware of the client, is the ClientAPI and Packet ready for use.
-    bool isInitialized() const
-    {
-        return m_isInitialized;
-    }
-
 private:
     /// Setters.
     void setClientId(uint64_t id)
@@ -247,9 +243,9 @@ private:
     /// Read the callback part of the message.
     void readCallback(boost::json::value callback);
 
-    std::string readString(const boost::json::value& context, const std::string& key);
-    uint64_t readUint64(const boost::json::value& context, const std::string& key);
-    float readFloat(const boost::json::value& context, const std::string& key);
+    std::string createString(const boost::json::value& context, const std::string& key);
+    uint64_t createUint64(const boost::json::value& context, const std::string& key);
+    float createFloat(const boost::json::value& context, const std::string& key);
 
 private:
     /// The initialization data for the ClientAPI.

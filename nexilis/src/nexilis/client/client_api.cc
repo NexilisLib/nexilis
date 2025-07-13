@@ -46,90 +46,6 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
     return *this;
 }
 
-bool ClientAPI::IsInetUDPReady()
-{
-    return m_clientId && !getInetUDPServerAddress().empty();
-}
-
-bool ClientAPI::isInetTCPReady()
-{
-    return m_clientId && !getInetTCPServerAddress().empty();
-}
-
-bool ClientAPI::isBoostTCPReady()
-{
-    return m_clientId && !getBoostTCPServerAddress().empty();
-}
-
-bool ClientAPI::isBoostUDPReady()
-{
-    return m_clientId && !getBoostUDPServerAddress().empty();
-}
-
-bool ClientAPI::isUnixDgramReady()
-{
-    return m_clientId && !m_data.getUnixDgramServerPath().empty();
-}
-
-bool ClientAPI::isUnixStreamReady()
-{
-    return m_clientId != 0 && !getUnixStreamPath().empty();
-}
-
-void ClientAPI::waitUntilInetUDPReady()
-{
-    while (!IsInetUDPReady())
-    {
-        Log::debug("ClientAPI waiting for inetUDP to be initialized...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
-void ClientAPI::waitUntilInetTCPReady()
-{
-    while (!isInetTCPReady())
-    {
-        Log::debug("ClientAPI waiting for inetTCP to be initialized...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
-void ClientAPI::waitUntilBoostTCPReady()
-{
-    while (!isBoostTCPReady())
-    {
-        Log::debug("ClientAPI waiting for BoostTCP to be initialized...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
-void ClientAPI::waitUntilBoostUDPReady()
-{
-    while (!isBoostUDPReady())
-    {
-        Log::debug("ClientAPI waiting for BoostUDP to be initialized...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
-void ClientAPI::waitUntilUnixDgramReady()
-{
-    while (!isUnixDgramReady())
-    {
-        Log::debug("ClientAPI waiting for unix dgram to be initialized...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
-void ClientAPI::waitUntilUnixStreamReady()
-{
-    while (!isUnixStreamReady())
-    {
-        Log::debug("ClientAPI waiting for unix stream to be initialized...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
 bool ClientAPI::clientInRoom()
 {
     auto& rooms = getActiveRooms();
@@ -195,6 +111,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
     auto command = commandTypeFromString(json["command"].as_string().c_str());
     auto type = json["type"];
+    Log::debug(header(), "Received type: ", type, " message");
 
     switch (command)
     {
@@ -202,10 +119,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "username")
             {
-                std::string username = readString(json, "username");
+                std::string username = createString(json, "username");
+                std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                 // The clients that we are avare of.
-                auto client = getClientFromRoom(m_clientId);
+                auto* client = getClientFromRoom(m_clientId);
                 if (client)
                 {
                     client->setUsername(username);
@@ -215,7 +133,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             // FIXME this is so bad.
             else if (type == "port")
             {
-                uint16_t port = readUint64(json, "port");
+                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                uint16_t port = createUint64(json, "port");
                 m_data.setBoostTCPPortNumber(port);
                 return ReadResult::success;
             }
@@ -228,8 +147,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "client_id")
             {
-                Log::debug("Received Get::clientId command");
-                uint64_t clientId = readUint64(json, "client_id");
+                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+
+                uint64_t clientId = createUint64(json, "client_id");
                 setClientId(clientId);
                 Packet::_initialize(*this);
                 m_isInitialized = true;
@@ -244,9 +164,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
         case CommandType::room:
         {
-            uint64_t roomId = readUint64(json, "roomId");
-            uint64_t clientId = readUint64(json, "clientId");
-            std::string roomAction = readString(json, "action");
+            uint64_t roomId = createUint64(json, "roomId");
+            uint64_t clientId = createUint64(json, "clientId");
+            std::string roomAction = createString(json, "action");
 
             // Skipping messages where the client does not have to be in a room.
             if (type != "management")
@@ -262,6 +182,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 if (roomAction == "join")
                 {
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     for (auto& room : m_currentlyActiveRooms)
                     {
                         if (room.getId() == roomId)
@@ -275,6 +196,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "leave")
                 {
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     for (auto& room : m_currentlyActiveRooms)
                     {
                         if (room.getId() == roomId)
@@ -296,8 +218,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 if (roomAction == "position" || roomAction == "movement")
                 {
-                    float vectorX = readFloat(json, "x");
-                    float vectorY = readFloat(json, "y");
+                    float vectorX = createFloat(json, "x");
+                    float vectorY = createFloat(json, "y");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                     for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                     {
@@ -340,8 +263,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "dimensions")
                 {
-                    float vectorX = readFloat(json, "x");
-                    float vectorY = readFloat(json, "y");
+                    float vectorX = createFloat(json, "x");
+                    float vectorY = createFloat(json, "y");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                     for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                     {
@@ -365,10 +289,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 if (roomAction == "position")
                 {
-                    float x = readFloat(json, "x");
-                    float y = readFloat(json, "y");
-                    float z = readFloat(json, "z");
+                    float x = createFloat(json, "x");
+                    float y = createFloat(json, "y");
+                    float z = createFloat(json, "z");
                     auto client = getClientFromRoom(clientId);
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     if (client)
                     {
                         client->getObject3D().setPosition(Vector3(x, y, z));
@@ -381,10 +306,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "dimensions")
                 {
-                    float x = readFloat(json, "x");
-                    float y = readFloat(json, "y");
-                    float z = readFloat(json, "z");
+                    float x = createFloat(json, "x");
+                    float y = createFloat(json, "y");
+                    float z = createFloat(json, "z");
                     auto client = getClientFromRoom(clientId);
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     if (client)
                     {
                         client->getObject3D().setDimensions(Vector3(x, y, z));
@@ -397,9 +323,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "movement")
                 {
-                    float vector_x = readFloat(json, "x");
-                    float vector_y = readFloat(json, "y");
-                    float vector_z = readFloat(json, "z");
+                    float vector_x = createFloat(json, "x");
+                    float vector_y = createFloat(json, "y");
+                    float vector_z = createFloat(json, "z");
                     auto pos = Vector3f(vector_x, vector_y, vector_z);
 
                     std::lock_guard<std::mutex> lock(*m_roomsMutex);
@@ -414,8 +340,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                                 return ReadResult::success;
                             }
                         }
-                        return ReadResult::clean;
                     }
+                    return ReadResult::clean;
                 }
                 else
                 {
@@ -426,12 +352,13 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 if (roomAction == "create")
                 {
-                    float positionX = readFloat(json, "positionX");
-                    float positionY = readFloat(json, "positionY");
-                    float dimensionX = readFloat(json, "dimensionX");
-                    float dimensionY = readFloat(json, "dimensionY");
-                    std::string filePath = readString(json, "filepath");
-                    uint64_t id = readUint64(json, "id");
+                    float positionX = createFloat(json, "positionX");
+                    float positionY = createFloat(json, "positionY");
+                    float dimensionX = createFloat(json, "dimensionX");
+                    float dimensionY = createFloat(json, "dimensionY");
+                    std::string filePath = createString(json, "filepath");
+                    uint64_t id = createUint64(json, "id");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                     for (auto& room : m_currentlyActiveRooms)
                     {
@@ -447,7 +374,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "destroy")
                 {
-                    uint64_t objectId = readUint64(json, "id");
+                    uint64_t objectId = createUint64(json, "id");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     for (auto& room : m_currentlyActiveRooms)
                     {
                         if (room.getId() == roomId)
@@ -460,9 +388,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "move")
                 {
-                    uint64_t objectId = readUint64(json, "objectId");
-                    float newPositionX = readFloat(json, "x");
-                    float newPositionY = readFloat(json, "y");
+                    uint64_t objectId = createUint64(json, "objectId");
+                    float newPositionX = createFloat(json, "x");
+                    float newPositionY = createFloat(json, "y");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                     for (auto& room : m_currentlyActiveRooms)
                     {
@@ -477,16 +406,17 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "createMoving")
                 {
-                    std::string createMovingType = readString(json, "createMovingType");
+                    std::string createMovingType = createString(json, "createMovingType");
 
                     if (createMovingType == "create")
                     {
-                        float positionX = readFloat(json, "positionX");
-                        float positionY = readFloat(json, "positionY");
-                        float dimensionX = readFloat(json, "dimensionX");
-                        float dimensionY = readFloat(json, "dimensionY");
-                        std::string filepath = readString(json, "filepath");
-                        uint64_t id = readUint64(json, "id");
+                        float positionX = createFloat(json, "positionX");
+                        float positionY = createFloat(json, "positionY");
+                        float dimensionX = createFloat(json, "dimensionX");
+                        float dimensionY = createFloat(json, "dimensionY");
+                        std::string filepath = createString(json, "filepath");
+                        uint64_t id = createUint64(json, "id");
+                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                         for (auto& room : m_currentlyActiveRooms)
                         {
@@ -502,9 +432,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     }
                     else if (createMovingType == "update")
                     {
-                        float positionX = readFloat(json, "x");
-                        float positionY = readFloat(json, "y");
-                        uint64_t objectId = readUint64(json, "objectId");
+                        float positionX = createFloat(json, "x");
+                        float positionY = createFloat(json, "y");
+                        uint64_t objectId = createUint64(json, "objectId");
+                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                         for (auto& room : m_currentlyActiveRooms)
                         {
@@ -530,16 +461,17 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "createMovingTest")
                 {
-                    std::string createMovingType = readString(json, "createMovingType");
+                    std::string createMovingType = createString(json, "createMovingType");
 
                     if (createMovingType == "create")
                     {
-                        float positionX = readFloat(json, "positionX");
-                        float positionY = readFloat(json, "positionY");
-                        float dimensionX = readFloat(json, "dimensionX");
-                        float dimensionY = readFloat(json, "dimensionY");
-                        std::string filepath = readString(json, "filepath");
-                        uint64_t id = readUint64(json, "id");
+                        float positionX = createFloat(json, "positionX");
+                        float positionY = createFloat(json, "positionY");
+                        float dimensionX = createFloat(json, "dimensionX");
+                        float dimensionY = createFloat(json, "dimensionY");
+                        std::string filepath = createString(json, "filepath");
+                        uint64_t id = createUint64(json, "id");
+                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                         for (auto& room : m_currentlyActiveRooms)
                         {
@@ -555,9 +487,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     }
                     else if (createMovingType == "update")
                     {
-                        float positionX = readFloat(json, "x");
-                        float positionY = readFloat(json, "y");
-                        uint64_t objectId = readUint64(json, "objectId");
+                        float positionX = createFloat(json, "x");
+                        float positionY = createFloat(json, "y");
+                        uint64_t objectId = createUint64(json, "objectId");
+                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                         for (auto& room : m_currentlyActiveRooms)
                         {
@@ -586,8 +519,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 if (roomAction == "broadcast")
                 {
-                    uint64_t id = readUint64(json, "id");
-                    std::string message = readString(json, "message");
+                    uint64_t id = createUint64(json, "id");
+                    std::string message = createString(json, "message");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                     for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
                     {
@@ -648,11 +582,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     std::vector<Room> newRooms;
                     for (const auto& room : rooms)
                     {
-                        std::string name = readString(room, "name");
-                        uint64_t maxSize = readUint64(room, "maxSize");
-                        uint64_t context = readUint64(room, "context");
-                        uint64_t creatorId = readUint64(room, "creatorId");
-                        uint64_t id = readUint64(room, "id");
+                        std::string name = createString(room, "name");
+                        uint64_t maxSize = createUint64(room, "maxSize");
+                        uint64_t context = createUint64(room, "context");
+                        uint64_t creatorId = createUint64(room, "creatorId");
+                        uint64_t id = createUint64(room, "id");
 
                         std::vector<ClientSession> roomClients;
 
@@ -663,13 +597,13 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
 
                             for (const auto& client : clients)
                             {
-                                uint64_t client_id = readUint64(client, "id");
-                                std::string username = readString(client, "name");
+                                uint64_t client_id = createUint64(client, "id");
+                                std::string username = createString(client, "name");
 
-                                float object2DX = readFloat(client, "roomPositionX");
-                                float object2DY = readFloat(client, "roomPositionY");
-                                float dimension2DX = readFloat(client, "roomDimensionX");
-                                float dimension2DY = readFloat(client, "roomDimensionY");
+                                float object2DX = createFloat(client, "roomPositionX");
+                                float object2DY = createFloat(client, "roomPositionY");
+                                float dimension2DX = createFloat(client, "roomDimensionX");
+                                float dimension2DY = createFloat(client, "roomDimensionY");
 
                                 ClientSession newClient(client_id, this);
                                 Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
@@ -682,6 +616,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         auto roomData = RoomData(creatorId, name, id, static_cast<RoomData::Context>(context), maxSize);
                         newRooms.emplace_back(Room(roomData, std::move(roomClients)));
                     }
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     m_currentlyActiveRooms = std::move(newRooms);
                     FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
                     return ReadResult::success;
@@ -802,7 +737,7 @@ void ClientAPI::readCallback(boost::json::value callback)
     }
 }
 
-std::string ClientAPI::readString(const boost::json::value& context, const std::string& key)
+std::string ClientAPI::createString(const boost::json::value& context, const std::string& key)
 {
     std::string item;
     bool readGood = true;
@@ -818,7 +753,7 @@ std::string ClientAPI::readString(const boost::json::value& context, const std::
     return item;
 }
 
-uint64_t ClientAPI::readUint64(const boost::json::value& context, const std::string& key)
+uint64_t ClientAPI::createUint64(const boost::json::value& context, const std::string& key)
 {
     uint64_t item;
     bool readGood = true;
@@ -839,7 +774,7 @@ uint64_t ClientAPI::readUint64(const boost::json::value& context, const std::str
     return item;
 }
 
-float ClientAPI::readFloat(const boost::json::value& context, const std::string& key)
+float ClientAPI::createFloat(const boost::json::value& context, const std::string& key)
 {
     float item = 0.f;
     bool readGood = true;
@@ -918,5 +853,91 @@ ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
     }
     return returned_client;
 }
+
+bool ClientAPI::IsInetUDPReady()
+{
+    return m_clientId && !getInetUDPServerAddress().empty();
+}
+
+bool ClientAPI::isInetTCPReady()
+{
+    return m_clientId && !getInetTCPServerAddress().empty();
+}
+
+bool ClientAPI::isBoostTCPReady()
+{
+    return m_clientId && !getBoostTCPServerAddress().empty();
+}
+
+bool ClientAPI::isBoostUDPReady()
+{
+    return m_clientId && !getBoostUDPServerAddress().empty();
+}
+
+bool ClientAPI::isUnixDgramReady()
+{
+    return m_clientId && !m_data.getUnixDgramServerPath().empty();
+}
+
+bool ClientAPI::isUnixStreamReady()
+{
+    return m_clientId != 0 && !getUnixStreamPath().empty();
+}
+
+void ClientAPI::waitUntilInetUDPReady()
+{
+    while (!IsInetUDPReady())
+    {
+        Log::debug("ClientAPI waiting for inetUDP to be initialized...");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void ClientAPI::waitUntilInetTCPReady()
+{
+    while (!isInetTCPReady())
+    {
+        Log::debug("ClientAPI waiting for inetTCP to be initialized...");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void ClientAPI::waitUntilBoostTCPReady()
+{
+    while (!isBoostTCPReady())
+    {
+        Log::debug("ClientAPI waiting for BoostTCP to be initialized...");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void ClientAPI::waitUntilBoostUDPReady()
+{
+    while (!isBoostUDPReady())
+    {
+        Log::debug("ClientAPI waiting for BoostUDP to be initialized...");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void ClientAPI::waitUntilUnixDgramReady()
+{
+    while (!isUnixDgramReady())
+    {
+        Log::debug("ClientAPI waiting for unix dgram to be initialized...");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void ClientAPI::waitUntilUnixStreamReady()
+{
+    while (!isUnixStreamReady())
+    {
+        Log::debug("ClientAPI waiting for unix stream to be initialized...");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+
 
 } // namespace nexilis::client
