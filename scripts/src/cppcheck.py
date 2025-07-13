@@ -1,5 +1,6 @@
 from env import get_nexilis_root
 
+import argparse
 import subprocess
 import sys
 import os
@@ -20,7 +21,7 @@ def stream_output(stream, output_type):
             sys.stdout.buffer.write(line.encode())
             sys.stdout.flush()
 
-def run_cppcheck(include_dir, src_dir, exclude_dirs=None):
+def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False):
     """
     Run cppcheck on the given include and source directories, excluding specified directories.
 
@@ -28,18 +29,27 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None):
     :param src_dir: The directory containing source files.
     :param exclude_dirs: List of directories to exclude.
     :param additional_args: Additional arguments to pass to cppcheck.
+    :param strict: Run with unusedFunction, missingIncludeSystem, unusedStructMember.
     """
     # Base cppcheck command.
     command = [
         "cppcheck",
-        "--enable=all",
+        "--suppress=checkersReport",
         "--suppress=missingIncludeSystem",
+        "--enable=all",
+        "--check-level=exhaustive",
         "--inconclusive",
         "--error-exitcode=1",
         "--template=gcc",
         "--force",
         "--std=c++17",
     ]
+
+    if not strict:
+        command.extend([
+            "--suppress=unusedFunction",
+            "--suppress=unusedStructMember",
+        ])
 
     # Add exclude directories.
     if exclude_dirs:
@@ -95,8 +105,16 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None):
         sys.exit(1)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+            "--strict",
+            action="store_true",
+            help="Enable unusedFunction and unusedStructMember"
+            )
+    args = parser.parse_args()
+
     root = get_nexilis_root()
-    include_directory = root + "/nexilis/include/nexilis/"  
+    include_directory = root + "/nexilis/include/nexilis/"
     src_directory = root + "/nexilis/src/nexilis/"
     exclude_directories = [
         root + "/nexilis/include/nexilis/archived_protocols",
@@ -107,4 +125,5 @@ if __name__ == "__main__":
         include_dir=include_directory,
         src_dir=src_directory,
         exclude_dirs=exclude_directories,
+        strict=args.strict
     )
