@@ -9,7 +9,6 @@
 namespace nexilis::server
 {
 
-/// Nexilis-Server side API.
 /// Creating static lifetime for the rooms in the server context.
 class RoomStorage
 {
@@ -22,7 +21,6 @@ public:
 
     /// Check if room exists.
     /// \param id The id of the room.
-    /// TODO change the name to containsRoom
     static bool contains(uint64_t id);
 
     /// Get all the rooms in the server.
@@ -31,6 +29,8 @@ public:
     /// Get pointer of the room.
     /// \param id The id of the room.
     static Room* getRoomById(uint64_t id);
+
+    static void clear();
 
 private:
     static std::vector<Room> m_rooms;

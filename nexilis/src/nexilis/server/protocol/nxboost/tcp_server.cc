@@ -158,7 +158,7 @@ void TCPServer::stop()
 
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
-        Log::debug("BoostTCPServer closing ", m_clientThreads.size(), " client connections...");
+        Log::debug(header(), "closing ", m_clientThreads.size(), " client connections...");
         for (auto& thread : m_clientThreads)
         {
             if (thread.joinable())
@@ -176,7 +176,7 @@ void TCPServer::stop()
         Log::debug(header(), "ioContextThread finished");
     }
 
-    Log::debug("BoostTCPServer stopped.");
+    Log::debug(header(), "stop complete.");
 }
 
 void TCPServer::startSwitchedAccepting()
@@ -258,7 +258,7 @@ void TCPServer::startSwitchedAccepting()
 bool TCPServer::startListening()
 {
     m_acceptor.listen();
-    Log::debug("Boost TCP server started on default port: ", m_defaultServerPort);
+    Log::debug(header(), "started on default port: ", m_defaultServerPort);
     return true;
 }
 

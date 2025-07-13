@@ -4,7 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/protocol_status.hh>
+#include <nexilis/client/protocol_status.hh>
 
 namespace nexilis::client
 {
@@ -47,6 +47,9 @@ public:
 
     /// Get the connection status of client protocol.
     ProtocolStatus getProtocolStatus() const;
+
+    /// Get string value of m_protocolStatus.
+    std::string getProtocolStatusString() const;
 
     /// Change the connection status of client protocol.
     void updateProtocolStatus(ProtocolStatus status);

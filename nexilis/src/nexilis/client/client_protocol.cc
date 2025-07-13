@@ -18,6 +18,10 @@ ClientProtocol::ClientProtocol(ClientProtocol&& other)
       m_api(other.m_api),
       m_protocolStatus(std::move(other.m_protocolStatus))
 {
+    if (!m_protocolStatus)
+    {
+        m_protocolStatus = std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined);
+    }
     other.m_api = nullptr;
     other.m_protocolStatus.reset();
 }
@@ -27,8 +31,13 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
     if (this != &other)
     {
         m_api = other.m_api;
-        m_protocolStatus = std::move(other.m_protocolStatus);
         other.m_api = nullptr;
+
+        m_protocolStatus = std::move(other.m_protocolStatus);
+        if (!m_protocolStatus)
+        {
+            m_protocolStatus = std::make_unique<std::atomic<ProtocolStatus>>(ProtocolStatus::undefined);
+        }
         other.m_protocolStatus.reset();
         NxClass::operator=(std::move(other));
     }
@@ -38,6 +47,16 @@ ClientProtocol& ClientProtocol::operator=(ClientProtocol&& other)
 ProtocolStatus ClientProtocol::getProtocolStatus() const
 {
     return m_protocolStatus.get()->load();
+}
+
+std::string ClientProtocol::getProtocolStatusString() const
+{
+    if (!m_protocolStatus.get())
+    {
+        return "";
+    }
+
+    return ProtocolUtils::getProtocolStatusAsString(m_protocolStatus.get()->load());
 }
 
 void ClientProtocol::updateProtocolStatus(ProtocolStatus status)

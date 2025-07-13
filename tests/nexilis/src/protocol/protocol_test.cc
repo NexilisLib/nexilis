@@ -48,6 +48,7 @@ protected:
         }
         nexilis::Log::stopLogging();
         nexilis::server::ClientStorage::clear();
+        nexilis::server::RoomStorage::clear();
     }
 
     void createSettings()
@@ -140,6 +141,8 @@ using BasicBoostTCPTest = ProtocolBasicTest<ProtocolTestBoostTCP<
 TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPClientConnected)
 {
     this->clientStart();
+
+    waitFor(5, client->isConnected());
     EXPECT_TRUE(client->isConnected());
 }
 
@@ -238,7 +241,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
         try
         {
             // Check if we're mid-port-switch.
-            if (client->getProtocolStatus() == nexilis::ProtocolStatus::switching_ports)
+            if (client->getProtocolStatus() == nexilis::client::ProtocolStatus::switching_ports)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(200 * (attempt + 1)));
                 continue;

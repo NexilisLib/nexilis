@@ -1,7 +1,9 @@
 #ifndef NEXILIS_PROTOCOL_STATUS_HH
 #define NEXILIS_PROTOCOL_STATUS_HH
 
-namespace nexilis
+#include <string>
+
+namespace nexilis::client
 {
 
 enum class ProtocolStatus
@@ -13,6 +15,12 @@ enum class ProtocolStatus
     error
 };
 
-}
+class ProtocolUtils
+{
+public:
+    static std::string getProtocolStatusAsString(ProtocolStatus protocolStatus);
+};
+
+} // namespace nexilis::client
 
 #endif

@@ -64,7 +64,6 @@ set(SOURCES
     src/nexilis/server/client_storage.cc
     src/nexilis/server/room_storage.cc
 
-
     # Server protocols
     src/nexilis/server/protocol/nxboost/tcp_server.cc
     src/nexilis/server/protocol/nxboost/udp_server.cc
@@ -77,6 +76,7 @@ set(SOURCES
     src/nexilis/client/client_session.cc
     src/nexilis/client/packet.cc
     src/nexilis/client/room.cc
+    src/nexilis/client/protocol_status.cc
 
     # Client protocols
     src/nexilis/client/protocol/nxboost/tcp_client.cc

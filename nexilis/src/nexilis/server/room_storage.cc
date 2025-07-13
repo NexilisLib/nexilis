@@ -45,4 +45,9 @@ Room* RoomStorage::getRoomById(uint64_t id)
     }
 }
 
+void RoomStorage::clear()
+{
+    m_rooms.clear();
+}
+
 } // namespace nexilis::server
