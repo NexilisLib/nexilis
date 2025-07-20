@@ -938,6 +938,4 @@ void ClientAPI::waitUntilUnixStreamReady()
     }
 }
 
-
-
 } // namespace nexilis::client

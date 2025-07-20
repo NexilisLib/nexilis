@@ -46,7 +46,6 @@ public:
     }
 
     void setPosition3D(float x, float y, float z);
-
     Vector3<float> getPosition3D();
 
     // TODO setter and getter for 2D position.

@@ -2,9 +2,9 @@
 #define NEXILIS_CLIENT_PROTOCOL_HH
 
 #include <nexilis/client/client_api.hh>
+#include <nexilis/client/protocol_status.hh>
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/protocol.hh>
-#include <nexilis/client/protocol_status.hh>
 
 namespace nexilis::client
 {

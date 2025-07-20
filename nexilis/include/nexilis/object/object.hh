@@ -30,11 +30,11 @@ public:
           m_position(std::move(other.m_position)),
           m_dimensions(std::move(other.m_dimensions)),
           m_filepath(std::move(other.m_filepath)),
-          m_positionMutex(std::move(other.m_positionMutex))
+          m_mutex(std::move(other.m_mutex))
     {
-        if (!m_positionMutex)
+        if (!m_mutex)
         {
-            m_positionMutex = std::make_unique<std::mutex>();
+            m_mutex = std::make_unique<std::mutex>();
         }
     }
 
@@ -47,9 +47,9 @@ public:
             m_position = std::move(other.m_position);
             m_dimensions = std::move(other.m_dimensions);
             m_filepath = std::move(other.m_filepath);
-            if (!m_positionMutex)
+            if (!m_mutex)
             {
-                m_positionMutex = std::make_unique<std::mutex>();
+                m_mutex = std::make_unique<std::mutex>();
             }
         }
         return *this;
@@ -72,7 +72,7 @@ public:
 
     void setPosition(const VectorType& pos)
     {
-        // std::lock_guard lock(m_positionMutex);
+        std::lock_guard lock(*m_mutex);
         m_position = pos;
     }
 
@@ -83,11 +83,13 @@ public:
 
     void setDimensions(const VectorType& dim)
     {
+        std::lock_guard lock(*m_mutex);
         m_dimensions = dim;
     }
 
     void setFilepath(const std::string& filepath)
     {
+        std::lock_guard lock(*m_mutex);
         m_filepath = filepath;
     }
 
@@ -111,7 +113,7 @@ protected:
     std::string m_filepath;
 
     /// Mutex for setting position.
-    std::unique_ptr<std::mutex> m_positionMutex;
+    std::unique_ptr<std::mutex> m_mutex;
 };
 
 } // namespace nexilis
