@@ -133,6 +133,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             // FIXME this is so bad.
             else if (type == "port")
             {
+                Log::debug(header(), "Received BoostTCP port message!");
                 std::lock_guard<std::mutex> lock(*m_roomsMutex);
                 uint16_t port = createUint64(json, "port");
                 m_data.setBoostTCPPortNumber(port);
@@ -811,6 +812,7 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
                         return;
                     }
                 }
+                Log::debug(header(), "Tried to getActiveRooms data!");
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
 

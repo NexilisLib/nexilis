@@ -20,7 +20,7 @@ TCPClient::TCPClient(ClientAPI& api)
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
               boost::asio::make_work_guard(*m_ioContext))),
-      m_socket(*m_ioContext),
+      m_socket(std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext)),
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
       m_receiveMutex(std::make_shared<std::mutex>()),
@@ -117,20 +117,20 @@ void TCPClient::stop()
     {
         std::lock_guard<std::mutex> recvLock(*m_receiveMutex);
         std::lock_guard<std::mutex> sendLock(*m_sendMutex);
-        if (m_socket.is_open())
+        if (m_socket && m_socket->is_open())
         {
             boost::system::error_code ec;
-            ec = m_socket.cancel(ec);
+            ec = m_socket->cancel(ec);
             if (ec)
             {
                 Log::error(header(), "Error cancelling socket");
             }
-            ec = m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+            ec = m_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
             if (ec)
             {
                 Log::error(header(), "Error shutting down socket");
             }
-            ec = m_socket.close(ec);
+            ec = m_socket->close(ec);
             if (ec)
             {
                 Log::error(header(), "Error closing socket");
@@ -179,6 +179,7 @@ bool TCPClient::connectToServer()
 {
     if (getProtocolStatus() != ProtocolStatus::undefined)
     {
+        Log::error(header(), "ProtocolStatus is not undefined when trying the first connection");
         return false;
     }
 
@@ -188,7 +189,7 @@ bool TCPClient::connectToServer()
         m_serverPort = Ports::getBoostTCPPort();
         auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
 
-        boost::asio::connect(m_socket, endpoints);
+        boost::asio::connect(*m_socket, endpoints);
         Log::debug(header(), "Initial connection success");
 
         updateProtocolStatus(ProtocolStatus::connected);
@@ -197,54 +198,68 @@ bool TCPClient::connectToServer()
     catch (...)
     {
         updateProtocolStatus(ProtocolStatus::error);
-        m_socket.close();
+        m_socket->close();
         return false;
     }
 }
 
 bool TCPClient::send(const nx_data& data)
 {
+    std::shared_ptr<boost::asio::ip::tcp::socket> current_socket;
     {
-        std::unique_lock<std::mutex> lock(*m_portSwitchingMutex);
-        if (getProtocolStatus() != ProtocolStatus::connected)
+        std::lock_guard<std::mutex> portLock(*m_portSwitchingMutex);
+        std::lock_guard<std::mutex> sockLock(*m_sendMutex);
+
+        if (getProtocolStatus() != ProtocolStatus::connected ||
+            m_stopped->load() || !m_socket->is_open())
         {
             Log::warning(header(), "Cannot send in state: ", getProtocolStatusString());
             return false; // retry
         }
+        current_socket = m_socket;
     }
 
-    std::lock_guard<std::mutex> sockLock(*m_sendMutex);
-    if (m_stopped->load() || !m_socket.is_open())
+    if (!current_socket || !current_socket->is_open())
     {
-        Log::error(header(), "Cannot send, socket is not open or TCPClient is closed");
+        Log::warning(header(), "Socket is not open during send");
         return false;
     }
 
-    // clang-format off
-    boost::asio::async_write(m_socket, boost::asio::buffer(data),
-        [this](const boost::system::error_code& ec, std::size_t size)
-        {
-            if (!ec)
+    try
+    {
+        // clang-format off
+        boost::asio::async_write(*m_socket, boost::asio::buffer(data),
+            [this](const boost::system::error_code& ec, std::size_t size)
             {
-                Log::info(header(), "Message sent successfully with size of: ", size, " bytes");
-            }
-            else if (m_socket.is_open())
-            {
-                boost::system::error_code ignore_ec;
-                ignore_ec = m_socket.close(ignore_ec);
-                if (ignore_ec)
+                if (!ec)
                 {
-                    Log::error(header(), "Error closing socket");
+                    Log::info(header(), "Message sent successfully with size of: ", size, " bytes");
                 }
-            }
-    });
-    // clang-format on
-    return true;
+                else if (m_socket->is_open())
+                {
+                    boost::system::error_code ignore_ec;
+                    ignore_ec = m_socket->close(ignore_ec);
+                    if (ignore_ec)
+                    {
+                        Log::error(header(), "Error closing socket");
+                    }
+                }
+        });
+        // clang-format on
+        return true;
+    }
+    catch (...)
+    {
+        Log::error(header(), "Exception during async_write");
+        return false;
+    }
 }
 
 void TCPClient::handlePortSwitch()
 {
-    std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
+    std::lock_guard<std::mutex> portLock(*m_portSwitchingMutex);
+    std::lock_guard<std::mutex> sendLock(*m_sendMutex);
+
     updateProtocolStatus(ProtocolStatus::switching_ports);
 
     while (!m_stopped->load())
@@ -258,33 +273,38 @@ void TCPClient::handlePortSwitch()
 
         try
         {
-            // Close existing socket
-            boost::system::error_code ec;
-            if (m_socket.is_open())
+            Log::debug(header(), "Got valid port number from ClientAPI");
+
+            // Create new socket.
+            auto newSocket = std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext);
+            auto endpoints = m_resolver.resolve(
+                    getClientAPI()->getBoostTCPServerAddress(),
+                    std::to_string(port));
+            boost::asio::connect(*newSocket, endpoints);
+
+            auto oldSocket = std::atomic_exchange(&m_socket, newSocket);
+
+            if (oldSocket && oldSocket->is_open())
             {
-                if (m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
+                boost::system::error_code ec;
+                ec = oldSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+                if (ec)
                 {
                     Log::error(header(), "Error shutting down socket");
                 }
-                if (m_socket.close(ec))
+                ec = oldSocket->close(ec);
+                if (ec)
                 {
                     Log::error(header(), "Error closing socket");
                 }
             }
 
-            // Create new socket.
-            boost::asio::ip::tcp::socket newSocket(*m_ioContext);
-            auto endpoints = m_resolver.resolve(
-                    getClientAPI()->getBoostTCPServerAddress(),
-                    std::to_string(port));
-            boost::asio::connect(newSocket, endpoints);
+            m_serverPort = port;
+            updateProtocolStatus(ProtocolStatus::connected);
 
-            // Atomically replace socket
+            if (!m_socket->is_open())
             {
-                std::lock_guard<std::mutex> sendLock(*m_sendMutex);
-                m_socket = std::move(newSocket);
-                m_serverPort = port;
-                updateProtocolStatus(ProtocolStatus::connected);
+                throw std::runtime_error("Socket failed to open");
             }
 
             Log::info(header(), "Successfully switched to port ", m_serverPort);
@@ -307,8 +327,9 @@ void TCPClient::handlePortSwitch()
 
 void TCPClient::receive(const std::function<void(nx_data)>& callback)
 {
-    if (!m_socket.is_open() || m_stopped->load())
+    if (m_stopped->load())
     {
+        Log::debug(header(), "stopped, cannot receive");
         return;
     }
 
@@ -318,14 +339,14 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
         auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
 
         // clang-format off
-        boost::asio::async_read_until(m_socket, *receiveBuffer, '\n',
+        boost::asio::async_read_until(*m_socket, *receiveBuffer, '\n',
             [this, receiveBuffer, callback](const boost::system::error_code& ec, size_t bytes_transferred)
             {
                 if (ec || m_stopped->load())
                 {
                     if (ec != boost::asio::error::operation_aborted)
                     {
-                        m_socket.close();
+                        m_socket->close();
                     }
                     return;
                 }
@@ -345,7 +366,7 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
                     callback(buffer);
                 }
 
-                if (m_socket.is_open())
+                if (m_socket->is_open())
                 {
                     receive(callback);
                 }

@@ -70,7 +70,7 @@ private:
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::shared_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
-    boost::asio::ip::tcp::socket m_socket;
+    std::shared_ptr<boost::asio::ip::tcp::socket> m_socket;
     boost::asio::ip::tcp::resolver m_resolver;
 
     std::shared_ptr<std::mutex> m_sendMutex;
