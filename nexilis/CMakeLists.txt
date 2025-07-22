@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
+set(USE_SUBMODULE_BOOST OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
@@ -15,6 +16,32 @@ set(BUILD_SHARED_LIBS ON)
 
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
+
+# Check for boost submodule
+set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
+
+if (USE_SUBMODULE_BOOST)
+    message(STATUS "Using boost submodules")
+
+    set(BOOST_LIBS
+        json system assert align config core static_assert
+        throw_exception container variant variant2 intrusive
+        mp11 move container_hash winapi describe predef endian
+    )
+
+    foreach(lib ${BOOST_LIBS})
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/${lib}/CMakeLists.txt)
+           add_subdirectory(third-party/boost/libs/${lib})
+        endif()
+    endforeach()
+else()
+    message(STATUS "Using system boost")
+    find_package(Boost 1.75 REQUIRED COMPONENTS json system)
+
+    if(NOT Boost_FOUND)
+        message(FATAL_ERROR, "System boost not found and submodules missing")
+    endif()
+endif()
 
 set(SOURCES
     # Base
@@ -124,24 +151,18 @@ set(SOURCES
 )
 
 add_library(nexilis SHARED ${SOURCES})
-
-set(BOOST_LIBS
-    json system assert align config core static_assert
-    throw_exception container variant variant2 intrusive
-    mp11 move container_hash winapi describe predef endian
-)
-
-foreach(lib ${BOOST_LIBS})
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/${lib}/CMakeLists.txt)
-        add_subdirectory(third-party/boost/libs/${lib})
-    endif()
-endforeach()
-
 target_include_directories(nexilis PUBLIC include)
 
-target_link_libraries(nexilis PUBLIC
-    boost_json
-)
+if (USE_SUBMODULE_BOOST)
+    target_link_libraries(nexilis PUBLIC
+        boost_json
+    )
+else()
+    target_include_directories(nexilis PUBLIC ${Boost_INCLUDE_DIRS})
+    target_link_libraries(nexilis PUBLIC
+        Boost::json
+    )
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(nexilis PRIVATE
