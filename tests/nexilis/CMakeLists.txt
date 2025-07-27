@@ -8,7 +8,14 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-add_subdirectory(../../nexilis/ nexilis_dir)
+if (DEFINED ENV{NIX_BUILD_CORES})
+    message(STATUS "Using installed Nexilis from: ${CMAKE_PREFIX_PATH}")
+    include_directories(${CMAKE_PREFIX_PATH}/include)
+    link_directories(${CMAKE_PREFIX_PATH}/lib)
+else()
+    message(STATUS "Using local Nexilis source via add_subdirectory")
+    add_subdirectory(../../nexilis/ nexilis_dir)
+endif()
 
 add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 
@@ -24,3 +31,5 @@ add_executable(nexilis_tests
 )
 
 target_link_libraries(nexilis_tests nexilis ${GTEST_LIBRARIES})
+install(TARGETS nexilis_tests DESTINATION bin)
+
