@@ -9,13 +9,12 @@
 
 int main()
 {
-    // TODO trigger this from lua
-    //nexilis::Log::startConsoleDebugging();
+    nexilis::Log::startConsoleDebugging();
 
     nexilis::ProtocolManager protocol_manager;
 
     nexilis::server::Settings settings;
-    settings.setMode(nexilis::server::Settings::AuthenticationMode::passwordProtected);
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
 
@@ -24,10 +23,9 @@ int main()
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    nexilis::client::ClientAPI::ServerData server_data;
+    nexilis::client::ServerData server_data;
     server_data.setPassword("salasana");
-    server_data.setUserName("example_user");
-    server_data.setBoostTCP("127.0.0.1");
+    server_data.setBoostTCPAddress("127.0.0.1");
 
     nexilis::client::ClientAPI client_api(server_data);
     auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);
