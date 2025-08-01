@@ -17,6 +17,7 @@
         gtest = pkgs.gtest;
         lib = pkgs.lib;
         patchelf = pkgs.patchelf;
+        python = pkgs.python3;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -26,6 +27,7 @@
             gcc
             boost
             gtest
+            python
           ];
 
           shellHook = ''
