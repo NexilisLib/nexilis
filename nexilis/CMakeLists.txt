@@ -14,8 +14,7 @@ set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread -std=c++17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17")
+add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
 
 # Check for boost submodule
 set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
