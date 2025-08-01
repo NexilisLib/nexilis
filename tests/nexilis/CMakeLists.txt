@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-if (DEFINED ENV{NIX_BUILD_CORES})
+if (IS_NIX_BUILD)
     message(STATUS "Using installed Nexilis from: ${CMAKE_PREFIX_PATH}")
     include_directories(${CMAKE_PREFIX_PATH}/include)
     link_directories(${CMAKE_PREFIX_PATH}/lib)

@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
-set(USE_SUBMODULE_BOOST OFF)
+set(IS_CI FALSE CACHE BOOL "True if running in CI environment")
+set(IS_NIX_BUILD FALSE CACHE BOOL "True if running under Nix build")
+set(USE_SUBMODULES FALSE CACHE BOOL "True if submodules should be used")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
@@ -14,13 +17,49 @@ set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
+function(detect_build_environment)
+    set(CI_VARS
+        "GITHUB_ACTIONS"
+        "GITLAB_CI"
+        "CI"
+        "TRAVIS"
+        "CIRCLECI"
+    )
+
+    # Check for CI.
+    foreach(var ${CI_VARS})
+        if(DEFINED ENV{${var}})
+            set(IS_CI TRUE CACHE BOOL "True if running in CI environment" FORCE)
+            set(USE_SUBMODULES TRUE CACHE BOOL "True if submodules should be used" FORCE)
+            return()
+        endif()
+    endforeach()
+
+    # Check for Nix build environment.
+    if(DEFINED ENV{NIX_BUILD_CORES})
+        set(IS_NIX_BUILD TRUE CACHE BOOL "True if running under Nix build" FORCE)
+        set(USE_SUBMODULES FALSE CACHE BOOL "True if submodules should be used" FORCE)
+        return()
+    endif()
+
+    # Use submodules locally.
+    set(IS_CI FALSE CACHE BOOL "True if running in CI environment" FORCE)
+    set(IS_NIX_BUILD FALSE CACHE BOOL "True if running under Nix build" FORCE)
+    set(USE_SUBMODULES TRUE CACHE BOOL "True if submodules should be used" FORCE)
+endfunction()
+
+detect_build_environment()
+
+message(STATUS "Build configuration:")
+message(STATUS "  CI Environment: ${IS_CI}")
+message(STATUS "  Nix Build: ${IS_NIX_BUILD}")
+message(STATUS "  Use Submodules: ${USE_SUBMODULES}")
+
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
 
-# Check for boost submodule
-set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
-
-if (USE_SUBMODULE_BOOST)
+if (USE_SUBMODULES)
     message(STATUS "Using boost submodules")
+    set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
 
     set(BOOST_LIBS
         json system assert align config core static_assert
@@ -152,7 +191,7 @@ set(SOURCES
 add_library(nexilis SHARED ${SOURCES})
 target_include_directories(nexilis PUBLIC include)
 
-if (USE_SUBMODULE_BOOST)
+if (USE_SUBMODULES)
     target_link_libraries(nexilis PUBLIC
         boost_json
     )
