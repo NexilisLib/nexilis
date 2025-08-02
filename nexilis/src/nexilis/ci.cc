@@ -4,6 +4,7 @@
 namespace nexilis
 {
 
+// TODO return "EnvironmentType"
 bool isRunningInCI()
 {
     const char* ci_vars[]{
@@ -18,6 +19,15 @@ bool isRunningInCI()
             return true;
         }
     }
+
+#if defined(NEXILIS_IS_LOCAL)
+    static_assert(NEXILIS_IS_LOCAL == 1);
+#endif
+
+#if defined(NEXILIS_IS_CI)
+    static_assert(NEXILIS_IS_CI == 0);
+#endif
+
     return false;
 }
 

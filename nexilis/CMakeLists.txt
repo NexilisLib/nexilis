@@ -3,6 +3,7 @@ project(nexilis)
 
 set(IS_CI FALSE CACHE BOOL "True if running in CI environment")
 set(IS_NIX_BUILD FALSE CACHE BOOL "True if running under Nix build")
+set(IS_LOCAL_BUILD FALSE CACHE BOOL "True if running locally")
 set(USE_SUBMODULES FALSE CACHE BOOL "True if submodules should be used")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -17,7 +18,7 @@ set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_C_COMPILER "clang")
 #set(CMAKE_CXX_COMPILER "clang++")
 
-function(detect_build_environment)
+function(configure_build_environment)
     set(CI_VARS
         "GITHUB_ACTIONS"
         "GITLAB_CI"
@@ -31,6 +32,7 @@ function(detect_build_environment)
         if(DEFINED ENV{${var}})
             set(IS_CI TRUE CACHE BOOL "True if running in CI environment" FORCE)
             set(USE_SUBMODULES TRUE CACHE BOOL "True if submodules should be used" FORCE)
+            set(IS_LOCAL_BUILD FALSE CACHE BOOL "True if running locally")
             return()
         endif()
     endforeach()
@@ -39,23 +41,50 @@ function(detect_build_environment)
     if(DEFINED ENV{NIX_BUILD_CORES})
         set(IS_NIX_BUILD TRUE CACHE BOOL "True if running under Nix build" FORCE)
         set(USE_SUBMODULES FALSE CACHE BOOL "True if submodules should be used" FORCE)
+        set(IS_LOCAL_BUILD FALSE CACHE BOOL "True if running locally" FORCE)
         return()
     endif()
 
     # Use submodules locally.
+    set(IS_LOCAL_BUILD TRUE CACHE BOOL "True if running locally" FORCE)
     set(IS_CI FALSE CACHE BOOL "True if running in CI environment" FORCE)
     set(IS_NIX_BUILD FALSE CACHE BOOL "True if running under Nix build" FORCE)
     set(USE_SUBMODULES TRUE CACHE BOOL "True if submodules should be used" FORCE)
 endfunction()
 
-detect_build_environment()
+configure_build_environment()
 
 message(STATUS "Build configuration:")
 message(STATUS "  CI Environment: ${IS_CI}")
 message(STATUS "  Nix Build: ${IS_NIX_BUILD}")
+message(STATUS "  Local Build: ${IS_LOCAL_BUILD}")
 message(STATUS "  Use Submodules: ${USE_SUBMODULES}")
 
 add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
+
+if (IS_CI)
+    add_compile_definitions(NEXILIS_IS_CI=1)
+else()
+    add_compile_definitions(NEXILIS_IS_CI=0)
+endif()
+
+if (IS_NIX_BUILD)
+    add_compile_definitions(NEXILIS_IS_NIX=1)
+else()
+    add_compile_definitions(NEXILIS_IS_NIX=0)
+endif()
+
+if (IS_LOCAL_BUILD)
+    add_compile_definitions(NEXILIS_IS_LOCAL=1)
+else()
+    add_compile_definitions(NEXILIS_IS_LOCAL=0)
+endif()
+
+if (USE_SUBMODULES)
+    add_compile_definitions(NEXILIS_USE_SUBMODULES=1)
+else()
+    add_compile_definitions(NEXILIS_USE_SUBMODULES=0)
+endif()
 
 if (USE_SUBMODULES)
     message(STATUS "Using boost submodules")
