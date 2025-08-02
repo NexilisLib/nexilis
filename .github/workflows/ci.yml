@@ -7,6 +7,22 @@ on:
     branches: [ main ]
 
 jobs:
+  cpp-check:
+    name: cppcheck
+    runs-on: ubuntu-24
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck.py
+        run: |
+          pip install -r scripts/requirements.txt
+          python scripts/src/env.py
+          python scripts/src/cppcheck.py
+
   formatting-check:
     name: Formatting Check
     runs-on: ubuntu-24.04

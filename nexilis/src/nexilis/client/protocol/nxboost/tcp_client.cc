@@ -301,14 +301,14 @@ void TCPClient::handlePortSwitch()
 
         if (oldSocket && oldSocket->is_open())
         {
-            boost::system::error_code ec;
-            ec = oldSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-            if (ec)
+            boost::system::error_code conn_ec;
+            ec = oldSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, conn_ec);
+            if (conn_ec)
             {
                 Log::error(header(), "Error shutting down socket");
             }
-            ec = oldSocket->close(ec);
-            if (ec)
+            conn_ec = oldSocket->close(conn_ec);
+            if (conn_ec)
             {
                 Log::error(header(), "Error closing socket");
             }
