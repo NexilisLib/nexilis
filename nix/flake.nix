@@ -18,6 +18,9 @@
         lib = pkgs.lib;
         patchelf = pkgs.patchelf;
         python = pkgs.python3;
+        pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+          python-dotenv
+        ]);
       in
       {
         devShells.default = pkgs.mkShell {
@@ -28,6 +31,7 @@
             boost
             gtest
             python
+            pythonEnv
           ];
 
           shellHook = ''

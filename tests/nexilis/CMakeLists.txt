@@ -4,7 +4,7 @@ project(nexilis_tests)
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-if (IS_NIX_BUILD)
+if (NEXILIS_IS_NIX)
     message(STATUS "Using installed Nexilis from: ${CMAKE_PREFIX_PATH}")
     include_directories(${CMAKE_PREFIX_PATH}/include)
     link_directories(${CMAKE_PREFIX_PATH}/lib)

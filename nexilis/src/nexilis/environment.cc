@@ -37,18 +37,6 @@ EnvironmentType detectRuntimeType()
         is_nix = true;
     }
 
-#if defined(NEXILIS_IS_CI)
- #if NEXILIS_IS_CI == 1
-    static_assert(NEXILIS_IS_CI == is_ci);
- #endif
-#endif
-
-#if defined(NEXILIS_IS_NIX)
-#if NEXILIS_IS_NIX == 1
-    static_assert(NEXILIS_IS_NIX == is_nix);
-#endif
-#endif
-
     if (is_ci) return EnvironmentType::ci;
     if (is_nix) return EnvironmentType::nixos;
     return EnvironmentType::local;
