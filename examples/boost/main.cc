@@ -25,8 +25,7 @@ int main()
 
     nexilis::client::ServerData server_data;
     server_data.setPassword("salasana");
-    server_data.setUserName("example_user");
-    server_data.setBoostTCP("127.0.0.1");
+    server_data.setBoostTCPAddress("127.0.0.1");
 
     nexilis::client::ClientAPI client_api(server_data);
     auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_COMPILER "gcc")
 set(CMAKE_CXX_COMPILER "g++")
 
@@ -67,9 +67,9 @@ function(configure_build_environment)
 
     # Use submodules locally.
     set(USE_SUBMODULES 1 PARENT_SCOPE)
-    set(IS_LOCAL_BUILD 1 PARENT_SCOPE)
+    set(IS_LOCAL 1 PARENT_SCOPE)
     set(IS_CI 0 PARENT_SCOPE)
-    set(IS_NIX_BUILD 0 PARENT_SCOPE)
+    set(IS_NIX 0 PARENT_SCOPE)
 endfunction()
 
 configure_build_environment()
