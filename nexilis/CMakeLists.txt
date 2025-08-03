@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
-set(NEXILIS_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_COMPILER "gcc")
+set(CMAKE_CXX_COMPILER "g++")
 
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" NEXILIS_OS_RAW)
 if(NEXILIS_OS_RAW MATCHES "windows")
@@ -14,18 +16,12 @@ else()
     set(NEXILIS_OS "${CMAKE_SYSTEM_NAME}")
 endif()
 
-set(NEXILIS_C_COMPILER "${CMAKE_C_COMPILER_ID}")
-set(NEXILIS_C_COMPILER_VERSION "${CMAKE_C_COMPILER_VERSION}")
-set(NEXILIS_CXX_COMPILER "${CMAKE_CXX_COMPILER_ID}")
-set(NEXILIS_CXX_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
-set(NEXILIS_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-
 message(STATUS "System Information:")
 message(STATUS "  OS: ${NEXILIS_OS}")
 message(STATUS "  Arch: ${NEXILIS_ARCH}")
-message(STATUS "  C Compiler: ${NEXILIS_C_COMPILER} ${NEXILIS_C_COMPILER_VERSION}")
-message(STATUS "  C++ Compiler: ${NEXILIS_CXX_COMPILER} ${NEXILIS_CXX_COMPILER_VERSION}")
-message(STATUS "  C++ Standard: ${NEXILIS_CXX_STANDARD}")
+message(STATUS "  C Compiler: ${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "  C++ Compiler: ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
 
 # Setting default if not specified via -DCMAKE_BUILD_TYPE.
 if(NOT CMAKE_BUILD_TYPE)
@@ -40,10 +36,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS ON)
 
-# Compile with clang.
-#set(CMAKE_C_COMPILER "clang")
-#set(CMAKE_CXX_COMPILER "clang++")
-
 function(configure_build_environment)
     set(CI_VARS
         "GITHUB_ACTIONS"
@@ -56,42 +48,42 @@ function(configure_build_environment)
     # Check for CI.
     foreach(var ${CI_VARS})
         if(DEFINED ENV{${var}})
-            set(IS_CI 1 PARENT_SCOPE)
             set(USE_SUBMODULES 1 PARENT_SCOPE)
-            set(IS_LOCAL_BUILD 0 PARENT_SCOPE)
-            set(IS_NIX_BUILD 0 PARENT_SCOPE)
+            set(IS_CI 1 PARENT_SCOPE)
+            set(IS_LOCAL 0 PARENT_SCOPE)
+            set(IS_NIX 0 PARENT_SCOPE)
             return()
         endif()
     endforeach()
 
     # Check for Nix build environment.
     if(DEFINED ENV{NIX_BUILD_CORES} OR DEFINED ENV{IN_NIX_SHELL})
-        set(IS_NIX_BUILD 1 PARENT_SCOPE)
         set(USE_SUBMODULES 0 PARENT_SCOPE)
-        set(IS_LOCAL_BUILD 0 PARENT_SCOPE)
+        set(IS_NIX 1 PARENT_SCOPE)
+        set(IS_LOCAL 0 PARENT_SCOPE)
         set(IS_CI 0 PARENT_SCOPE)
         return()
     endif()
 
     # Use submodules locally.
-    set(IS_LOCAL_BUILD 1 PARENT_SCOPE)
     set(USE_SUBMODULES 1 PARENT_SCOPE)
+    set(IS_LOCAL_BUILD 1 PARENT_SCOPE)
     set(IS_CI 0 PARENT_SCOPE)
     set(IS_NIX_BUILD 0 PARENT_SCOPE)
 endfunction()
 
 configure_build_environment()
 
-message(STATUS "Build configuration:")
-message(STATUS "  CI Environment: ${IS_CI}")
-message(STATUS "  Nix Build: ${IS_NIX_BUILD}")
-message(STATUS "  Local Build: ${IS_LOCAL_BUILD}")
-message(STATUS "  Use Submodules: ${USE_SUBMODULES}")
+set(NEXILIS_IS_CI ${IS_CI} CACHE BOOL "Whether this is a CI build")
+set(NEXILIS_IS_NIX ${IS_NIX} CACHE BOOL "Whether this is a Nix build")
+set(NEXILIS_IS_LOCAL ${IS_LOCAL} CACHE BOOL "Whether this is a local build")
+set(NEXILIS_USE_SUBMODULES ${USE_SUBMODULES} CACHE BOOL "Whether to use submodules")
 
-set(NEXILIS_IS_CI ${IS_CI})
-set(NEXILIS_IS_NIX ${IS_NIX_BUILD})
-set(NEXILIS_IS_LOCAL ${IS_LOCAL_BUILD})
-set(NEXILIS_USE_SUBMODULES ${USE_SUBMODULES})
+message(STATUS "Build configuration:")
+message(STATUS "  CI Environment: ${NEXILIS_IS_CI}")
+message(STATUS "  Nix Build: ${NEXILIS_IS_NIX}")
+message(STATUS "  Local Build: ${NEXILIS_IS_LOCAL}")
+message(STATUS "  Use Submodules: ${NEXILIS_USE_SUBMODULES}")
 
 if (NEXILIS_OS STREQUAL "Windows")
     if (MSVC)
@@ -105,8 +97,8 @@ endif()
 
 add_compile_definitions(
     NEXILIS_IS_CI=${IS_CI}
-    NEXILIS_IS_NIX=${IS_NIX_BUILD}
-    NEXILIS_IS_LOCAL=${IS_LOCAL_BUILD}
+    NEXILIS_IS_NIX=${IS_NIX}
+    NEXILIS_IS_LOCAL=${IS_LOCAL}
     NEXILIS_USE_SUBMODULES=${USE_SUBMODULES}
 )
 

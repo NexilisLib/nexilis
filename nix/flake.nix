@@ -29,6 +29,7 @@
             export LD_LIBRARY_PATH=$NEXILIS_PREFIX/lib:$LD_LIBRARY_PATH
             echo "Welcome to the Nexilis Dev Shell"
             echo "NEXILIS_PREFIX set to $NEXILIS_PREFIX"
+            python ../scripts/src/env.py
           '';
         };
 
