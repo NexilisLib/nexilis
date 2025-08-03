@@ -45,7 +45,7 @@ EnvironmentType detectRuntimeType()
 
 #if defined(NEXILIS_IS_NIX)
 #if NEXILIS_IS_NIX == 1
-    static_assert(NEXILIS_IS_NIX == is_nix)
+    static_assert(NEXILIS_IS_NIX == is_nix);
 #endif
 #endif
 
