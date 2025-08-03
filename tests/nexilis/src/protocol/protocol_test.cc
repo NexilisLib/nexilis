@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <nexilis/ci.hh>
+#include <nexilis/environment.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/client/protocol/nxboost/udp_client.hh>
@@ -212,7 +212,8 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
     ASSERT_FALSE(server->hasActiveConnections());
 
     // CI-aware timeout settings.
-    const bool is_ci = nexilis::isRunningInCI();
+    const auto environment = nexilis::detectRuntimeType();
+    const bool is_ci = environment == nexilis::EnvironmentType::ci;
     const auto connection_timeout = is_ci ? std::chrono::seconds(15) : std::chrono::seconds(5);
     const auto send_timeout = is_ci ? std::chrono::seconds(10) : std::chrono::seconds(3);
     const int max_send_attempts = is_ci ? 5 : 3;
@@ -274,7 +275,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
             << "  Client connected: " << client->isConnected() << "\n"
             << "  Server connections: " << server->activeConnectionsCount() << "\n"
             << "  Active rooms: " << api->getActiveRooms().size() << "\n"
-            << "  Protocol status: " << static_cast<int>(client->getProtocolStatus()) << "\n"
+            << "  Protocol status: " << client->getProtocolStatusString() << std::endl
             << "  CI Environment: " << (is_ci ? "Yes" : "No");
         std::cerr << oss.str() << std::endl;
     }

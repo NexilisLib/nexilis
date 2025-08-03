@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
-#include <nexilis/ci.hh>
+#include <nexilis/environment.hh>
 
 int main(int argc, char** argv)
 {
-    std::cout << "Running tests in " << (nexilis::isRunningInCI() ? "ci" : "local") << " environment." << std::endl;
+    auto env = nexilis::envToString(nexilis::detectRuntimeType());
+    std::cout << "Running tests in " << env << " environment." << std::endl;
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
