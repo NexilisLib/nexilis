@@ -10,28 +10,18 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        cmake = pkgs.cmake;
-        stdenv = pkgs.stdenv;
-        gcc = pkgs.gcc;
-        boost = pkgs.boost;
-        gtest = pkgs.gtest;
-        lib = pkgs.lib;
-        patchelf = pkgs.patchelf;
-        python = pkgs.python3;
-        pythonEnv = pkgs.python3.withPackages (ps: with ps; [
-          python-dotenv
-        ]);
       in
       {
         devShells.default = pkgs.mkShell {
           name = "nexilis-devshell";
           nativeBuildInputs = [
-            cmake
-            gcc
-            boost
-            gtest
-            python
-            pythonEnv
+            pkgs.cmake
+            pkgs.gcc
+            pkgs.boost
+            pkgs.gtest
+            (pkgs.python3.withPackages (ps: with ps; [
+              python-dotenv
+            ]))
           ];
 
           shellHook = ''
@@ -48,13 +38,13 @@
             version = "0.0.1";
             src = ../nexilis;
 
-            nativeBuildInputs = [ cmake ];
-            buildInputs = [ boost ];
+            nativeBuildInputs = [ pkgs.cmake ];
+            buildInputs = [ pkgs.boost ];
 
             configurePhase = ''
               mkdir -p build
               cd build
-              cmake .. -DBUILD_SHARED_LIBS=ON
+              cmake ..
             '';
 
             buildPhase = ''
@@ -73,10 +63,14 @@
             version = "0.0.1";
             src = ../tests/nexilis;
 
-            nativeBuildInputs = [ cmake patchelf ];
+            nativeBuildInputs = [
+              pkgs.cmake
+              pkgs.patchelf
+            ];
+
             buildInputs = [
-              boost
-              gtest
+              pkgs.boost
+              pkgs.gtest
               self.packages.${system}.lib
             ];
 
