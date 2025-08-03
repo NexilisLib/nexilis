@@ -56,26 +56,28 @@ function(configure_build_environment)
     # Check for CI.
     foreach(var ${CI_VARS})
         if(DEFINED ENV{${var}})
-            set(IS_CI 1)
-            set(USE_SUBMODULES 1)
-            set(IS_LOCAL_BUILD 0)
+            set(IS_CI 1 PARENT_SCOPE)
+            set(USE_SUBMODULES 1 PARENT_SCOPE)
+            set(IS_LOCAL_BUILD 0 PARENT_SCOPE)
+            set(IS_NIX_BUILD 0 PARENT_SCOPE)
             return()
         endif()
     endforeach()
 
     # Check for Nix build environment.
     if(DEFINED ENV{NIX_BUILD_CORES} OR DEFINED ENV{IN_NIX_SHELL})
-        set(IS_NIX_BUILD 1)
-        set(USE_SUBMODULES 0)
-        set(IS_LOCAL_BUILD 0)
+        set(IS_NIX_BUILD 1 PARENT_SCOPE)
+        set(USE_SUBMODULES 0 PARENT_SCOPE)
+        set(IS_LOCAL_BUILD 0 PARENT_SCOPE)
+        set(IS_CI 0 PARENT_SCOPE)
         return()
     endif()
 
     # Use submodules locally.
-    set(IS_LOCAL_BUILD 1)
-    set(USE_SUBMODULES 1)
-    set(IS_CI 0)
-    set(IS_NIX_BUILD 0)
+    set(IS_LOCAL_BUILD 1 PARENT_SCOPE)
+    set(USE_SUBMODULES 1 PARENT_SCOPE)
+    set(IS_CI 0 PARENT_SCOPE)
+    set(IS_NIX_BUILD 0 PARENT_SCOPE)
 endfunction()
 
 configure_build_environment()
@@ -85,6 +87,11 @@ message(STATUS "  CI Environment: ${IS_CI}")
 message(STATUS "  Nix Build: ${IS_NIX_BUILD}")
 message(STATUS "  Local Build: ${IS_LOCAL_BUILD}")
 message(STATUS "  Use Submodules: ${USE_SUBMODULES}")
+
+set(NEXILIS_IS_CI ${IS_CI})
+set(NEXILIS_IS_NIX ${IS_NIX_BUILD})
+set(NEXILIS_IS_LOCAL ${IS_LOCAL_BUILD})
+set(NEXILIS_USE_SUBMODULES ${USE_SUBMODULES})
 
 if (NEXILIS_OS STREQUAL "Windows")
     if (MSVC)
@@ -96,10 +103,12 @@ elseif (NEXILIS_OS STREQUAL "Linux")
     add_compile_options(-Wall -Wextra -pedantic -pthread)
 endif()
 
-add_compile_definitions(NEXILIS_IS_CI=${IS_CI})
-add_compile_definitions(NEXILIS_IS_NIX=${IS_NIX_BUILD})
-add_compile_definitions(NEXILIS_IS_LOCAL=${IS_LOCAL_BUILD})
-add_compile_definitions(NEXILIS_USE_SUBMODULES=${USE_SUBMODULES})
+add_compile_definitions(
+    NEXILIS_IS_CI=${IS_CI}
+    NEXILIS_IS_NIX=${IS_NIX_BUILD}
+    NEXILIS_IS_LOCAL=${IS_LOCAL_BUILD}
+    NEXILIS_USE_SUBMODULES=${USE_SUBMODULES}
+)
 
 if (USE_SUBMODULES)
     message(STATUS "Using boost submodules")
