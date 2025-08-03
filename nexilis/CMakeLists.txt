@@ -1,15 +1,46 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
+set(NEXILIS_CXX_STANDARD 17)
+
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" NEXILIS_OS_RAW)
+if(NEXILIS_OS_RAW MATCHES "windows")
+    set(NEXILIS_OS "Windows")
+elseif(NEXILIS_OS_RAW MATCHES "linux")
+    set(NEXILIS_OS "Linux")
+elseif(NEXILIS_OS_RAW MATCHES "darwin")
+    set(NEXILIS_OS "Darwin")
+else()
+    set(NEXILIS_OS "${CMAKE_SYSTEM_NAME}")
+endif()
+
+set(NEXILIS_C_COMPILER "${CMAKE_C_COMPILER_ID}")
+set(NEXILIS_C_COMPILER_VERSION "${CMAKE_C_COMPILER_VERSION}")
+set(NEXILIS_CXX_COMPILER "${CMAKE_CXX_COMPILER_ID}")
+set(NEXILIS_CXX_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+set(NEXILIS_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+
+message(STATUS "System Information:")
+message(STATUS "  OS: ${NEXILIS_OS}")
+message(STATUS "  Arch: ${NEXILIS_ARCH}")
+message(STATUS "  C Compiler: ${NEXILIS_C_COMPILER} ${NEXILIS_C_COMPILER_VERSION}")
+message(STATUS "  C++ Compiler: ${NEXILIS_CXX_COMPILER} ${NEXILIS_CXX_COMPILER_VERSION}")
+message(STATUS "  C++ Standard: ${NEXILIS_CXX_STANDARD}")
+
+# Setting default if not specified via -DCMAKE_BUILD_TYPE.
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug or Release)" FORCE)
+endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
 set(IS_CI FALSE CACHE BOOL "True if running in CI environment")
 set(IS_NIX_BUILD FALSE CACHE BOOL "True if running under Nix build")
 set(IS_LOCAL_BUILD FALSE CACHE BOOL "True if running locally")
 set(USE_SUBMODULES FALSE CACHE BOOL "True if submodules should be used")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS ON)
@@ -60,7 +91,15 @@ message(STATUS "  Nix Build: ${IS_NIX_BUILD}")
 message(STATUS "  Local Build: ${IS_LOCAL_BUILD}")
 message(STATUS "  Use Submodules: ${USE_SUBMODULES}")
 
-add_compile_options(-Wall -Wextra -pedantic -static-libstdc++ -static-libgcc -pthread)
+if (NEXILIS_OS STREQUAL "Windows")
+    if (MSVC)
+        add_compile_options(/W4 /WX)
+    endif()
+elseif (NEXILIS_OS STREQUAL "Darwin")
+    add_compile_options(-static-libstdc++ -static-libgcc -pthread)
+elseif (NEXILIS_OS STREQUAL "Linux")
+    add_compile_options(-Wall -Wextra -pedantic -pthread)
+endif()
 
 if (IS_CI)
     add_compile_definitions(NEXILIS_IS_CI=1)
@@ -231,7 +270,7 @@ else()
     )
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if (NEXILIS_OS STREQUAL "Windows")
     target_link_libraries(nexilis PRIVATE
         ws2_32
         mswsock
