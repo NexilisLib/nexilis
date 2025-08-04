@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <nexilis/environment.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/client/protocol/nxboost/udp_client.hh>
+#include <nexilis/environment.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/room_data.hh>

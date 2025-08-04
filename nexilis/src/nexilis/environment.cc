@@ -1,5 +1,5 @@
-#include <nexilis/environment.hh>
 #include <cstdlib>
+#include <nexilis/environment.hh>
 
 namespace nexilis
 {
@@ -37,8 +37,10 @@ EnvironmentType detectRuntimeType()
         is_nix = true;
     }
 
-    if (is_ci) return EnvironmentType::ci;
-    if (is_nix) return EnvironmentType::nixos;
+    if (is_ci)
+        return EnvironmentType::ci;
+    if (is_nix)
+        return EnvironmentType::nixos;
     return EnvironmentType::local;
 }
 
@@ -46,9 +48,12 @@ std::string envToString(EnvironmentType type)
 {
     switch (type)
     {
-        case EnvironmentType::ci: return "ci";
-        case EnvironmentType::nixos: return "nixos";
-        case EnvironmentType::local: return "local";
+        case EnvironmentType::ci:
+            return "ci";
+        case EnvironmentType::nixos:
+            return "nixos";
+        case EnvironmentType::local:
+            return "local";
     }
     return "";
 }

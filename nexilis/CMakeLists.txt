@@ -1,22 +1,19 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+set(NEXILIS_VERSION_MAJOR 0)
+set(NEXILIS_VERSION_MINOR 0)
+set(NEXILIS_VERSION_PATCH 1)
+set(NEXILIS_VERSION "${NEXILIS_VERSION_MAJOR}.${NEXILIS_VERSION_MINOR}.${NEXILIS_VERSION_PATCH}")
+
 set(CMAKE_CXX_STANDARD 20)
 
-string(TOLOWER "${CMAKE_SYSTEM_NAME}" NEXILIS_OS_RAW)
-if(NEXILIS_OS_RAW MATCHES "windows")
-    set(NEXILIS_OS "Windows")
-elseif(NEXILIS_OS_RAW MATCHES "linux")
-    set(NEXILIS_OS "Linux")
-elseif(NEXILIS_OS_RAW MATCHES "darwin")
-    set(NEXILIS_OS "Darwin")
-else()
-    set(NEXILIS_OS "${CMAKE_SYSTEM_NAME}")
-endif()
-
 message(STATUS "System Information:")
-message(STATUS "  OS: ${NEXILIS_OS}")
-message(STATUS "  Arch: ${NEXILIS_ARCH}")
+message(STATUS "  OS: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "  Arch: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 message(STATUS "  C Compiler: ${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_VERSION}")
 message(STATUS "  C++ Compiler: ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
@@ -83,16 +80,15 @@ message(STATUS "  Nix Build: ${NEXILIS_IS_NIX}")
 message(STATUS "  Local Build: ${NEXILIS_IS_LOCAL}")
 message(STATUS "  Use Submodules: ${NEXILIS_USE_SUBMODULES}")
 
-if (NEXILIS_OS STREQUAL "Windows")
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     if (MSVC)
         add_compile_options(/W4 /WX)
     endif()
-elseif (NEXILIS_OS STREQUAL "Darwin")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_compile_options(-static-libstdc++ -static-libgcc -pthread)
-elseif (NEXILIS_OS STREQUAL "Linux")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_compile_options(-Wall -Wextra -pedantic -pthread)
 endif()
-
 add_compile_definitions(
     NEXILIS_IS_CI=${IS_CI}
     NEXILIS_IS_NIX=${IS_NIX}
@@ -232,7 +228,10 @@ set(SOURCES
 )
 
 add_library(nexilis SHARED ${SOURCES})
-target_include_directories(nexilis PUBLIC include)
+target_include_directories(nexilis PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 if (USE_SUBMODULES)
     target_link_libraries(nexilis PUBLIC
@@ -245,9 +244,46 @@ else()
     )
 endif()
 
-if (NEXILIS_OS STREQUAL "Windows")
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(nexilis PRIVATE
         ws2_32
         mswsock
     )
 endif()
+
+install(TARGETS nexilis
+    EXPORT NexilisTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION include
+)
+
+export(EXPORT NexilisTargets
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/NexilisTargets.cmake"
+    NAMESPACE Nexilis::
+)
+
+install(EXPORT NexilisTargets
+    FILE NexilisTargets.cmake
+    NAMESPACE Nexilis::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Nexilis
+)
+
+configure_package_config_file(
+    cmake/NexilisConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/NexilisConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Nexilis
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/NexilisConfigVersion.cmake
+    VERSION ${NEXILIS_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/NexilisConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/NexilisConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Nexilis
+)
