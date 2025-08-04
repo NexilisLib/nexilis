@@ -37,6 +37,15 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS ON)
 
 function(configure_build_environment)
+    # Nix devshell.
+    if(DEFINED ENV{NIX_BUILD_CORES})
+        set(USE_SUBMODULES 0 PARENT_SCOPE)
+        set(IS_NIX 1 PARENT_SCOPE)
+        set(IS_LOCAL 0 PARENT_SCOPE)
+        set(IS_CI 0 PARENT_SCOPE)
+        return()
+    endif()
+
     set(CI_VARS
         "GITHUB_ACTIONS"
         "GITLAB_CI"
@@ -56,15 +65,6 @@ function(configure_build_environment)
         endif()
     endforeach()
 
-    # Check for Nix build environment.
-    if(DEFINED ENV{NIX_BUILD_CORES} OR DEFINED ENV{IN_NIX_SHELL})
-        set(USE_SUBMODULES 0 PARENT_SCOPE)
-        set(IS_NIX 1 PARENT_SCOPE)
-        set(IS_LOCAL 0 PARENT_SCOPE)
-        set(IS_CI 0 PARENT_SCOPE)
-        return()
-    endif()
-
     # Use submodules locally.
     set(USE_SUBMODULES 1 PARENT_SCOPE)
     set(IS_LOCAL 1 PARENT_SCOPE)
@@ -74,10 +74,10 @@ endfunction()
 
 configure_build_environment()
 
-set(NEXILIS_IS_CI ${IS_CI} CACHE BOOL "Whether this is a CI build")
-set(NEXILIS_IS_NIX ${IS_NIX} CACHE BOOL "Whether this is a Nix build")
-set(NEXILIS_IS_LOCAL ${IS_LOCAL} CACHE BOOL "Whether this is a local build")
-set(NEXILIS_USE_SUBMODULES ${USE_SUBMODULES} CACHE BOOL "Whether to use submodules")
+set(NEXILIS_IS_CI ${IS_CI} CACHE BOOL "Whether this is a CI build" FORCE)
+set(NEXILIS_IS_NIX ${IS_NIX} CACHE BOOL "Whether this is a Nix build" FORCE)
+set(NEXILIS_IS_LOCAL ${IS_LOCAL} CACHE BOOL "Whether this is a local build" FORCE)
+set(NEXILIS_USE_SUBMODULES ${USE_SUBMODULES} CACHE BOOL "Whether to use submodules" FORCE)
 
 message(STATUS "Build configuration:")
 message(STATUS "  CI Environment: ${NEXILIS_IS_CI}")

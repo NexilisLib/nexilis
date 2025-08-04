@@ -27,9 +27,18 @@
           shellHook = ''
             export NEXILIS_PREFIX=${self.packages.${system}.lib}
             export LD_LIBRARY_PATH=$NEXILIS_PREFIX/lib:$LD_LIBRARY_PATH
+
             echo "Welcome to the Nexilis Dev Shell"
             echo "NEXILIS_PREFIX set to $NEXILIS_PREFIX"
             python ../scripts/src/env.py
+
+            test-runner() {
+                python ../scripts/src/test_runner.py "$@"
+            }
+            echo "Available test-runner commands:"
+            echo "  test-runner --all      # Run all tests"
+            echo "  test-runner --cpp      # Run C++ tests"
+            echo "  nexilis_tests          # Run C++ tests directly"
           '';
         };
 
@@ -75,7 +84,9 @@
               self.packages.${system}.lib
             ];
 
-            CMAKE_PREFIX_PATH = self.packages.${system}.lib;
+            cmakeFlags = [
+              "-DCMAKE_PREFIX_PATH=${self.packages.${system}.lib}"
+            ];
 
             configurePhase = ''
               mkdir -p build
