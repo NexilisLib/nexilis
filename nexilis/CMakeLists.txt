@@ -124,12 +124,15 @@ else()
 
     # Create imported targets for system Boost
     if(NOT TARGET Boost::json)
-        add_library(Boost::json UNKNOWN IMPORTED)
-        set_target_properties(Boost::json PROPERTIES
-            IMPORTED_LOCATION "${Boost_JSON_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-            INTERFACE_LINK_LIBRARIES "Boost::headers"
-        )
+        if (NOT TARGET BOOST::json)
+            add_library(Boost::json ALIAS Boost::boost_json)
+        else()
+            add_library(Boost::json UNKNOWN IMPORTED)
+            set_target_properties(Boost::json PROPERTIES
+                IMPORTED_LOCATION "${Boost_JSON_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "Boost::headers"
+            )
     endif()
 
 endif()
@@ -247,16 +250,9 @@ target_include_directories(nexilis PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-if (USE_SUBMODULES)
-    target_link_libraries(nexilis PUBLIC
-        boost_json
-    )
-else()
-    target_include_directories(nexilis PUBLIC ${Boost_INCLUDE_DIRS})
-    target_link_libraries(nexilis PUBLIC
-        Boost::json
-    )
-endif()
+target_link_libraries(nexilis PUBLIC
+    $<IF:$<BOOL:${USE_SUBMODULES}>,boost_json,Boost::json>
+)
 
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(nexilis PRIVATE
