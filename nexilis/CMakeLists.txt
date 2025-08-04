@@ -133,8 +133,8 @@ else()
                 INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
                 INTERFACE_LINK_LIBRARIES "Boost::headers"
             )
+        endif()
     endif()
-
 endif()
 
 set(SOURCES
