@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_COMPILER "gcc")
-set(CMAKE_CXX_COMPILER "g++")
 
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" NEXILIS_OS_RAW)
 if(NEXILIS_OS_RAW MATCHES "windows")
