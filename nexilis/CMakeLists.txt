@@ -54,7 +54,7 @@ function(configure_build_environment)
     # Check for CI.
     foreach(var ${CI_VARS})
         if(DEFINED ENV{${var}})
-            set(USE_SUBMODULES 0 PARENT_SCOPE)
+            set(USE_SUBMODULES 1 PARENT_SCOPE)
             set(IS_CI 1 PARENT_SCOPE)
             set(IS_LOCAL 0 PARENT_SCOPE)
             set(IS_NIX 0 PARENT_SCOPE)
@@ -247,7 +247,7 @@ set(SOURCES
 add_library(nexilis SHARED ${SOURCES})
 target_include_directories(nexilis PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(nexilis PUBLIC
