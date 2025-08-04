@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis)
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Installation directory" FORCE)
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -89,6 +91,7 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_compile_options(-Wall -Wextra -pedantic -pthread)
 endif()
+
 add_compile_definitions(
     NEXILIS_IS_CI=${IS_CI}
     NEXILIS_IS_NIX=${IS_NIX}

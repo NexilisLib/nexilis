@@ -11,10 +11,17 @@ set(ColorBold "${Esc}[1m")
 set(ColorGreen "${Esc}[32m")
 set(ColorRed "${Esc}[31m")
 
-list(APPEND CMAKE_PREFIX_PATH
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../nexilis/build"
-    "ENV{CMAKE_PREFIX_PATH}"
-)
+if (NEXILIS_IS_NIX)
+    list(APPEND CMAKE_PREFIX_PATH "ENV{out}")
+elseif(NEXILIS_IS_LOCAL)
+    list(APPEND CMAKE_PREFIX_PATH
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../nexilis/build")
+elseif(NEXILIS_IS_CI)
+    list(APPEND CMAKE_PREFIX_PATH
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../nexilis/install")
+endif()
+
+message(STATUS "Nexilis paths: ${CMAKE_PREFIX_PATH}")
 
 find_package(Nexilis REQUIRED CONFIG)
 

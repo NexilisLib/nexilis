@@ -7,18 +7,16 @@ import os
 import subprocess
 import argparse
 
-def setup():
+def install():
     print("Compiling nexilis sources.")
     os.chdir(get_nexilis_root() + "/nexilis")
     if os.path.exists("build"):
         subprocess.run(["rm", "-rf", "build"], check=True)
 
-    os.mkdir("build")
-    os.chdir("build")
+    subprocess.run(["cmake", "-B", "build", "-DCMAKE_INSTALL_PREFIX=" + os.path.join(os.getcwd(), "build", "install")], check=True)
+    subprocess.run(["cmake", "--build", "build", "--target", "install", "-j", str(os.cpu_count())], check=True)
 
-    subprocess.run(["cmake", ".."], check=True)
-    subprocess.run(["make", "-j", str(os.cpu_count())], check=True)
-    print("Nexilis sources compiled.")
+    print("Nexilis installed successfully.")
 
 def run_cpp_tests():
     print("Setting up Nexilis C++ tests...")
@@ -30,8 +28,8 @@ def run_cpp_tests():
     os.mkdir("build")
     os.chdir("build")
 
-    subprocess.run(["cmake", ".."], check=True)
-    subprocess.run(["make", "-j", str(os.cpu_count())], check=True)
+    subprocess.run(["cmake", "..", "-DNEXILIS_IS_LOCAL=1"], check=True)
+    subprocess.run(["cmake", "--build", ".", "-j", str(os.cpu_count())], check=True)
 
     print("Running C++ tests...")
     subprocess.run(["./nexilis_tests"], check=True)
@@ -88,7 +86,7 @@ def main():
         return
 
     if args.all or args.cpp or args.c or args.csharp:
-        setup()
+        install()
 
     if args.all or args.cpp:
         run_cpp_tests()
