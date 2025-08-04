@@ -54,7 +54,7 @@ function(configure_build_environment)
     # Check for CI.
     foreach(var ${CI_VARS})
         if(DEFINED ENV{${var}})
-            set(USE_SUBMODULES 1 PARENT_SCOPE)
+            set(USE_SUBMODULES 0 PARENT_SCOPE)
             set(IS_CI 1 PARENT_SCOPE)
             set(IS_LOCAL 0 PARENT_SCOPE)
             set(IS_NIX 0 PARENT_SCOPE)
@@ -116,11 +116,22 @@ if (USE_SUBMODULES)
     endforeach()
 else()
     message(STATUS "Using system boost")
-    find_package(Boost 1.75 REQUIRED COMPONENTS json system)
+    find_package(Boost 1.75 REQUIRED COMPONENTS json)
 
     if(NOT Boost_FOUND)
         message(FATAL_ERROR, "System boost not found and submodules missing")
     endif()
+
+    # Create imported targets for system Boost
+    if(NOT TARGET Boost::json)
+        add_library(Boost::json UNKNOWN IMPORTED)
+        set_target_properties(Boost::json PROPERTIES
+            IMPORTED_LOCATION "${Boost_JSON_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "Boost::headers"
+        )
+    endif()
+
 endif()
 
 set(SOURCES
@@ -259,7 +270,7 @@ install(TARGETS nexilis
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION include
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 export(EXPORT NexilisTargets
