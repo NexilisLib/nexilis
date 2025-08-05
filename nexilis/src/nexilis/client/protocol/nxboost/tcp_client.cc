@@ -20,12 +20,20 @@ TCPClient::TCPClient(ClientAPI& api)
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
               boost::asio::make_work_guard(*m_ioContext))),
-      m_socket(std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext)),
+      // m_socket(std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext)),
+      m_socket(),
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
       m_receiveMutex(std::make_shared<std::mutex>()),
       m_portSwitchingMutex(std::make_shared<std::mutex>())
 {
+    auto new_socket = std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext);
+    if (!new_socket)
+    {
+        throw std::runtime_error("Failed to create TCP cocket");
+    }
+    storeSocket(new_socket);
+
     // Verify all shared pointers were created.
     if (!m_sendMutex || !m_receiveMutex || !m_portSwitchingMutex)
     {
@@ -43,13 +51,15 @@ TCPClient::TCPClient(TCPClient&& other)
       m_stopped(std::move(other.m_stopped)),
       m_ioContext(std::move(other.m_ioContext)),
       m_workGuard(std::move(other.m_workGuard)),
-      m_socket(std::move(other.m_socket)),
+      m_socket(other.m_socket.load()),
       m_resolver(std::move(other.m_resolver)),
       m_sendMutex(std::move(other.m_sendMutex)),
       m_receiveMutex(std::move(other.m_receiveMutex)),
       m_portSwitchingMutex(std::move(other.m_portSwitchingMutex)),
       m_serverPort(std::move(other.m_serverPort))
 {
+    other.m_socket.store(nullptr);
+
     other.m_stopped.reset();
     other.m_workGuard.reset();
     other.m_sendMutex.reset();
@@ -84,13 +94,14 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_stopped = std::move(other.m_stopped);
         m_ioContext = std::move(other.m_ioContext);
         m_workGuard = std::move(other.m_workGuard);
-        m_socket = std::move(other.m_socket);
+        m_socket.store(other.m_socket.load());
         m_resolver = std::move(other.m_resolver);
         m_sendMutex = std::move(other.m_sendMutex);
         m_receiveMutex = std::move(other.m_receiveMutex);
         m_portSwitchingMutex = std::move(other.m_portSwitchingMutex);
         m_serverPort = std::move(other.m_serverPort);
 
+        other.m_socket.store(nullptr);
         other.m_stopped.reset();
         other.m_workGuard.reset();
         other.m_sendMutex.reset();
@@ -117,20 +128,21 @@ void TCPClient::stop()
     {
         std::lock_guard<std::mutex> recvLock(*m_receiveMutex);
         std::lock_guard<std::mutex> sendLock(*m_sendMutex);
-        if (m_socket && m_socket->is_open())
+        auto current_socket = m_socket.load();
+        if (current_socket && current_socket->is_open())
         {
             boost::system::error_code ec;
-            ec = m_socket->cancel(ec);
+            ec = current_socket->cancel(ec);
             if (ec)
             {
                 Log::error(header(), "Error cancelling socket");
             }
-            ec = m_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+            ec = current_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
             if (ec)
             {
                 Log::error(header(), "Error shutting down socket");
             }
-            ec = m_socket->close(ec);
+            ec = current_socket->close(ec);
             if (ec)
             {
                 Log::error(header(), "Error closing socket");
@@ -183,29 +195,39 @@ bool TCPClient::connectToServer()
         return false;
     }
 
+    auto current_socket = m_socket.load();
     try
     {
         updateProtocolStatus(ProtocolStatus::connecting);
         m_serverPort = Ports::getBoostTCPPort();
         auto endpoints = m_resolver.resolve(getClientAPI()->getBoostTCPServerAddress(), std::to_string(m_serverPort));
 
-        boost::asio::connect(*m_socket, endpoints);
-        Log::debug(header(), "Initial connection success");
+        boost::system::error_code ec;
+        boost::asio::connect(*current_socket, endpoints, ec);
 
-        updateProtocolStatus(ProtocolStatus::connected);
-        return true;
+        if (ec)
+        {
+            Log::error(header(), "Cannot connect in ConnectToServer");
+            return false;
+        }
+        else
+        {
+            Log::debug(header(), "Initial connection success");
+            updateProtocolStatus(ProtocolStatus::connected);
+            return true;
+        }
     }
     catch (...)
     {
         updateProtocolStatus(ProtocolStatus::error);
-        m_socket->close();
+        current_socket->close();
         return false;
     }
 }
 
 bool TCPClient::send(const nx_data& data)
 {
-    std::shared_ptr<boost::asio::ip::tcp::socket> current_socket;
+    std::shared_ptr<boost::asio::ip::tcp::socket> current_socket = loadSocket();
     {
         std::lock_guard<std::mutex> portLock(*m_portSwitchingMutex);
         std::lock_guard<std::mutex> sockLock(*m_sendMutex);
@@ -216,8 +238,6 @@ bool TCPClient::send(const nx_data& data)
             Log::warning(header(), "Cannot send in state: ", getProtocolStatusString());
             return false; // retry
         }
-
-        current_socket = m_socket;
     }
 
     if (!current_socket || !current_socket->is_open())
@@ -230,16 +250,16 @@ bool TCPClient::send(const nx_data& data)
     {
         // clang-format off
         boost::asio::async_write(*current_socket, boost::asio::buffer(data),
-            [this](const boost::system::error_code& ec, std::size_t size)
+            [this, current_socket](const boost::system::error_code& ec, std::size_t size)
             {
                 if (!ec)
                 {
                     Log::info(header(), "Message sent successfully with size of: ", size, " bytes");
                 }
-                else if (m_socket->is_open())
+                else if (current_socket->is_open())
                 {
                     boost::system::error_code ignore_ec;
-                    ignore_ec = m_socket->close(ignore_ec);
+                    ignore_ec = current_socket->close(ignore_ec);
                     if (ignore_ec)
                     {
                         Log::error(header(), "Error closing socket");
@@ -297,7 +317,7 @@ void TCPClient::handlePortSwitch()
             throw boost::system::error_code(ec);
         }
 
-        auto oldSocket = std::atomic_exchange(&m_socket, newSocket);
+        auto oldSocket = exchangeSocket(newSocket);
 
         if (oldSocket && oldSocket->is_open())
         {
@@ -317,7 +337,7 @@ void TCPClient::handlePortSwitch()
         m_serverPort = port;
         updateProtocolStatus(ProtocolStatus::connected);
 
-        if (!m_socket->is_open())
+        if (!m_socket.load()->is_open())
         {
             throw std::runtime_error("Socket failed to open");
         }
@@ -350,15 +370,22 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
         std::unique_lock<std::mutex> lock(*m_receiveMutex);
         auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
 
+        auto current_socket = m_socket.load();
+        if (!current_socket)
+        {
+            Log::error(header(), "Socket is null in receive()");
+            return;
+        }
+
         // clang-format off
-        boost::asio::async_read_until(*m_socket, *receiveBuffer, '\n',
-            [this, receiveBuffer, callback](const boost::system::error_code& ec, size_t bytes_transferred)
+        boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
+            [this, receiveBuffer, callback, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
             {
                 if (ec || m_stopped->load())
                 {
                     if (ec != boost::asio::error::operation_aborted)
                     {
-                        m_socket->close();
+                        current_socket->close();
                     }
                     return;
                 }
@@ -378,7 +405,7 @@ void TCPClient::receive(const std::function<void(nx_data)>& callback)
                     callback(buffer);
                 }
 
-                if (m_socket->is_open())
+                if (current_socket->is_open())
                 {
                     receive(callback);
                 }
@@ -470,6 +497,66 @@ void TCPClient::receiveLoop()
 
         receive(cb);
     }
+}
+
+std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::loadSocket() const
+{
+    auto boost_ptr = m_socket.load();
+    if (boost_ptr)
+    {
+        return std::shared_ptr<boost::asio::ip::tcp::socket>(boost_ptr.get(),
+                                                             [boost_ptr](boost::asio::ip::tcp::socket*) mutable
+                                                             {
+                                                                 boost_ptr.reset();
+                                                             });
+    }
+    return nullptr;
+}
+
+void TCPClient::storeSocket(std::shared_ptr<boost::asio::ip::tcp::socket> socket)
+{
+    if (socket)
+    {
+        m_socket.store(boost::shared_ptr<boost::asio::ip::tcp::socket>(
+                socket.get(),
+                [socket](boost::asio::ip::tcp::socket*) mutable
+                {
+                    socket.reset();
+                }));
+    }
+    else
+    {
+        m_socket.store(nullptr);
+    }
+}
+
+std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::exchangeSocket(
+        std::shared_ptr<boost::asio::ip::tcp::socket> new_socket)
+{
+    boost::shared_ptr<boost::asio::ip::tcp::socket> new_boost_ptr;
+    if (new_socket)
+    {
+        new_boost_ptr = boost::shared_ptr<boost::asio::ip::tcp::socket>(
+                new_socket.get(),
+                [new_socket](boost::asio::ip::tcp::socket*) mutable
+                {
+                    new_socket.reset();
+                });
+    }
+
+    boost::shared_ptr<boost::asio::ip::tcp::socket> old_boost_ptr = m_socket.exchange(new_boost_ptr);
+
+    if (old_boost_ptr)
+    {
+        return std::shared_ptr<boost::asio::ip::tcp::socket>(
+                old_boost_ptr.get(),
+                [old_boost_ptr](boost::asio::ip::tcp::socket*) mutable
+                {
+                    old_boost_ptr.reset();
+                });
+    }
+
+    return nullptr;
 }
 
 } // namespace nexilis::client::nxboost

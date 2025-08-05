@@ -60,7 +60,7 @@ function(configure_build_environment)
     # Check for CI.
     foreach(var ${CI_VARS})
         if(DEFINED ENV{${var}})
-            set(USE_SUBMODULES 1 PARENT_SCOPE)
+            set(USE_SUBMODULES 0 PARENT_SCOPE)
             set(IS_CI 1 PARENT_SCOPE)
             set(IS_LOCAL 0 PARENT_SCOPE)
             set(IS_NIX 0 PARENT_SCOPE)

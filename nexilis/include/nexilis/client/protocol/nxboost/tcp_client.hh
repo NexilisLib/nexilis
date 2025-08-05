@@ -7,6 +7,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include <thread>
 
@@ -66,11 +67,17 @@ private:
     void receive(const std::function<void(nx_data)>& buffer);
     void handlePortSwitch();
 
+    // Thread-safe socket access
+    std::shared_ptr<boost::asio::ip::tcp::socket> loadSocket() const;
+    void storeSocket(std::shared_ptr<boost::asio::ip::tcp::socket> socket);
+    std::shared_ptr<boost::asio::ip::tcp::socket> exchangeSocket(
+            std::shared_ptr<boost::asio::ip::tcp::socket> socket);
+
 private:
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::shared_ptr<boost::asio::io_context> m_ioContext;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
-    std::shared_ptr<boost::asio::ip::tcp::socket> m_socket;
+    boost::atomic_shared_ptr<boost::asio::ip::tcp::socket> m_socket;
     boost::asio::ip::tcp::resolver m_resolver;
 
     std::shared_ptr<std::mutex> m_sendMutex;
