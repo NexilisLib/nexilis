@@ -45,9 +45,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-          fetch-depth: 0
 
       - name: Install dependencies
         run: |
@@ -70,7 +67,7 @@ jobs:
           rm -rf build
           mkdir build && cd build
           cmake .. -DNEXILIS_IS_CI=1
-          cmake --build . -j$(nproc)
+          cmake --build .
           ./nexilis_tests
 
   c-tests:
