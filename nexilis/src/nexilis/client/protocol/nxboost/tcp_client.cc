@@ -20,7 +20,6 @@ TCPClient::TCPClient(ClientAPI& api)
       m_ioContext(std::make_shared<boost::asio::io_context>()),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
               boost::asio::make_work_guard(*m_ioContext))),
-      // m_socket(std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext)),
       m_socket(),
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
@@ -28,10 +27,6 @@ TCPClient::TCPClient(ClientAPI& api)
       m_portSwitchingMutex(std::make_shared<std::mutex>())
 {
     auto new_socket = std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext);
-    if (!new_socket)
-    {
-        throw std::runtime_error("Failed to create TCP cocket");
-    }
     storeSocket(new_socket);
 
     // Verify all shared pointers were created.

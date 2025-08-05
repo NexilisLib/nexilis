@@ -63,16 +63,15 @@ jobs:
       - name: Install Nexilis
         run: |
           cd nexilis
-          rm -rf build
-          cmake -B build -DCMAKE_INSTALL_PREFIX=${PWD}/install
+          rm -rf build install
+          cmake -B build -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/nexilis/install
           cmake --build build --target install -- -j${nproc}
 
       - name: Build and run tests
         run: |
           cd tests/nexilis
           rm -rf build
-          mkdir build
-          cd build
+          mkdir build && cd build
           cmake .. -DNEXILIS_IS_CI=1 -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/nexilis/install
           cmake --build . -j$(nproc)
           ./nexilis_tests
