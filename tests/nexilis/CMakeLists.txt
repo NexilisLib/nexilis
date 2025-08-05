@@ -13,12 +13,9 @@ set(ColorRed "${Esc}[31m")
 
 if (NEXILIS_IS_NIX)
     list(APPEND CMAKE_PREFIX_PATH "ENV{out}")
-elseif(NEXILIS_IS_LOCAL)
+else()
     list(APPEND CMAKE_PREFIX_PATH
         "${CMAKE_CURRENT_SOURCE_DIR}/../../nexilis/build")
-elseif(NEXILIS_IS_CI)
-    list(APPEND CMAKE_PREFIX_PATH
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../nexilis/install")
 endif()
 
 message(STATUS "Nexilis paths: ${CMAKE_PREFIX_PATH}")

@@ -49,9 +49,6 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Update submodules
-        run: git submodule sync --recursive && git submodule update --init --recursive
-
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt-get install -y \
@@ -64,7 +61,7 @@ jobs:
         run: |
           cd nexilis
           rm -rf build install
-          cmake -B build -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/nexilis/install
+          cmake -B build -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/nexilis/build/install
           cmake --build build --target install -- -j${nproc}
 
       - name: Build and run tests
@@ -72,7 +69,7 @@ jobs:
           cd tests/nexilis
           rm -rf build
           mkdir build && cd build
-          cmake .. -DNEXILIS_IS_CI=1 -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/nexilis/install
+          cmake .. -DNEXILIS_IS_CI=1
           cmake --build . -j$(nproc)
           ./nexilis_tests
 
