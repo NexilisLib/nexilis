@@ -387,20 +387,36 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                                 Log::info(header(), "First client! Opening second port");
                                 switchToRandomPort();
                             }
+
+                            uint16_t port = getPort();
+                            while (port == 0 && !m_stopped->load())
+                            {
+                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                                port = getPort();
+                            }
+
+                            if (port == 0)
+                            {
+                                Log::error(header(), "Failed to get a valid port number");
+                                break;
+                            }
+
                             nx_data command_data = { 0, 1, 0, 1 };
                             auto port_data = Util::convertToByteVector(getPort());
-
-                            for (auto&& port_data_i : port_data)
-                            {
-                                command_data.emplace_back(port_data_i);
-                            }
+                            command_data.insert(command_data.end(), port_data.begin(), port_data.end());
 
                             Command::Result portCommand = getCommand().read(command_data, *msgPtr->getUser(), *this, msgPtr->getMessageId());
 
                             if (portCommand == Command::Result::success)
                             {
                                 Log::info(header(), "Auth fully complete");
-                                handled_message->getUser()->setBoostTCPSend(nullptr);
+
+                                boost::system::error_code ec;
+                                ec = hs_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
+                                if (ec)
+                                {
+                                    Log::warning(header(), "Error shutting down socket: ", ec.message());
+                                }
                                 cb();
                                 break;
                             }
@@ -457,6 +473,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
     auto socket_ptr = std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+
     auto client_address = getClientAddress(*socket_ptr);
 
     // clang-format off

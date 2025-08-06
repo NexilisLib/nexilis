@@ -276,20 +276,51 @@ void TCPClient::handlePortSwitch()
     try
     {
         uint16_t port = 0;
-        const auto start = std::chrono::steady_clock::now();
-        while (!m_stopped->load() && std::chrono::steady_clock::now() - start < std::chrono::seconds(5))
+        bool port_valid = false;
+
+        const int max_retries = 50;
+        int retry_count = 0;
+
+        while (!m_stopped->load() && retry_count < max_retries && !port_valid)
         {
-            port = getClientAPI()->getBoostTCPServerPortNumber();
-            if (port != 0xFF)
+            try
             {
-                break;
+                port = getClientAPI()->getBoostTCPServerPortNumber();
+
+                if (port != 0xFF && port != 0)
+                {
+                    if (port < 1024)
+                    {
+                        Log::warning(header(), "Got system port number: ", port);
+                    }
+                    port_valid = true;
+                    break;
+                }
+            }
+            catch (const std::exception& e)
+            {
+                Log::error(header(), "Error getting port from ClientAPI: ", e.what());
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            retry_count++;
         }
 
-        if (port == 0xFF)
+        if (!port_valid)
         {
-            throw std::runtime_error("Timeout waiting for valid port number");
+            if (m_stopped->load())
+            {
+                Log::debug(header(), "Port switch aborted due to shutdown");
+            }
+            else if (retry_count >= max_retries)
+            {
+                Log::error(header(), "Timeout waiting for valid port number (retries: ", retry_count, ")");
+            }
+            else
+            {
+                Log::error(header(), "Invalid port number received: ", port);
+            }
+            updateProtocolStatus(ProtocolStatus::error);
+            throw std::runtime_error("Failed to get valid port number");
         }
 
         std::lock_guard<std::mutex> portLock(*m_portSwitchingMutex);
@@ -299,42 +330,87 @@ void TCPClient::handlePortSwitch()
         updateProtocolStatus(ProtocolStatus::switching_ports);
         Log::debug(header(), "Starting port switch to: ", port);
 
-        // Create new socket.
-        auto newSocket = std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext);
-        auto endpoints = m_resolver.resolve(
-                getClientAPI()->getBoostTCPServerAddress(),
-                std::to_string(port));
-
-        boost::system::error_code ec;
-        boost::asio::connect(*newSocket, endpoints, ec);
-        if (ec)
+        std::shared_ptr<boost::asio::ip::tcp::socket> newSocket;
+        try
         {
-            throw boost::system::error_code(ec);
+            newSocket = std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext);
+
+            auto endpoints = m_resolver.resolve(
+                    getClientAPI()->getBoostTCPServerAddress(),
+                    std::to_string(port));
+
+            if (endpoints.empty())
+            {
+                throw std::runtime_error("No endpoints resolved");
+            }
+
+            boost::system::error_code ec;
+            boost::asio::connect(*newSocket, endpoints, ec);
+
+            if (ec)
+            {
+                throw boost::system::system_error(ec);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            Log::error(header(), "Failed to create new socket connection: ", e.what());
+            if (newSocket && newSocket->is_open())
+            {
+                boost::system::error_code ec;
+                ec = newSocket->close(ec);
+                if (ec)
+                {
+                    Log::error(header(), "Failed to close socket");
+                }
+            }
+            throw;
+        }
+
+        if (!newSocket->is_open())
+        {
+            throw std::runtime_error("New socket failed to open");
         }
 
         auto oldSocket = exchangeSocket(newSocket);
 
-        if (oldSocket && oldSocket->is_open())
+        if (oldSocket)
         {
-            boost::system::error_code conn_ec;
-            ec = oldSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, conn_ec);
-            if (conn_ec)
+            boost::system::error_code shutdown_ec;
+            boost::system::error_code close_ec;
+
+            shutdown_ec = oldSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_ec);
+            if (shutdown_ec)
             {
-                Log::error(header(), "Error shutting down socket");
+                // Socket might already be closed.
+                if (shutdown_ec != boost::asio::error::not_connected &&
+                    shutdown_ec != boost::asio::error::bad_descriptor)
+                {
+                    Log::warning(header(), "Socket shutdown warning: ", shutdown_ec.message());
+                }
+                else
+                {
+                    Log::debug(header(), "Socket already disconnected");
+                }
             }
-            conn_ec = oldSocket->close(conn_ec);
-            if (conn_ec)
+
+            close_ec = oldSocket->close(close_ec);
+            if (close_ec)
             {
-                Log::error(header(), "Error closing socket");
+                // Only log if this isn't a "already closed" error.
+                if (close_ec != boost::asio::error::bad_descriptor)
+                {
+                    Log::error(header(), "Socket close error: ", close_ec.message());
+                }
             }
         }
 
         m_serverPort = port;
         updateProtocolStatus(ProtocolStatus::connected);
 
-        if (!m_socket.load()->is_open())
+        if (!m_socket.load() || !m_socket.load()->is_open())
         {
-            throw std::runtime_error("Socket failed to open");
+            throw std::runtime_error("Socket verification failed after switch");
         }
 
         Log::info(header(), "Successfully switched to port ", m_serverPort);
@@ -343,11 +419,13 @@ void TCPClient::handlePortSwitch()
     catch (const std::exception& e)
     {
         Log::error(header(), "Port switch failed: ", e.what());
+        updateProtocolStatus(ProtocolStatus::error);
         return;
     }
     catch (...)
     {
         Log::error(header(), "Unknown error during port switch");
+        updateProtocolStatus(ProtocolStatus::error);
         return;
     }
 }
