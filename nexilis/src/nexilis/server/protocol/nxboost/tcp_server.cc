@@ -1,3 +1,4 @@
+#include <nexilis/boost_tcp/socket.hh>
 #include <nexilis/server/command.hh>
 #include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
@@ -34,7 +35,7 @@ TCPServer::TCPServer(TCPServer&& other) noexcept
       NxClass(std::move(other)),
       m_firstClientConnected(std::move(other.m_firstClientConnected) ? std::move(other.m_firstClientConnected) : std::make_unique<std::atomic<bool>>(false)),
       m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
-      m_mutex(std::move(other.m_mutex)),
+      m_mutex(other.m_mutex ? std::move(other.m_mutex) : std::make_unique<std::mutex>()),
       m_ioContext(std::move(other.m_ioContext)),
       m_acceptor(std::move(other.m_acceptor)),
       m_switchedAcceptor(std::move(other.m_switchedAcceptor)),
@@ -64,7 +65,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
         {
             m_stopped = std::make_unique<std::atomic<bool>>(false);
         }
-        m_mutex = std::move(other.m_mutex);
+        m_mutex = other.m_mutex ? std::move(other.m_mutex) : std::make_unique<std::mutex>();
         m_ioContext = std::move(other.m_ioContext);
         m_acceptor = std::move(other.m_acceptor);
         m_switchedAcceptor = std::move(other.m_switchedAcceptor);
@@ -108,6 +109,13 @@ void TCPServer::stop()
         return;
     }
 
+    // Stop io context.
+    if (m_ioContext)
+    {
+        Log::debug(header(), "TCPServer stopping io_context");
+        m_ioContext->stop();
+    }
+
     boost::system::error_code ec;
 
     // Cancel acceptors.
@@ -134,47 +142,31 @@ void TCPServer::stop()
         Log::error(header(), "Error closing m_switchedAcceptor: ", ec.message());
     }
 
-    // Stop io context.
-    if (m_ioContext)
-    {
-        Log::debug("TCPServer stopping io_context");
-        m_ioContext->stop();
-    }
-
-    // Join threads.
-    if (m_switchedAcceptThread.joinable())
-    {
-        Log::debug(header(), "closing switchAcceptThread");
-        m_switchedAcceptThread.join();
-        Log::debug(header(), "switchAcceptThread finished");
-    }
-
-    if (m_listenThread.joinable())
-    {
-        Log::debug(header(), "closing listenThread");
-        m_listenThread.join();
-        Log::debug(header(), "listenThread finished");
-    }
-
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
-        Log::debug(header(), "closing ", m_clientThreads.size(), " client connections...");
         for (auto& thread : m_clientThreads)
         {
             if (thread.joinable())
             {
-                thread.join();
+                Log::debug(header(), "force closing client thread");
+                thread.detach();
             }
         }
         m_clientThreads.clear();
     }
 
-    if (m_ioContextThread.joinable())
+    auto tryJoinThread = [this](std::thread& thread, const std::string& name)
     {
-        Log::debug(header(), "closing ioContextThread");
-        m_ioContextThread.join();
-        Log::debug(header(), "ioContextThread finished");
-    }
+        if (thread.joinable())
+        {
+            Log::debug(header(), "joining ", name);
+            thread.join();
+        }
+    };
+
+    tryJoinThread(m_switchedAcceptThread, "switchAcceptThread");
+    tryJoinThread(m_listenThread, "listenThread");
+    tryJoinThread(m_ioContextThread, "ioContextThread");
 
     Log::debug(header(), "stop complete.");
 }
@@ -328,25 +320,34 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
     ServerProtocol::connectionEstablished();
     try
     {
+        auto socket_wrapper = std::make_shared<nexilis::boost_tcp::Socket>(*m_ioContext);
+        socket_wrapper->assign(std::move(socket));
+
         // clang-format off
-        auto thread = std::thread([this, hs_socket = std::move(socket), cb = std::move(onCompleted)]() mutable
+        auto thread = std::thread([this, socket_wrapper, cb = std::move(onCompleted)]() mutable
         {
             try
             {
-                while (!m_stopped->load())
+                while (!m_stopped->load() && socket_wrapper->isOpen())
                 {
-                    if (!hs_socket.is_open())
+                    nx_data data;
+                    bool got_data = socket_wrapper->receive(data);
+                    if (m_stopped->load())
                     {
+                        socket_wrapper->forceClose();
                         break;
                     }
 
-                    auto clientAddress = getClientAddress(hs_socket);
-                    auto data = receiveMessage(hs_socket);
-
-                    if (data.empty())
+                    if (!got_data)
                     {
+                        if(!socket_wrapper->isOpen())
+                        {
+                            break;
+                        }
                         continue;
                     }
+
+                    auto clientAddress = socket_wrapper->getRemoteAddress();
 
                     // TODO This is the passwd message
                     auto handled_message = getMessageHandler().readMessage(clientAddress, data, &getCommand().getSettings());
@@ -357,16 +358,9 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                     }
 
                     // TODO fix this as well
-                    handled_message->getUser()->setBoostTCPSend([this, &hs_socket](const nx_data& bytes)
+                    handled_message->getUser()->setBoostTCPSend([socket_wrapper](const nx_data& bytes)
                     {
-                        if (sendToClient(bytes, hs_socket))
-                        {
-                            Log::info(header(), "Sent message to client succesfully");
-                        }
-                        else
-                        {
-                            Log::error(header(), "Error sending message to client");
-                        }
+                        socket_wrapper->send(bytes);
                     });
 
                     auto type = handled_message->getType();
@@ -410,13 +404,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                             if (portCommand == Command::Result::success)
                             {
                                 Log::info(header(), "Auth fully complete");
-
-                                boost::system::error_code ec;
-                                ec = hs_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
-                                if (ec)
-                                {
-                                    Log::warning(header(), "Error shutting down socket: ", ec.message());
-                                }
+                                socket_wrapper->close();
                                 cb();
                                 break;
                             }
@@ -441,15 +429,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                 Log::debug(header(), "Error with handshake");
             }
 
-            boost::system::error_code ec;
-            if (hs_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec))
-            {
-                Log::error(header(), "Error in client socket shutdown");
-            }
-            if (hs_socket.close(ec))
-            {
-                Log::error(header(), "Error in client socket close");
-            }
+            socket_wrapper->close();
         });
 
         {
@@ -472,27 +452,34 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 
 void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
-    auto socket_ptr = std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
-
-    auto client_address = getClientAddress(*socket_ptr);
+    auto client_address = getClientAddress(socket);
+    auto socket_wrapper = std::make_shared<nexilis::boost_tcp::Socket>(*m_ioContext);
+    socket_wrapper->assign(std::move(socket));
 
     // clang-format off
-    auto client_thread = std::thread([this, socket_ptr, client_address]() mutable
+    auto client_thread = std::thread([this, socket_wrapper, client_address]() mutable
     {
-        if (!socket_ptr->is_open())
+        if (!socket_wrapper->isOpen())
         {
             return;
         }
 
         try
         {
-            while (!m_stopped->load() && socket_ptr->is_open())
+            while (!m_stopped->load() && socket_wrapper->isOpen())
             {
-                auto data = receiveMessage(*socket_ptr);
+                nx_data data;
+                bool got_data = socket_wrapper->receive(data);
 
-                if (data.empty())
+                if (m_stopped->load())
                 {
-                    if (!socket_ptr->is_open())
+                    socket_wrapper->forceClose();
+                    break;
+                }
+
+                if (!got_data)
+                {
+                    if (!socket_wrapper->isOpen())
                     {
                         break;
                     }
@@ -509,16 +496,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 
                 if (!handledMessage->getUser()->isBoostTCPSet())
                 {
-                    handledMessage->getUser()->setBoostTCPSend([this, socket_ptr](const nx_data& bytes)
+                    handledMessage->getUser()->setBoostTCPSend([socket_wrapper](const nx_data& bytes)
                     {
-                        if (sendToClient(bytes, *socket_ptr))
-                        {
-                            Log::info(header(), "Sent message to client succesfully");
-                        }
-                        else
-                        {
-                            Log::error(header(), "Error sending message to client");
-                        }
+                        socket_wrapper->send(bytes);
                     });
                 }
 
@@ -559,19 +539,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
             Log::error(header(), "Exception in client thread: ", e.what());
         }
 
-        boost::system::error_code ec;
-        if (socket_ptr->is_open())
+        if (socket_wrapper->isOpen())
         {
-            ec = socket_ptr->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-            if (ec)
-            {
-                Log::error(header(), "Error in client socket shutdown");
-            }
-            ec = socket_ptr->close(ec);
-            if (ec)
-            {
-                Log::error(header(), "Error in client socket close");
-            }
+            socket_wrapper->close();
         }
         ServerProtocol::connectionClosed();
     });
@@ -584,14 +554,9 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
     catch (...)
     {
         Log::critical(header(), "Failed to launch client thread");
-        if (socket_ptr->is_open())
+        if (socket_wrapper->isOpen())
         {
-            boost::system::error_code ec;
-            ec = socket_ptr->close(ec);
-            if (ec)
-            {
-                Log::error(header(), "Failed to close socket");
-            }
+            socket_wrapper->close();
         }
     }
     // clang-format on

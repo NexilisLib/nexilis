@@ -172,6 +172,9 @@ set(SOURCES
     src/nexilis/logger/log.cc
     src/nexilis/logger/file_log.cc
 
+    # BoostTCP specific
+    src/nexilis/boost_tcp/socket.cc
+
     # Server
     src/nexilis/server/message/base_message.cc
     src/nexilis/server/message/message.cc
