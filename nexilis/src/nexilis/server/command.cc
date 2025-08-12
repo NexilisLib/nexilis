@@ -940,16 +940,13 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 case 0:
                 {
                     Log::debug(header(), "info::server_data");
-                    std::map<std::string, boost::json::value> header{
-                            {"command", boost::json::value("info")},
-                            {"type", boost::json::value("server_data")},
-                            {"callback", boost::json::value(messageId)}};
-
-                    auto json = Json::createJSON(header);
-                    Json::emplace(json, ServerJson::getServerData());
-                    nx_data data = Util::convertToByteVector(json);
-                    data.emplace_back('\n');
-
+                    auto server_data = ServerJson::getServerData();
+                    Command::ClientMsgType params;
+                    for (const auto& [key, value] : server_data)
+                    {
+                        params[key] = value;
+                    }
+                    auto data = clientMessageData(CommandType::info, "server_data", messageId, params);
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
                     return Result::success;
@@ -959,17 +956,15 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 case 1:
                 {
                     Log::debug(header(), "info::client_data");
-                    std::map<std::string, boost::json::value> header{
-                            {"command", boost::json::value("info")},
-                            {"type", boost::json::value("client_data")},
-                            {"callback", boost::json::value(messageId)}};
-
-                    auto json = Json::createJSON(header);
-                    Json::emplace(json, ServerJson::getClientData());
-                    nx_data data = Util::convertToByteVector(json);
-                    data.emplace_back('\n');
-
+                    auto client_data = ServerJson::getClientData();
+                    Command::ClientMsgType params;
+                    for (const auto& [key, value] : client_data)
+                    {
+                        params[key] = value;
+                    }
+                    auto data = clientMessageData(CommandType::info, "client_data", messageId, params);
                     sendMessageToClient(data, user, protocol);
+
                     Log::info("Used Info::clientInfo");
                     return Result::success;
                 }
@@ -978,17 +973,16 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 case 2:
                 {
                     Log::debug(header(), "info::room_data");
-                    std::map<std::string, boost::json::value> header{
-                            {"command", boost::json::value("info")},
-                            {"type", boost::json::value("room_data")},
-                            {"callback", boost::json::value(messageId)}};
 
-                    auto json = Json::createJSON(header);
-                    Json::emplace(json, ServerJson::getRoomData());
-                    auto data = Util::convertToByteVector(json);
-                    data.emplace_back('\n');
-
+                    auto roomData = ServerJson::getRoomData();
+                    Command::ClientMsgType params;
+                    for (const auto& [key, value] : roomData)
+                    {
+                        params[key] = value;
+                    }
+                    auto data = clientMessageData(CommandType::info, "room_data", messageId, params);
                     sendMessageToClient(data, user, protocol);
+
                     Log::info("Used Info::roomInfo");
                     return Result::success;
                 }
@@ -1168,7 +1162,6 @@ std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User
     // clang-format off
     return std::thread([this, &movement, &user, &protocol]()
     {
-    // clang-format on
         try
         {
             runWithTickrate(m_settings.getTickrate(), movement->getDeltatime(), [this, &movement, &user, &protocol](double progress)
@@ -1200,7 +1193,9 @@ std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User
         catch (const std::exception& e)
         {
             Log::error(e.what());
-        } });
+        }
+    });
+    // clang-format on
 }
 
 nx_data Command::clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)
