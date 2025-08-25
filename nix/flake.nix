@@ -30,10 +30,10 @@
 
             echo "Welcome to the Nexilis Dev Shell"
             echo "NEXILIS_PREFIX set to $NEXILIS_PREFIX"
-            python ../scripts/src/env.py
+            python scripts/src/env.py
 
             test-runner() {
-                python ../scripts/src/test_runner.py "$@"
+                python scripts/src/test_runner.py "$@"
             }
             echo "Available test-runner commands:"
             echo "  test-runner --all      # Run all tests"
@@ -46,7 +46,7 @@
           lib = pkgs.stdenv.mkDerivation {
             pname = "nexilis-library";
             version = "0.0.1";
-            src = ../nexilis;
+            src = ../.;
 
             nativeBuildInputs = [ pkgs.cmake ];
             buildInputs = [ pkgs.boost ];
@@ -54,7 +54,7 @@
             configurePhase = ''
               mkdir -p build
               cd build
-              cmake ..
+              cmake ../nexilis -DCMAKE_INSTALL_PREFIX=$out
             '';
 
             buildPhase = ''
@@ -62,9 +62,7 @@
             '';
 
             installPhase = ''
-              mkdir -p $out/lib $out/include
-              cp libnexilis.so $out/lib/
-              cp -r $src/include/* $out/include/
+              make install
             '';
           };
 
