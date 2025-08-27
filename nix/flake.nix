@@ -19,6 +19,8 @@
             pkgs.gcc
             pkgs.boost
             pkgs.gtest
+            pkgs.expect
+            pkgs.cppcheck
             (pkgs.python3.withPackages (ps: with ps; [
               python-dotenv
             ]))
