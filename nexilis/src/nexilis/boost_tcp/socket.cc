@@ -226,21 +226,21 @@ void Socket::forceClose()
 
         if (m_connected && m_socket && m_socket->is_open())
         {
-            boost::system::error_code ec;
-            ec = m_socket->cancel(ec);
-            if (ec)
+            boost::system::error_code close_ec;
+            close_ec = m_socket->cancel(close_ec);
+            if (close_ec)
             {
                 Log::error(header(), "Error cancelling socket");
             }
 
-            ec = m_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-            if (ec)
+            close_ec = m_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, close_ec);
+            if (close_ec)
             {
                 Log::error(header(), "Error shutting down socket");
             }
 
-            ec = m_socket->close(ec);
-            if (ec)
+            close_ec = m_socket->close(close_ec);
+            if (close_ec)
             {
                 Log::error(header(), "Error closing socket");
             }

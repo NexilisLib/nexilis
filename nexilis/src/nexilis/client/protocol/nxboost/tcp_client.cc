@@ -578,7 +578,7 @@ std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::loadSocket() const
     if (boost_ptr)
     {
         return std::shared_ptr<boost::asio::ip::tcp::socket>(boost_ptr.get(),
-                                                             [boost_ptr](boost::asio::ip::tcp::socket*) mutable
+                                                             [boost_ptr](auto&&...) mutable
                                                              {
                                                                  boost_ptr.reset();
                                                              });
@@ -592,7 +592,7 @@ void TCPClient::storeSocket(std::shared_ptr<boost::asio::ip::tcp::socket> socket
     {
         m_socket.store(boost::shared_ptr<boost::asio::ip::tcp::socket>(
                 socket.get(),
-                [socket](boost::asio::ip::tcp::socket*) mutable
+                [socket](auto&&...) mutable
                 {
                     socket.reset();
                 }));
@@ -611,7 +611,7 @@ std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::exchangeSocket(
     {
         new_boost_ptr = boost::shared_ptr<boost::asio::ip::tcp::socket>(
                 new_socket.get(),
-                [new_socket](boost::asio::ip::tcp::socket*) mutable
+                [new_socket](auto&&...) mutable
                 {
                     new_socket.reset();
                 });
@@ -623,7 +623,7 @@ std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::exchangeSocket(
     {
         return std::shared_ptr<boost::asio::ip::tcp::socket>(
                 old_boost_ptr.get(),
-                [old_boost_ptr](boost::asio::ip::tcp::socket*) mutable
+                [old_boost_ptr](auto&&...) mutable
                 {
                     old_boost_ptr.reset();
                 });
