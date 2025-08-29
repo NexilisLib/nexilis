@@ -21,6 +21,7 @@
             pkgs.gtest
             pkgs.expect
             pkgs.cppcheck
+            pkgs.clang-tools
             (pkgs.python3.withPackages (ps: with ps; [
               python-dotenv
             ]))
@@ -41,6 +42,16 @@
             echo "  test-runner --all      # Run all tests"
             echo "  test-runner --cpp      # Run C++ tests"
             echo "  nexilis_tests          # Run C++ tests directly"
+
+            cppcheck() {
+                python scripts/src/cppcheck.py
+            }
+            echo "Cppcheck command: cppcheck"
+
+            format() {
+                python scripts/src/format.py
+            }
+            echo "Formatter command: format"
           '';
         };
 
