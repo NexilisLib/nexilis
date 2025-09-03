@@ -59,7 +59,7 @@ jobs:
           cd nexilis
           rm -rf build install
           cmake -B build -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/nexilis/build/install
-          cmake --build build --target install -- -j${nproc}
+          cmake --build build --target install -- -j2
 
       - name: Build and run tests
         run: |
