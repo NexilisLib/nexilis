@@ -235,9 +235,15 @@ bool TCPClient::send(const nx_data& data)
         }
     }
 
-    if (!current_socket || !current_socket->is_open())
+    if (!current_socket)
     {
-        Log::warning(header(), "Socket is not open during send");
+        Log::error(header(), "Current socket is invalid");
+        return false;
+    }
+
+    if (!current_socket->is_open())
+    {
+        Log::error(header(), "Socket is not open during send");
         return false;
     }
 
