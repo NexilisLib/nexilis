@@ -223,6 +223,13 @@ bool TCPClient::connectToServer()
 bool TCPClient::send(const nx_data& data)
 {
     std::shared_ptr<boost::asio::ip::tcp::socket> current_socket = loadSocket();
+
+    if (getProtocolStatus() == ProtocolStatus::switching_ports)
+    {
+        Log::warning(header(), "Cannot send during port switching");
+        return false;
+    }
+
     {
         std::lock_guard<std::mutex> portLock(*m_portSwitchingMutex);
         std::lock_guard<std::mutex> sockLock(*m_sendMutex);
@@ -516,17 +523,27 @@ void TCPClient::start()
             Log::debug(header(), "Receive loop stopped");
         });
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
         m_portSwitchingThread = std::thread([this]()
         {
             Log::debug(header(), "Port switching thread started");
-            while (!m_stopped->load())
+            int wait_count = 20; // Two seconds
+            while (!m_stopped->load() && wait_count > 0)
             {
                 if (getProtocolStatus() == ProtocolStatus::connected)
                 {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
                     handlePortSwitch();
                     break;
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                wait_count--;
+            }
+
+            if (wait_count < 0 && !m_stopped->load())
+            {
+                Log::warning(header(), "Port switching timed out waiting for connected state");
             }
             Log::debug(header(), "Port switching thread stopped");
         });
