@@ -76,25 +76,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-          fetch-depth: 0
-
-      - name: Update submodules
-        run: git submodule sync --recursive && git submodule update --init --recursive
 
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt-get install -y cmake gcc libgtest-dev libboost-all-dev
+          sudo apt update && sudo apt-get install -y \
+          cmake \
+          g++ \
+          libgtest-dev \
+          libboost-json-dev \
+
+      - name: Install nexilis
+        run: |
+          cd nexilis
+          rm -rf build install
+          cmake -B build -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/nexilis/build/install
+          cmake --build build --target install -- -j2
 
       - name: Build and run C tests
         run: |
           cd tests/nexilisc
           rm -rf build
-          mkdir build
-          cd build
-          cmake ..
-          make
+          mkdir build && cd build
+          cmake .. -DNEXILIS_IS_CI=1
+          cmake --build .
           ./nexilis_c_tests
 
   alias-check:
