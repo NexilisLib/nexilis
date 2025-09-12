@@ -1,0 +1,28 @@
+
+string(ASCII 27 Esc)
+set(ColorReset "${Esc}[m")
+set(ColorBold "${Esc}[1m")
+set(ColorRed "${Esc}[31m")
+set(ColorGreen "${Esc}[32m")
+set(ColorYellow "${Esc}[33m")
+set(ColorBlue "${Esc}[34m")
+
+function(colorized_status label value)
+    if(value)
+        set(color ${ColorGreen})
+        set(display_value "ON")
+    else()
+        set(color ${ColorRed})
+        set(display_value "OFF")
+    endif()
+    message(STATUS "${ColorBold} ${label}:${ColorReset} ${color}${display_value}${ColorReset}")
+endfunction()
+
+function(print_nexilis_status)
+    message(STATUS "${ColorBold} Version: ${NEXILIS_VERSION}${ColorReset}")
+    colorized_status("Nix Environment" ${NEXILIS_IS_NIX})
+    colorized_status("Local Development" ${NEXILIS_IS_LOCAL})
+    colorized_status("CI Environment" ${NEXILIS_IS_CI})
+    colorized_status("Using Submodules" ${NEXILIS_USE_SUBMODULES})
+endfunction()
+

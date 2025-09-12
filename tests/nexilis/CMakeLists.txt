@@ -5,12 +5,6 @@ if(POLICY CMP0144)
     cmake_policy(SET CMP0144 NEW)
 endif()
 
-string(ASCII 27 Esc)
-set(ColorReset "${Esc}[m")
-set(ColorBold "${Esc}[1m")
-set(ColorGreen "${Esc}[32m")
-set(ColorRed "${Esc}[31m")
-
 if (NEXILIS_IS_NIX)
     list(APPEND CMAKE_PREFIX_PATH "ENV{out}")
 else()
@@ -21,23 +15,8 @@ endif()
 message(STATUS "Nexilis paths: ${CMAKE_PREFIX_PATH}")
 
 find_package(Nexilis REQUIRED CONFIG)
-
-function(colorized_status label value)
-    if(value)
-        set(color ${ColorGreen})
-        set(display_value "ON")
-    else()
-        set(color ${ColorRed})
-        set(display_value "OFF")
-    endif()
-    message(STATUS "${ColorBold} ${label}:${ColorReset} ${color}${display_value}${ColorReset}")
-endfunction()
-
-message(STATUS "${ColorBold} Version: ${NEXILIS_VERSION}")
-colorized_status("Nix Environment" ${NEXILIS_IS_NIX})
-colorized_status("Local Development" ${NEXILIS_IS_LOCAL})
-colorized_status("CI Environment" ${NEXILIS_IS_CI})
-colorized_status("Using Submodules" ${NEXILIS_USE_SUBMODULES})
+include(../ColorizedStatus.cmake)
+print_nexilis_status()
 
 find_package(GTest REQUIRED)
 
