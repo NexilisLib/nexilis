@@ -494,13 +494,11 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     continue;
                 }
 
-                if (!handledMessage->getUser()->isBoostTCPSet())
+                // Always update the sending function, implement some caching later.
+                handledMessage->getUser()->setBoostTCPSend([socket_wrapper](const nx_data& bytes)
                 {
-                    handledMessage->getUser()->setBoostTCPSend([socket_wrapper](const nx_data& bytes)
-                    {
-                        socket_wrapper->send(bytes);
-                    });
-                }
+                    socket_wrapper->send(bytes);
+                });
 
                 /// Get the type of the message.
                 auto type = handledMessage->getType();
