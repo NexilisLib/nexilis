@@ -268,7 +268,6 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
         }
     }
 
-    /*
     // Verify results with CI-extended timeout.
     auto status = future.wait_for(send_timeout);
     if (status != std::future_status::ready)
@@ -284,5 +283,4 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
     }
 
     EXPECT_EQ(status, std::future_status::ready);
-    */
 }
