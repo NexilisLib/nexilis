@@ -1,20 +1,24 @@
 #ifndef NEXILIS_OBJECT_HH
 #define NEXILIS_OBJECT_HH
 
+#include <nexilis/logger/log.hh>
+#include <nexilis/nx_class.hh>
 #include <nexilis/nx_util.hh>
 
 namespace nexilis
 {
 
 template <typename VectorType>
-class Object
+class Object : public NxClass
 {
 public:
     /// Constructor.
     Object(uint64_t id, const VectorType& pos, const VectorType& dim)
-        : m_id(id),
+        : NxClass("nexilis::Object"),
+          m_id(id),
           m_position(pos),
-          m_dimensions(dim)
+          m_dimensions(dim),
+          m_mutex(std::make_unique<std::mutex>())
     {
     }
 
@@ -26,7 +30,8 @@ public:
 
     /// Move constructor.
     Object(Object&& other)
-        : m_id(std::move(other.m_id)),
+        : NxClass(std::move(other)),
+          m_id(std::move(other.m_id)),
           m_position(std::move(other.m_position)),
           m_dimensions(std::move(other.m_dimensions)),
           m_filepath(std::move(other.m_filepath)),
@@ -43,14 +48,17 @@ public:
     {
         if (this != &other)
         {
+            NxClass::operator=(std::move(other));
             m_id = std::move(other.m_id);
             m_position = std::move(other.m_position);
             m_dimensions = std::move(other.m_dimensions);
             m_filepath = std::move(other.m_filepath);
+            m_mutex = std::move(other.m_mutex);
             if (!m_mutex)
             {
                 m_mutex = std::make_unique<std::mutex>();
             }
+            NxClass::operator=(std::move(other));
         }
         return *this;
     }
@@ -72,6 +80,10 @@ public:
 
     void setPosition(const VectorType& pos)
     {
+        if (!m_mutex || !m_mutex.get())
+        {
+            Log::error(header(), "m_mutex is null in setPosition");
+        }
         std::lock_guard lock(*m_mutex);
         m_position = pos;
     }
@@ -83,12 +95,20 @@ public:
 
     void setDimensions(const VectorType& dim)
     {
+        if (!m_mutex || !m_mutex.get())
+        {
+            Log::error(header(), "m_mutex is null in setDimensions");
+        }
         std::lock_guard lock(*m_mutex);
         m_dimensions = dim;
     }
 
     void setFilepath(const std::string& filepath)
     {
+        if (!m_mutex || !m_mutex.get())
+        {
+            Log::error(header(), "m_mutex is null in setFilepath");
+        }
         std::lock_guard lock(*m_mutex);
         m_filepath = filepath;
     }

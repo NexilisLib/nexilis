@@ -28,6 +28,10 @@ ClientAPI::ClientAPI(ClientAPI&& other)
       m_callbacks(std::move(other.m_callbacks)),
       m_roomsMutex(std::move(other.m_roomsMutex))
 {
+    if (!other.m_roomsMutex)
+    {
+        other.m_roomsMutex = std::make_unique<std::mutex>();
+    }
 }
 
 ClientAPI& ClientAPI::operator=(ClientAPI&& other)
@@ -40,6 +44,11 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
         m_messageIds = std::move(other.m_messageIds);
         m_callbacks = std::move(other.m_callbacks);
         m_roomsMutex = std::move(other.m_roomsMutex);
+
+        if (!other.m_roomsMutex)
+        {
+            other.m_roomsMutex = std::make_unique<std::mutex>();
+        }
 
         NxClass::operator=(std::move(other));
     }
@@ -812,6 +821,12 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
             while (attempts++ < max_attempts)
             {
                 {
+                    if (!m_roomsMutex)
+                    {
+                        Log::error(header(), "m_roomsMutex is null in waitUntilRoomsCreated");
+                        break;
+                    }
+
                     std::lock_guard<std::mutex> lock(*m_roomsMutex);
                     if (!getActiveRooms().empty())
                     {
