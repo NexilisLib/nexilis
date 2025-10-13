@@ -617,9 +617,16 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         auto roomData = RoomData(creatorId, name, id, static_cast<RoomData::Context>(context), maxSize);
                         newRooms.emplace_back(Room(roomData, std::move(roomClients)));
                     }
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                    m_currentlyActiveRooms = std::move(newRooms);
-                    FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
+                    if (m_roomsMutex && m_roomsMutex.get() != nullptr)
+                    {
+                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                        m_currentlyActiveRooms = std::move(newRooms);
+                        FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
+                    }
+                    else
+                    {
+                        Log::error(header(), "roomsMutex is not initialized");
+                    }
                     return ReadResult::success;
                 }
             }

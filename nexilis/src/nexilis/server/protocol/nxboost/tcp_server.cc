@@ -376,17 +376,22 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                         {
                             Log::info("Auth part 1 success");
 
-                            if (!m_firstClientConnected->exchange(true))
+                            if (!m_firstClientConnected->load())
                             {
                                 Log::info(header(), "First client! Opening second port");
-                                switchToRandomPort();
+                                if (switchToRandomPort() == 0)
+                                {
+                                    Log::error(header(), "Failed to open the second port");
+                                    break;
+                                }
+                                m_firstClientConnected->store(true);
                             }
 
                             uint16_t port = getPort();
-                            while (port == 0 && !m_stopped->load())
+                            if (port == 0)
                             {
-                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                                port = getPort();
+                                Log::error(header(), "No port avainable for the client");
+                                break;
                             }
 
                             if (port == 0)

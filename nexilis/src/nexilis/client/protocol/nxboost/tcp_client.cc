@@ -210,6 +210,17 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const nx_data& data)
 {
+    if (!m_portSwitchingMutex || !m_portSwitchingMutex.get())
+    {
+        Log::error(header(), "m_portSwitchingMutex is null in send");
+        return false;
+    }
+    if (!m_sendMutex || !m_sendMutex.get())
+    {
+        Log::error(header(), "sendMutex is null in send");
+        return false;
+    }
+
     std::shared_ptr<boost::asio::ip::tcp::socket> current_socket = loadSocket();
 
     if (getProtocolStatus() == ProtocolStatus::switching_ports)
@@ -274,6 +285,22 @@ bool TCPClient::send(const nx_data& data)
 
 void TCPClient::handlePortSwitch()
 {
+    if (!m_portSwitchingMutex || !m_portSwitchingMutex.get())
+    {
+        Log::error(header(), "portSwitchingMutex is null in handlePortSwitch!");
+        return;
+    }
+    if (!m_sendMutex || !m_sendMutex.get())
+    {
+        Log::error(header(), "sendMutex is null in handlePortSwitch!");
+        return;
+    }
+    if (!m_receiveMutex || !m_receiveMutex.get())
+    {
+        Log::error(header(), "receiveMutex is null in handlePortSwitch!");
+        return;
+    }
+
     try
     {
         uint16_t port = 0;
@@ -419,9 +446,8 @@ void TCPClient::handlePortSwitch()
         if (!m_stopped->load())
         {
             Log::debug(header(), "Restaring async read after port switch");
-            boost::asio::post(*m_ioContext, [this](){
-                startAsyncRead();
-            });
+            boost::asio::post(*m_ioContext, [this]()
+                              { startAsyncRead(); });
         }
     }
 
@@ -494,7 +520,14 @@ void TCPClient::start()
 
 void TCPClient::startAsyncRead()
 {
-    if (m_stopped->load()) return;
+    if (m_stopped->load())
+        return;
+
+    if (!m_receiveMutex || !m_receiveMutex.get())
+    {
+        Log::error(header(), "Receivemutex is null in startAsyncRead");
+        return;
+    }
 
     std::unique_lock<std::mutex> lock(*m_receiveMutex);
     auto current_socket = m_socket.load();
@@ -509,49 +542,49 @@ void TCPClient::startAsyncRead()
     Log::debug(header(), "Starting async read");
 
     boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
-        [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
-        {
-            if (ec)
-            {
-                handleAsyncReadError(ec);
-                return;
-            }
+                                  [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
+                                  {
+                                      if (ec)
+                                      {
+                                          handleAsyncReadError(ec);
+                                          return;
+                                      }
 
-            if (m_stopped->load())
-            {
-                Log::debug(header(), "Read completed but client stopped");
-                return;
-            }
+                                      if (m_stopped->load())
+                                      {
+                                          Log::debug(header(), "Read completed but client stopped");
+                                          return;
+                                      }
 
-            Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
+                                      Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
 
-            if (bytes_transferred > 0)
-            {
-                // Process the message.
-                nx_data buffer(bytes_transferred);
-                std::istream is(receiveBuffer.get());
-                is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
+                                      if (bytes_transferred > 0)
+                                      {
+                                          // Process the message.
+                                          nx_data buffer(bytes_transferred);
+                                          std::istream is(receiveBuffer.get());
+                                          is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
 
-                try
-                {
-                    auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
-                    if (result == ClientAPI::ReadResult::success)
-                    {
-                        Log::info(header(), "Message read successfully");
-                    }
-                }
-                catch (const std::exception& e)
-                {
-                    Log::error(header(), "Error processing message: ", e.what());
-                }
-            }
+                                          try
+                                          {
+                                              auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
+                                              if (result == ClientAPI::ReadResult::success)
+                                              {
+                                                  Log::info(header(), "Message read successfully");
+                                              }
+                                          }
+                                          catch (const std::exception& e)
+                                          {
+                                              Log::error(header(), "Error processing message: ", e.what());
+                                          }
+                                      }
 
-            // Start the next async read.
-            if (current_socket->is_open() && !m_stopped->load())
-            {
-                startAsyncRead();
-            }
-        });
+                                      // Start the next async read.
+                                      if (current_socket->is_open() && !m_stopped->load())
+                                      {
+                                          startAsyncRead();
+                                      }
+                                  });
 }
 
 void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
