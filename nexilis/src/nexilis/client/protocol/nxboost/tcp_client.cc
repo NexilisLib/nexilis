@@ -41,7 +41,6 @@ TCPClient::TCPClient(TCPClient&& other)
       Protocol(std::move(other)),
       ClientProtocol(std::move(other)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
-      m_receiveThread(std::move(other.m_receiveThread)),
       m_portSwitchingThread(std::move(other.m_portSwitchingThread)),
       m_stopped(std::move(other.m_stopped)),
       m_ioContext(std::move(other.m_ioContext)),
@@ -74,17 +73,12 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         {
             m_ioContextThread.join();
         }
-        if (m_receiveThread.joinable())
-        {
-            m_receiveThread.join();
-        }
         if (m_portSwitchingThread.joinable())
         {
             m_portSwitchingThread.join();
         }
 
         m_ioContextThread = std::move(other.m_ioContextThread);
-        m_receiveThread = std::move(other.m_receiveThread);
         m_portSwitchingThread = std::move(other.m_portSwitchingThread);
         m_stopped = std::move(other.m_stopped);
         m_ioContext = std::move(other.m_ioContext);
@@ -157,12 +151,6 @@ void TCPClient::stop()
     {
         m_portSwitchingThread.join();
         Log::debug(header(), "port switchingthread stopped");
-    }
-
-    if (m_receiveThread.joinable())
-    {
-        m_receiveThread.join();
-        Log::debug(header(), "receivethread stopped");
     }
 
     if (m_ioContextThread.joinable())
@@ -427,6 +415,14 @@ void TCPClient::handlePortSwitch()
         }
 
         Log::info(header(), "Successfully switched to port ", m_serverPort);
+
+        if (!m_stopped->load())
+        {
+            Log::debug(header(), "Restaring async read after port switch");
+            boost::asio::post(*m_ioContext, [this](){
+                startAsyncRead();
+            });
+        }
     }
 
     catch (const std::exception& e)
@@ -443,87 +439,26 @@ void TCPClient::handlePortSwitch()
     }
 }
 
-void TCPClient::receive(const std::function<void(nx_data)>& callback)
-{
-    if (m_stopped->load())
-    {
-        Log::debug(header(), "stopped, cannot receive");
-        return;
-    }
-
-    try
-    {
-        std::unique_lock<std::mutex> lock(*m_receiveMutex);
-        auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
-
-        auto current_socket = m_socket.load();
-        if (!current_socket)
-        {
-            Log::error(header(), "Socket is null in receive()");
-            return;
-        }
-
-        // clang-format off
-        boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
-            [this, receiveBuffer, callback, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
-            {
-                if (ec || m_stopped->load())
-                {
-                    if (ec != boost::asio::error::operation_aborted)
-                    {
-                        current_socket->close();
-                    }
-                    return;
-                }
-
-                if (bytes_transferred == 0)
-                {
-                    return;
-                }
-
-                nx_data buffer(bytes_transferred);
-                std::istream is(receiveBuffer.get());
-                is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
-                Log::info(header(), "Received message of size: ", bytes_transferred);
-
-                if (callback)
-                {
-                    callback(buffer);
-                }
-
-                if (current_socket->is_open())
-                {
-                    receive(callback);
-                }
-        });
-    }
-    catch (...)
-    {
-        Log::error(header(), "Error receiving messages");
-    }
-    // clang-format on
-}
-
 void TCPClient::start()
 {
     if (connectToServer())
     {
+        startAsyncRead();
+
         // clang-format off
         m_ioContextThread = std::thread([this]()
         {
             Log::debug(header(), "io_context thread started.");
-            m_ioContext->run();
+            try
+            {
+                m_ioContext->run();
+            }
+            catch (const std::exception& e)
+            {
+                Log::error(header(), "io_context exception: ", e.what());
+            }
             Log::debug(header(), "io_context thread stopped.");
         });
-
-        m_receiveThread = std::thread([this]()
-        {
-            Log::debug(header(), "Receive loop started");
-            receiveLoop();
-            Log::debug(header(), "Receive loop stopped");
-        });
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         m_portSwitchingThread = std::thread([this]()
         {
@@ -557,42 +492,93 @@ void TCPClient::start()
     }
 }
 
-void TCPClient::receiveLoop()
+void TCPClient::startAsyncRead()
 {
-    while (!m_stopped->load())
+    if (m_stopped->load()) return;
+
+    std::unique_lock<std::mutex> lock(*m_receiveMutex);
+    auto current_socket = m_socket.load();
+
+    if (!current_socket || !current_socket->is_open())
     {
-        auto cb = [this](const nx_data& buffer)
+        Log::warning(header(), "Socket not available for async read");
+        return;
+    }
+
+    auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
+    Log::debug(header(), "Starting async read");
+
+    boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
+        [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
         {
-            if (m_stopped->load())
+            if (ec)
             {
+                handleAsyncReadError(ec);
                 return;
             }
-            try
-            {
-                auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
-                if (result == ClientAPI::ReadResult::success)
-                {
-                    Log::info(header(), "Message read successfully");
-                }
-                else
-                {
-                    Log::warning(header(), "Received unexpected message: ");
-                    Log::warning(header(), "Type: ", ClientAPI::readResultStr(result));
-                    Util::debugUint8Vector(buffer);
-                }
-            }
-            catch (const std::exception& e)
-            {
-                Log::error(header(), "Exception in receive callback: ", e.what());
-            }
-            catch (...)
-            {
-                Log::error(header(), "Unknown error in receive callback");
-            }
-        };
 
-        receive(cb);
+            if (m_stopped->load())
+            {
+                Log::debug(header(), "Read completed but client stopped");
+                return;
+            }
+
+            Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
+
+            if (bytes_transferred > 0)
+            {
+                // Process the message.
+                nx_data buffer(bytes_transferred);
+                std::istream is(receiveBuffer.get());
+                is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
+
+                try
+                {
+                    auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
+                    if (result == ClientAPI::ReadResult::success)
+                    {
+                        Log::info(header(), "Message read successfully");
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    Log::error(header(), "Error processing message: ", e.what());
+                }
+            }
+
+            // Start the next async read.
+            if (current_socket->is_open() && !m_stopped->load())
+            {
+                startAsyncRead();
+            }
+        });
+}
+
+void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
+{
+    if (ec == boost::asio::error::eof)
+    {
+        Log::info(header(), "Connection closed by server (EOF) - this is normal");
     }
+    else if (ec == boost::asio::error::connection_reset)
+    {
+        Log::info(header(), "Connection reset by peer");
+    }
+    else if (ec == boost::asio::error::operation_aborted)
+    {
+        Log::debug(header(), "Async read aborted (normal during shutdown)");
+        return;
+    }
+    else if (ec == boost::asio::error::not_connected)
+    {
+        Log::warning(header(), "Socket not connected");
+    }
+    else
+    {
+        Log::error(header(), "Async read error: ", ec.message(), " (", ec.value(), ")");
+    }
+
+    updateProtocolStatus(ProtocolStatus::error);
 }
 
 std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::loadSocket() const

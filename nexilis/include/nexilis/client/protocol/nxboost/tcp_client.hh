@@ -57,14 +57,13 @@ public:
 
 protected:
     std::thread m_ioContextThread;
-    std::thread m_receiveThread;
     std::thread m_portSwitchingThread;
 
 private:
-    void receiveLoop();
     bool connectToServer();
     bool send(const nx_data& data);
-    void receive(const std::function<void(nx_data)>& buffer);
+    void startAsyncRead();
+    void handleAsyncReadError(const boost::system::error_code& ec);
     void handlePortSwitch();
 
     // Thread-safe socket access
