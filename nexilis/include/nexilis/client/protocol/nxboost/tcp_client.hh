@@ -7,6 +7,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include <thread>
@@ -75,6 +76,7 @@ private:
 private:
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::shared_ptr<boost::asio::io_context> m_ioContext;
+    std::shared_ptr<boost::asio::io_context::strand> m_strand;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
     boost::atomic_shared_ptr<boost::asio::ip::tcp::socket> m_socket;
     boost::asio::ip::tcp::resolver m_resolver;

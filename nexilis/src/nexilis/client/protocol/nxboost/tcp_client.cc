@@ -2,6 +2,7 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/ports.hh>
 
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/read.hpp>
@@ -18,6 +19,7 @@ TCPClient::TCPClient(ClientAPI& api)
       ClientProtocol(&api),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
       m_ioContext(std::make_shared<boost::asio::io_context>()),
+      m_strand(std::make_shared<boost::asio::io_context::strand>(*m_ioContext)),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
               boost::asio::make_work_guard(*m_ioContext))),
       m_socket(),
@@ -44,6 +46,7 @@ TCPClient::TCPClient(TCPClient&& other)
       m_portSwitchingThread(std::move(other.m_portSwitchingThread)),
       m_stopped(std::move(other.m_stopped)),
       m_ioContext(std::move(other.m_ioContext)),
+      m_strand(std::move(other.m_strand)),
       m_workGuard(std::move(other.m_workGuard)),
       m_socket(other.m_socket.load()),
       m_resolver(std::move(other.m_resolver)),
@@ -55,6 +58,7 @@ TCPClient::TCPClient(TCPClient&& other)
     other.m_socket.store(nullptr);
 
     other.m_stopped.reset();
+    other.m_strand.reset();
     other.m_workGuard.reset();
     other.m_sendMutex.reset();
     other.m_receiveMutex.reset();
@@ -82,6 +86,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_portSwitchingThread = std::move(other.m_portSwitchingThread);
         m_stopped = std::move(other.m_stopped);
         m_ioContext = std::move(other.m_ioContext);
+        m_strand = std::move(other.m_strand);
         m_workGuard = std::move(other.m_workGuard);
         m_socket.store(other.m_socket.load());
         m_resolver = std::move(other.m_resolver);
@@ -93,6 +98,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         other.m_socket.store(nullptr);
         other.m_stopped.reset();
         other.m_workGuard.reset();
+        other.m_strand.reset();
         other.m_sendMutex.reset();
         other.m_receiveMutex.reset();
         other.m_portSwitchingMutex.reset();
@@ -210,37 +216,13 @@ bool TCPClient::connectToServer()
 
 bool TCPClient::send(const nx_data& data)
 {
-    if (!m_portSwitchingMutex || !m_portSwitchingMutex.get())
+    if (getProtocolStatus() != ProtocolStatus::connected || m_stopped->load())
     {
-        Log::error(header(), "m_portSwitchingMutex is null in send");
-        return false;
-    }
-    if (!m_sendMutex || !m_sendMutex.get())
-    {
-        Log::error(header(), "sendMutex is null in send");
+        Log::warning(header(), "Cannot send in state: ", getProtocolStatusString());
         return false;
     }
 
     std::shared_ptr<boost::asio::ip::tcp::socket> current_socket = loadSocket();
-
-    if (getProtocolStatus() == ProtocolStatus::switching_ports)
-    {
-        Log::warning(header(), "Cannot send during port switching");
-        return false;
-    }
-
-    {
-        std::lock_guard<std::mutex> portLock(*m_portSwitchingMutex);
-        std::lock_guard<std::mutex> sockLock(*m_sendMutex);
-
-        if (getProtocolStatus() != ProtocolStatus::connected ||
-            m_stopped->load())
-        {
-            Log::warning(header(), "Cannot send in state: ", getProtocolStatusString());
-            return false; // retry
-        }
-    }
-
     if (!current_socket)
     {
         Log::error(header(), "Current socket is invalid");
@@ -256,7 +238,7 @@ bool TCPClient::send(const nx_data& data)
     try
     {
         // clang-format off
-        boost::asio::async_write(*current_socket, boost::asio::buffer(data),
+        boost::asio::async_write(*current_socket, boost::asio::buffer(data), boost::asio::bind_executor(*m_strand,
             [this, current_socket](const boost::system::error_code& ec, std::size_t size)
             {
                 if (!ec)
@@ -272,7 +254,7 @@ bool TCPClient::send(const nx_data& data)
                         Log::error(header(), "Error closing socket");
                     }
                 }
-        });
+        }));
         // clang-format on
         return true;
     }
@@ -523,13 +505,6 @@ void TCPClient::startAsyncRead()
     if (m_stopped->load())
         return;
 
-    if (!m_receiveMutex || !m_receiveMutex.get())
-    {
-        Log::error(header(), "Receivemutex is null in startAsyncRead");
-        return;
-    }
-
-    std::unique_lock<std::mutex> lock(*m_receiveMutex);
     auto current_socket = m_socket.load();
 
     if (!current_socket || !current_socket->is_open())
@@ -542,8 +517,8 @@ void TCPClient::startAsyncRead()
     Log::debug(header(), "Starting async read");
 
     boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
-                                  [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
-                                  {
+                                  boost::asio::bind_executor(*m_strand, [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
+                                                             {
                                       if (ec)
                                       {
                                           handleAsyncReadError(ec);
@@ -583,8 +558,7 @@ void TCPClient::startAsyncRead()
                                       if (current_socket->is_open() && !m_stopped->load())
                                       {
                                           startAsyncRead();
-                                      }
-                                  });
+                                      } }));
 }
 
 void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
