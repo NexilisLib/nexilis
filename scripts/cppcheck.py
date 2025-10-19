@@ -42,7 +42,7 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False):
         "--error-exitcode=1",
         "--template=gcc",
         "--force",
-        "--std=c++17",
+        "--std=c++20",
     ]
 
     if not strict:
