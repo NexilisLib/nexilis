@@ -1,4 +1,4 @@
-from env import get_nexilis_root
+from pre_commit.env import get_nexilis_root
 
 import re
 import sys

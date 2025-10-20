@@ -9,13 +9,12 @@ namespace nexilis
 {
 
 template <typename VectorType>
-class Object : public NxClass
+class Object
 {
 public:
     /// Constructor.
     Object(uint64_t id, const VectorType& pos, const VectorType& dim)
-        : NxClass("nexilis::Object"),
-          m_id(id),
+        : m_id(id),
           m_position(pos),
           m_dimensions(dim),
           m_mutex(std::make_unique<std::mutex>())
@@ -25,22 +24,18 @@ public:
     /// Deleted copy constructor.
     Object(const Object&) = delete;
 
-    /// Deleted copy assingment operator.
+    /// Deleted copy assignment operator.
     Object& operator=(const Object&) = delete;
 
     /// Move constructor.
     Object(Object&& other)
-        : NxClass(std::move(other)),
-          m_id(std::move(other.m_id)),
+        : m_id(std::move(other.m_id)),
           m_position(std::move(other.m_position)),
           m_dimensions(std::move(other.m_dimensions)),
           m_filepath(std::move(other.m_filepath)),
           m_mutex(std::move(other.m_mutex))
     {
-        if (!m_mutex)
-        {
-            m_mutex = std::make_unique<std::mutex>();
-        }
+        other.m_mutex.reset();
     }
 
     /// Move assignment operator.
@@ -48,17 +43,13 @@ public:
     {
         if (this != &other)
         {
-            NxClass::operator=(std::move(other));
             m_id = std::move(other.m_id);
             m_position = std::move(other.m_position);
             m_dimensions = std::move(other.m_dimensions);
             m_filepath = std::move(other.m_filepath);
             m_mutex = std::move(other.m_mutex);
-            if (!m_mutex)
-            {
-                m_mutex = std::make_unique<std::mutex>();
-            }
-            NxClass::operator=(std::move(other));
+
+            other.m_mutex.reset();
         }
         return *this;
     }
@@ -80,10 +71,6 @@ public:
 
     void setPosition(const VectorType& pos)
     {
-        if (!m_mutex || !m_mutex.get())
-        {
-            Log::error(header(), "m_mutex is null in setPosition");
-        }
         std::lock_guard lock(*m_mutex);
         m_position = pos;
     }
@@ -95,20 +82,12 @@ public:
 
     void setDimensions(const VectorType& dim)
     {
-        if (!m_mutex || !m_mutex.get())
-        {
-            Log::error(header(), "m_mutex is null in setDimensions");
-        }
         std::lock_guard lock(*m_mutex);
         m_dimensions = dim;
     }
 
     void setFilepath(const std::string& filepath)
     {
-        if (!m_mutex || !m_mutex.get())
-        {
-            Log::error(header(), "m_mutex is null in setFilepath");
-        }
         std::lock_guard lock(*m_mutex);
         m_filepath = filepath;
     }
@@ -132,7 +111,7 @@ protected:
     VectorType m_dimensions;
     std::string m_filepath;
 
-    /// Mutex for setting position.
+    /// Mutex for setting data.
     std::unique_ptr<std::mutex> m_mutex;
 };
 

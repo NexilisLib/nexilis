@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-
-from env import get_nexilis_root
+from pre_commit.env import get_nexilis_root
 
 import os
 import shutil

@@ -127,3 +127,4 @@ if __name__ == "__main__":
         exclude_dirs=exclude_directories,
         strict=args.strict
     )
+    sys.exit(0)

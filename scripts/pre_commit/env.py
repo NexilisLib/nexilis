@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 def _get_project_root_path():
-    return os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    return os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 def get_nexilis_root():
     load_dotenv(os.path.join(_get_project_root_path(), ".env"))

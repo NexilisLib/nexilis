@@ -1,9 +1,11 @@
+from env import get_nexilis_root
+from run_command import run_command
+
+import sys
 import os
 import subprocess
-import sys
 from pathlib import Path
-from env import get_nexilis_root
-from utils.run_command import run_command
+
 
 def build_and_run_premake():
     nexilis_root = Path(get_nexilis_root())

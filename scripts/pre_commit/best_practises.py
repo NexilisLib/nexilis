@@ -2,6 +2,7 @@ from env import get_nexilis_root
 
 import re
 import os
+import sys
 
 # This program checks if the input file/directory has correct usage for type aliases.
 # If unused type aliases found, the program asks to write them.
@@ -91,7 +92,7 @@ def main():
 
     if total_replacements == 0:
         print("0")
-        return
+        sys.exit(0)
 
     # Print all potential changes
     print(f"\nTotal potential replacements: {total_replacements}")
@@ -108,6 +109,8 @@ def main():
         print("Changes written.")
     else:
         print("No changes made.")
+
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

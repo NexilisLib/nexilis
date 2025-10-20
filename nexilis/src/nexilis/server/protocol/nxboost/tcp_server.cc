@@ -394,12 +394,6 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                                 break;
                             }
 
-                            if (port == 0)
-                            {
-                                Log::error(header(), "Failed to get a valid port number");
-                                break;
-                            }
-
                             nx_data command_data = { 0, 1, 0, 1 };
                             auto port_data = Util::convertToByteVector(getPort());
                             command_data.insert(command_data.end(), port_data.begin(), port_data.end());

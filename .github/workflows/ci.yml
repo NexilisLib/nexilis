@@ -20,8 +20,8 @@ jobs:
       - name: Run cppcheck.py
         run: |
           pip install -r scripts/requirements.txt
-          python scripts/env.py
-          python scripts/cppcheck.py
+          python scripts/pre_commit/env.py
+          python scripts/pre_commit/cppcheck.py
 
   formatting-check:
     name: Formatting Check
@@ -36,8 +36,32 @@ jobs:
       - name: Check formatting
         run: |
           pip install -r scripts/requirements.txt
-          python scripts/env.py
-          python scripts/format.py
+          python scripts/pre_commit/env.py
+          python scripts/pre_commit/format.py
+
+  alias-check:
+    name: Check Correct Alias Usage
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run best_practices.py
+        run: |
+          pip install -r scripts/requirements.txt
+          python scripts/pre_commit/env.py
+
+          output=$(python scripts/pre_commit/best_practises.py)
+          if [ "$output" = "0" ]; then
+            echo "Best practices successful."
+          else
+            exit 1
+          fi
 
   cpp-tests:
     name: Run Native Tests
@@ -100,27 +124,3 @@ jobs:
           cmake .. -DNEXILIS_IS_CI=1
           cmake --build .
           ./nexilis_c_tests
-
-  alias-check:
-    name: Check Correct Alias Usage
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Run best_practices.py
-        run: |
-          pip install -r scripts/requirements.txt
-          python scripts/env.py
-
-          output=$(python scripts/best_practises.py)
-          if [ "$output" = "0" ]; then
-            echo "Best practices successful."
-          else
-            exit 1
-          fi

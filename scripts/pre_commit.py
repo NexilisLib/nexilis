@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import argparse
-from utils.run_command import run_command
+from pre_commit.run_command import run_command
 
 def create_env():
-    res_env = run_command("python scripts/env.py")
+    res_env = run_command("python scripts/pre_commit/env.py")
     if res_env.returncode != 0:
         print("Failed to set up environment.")
         sys.exit(1)
@@ -12,50 +12,50 @@ def create_env():
         print("Env set up successfully.")
 
 def run_minimal_checks():
-    res_format = run_command("python scripts/format.py")
+    res_format = run_command("python scripts/pre_commit/format.py")
     if res_format.returncode != 0:
         print("Code formatting issues detected.")
         sys.exit(1)
     else:
         print("Code formatted successfully.")
 
-    res_best_practices = run_command("python scripts/best_practices.py")
-    if res_best_practices.returncode != 0:
-        print("Best practices check failed.")
-        sys.exit(1)
-    else:
-        print("Best practices check passed successfully.")
-
-    res_cppcheck = run_command("python scripts/cppcheck.py")
+    res_cppcheck = run_command("python scripts/pre_commit/cppcheck.py")
     if res_cppcheck.returncode != 0:
         print("Cppcheck found issues.")
         sys.exit(1)
     else:
         print("Cppcheck passed successfully.")
 
+    res_best_practices = run_command("python scripts/pre_commit/best_practices.py")
+    if res_best_practices.returncode != 0:
+        print("Best practices check failed.")
+        sys.exit(1)
+    else:
+        print("Best practices check passed successfully.")
+
 def building_add_testing():
-    res_premake = run_command("python scripts/run_premake.py")
+    res_premake = run_command("python scripts/pre_commit/run_premake.py")
     if res_premake.returncode != 0:
         print("Premake build failed.")
         sys.exit(1)
     else:
         print("Premake build succeeded.")
 
-    res_tests_nexilis = run_command("python scripts/test_runner.py --cpp")
+    res_tests_nexilis = run_command("python scripts/pre_commit/test_runner.py --cpp")
     if res_tests_nexilis.returncode != 0:
         print("Nexilis tests failed.")
         sys.exit(1)
     else:
         print("Nexilis tests passed successfully.")
 
-    res_tests_nexilisc = run_command("python scripts/test_runner.py --c")
+    res_tests_nexilisc = run_command("python scripts/pre_commit/test_runner.py --c")
     if res_tests_nexilisc.returncode != 0:
         print("Nexilisc tests failed.")
         sys.exit(1)
     else:
         print("Nexilisc tests passed successfully.")
 
-    res_tests_csharp = run_command("python scripts/test_runner.py --csharp")
+    res_tests_csharp = run_command("python scripts/pre_commit/test_runner.py --csharp")
     if res_tests_csharp.returncode != 0:
         print("Nexilis C# tests failed.")
         sys.exit(1)
@@ -63,7 +63,6 @@ def building_add_testing():
         print("Nexilis C# tests passed successfully.")
 
         sys.exit(0)
-
 
 
 def main():
