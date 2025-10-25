@@ -19,7 +19,8 @@ def run_minimal_checks():
     else:
         print("Format check passed.")
 
-    best_practises = process_all_files(read_aliases(get_constants_file_path(nexilis_root)))
+    aliases = read_aliases(get_constants_file_path(nexilis_root))
+    best_practises = process_all_files(aliases)
     if best_practises != 0:
         print("Something wrong with best practices check")
         sys.exit(1)
@@ -47,6 +48,7 @@ def run_tests():
     run_cpp_tests()
     run_c_tests()
     run_csharp_tests()
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -79,4 +81,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

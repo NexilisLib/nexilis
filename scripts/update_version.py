@@ -8,6 +8,7 @@ from pathlib import Path
 # Version pattern: {MAJOR}.{MINOR}.{PATCH}-{stable|unstable}
 VERSION_PATTERN = r"^(\d+)\.(\d+)\.(\d+)-(stable|unstable)$"
 
+
 def validate_version(version):
     """Strictly validate version format."""
     match = re.fullmatch(VERSION_PATTERN, version)
@@ -19,12 +20,14 @@ def validate_version(version):
         )
     return version
 
+
 def update_version_file(version):
     """Update VERSION.txt."""
     version_file = "VERSION.txt"
     path = Path(get_nexilis_root()) / version_file
     path.write_text(version)
     print(f"Updated {version_file} -> {version}")
+
 
 def update_doxyfile(version):
     """Update PROJECT_NUMBER in Doxyfile."""
@@ -41,6 +44,7 @@ def update_doxyfile(version):
 
     doxyfile_path.write_text(updated)
     print(f"Updated {doxyfile} PROJECT_NUMBER -> {version}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Update Nexilis version")
@@ -62,6 +66,7 @@ def main():
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

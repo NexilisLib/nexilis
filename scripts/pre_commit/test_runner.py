@@ -7,16 +7,23 @@ import os
 import subprocess
 import argparse
 
+
 def install():
     print("Compiling nexilis sources.")
     os.chdir(get_nexilis_root() + "/nexilis")
     if os.path.exists("build"):
         subprocess.run(["rm", "-rf", "build"], check=True)
 
-    subprocess.run(["cmake", "-B", "build", "-DCMAKE_INSTALL_PREFIX=" + os.path.join(os.getcwd(), "build", "install")], check=True)
-    subprocess.run(["cmake", "--build", "build", "--target", "install", "-j", str(os.cpu_count())], check=True)
+    prefix = "-DCMAKE_INSTALL_PREFIX=" + os.path.join(os.getcwd(), "build", "install")
+    subprocess.run(["cmake", "-B", "build", prefix], check=True)
+
+    cpu_count = str(os.cpu_count())
+    subprocess.run([
+        "cmake", "--build", "build", "--target", "install", "-j", cpu_count
+        ], check=True)
 
     print("Nexilis installed successfully.")
+
 
 def run_cpp_tests():
     print("Setting up Nexilis C++ tests...")
@@ -35,6 +42,7 @@ def run_cpp_tests():
     subprocess.run(["./nexilis_tests"], check=True)
     print("C++ tests completed.")
 
+
 def run_c_tests():
     print("Setting up Nexilis C tests...")
 
@@ -52,6 +60,7 @@ def run_c_tests():
     subprocess.run(["./nexilis_c_tests"], check=True)
     print("C tests completed.")
 
+
 def run_csharp_tests():
     print("Setting up Nexilis csharp tests...")
     os.chdir(get_nexilis_root() + "/bindings/csharp")
@@ -61,6 +70,7 @@ def run_csharp_tests():
     os.chdir(get_nexilis_root() + "/tests/CSharpBindings.Tests")
     subprocess.run(["dotnet", "test"], check=True)
     print("C# tests completed.")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run tests for the Nexilis project.")
@@ -98,6 +108,7 @@ def main():
         build_and_run_premake()
 
     print("\nAll tests completed successfully!")
+
 
 if __name__ == "__main__":
     main()

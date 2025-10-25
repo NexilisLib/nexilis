@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 
+
 def format_all_files() -> int:
     # Define the directories to run Clang-Format recursively.
     directories = ["nexilis", "examples", "tests"]
@@ -20,7 +21,12 @@ def format_all_files() -> int:
                 rf'find "{target_dir}" -type f \( -name "*.hh" -o -name "*.cc" \) '
                 r'-exec clang-format --dry-run --Werror {} +'
             )
-            result = subprocess.run(find_check_command, shell=True, capture_output=True, text=True)
+            result = subprocess.run(
+                find_check_command,
+                shell=True,
+                capture_output=True,
+                text=True
+            )
 
             if result.returncode != 0:
                 changes_detected = True

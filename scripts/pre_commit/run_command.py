@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional, Union, List
 
+
 def run_command(
     command: Union[str, List[str]],
     cwd: Optional[Union[str, Path]] = None,

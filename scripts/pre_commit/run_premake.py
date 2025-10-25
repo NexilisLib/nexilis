@@ -39,6 +39,12 @@ def build_and_run_premake():
             env={"LD_LIBRARY_PATH": str(test_bin_dir)},
             check=False
         )
+        if result is False:
+            output.append("=== Test Failed ===")
+            output.append(result.stdout)
+            output.append(result.stderr)
+            return False, "\n".join(output)
+
         output.append("=== Test Completed Successfully ===")
         return True, "\n".join(output)
 
@@ -51,10 +57,12 @@ def build_and_run_premake():
         output.append(error_msg)
         return False, "\n".join(output)
 
+
 def main():
     success, output = build_and_run_premake()
     print(output)
     sys.exit(0 if success else 1)
+
 
 if __name__ == "__main__":
     main()

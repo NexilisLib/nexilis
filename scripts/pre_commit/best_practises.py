@@ -63,6 +63,11 @@ def apply_replacements(file_path, alias_map):
         file.write(content)
 
 
+def extend_changes(all_changes, file_path, changes):
+    for value, alias, count in changes:
+        all_changes.append((file_path, value, alias, count))
+
+
 # Handle both files and directories.
 def process_files(target_path, alias_map) -> tuple[int, list[tuple[str, str, int]]]:
     total_replacements = 0
@@ -72,7 +77,7 @@ def process_files(target_path, alias_map) -> tuple[int, list[tuple[str, str, int
     if os.path.isfile(target_path):
         replacements, changes = analyze_cpp_file(target_path, alias_map)
         total_replacements += replacements
-        all_changes.extend([(target_path, value, alias, count) for value, alias, count in changes])
+        extend_changes(all_changes, target_path, changes)
 
     # If the target is a directory, walk through all the files
     elif os.path.isdir(target_path):
@@ -82,14 +87,15 @@ def process_files(target_path, alias_map) -> tuple[int, list[tuple[str, str, int
                     file_path = os.path.join(root, file)
                     replacements, changes = analyze_cpp_file(file_path, alias_map)
                     total_replacements += replacements
-                    all_changes.extend([(file_path, value, alias, count) for value, alias, count in changes])
+                    extend_changes(all_changes, file_path, changes)
 
     return total_replacements, all_changes
 
 
 def process_all_files(alias_map) -> int:
     # Analyze the C++ file and get potential replacements.
-    total_replacements, changes = process_files(get_nexilis_root() + "/nexilis", alias_map)
+    path = get_nexilis_root() + "/nexilis"
+    total_replacements, changes = process_files(path, alias_map)
 
     if total_replacements == 0:
         return 0
@@ -97,11 +103,13 @@ def process_all_files(alias_map) -> int:
     # Print all potential changes
     print(f"\nTotal potential replacements: {total_replacements}")
     for file_path, value, alias, count in changes:
-        print(f"File: {file_path} | Value: '{value}' -> Alias: '{alias}', Occurrences: {count}")
+        msg = f"File: {file_path} | Value: '{value}' ->"
+        msg += f" Alias: '{alias}', Occurrences: {count}"
+        print(msg)
 
     # Ask the user if they want to write the changes
     print(f"Total replacements: {total_replacements}")
-    response = input(f"Do you want to write changes? (y/n):").strip().lower()
+    response = input("Do you want to write changes? (y/n):").strip().lower()
 
     if response == 'y':
         for file_path, _, __, ___ in changes:

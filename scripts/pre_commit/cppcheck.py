@@ -25,7 +25,8 @@ def stream_output(stream, output_type):
 
 def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
     """
-    Run cppcheck on the given include and source directories, excluding specified directories.
+    Run cppcheck on the given include and source directories,
+    excluding specified directories.
 
     :param include_dir: The directory containing header files.
     :param src_dir: The directory containing source files.
@@ -60,10 +61,10 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
 
     # Find all header and source files.
     header_files = glob.glob(os.path.join(include_dir, "**", "*.h"), recursive=True) + \
-                   glob.glob(os.path.join(include_dir, "**", "*.hh"), recursive=True)
+        glob.glob(os.path.join(include_dir, "**", "*.hh"), recursive=True)
 
     source_files = glob.glob(os.path.join(src_dir, "**", "*.cc"), recursive=True) + \
-                   glob.glob(os.path.join(src_dir, "**", "*.c"), recursive=True)
+        glob.glob(os.path.join(src_dir, "**", "*.c"), recursive=True)
 
     # Add all source and header files to the command.
     command.extend(source_files + header_files)
@@ -76,7 +77,7 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
     try:
         # Start the cppcheck process.
         process = subprocess.Popen(
-            ["unbuffer"] + command, # pacman -S expect
+            ["unbuffer"] + command,  # pacman -S expect
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -127,14 +128,12 @@ if __name__ == "__main__":
             )
     args = parser.parse_args()
 
-    print("Root xd: ", get_nexilis_root())
-
-    include_directory, src_directory, exclude_directories = get_nexilis_dirs(get_nexilis_root())
+    include_dir, src_dir, exclude_dirs = get_nexilis_dirs(get_nexilis_root())
 
     run = run_cppcheck(
-        include_dir=include_directory,
-        src_dir=src_directory,
-        exclude_dirs=exclude_directories,
+        include_dir=include_dir,
+        src_dir=src_dir,
+        exclude_dirs=exclude_dirs,
         strict=args.strict
     )
 
@@ -144,4 +143,3 @@ if __name__ == "__main__":
     else:
         print("Cppcheck failed.")
         sys.exit(1)
-
