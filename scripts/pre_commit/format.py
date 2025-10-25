@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-def format_all_files():
+def format_all_files() -> int:
     # Define the directories to run Clang-Format recursively.
     directories = ["nexilis", "examples", "tests"]
     changes_detected = False
@@ -24,7 +24,7 @@ def format_all_files():
 
             if result.returncode != 0:
                 changes_detected = True
-                # Actually apply formatting
+                # Actually apply formatting.
                 find_apply_command = (
                     rf'find "{target_dir}" -type f \( -name "*.hh" -o -name "*.cc" \) '
                     r'-exec clang-format -i {} +'
@@ -36,11 +36,12 @@ def format_all_files():
 
     if changes_detected:
         print("::error::Formatting changes were required and have been applied")
-        sys.exit(1)
+        return 1
     else:
         print("No formatting changes needed")
-        sys.exit(0)
+        return 0
 
 
 if __name__ == "__main__":
-    format_all_files()
+    f = format_all_files()
+    sys.exit(f)

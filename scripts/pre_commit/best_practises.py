@@ -1,18 +1,18 @@
+# This program checks if the input file/directory has correct usage for type aliases.
+# If unused type aliases found, the program asks to write them.
+
 from env import get_nexilis_root
 
 import re
 import os
-import sys
 
-# This program checks if the input file/directory has correct usage for type aliases.
-# If unused type aliases found, the program asks to write them.
-nexilis_root = get_nexilis_root()
 
-# Header file that contains type alias declarations.
-aliases_file_path = nexilis_root + '/nexilis/include/nexilis/nexilis_constants.hh'
+def get_constants_file_path(nexilis_root) -> str:
+    return nexilis_root + '/nexilis/include/nexilis/nexilis_constants.hh'
+
 
 # Read the aliases from the aliases file.
-def read_aliases(file_path):
+def read_aliases(file_path) -> dict:
     alias_map = {}
     with open(file_path, 'r') as file:
         for line in file:
@@ -24,10 +24,11 @@ def read_aliases(file_path):
                 alias_map[value] = alias
     return alias_map
 
+
 # Analyze the C++ file for type aliases.
-def analyze_cpp_file(file_path, alias_map):
+def analyze_cpp_file(file_path, alias_map) -> tuple[int, list[tuple[str, str, int]]]:
     # Skip alias file itself.
-    if file_path == aliases_file_path:
+    if file_path == get_constants_file_path(get_nexilis_root()):
         return 0, []
 
     with open(file_path, 'r') as file:
@@ -47,6 +48,7 @@ def analyze_cpp_file(file_path, alias_map):
 
     return total_replacements, changes
 
+
 # Apply the replacements in the source file.
 def apply_replacements(file_path, alias_map):
     with open(file_path, 'r') as file:
@@ -60,8 +62,9 @@ def apply_replacements(file_path, alias_map):
     with open(file_path, 'w') as file:
         file.write(content)
 
+
 # Handle both files and directories.
-def process_files(target_path, alias_map):
+def process_files(target_path, alias_map) -> tuple[int, list[tuple[str, str, int]]]:
     total_replacements = 0
     all_changes = []
 
@@ -83,16 +86,13 @@ def process_files(target_path, alias_map):
 
     return total_replacements, all_changes
 
-def main():
-    # Read the aliases from the aliases file.
-    alias_map = read_aliases(aliases_file_path)
 
+def process_all_files(alias_map) -> int:
     # Analyze the C++ file and get potential replacements.
-    total_replacements, changes = process_files(nexilis_root + "/nexilis", alias_map)
+    total_replacements, changes = process_files(get_nexilis_root() + "/nexilis", alias_map)
 
     if total_replacements == 0:
-        print("0")
-        sys.exit(0)
+        return 0
 
     # Print all potential changes
     print(f"\nTotal potential replacements: {total_replacements}")
@@ -106,11 +106,28 @@ def main():
     if response == 'y':
         for file_path, _, __, ___ in changes:
             apply_replacements(file_path, alias_map)
-        print("Changes written.")
+        return 2
     else:
         print("No changes made.")
 
-    sys.exit(1)
+    return -1
+
+
+def main():
+    changes = process_all_files(read_aliases(get_constants_file_path(get_nexilis_root())))
+    if (changes == 0):
+        print("Everything OK")
+        return 0
+    elif (changes == 1):
+        print("Unused type aliases found. No changes made.")
+        return 1
+    elif (changes == 2):
+        print("Unused type aliases replaced with type aliases.")
+        return 0
+    elif (changes == -1):
+        print("Error.")
+        return 1
+
 
 if __name__ == "__main__":
     main()

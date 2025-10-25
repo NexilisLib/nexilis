@@ -5,6 +5,7 @@ import os
 import shutil
 import fnmatch
 
+
 def read_gitignore(gitignore_path):
     """Read the .gitignore file and return a list of patterns."""
     patterns = []
@@ -16,12 +17,14 @@ def read_gitignore(gitignore_path):
                     patterns.append(line)
     return patterns
 
+
 def matches_any_pattern(path, patterns):
     """Check if the given path matches any of the patterns in .gitignore."""
     for pattern in patterns:
         if fnmatch.fnmatch(path, pattern) or fnmatch.fnmatch(path, f"*/{pattern}"):
             return True
     return False
+
 
 def delete_ignored_files(base_dir, patterns):
     """Delete files and directories listed in .gitignore."""
@@ -42,6 +45,7 @@ def delete_ignored_files(base_dir, patterns):
                 print(f"Deleting directory: {dir_path}")
                 shutil.rmtree(dir_path)
 
+
 def prompt_for_env_deletion(base_dir):
     """Ask the user if they want to delete the .env file."""
     env_path = os.path.join(base_dir, ".env")
@@ -52,6 +56,7 @@ def prompt_for_env_deletion(base_dir):
             os.remove(env_path)
         else:
             print(".env file was not deleted.")
+
 
 def main():
     # Locale nexilis root .gitignore, TODO add support for other .gitignore files.
@@ -70,6 +75,7 @@ def main():
     # Prompt the user to delete the .env file.
     prompt_for_env_deletion(base_dir)
     print("Cleanup complete.")
+
 
 if __name__ == "__main__":
     main()

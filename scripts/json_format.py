@@ -2,6 +2,7 @@ import os
 import json
 import sys
 
+
 # Format single JSON file.
 def format_json_file(file_path):
     try:
@@ -25,12 +26,14 @@ def format_json_file(file_path):
     except Exception as e:
         print("An error occurred:", e)
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python3 format_json_file.py <file_path>")
     else:
         file_path = sys.argv[1]
         format_json_file(file_path)
+
 
 # Format JSON files in a directory.
 def format_json_files(directory):

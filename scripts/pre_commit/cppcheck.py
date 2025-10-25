@@ -7,6 +7,7 @@ import os
 import glob
 from threading import Thread
 
+
 def stream_output(stream, output_type):
     """
     Helper function to stream output from a subprocess in real-time.
@@ -21,7 +22,8 @@ def stream_output(stream, output_type):
             sys.stdout.buffer.write(line.encode())
             sys.stdout.flush()
 
-def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False):
+
+def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
     """
     Run cppcheck on the given include and source directories, excluding specified directories.
 
@@ -99,10 +101,22 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False):
         # Check the return code.
         if process.returncode != 0:
             print("cppcheck failed with errors.")
-            sys.exit(1)
+            return False
     except Exception as e:
         print(f"An error occurred while running cppcheck: {e}", file=sys.stderr)
-        sys.exit(1)
+        return False
+    return True
+
+
+def get_nexilis_dirs(nexilis_root: str) -> tuple[str, str, list[str]]:
+    include_directory = nexilis_root + "/nexilis/include/nexilis/"
+    src_directory = nexilis_root + "/nexilis/src/nexilis/"
+    exlude_directories = [
+        nexilis_root + "/nexilis/include/nexilis/archived_protocols",
+        nexilis_root + "/nexilis/src/nexilis/archived_protocols",
+    ]
+    return include_directory, src_directory, exlude_directories
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -113,18 +127,21 @@ if __name__ == "__main__":
             )
     args = parser.parse_args()
 
-    root = get_nexilis_root()
-    include_directory = root + "/nexilis/include/nexilis/"
-    src_directory = root + "/nexilis/src/nexilis/"
-    exclude_directories = [
-        root + "/nexilis/include/nexilis/archived_protocols",
-        root + "/nexilis/src/nexilis/archived_protocols",
-    ]
+    print("Root xd: ", get_nexilis_root())
 
-    run_cppcheck(
+    include_directory, src_directory, exclude_directories = get_nexilis_dirs(get_nexilis_root())
+
+    run = run_cppcheck(
         include_dir=include_directory,
         src_dir=src_directory,
         exclude_dirs=exclude_directories,
         strict=args.strict
     )
-    sys.exit(0)
+
+    if run:
+        print("Cppcheck passed.")
+        sys.exit(0)
+    else:
+        print("Cppcheck failed.")
+        sys.exit(1)
+
