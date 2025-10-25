@@ -7,6 +7,25 @@ on:
     branches: [ main ]
 
 jobs:
+  scripts-linting:
+    name: Nexilis Scripts Linting
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        run: |
+          cd scripts
+          flake8 .
+
   cpp-check:
     name: cppcheck
     runs-on: ubuntu-24.04
@@ -19,7 +38,7 @@ jobs:
 
       - name: Run cppcheck.py
         run: |
-          pip install -r scripts/requirements.txt
+          pip install ./scripts
           python scripts/pre_commit/env.py
           python scripts/pre_commit/cppcheck.py
 
@@ -35,7 +54,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          pip install -r scripts/requirements.txt
+          pip install ./scripts
           python scripts/pre_commit/env.py
           python scripts/pre_commit/format.py
 
@@ -53,7 +72,7 @@ jobs:
 
       - name: Run best_practices.py
         run: |
-          pip install -r scripts/requirements.txt
+          pip install ./scripts
           python scripts/pre_commit/env.py
 
           output=$(python scripts/pre_commit/best_practises.py)
