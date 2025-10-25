@@ -74,9 +74,9 @@ jobs:
         run: |
           pip install ./scripts
           python scripts/pre_commit/env.py
-
-          output=$(python scripts/pre_commit/best_practises.py)
-          if [ "$output" = "0" ]; then
+          python scripts/pre_commit/best_practises.py
+          exit_code=$?
+          if [ "$exit_code" -eq 0 ]; then
             echo "Best practices successful."
           else
             exit 1

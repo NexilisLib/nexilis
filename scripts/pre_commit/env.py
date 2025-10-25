@@ -21,7 +21,6 @@ def get_nexilis_root():
 
 def create_env_file():
     nexilis_root = _get_project_root_path()
-    print("NEXILIS_ROOT XXXX", nexilis_root)
     env_file_path = os.path.join(nexilis_root, ".env")
 
     with open(env_file_path, "w") as env_file:
