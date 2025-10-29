@@ -35,7 +35,6 @@ public:
           m_filepath(std::move(other.m_filepath)),
           m_mutex(std::move(other.m_mutex))
     {
-        other.m_mutex.reset();
     }
 
     /// Move assignment operator.
@@ -48,8 +47,6 @@ public:
             m_dimensions = std::move(other.m_dimensions);
             m_filepath = std::move(other.m_filepath);
             m_mutex = std::move(other.m_mutex);
-
-            other.m_mutex.reset();
         }
         return *this;
     }
@@ -71,6 +68,10 @@ public:
 
     void setPosition(const VectorType& pos)
     {
+        if (!m_mutex)
+        {
+            m_mutex = std::make_unique<std::mutex>();
+        }
         std::lock_guard lock(*m_mutex);
         m_position = pos;
     }
@@ -82,12 +83,20 @@ public:
 
     void setDimensions(const VectorType& dim)
     {
+        if (!m_mutex)
+        {
+            m_mutex = std::make_unique<std::mutex>();
+        }
         std::lock_guard lock(*m_mutex);
         m_dimensions = dim;
     }
 
     void setFilepath(const std::string& filepath)
     {
+        if (!m_mutex)
+        {
+            m_mutex = std::make_unique<std::mutex>();
+        }
         std::lock_guard lock(*m_mutex);
         m_filepath = filepath;
     }
