@@ -62,10 +62,10 @@ nexilis::Vector3f get_verified_position(nexilis_ClientSession* client)
 {
     auto pos = client->client->getPosition3D();
 
-    // Check for common memory corruption patterns.
-    const uint32_t x_bits = *(uint32_t*)&pos.x;
-    const uint32_t y_bits = *(uint32_t*)&pos.y;
-    const uint32_t z_bits = *(uint32_t*)&pos.z;
+    uint32_t x_bits, y_bits, z_bits;
+    std::memcpy(&x_bits, &pos.x, sizeof(pos.x));
+    std::memcpy(&y_bits, &pos.y, sizeof(pos.y));
+    std::memcpy(&z_bits, &pos.z, sizeof(pos.z));
 
     // Common bad patterns.
     if (x_bits == 0xCDCDCDCD || y_bits == 0xCDCDCDCD || z_bits == 0xCDCDCDCD)

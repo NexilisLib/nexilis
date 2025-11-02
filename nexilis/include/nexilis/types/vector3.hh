@@ -81,10 +81,11 @@ public:
     {
         nx_data serializedData;
 
-        // Convert each component into bytes.
-        uint32_t xBytes = *reinterpret_cast<const uint32_t*>(&x);
-        uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&y);
-        uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&z);
+        // Convert the template argument into uint32.
+        uint32_t xBytes, yBytes, zBytes;
+        std::memcpy(&xBytes, &x, sizeof(xBytes));
+        std::memcpy(&yBytes, &y, sizeof(yBytes));
+        std::memcpy(&zBytes, &z, sizeof(zBytes));
 
         // Add component bytes to the serialized data.
         serializedData.insert(serializedData.end(), reinterpret_cast<const uint8_t*>(&xBytes),
@@ -105,10 +106,10 @@ public:
             throw std::runtime_error("Invalid data size for deserialization");
         }
 
-        // Extract bytes and convert them back to float components.
-        uint32_t xBytes = *reinterpret_cast<const uint32_t*>(&data[0]);
-        uint32_t yBytes = *reinterpret_cast<const uint32_t*>(&data[sizeof(uint32_t)]);
-        uint32_t zBytes = *reinterpret_cast<const uint32_t*>(&data[sizeof(uint32_t) * 2]);
+        uint32_t xBytes, yBytes, zBytes;
+        std::memcpy(&xBytes, data.data() + 0 * sizeof(uint32_t), sizeof(uint32_t));
+        std::memcpy(&yBytes, data.data() + 1 * sizeof(uint32_t), sizeof(uint32_t));
+        std::memcpy(&zBytes, data.data() + 2 * sizeof(uint32_t), sizeof(uint32_t));
 
         float _x, _y, _z;
         std::memcpy(&_x, &xBytes, sizeof(float));

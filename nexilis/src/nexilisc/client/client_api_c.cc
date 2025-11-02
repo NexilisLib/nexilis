@@ -157,7 +157,7 @@ const char* getCString(const std::string& str)
 
 const char* nexilis_client_api_get_client_username(const nexilis_ClientAPI* client_api, uint64_t client_id)
 {
-    if (!client_api || client_api->api)
+    if (!client_api || !client_api->api)
     {
         return nullptr;
     }

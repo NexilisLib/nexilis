@@ -108,7 +108,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
     // The second byte.
     auto arg2 = command[1];
 
-    uint8_t arg3, arg4;
+    uint8_t arg3 = 255, arg4 = 255;
 
     if (command.size() > 2)
     {
