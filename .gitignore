@@ -11,3 +11,8 @@
 **vgcore.*
 **Makefile
 **.make
+/CppProperties.json
+/nexilis/CMakePresets.json
+/nexilis/vcpkg-configuration.json
+/nexilis/vcpkg.json
+**/nexilis/vcpkg_installed/

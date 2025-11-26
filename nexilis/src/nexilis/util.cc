@@ -380,11 +380,18 @@ std::string Util::getDateAndTime()
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
     // Convert to local time struct.
-    std::tm* localTime = std::localtime(&currentTime);
+    std::tm localTime;
+#if defined(_WIN32)
+    localtime_s(&localTime, &currentTime);
+    std::tm* localTimePtr = &localTime;
+#else
+    localtime_r(&currentTime, &localTime);
+    std::tm* localTimePtr = &localTime;
+#endif
 
     // Format the time.
     std::stringstream ss;
-    ss << std::put_time(localTime, "%Y-%m-%d_%H:%M:%S");
+    ss << std::put_time(localTimePtr, "%Y-%m-%d_%H:%M:%S");
     return ss.str();
 }
 

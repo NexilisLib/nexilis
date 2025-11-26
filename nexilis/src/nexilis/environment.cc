@@ -6,7 +6,19 @@ namespace nexilis
 
 static bool isEnvDef(const char* var)
 {
+#if defined(_MSC_VER)
+    // Use _dupenv_s for MSVC to avoid C4996 warning
+    char* value = nullptr;
+    size_t len = 0;
+    errno_t err = _dupenv_s(&value, &len, var);
+    bool defined = (err == 0 && value != nullptr);
+    if (value) {
+        free(value);
+    }
+    return defined;
+#else
     return std::getenv(var) != nullptr;
+#endif
 }
 
 EnvironmentType detectRuntimeType()
