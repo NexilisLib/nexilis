@@ -12,13 +12,13 @@ static bool isEnvDef(const char* var)
     size_t len = 0;
     errno_t err = _dupenv_s(&value, &len, var);
     bool defined = (err == 0 && value != nullptr);
-    if (value) {
+    if (value)
+    {
         free(value);
     }
     return defined;
-#else
-    return std::getenv(var) != nullptr;
 #endif
+    return std::getenv(var) != nullptr;
 }
 
 EnvironmentType detectRuntimeType()

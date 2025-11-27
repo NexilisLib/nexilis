@@ -113,7 +113,7 @@ if (USE_SUBMODULES)
     set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
 
     set(BOOST_LIBS
-        json system assert align config core static_assert asio
+        json system assert align config core static_assert
         throw_exception container variant variant2 intrusive
         mp11 move container_hash winapi describe predef endian
     )

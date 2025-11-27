@@ -381,13 +381,8 @@ std::string Util::getDateAndTime()
 
     // Convert to local time struct.
     std::tm localTime;
-#if defined(_WIN32)
     localtime_s(&localTime, &currentTime);
     std::tm* localTimePtr = &localTime;
-#else
-    localtime_r(&currentTime, &localTime);
-    std::tm* localTimePtr = &localTime;
-#endif
 
     // Format the time.
     std::stringstream ss;
