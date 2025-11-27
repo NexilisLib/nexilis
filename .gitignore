@@ -16,3 +16,4 @@
 /nexilis/vcpkg-configuration.json
 /nexilis/vcpkg.json
 **/nexilis/vcpkg_installed/
+/CMakePresets.json

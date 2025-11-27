@@ -88,8 +88,11 @@ message(STATUS "  Use Submodules: ${NEXILIS_USE_SUBMODULES}")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     if (MSVC)
-        add_compile_options(/W4 /WX)
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        add_compile_options(
+            /W4 /permissive- /EHsc /Zc:preprocessor /Zc:__cplusplus
+            /MDd /RTC1 /wd4996 /wd4251 /wd4275 /wd4267
+        )
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # MinGW
         add_compile_options(-Wall -Wextra -pedantic -pthread -static-libgcc -static-libstdc++)
     endif()
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -110,7 +113,7 @@ if (USE_SUBMODULES)
     set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
 
     set(BOOST_LIBS
-        json system assert align config core static_assert
+        json system assert align config core static_assert asio
         throw_exception container variant variant2 intrusive
         mp11 move container_hash winapi describe predef endian
     )
