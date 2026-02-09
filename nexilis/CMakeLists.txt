@@ -143,6 +143,7 @@ endif()
 
 set(SOURCES
     # Base
+    src/nexilis/assets.cc
     src/nexilis/environment.cc
     src/nexilis/nx_class.cc
     src/nexilis/cmd_line_options.cc
