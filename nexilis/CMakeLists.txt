@@ -158,7 +158,7 @@ file (GLOB_RECURSE NEXILISC_SOURCES
 add_library(nexilis SHARED ${NEXILIS_SOURCES})
 add_library(nexilisc SHARED ${NEXILISC_SOURCES})
 
-target_link_libraries(nexilisc PRIVATE nexilis)
+target_link_libraries(nexilisc PUBLIC nexilis)
 
 target_include_directories(nexilis PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

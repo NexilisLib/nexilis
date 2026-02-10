@@ -27,7 +27,7 @@ add_executable(nexilis_c_tests
 )
 
 target_link_libraries(nexilis_c_tests PRIVATE
-    Nexilis::nexilis
+    Nexilis::nexilisc
     GTest::GTest
 )
 
