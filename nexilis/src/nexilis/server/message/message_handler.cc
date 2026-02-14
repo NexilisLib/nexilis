@@ -120,7 +120,8 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
                 }
                 else
                 {
-                    Log::error(header(), "Authentication error");
+                    Log::error(header(), "Authentication error, instead of password we got: \n");
+                    Util::debugUint8Vector(payload);
                     return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::authentication_error);
                 }
             }
