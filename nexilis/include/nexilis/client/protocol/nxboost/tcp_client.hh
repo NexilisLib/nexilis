@@ -44,6 +44,9 @@ public:
     /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
     void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
+    /// ClientProtocol::sendMessageAsync(const nx_data&) implementation.
+    std::future<void> sendMessageAsync(const nx_data& message) override;
+
     /// Protocol::getType() implementation.
     Type getType() override
     {
@@ -85,6 +88,15 @@ private:
     std::shared_ptr<std::mutex> m_receiveMutex;
     std::shared_ptr<std::mutex> m_portSwitchingMutex;
     uint16_t m_serverPort;
+
+    struct PendingSend
+    {
+        uint64_t messageId;
+        std::shared_ptr<std::promise<void>> promise;
+    };
+
+    std::unordered_map<uint64_t, std::shared_ptr<std::promise<void>>> m_pendingSends;
+    std::shared_ptr<std::mutex> m_pendingSendsMutex;
 };
 
 } // namespace nexilis::client::nxboost

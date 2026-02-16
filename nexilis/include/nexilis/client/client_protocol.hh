@@ -34,6 +34,8 @@ public:
     /// Call sendMessageWithCallback in the derived class.
     virtual void sendMessage(const nx_data& message, const std::function<void()>& callback) = 0;
 
+    virtual std::future<void> sendMessageAsync(const nx_data& message) = 0;
+
     ClientAPI* getClientAPI()
     {
         return m_api;
@@ -56,7 +58,6 @@ public:
 
 protected:
     void start(Protocol::Type type);
-
     void sendMessageWithCallback(const nx_data& message, const std::function<void()>& callback);
 
 private:

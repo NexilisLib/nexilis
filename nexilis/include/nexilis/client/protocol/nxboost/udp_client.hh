@@ -53,6 +53,11 @@ public:
     /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
     void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
+    std::future<void> sendMessageAsync(const nx_data&) override
+    {
+        return std::future<void>();
+    }
+
 private:
     void receiveLoop();
 

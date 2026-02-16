@@ -26,7 +26,8 @@ TCPClient::TCPClient(ClientAPI& api)
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
       m_receiveMutex(std::make_shared<std::mutex>()),
-      m_portSwitchingMutex(std::make_shared<std::mutex>())
+      m_portSwitchingMutex(std::make_shared<std::mutex>()),
+      m_pendingSendsMutex(std::make_shared<std::mutex>())
 {
     auto new_socket = std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext);
     storeSocket(new_socket);
@@ -164,6 +165,23 @@ void TCPClient::stop()
         m_ioContextThread.join();
         Log::debug(header(), "io_contextThread stopped");
     }
+
+    if (m_pendingSendsMutex)
+    {
+        std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+        for (auto& pair : m_pendingSends)
+        {
+            try
+            {
+                pair.second->set_exception(
+                        std::make_exception_ptr(std::runtime_error("Connection closed")));
+            }
+            catch (...)
+            {
+            }
+        }
+        m_pendingSends.clear();
+    }
 }
 
 void TCPClient::sendMessage(const nx_data& message)
@@ -223,46 +241,108 @@ bool TCPClient::send(const nx_data& data)
     }
 
     std::shared_ptr<boost::asio::ip::tcp::socket> current_socket = loadSocket();
-    if (!current_socket)
+    if (!current_socket || !current_socket->is_open())
     {
-        Log::error(header(), "Current socket is invalid");
+        Log::error(header(), "Socket is invalid or not open");
         return false;
     }
 
-    if (!current_socket->is_open())
+    // Extract message ID for this send
+    uint64_t messageId = 0;
+    if (data.size() >= 16)
     {
-        Log::error(header(), "Socket is not open during send");
-        return false;
+        std::memcpy(&messageId, data.data() + 8, sizeof(uint64_t));
     }
 
     try
     {
-        // clang-format off
-        boost::asio::async_write(*current_socket, boost::asio::buffer(data), boost::asio::bind_executor(*m_strand,
-            [this, current_socket](const boost::system::error_code& ec, std::size_t size)
-            {
-                if (!ec)
-                {
-                    Log::info(header(), "Message sent successfully with size of: ", size, " bytes");
-                }
-                else if (current_socket->is_open())
-                {
-                    boost::system::error_code ignore_ec;
-                    ignore_ec = current_socket->close(ignore_ec);
-                    if (ignore_ec)
-                    {
-                        Log::error(header(), "Error closing socket");
-                    }
-                }
-        }));
-        // clang-format on
+        boost::asio::async_write(*current_socket, boost::asio::buffer(data),
+                                 boost::asio::bind_executor(*m_strand,
+                                                            [this, current_socket, messageId](const boost::system::error_code& ec, std::size_t size)
+                                                            {
+                                                                if (!ec)
+                                                                {
+                                                                    Log::info(header(), "Message sent: ", size, " bytes, ID: ", messageId);
+
+                                                                    // Fulfill the promise when write completes
+                                                                    if (messageId != 0)
+                                                                    {
+                                                                        std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                                                                        auto it = m_pendingSends.find(messageId);
+                                                                        if (it != m_pendingSends.end())
+                                                                        {
+                                                                            it->second->set_value();
+                                                                            m_pendingSends.erase(it);
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    Log::error(header(), "Async write error: ", ec.message());
+
+                                                                    // Fulfill with exception on error
+                                                                    if (messageId != 0)
+                                                                    {
+                                                                        std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                                                                        auto it = m_pendingSends.find(messageId);
+                                                                        if (it != m_pendingSends.end())
+                                                                        {
+                                                                            it->second->set_exception(
+                                                                                    std::make_exception_ptr(
+                                                                                            std::runtime_error("Send failed: " + ec.message())));
+                                                                            m_pendingSends.erase(it);
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }));
         return true;
     }
-    catch (...)
+    catch (const std::exception& e)
     {
-        Log::error(header(), "Exception during async_write");
+        Log::error(header(), "Exception during async_write: ", e.what());
+
+        // Clean up promise on exception
+        if (messageId != 0)
+        {
+            std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+            auto it = m_pendingSends.find(messageId);
+            if (it != m_pendingSends.end())
+            {
+                it->second->set_exception(std::current_exception());
+                m_pendingSends.erase(it);
+            }
+        }
         return false;
     }
+}
+
+std::future<void> TCPClient::sendMessageAsync(const nx_data& message)
+{
+    // Extract message ID (second 8 bytes)
+    if (message.size() < 16)
+    {
+        Log::error(header(), "Message too small");
+        std::promise<void> emptyPromise;
+        emptyPromise.set_exception(
+                std::make_exception_ptr(std::runtime_error("Message too small")));
+        return emptyPromise.get_future();
+    }
+
+    uint64_t messageId = 0;
+    std::memcpy(&messageId, message.data() + 8, sizeof(uint64_t));
+
+    auto promise = std::make_shared<std::promise<void>>();
+    auto future = promise->get_future();
+
+    {
+        std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+        m_pendingSends[messageId] = promise;
+    }
+
+    // Send the message (this will trigger async write)
+    send(message);
+
+    return future;
 }
 
 void TCPClient::handlePortSwitch()
@@ -519,46 +599,46 @@ void TCPClient::startAsyncRead()
     boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
                                   boost::asio::bind_executor(*m_strand, [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
                                                              {
-                                      if (ec)
-                                      {
-                                          handleAsyncReadError(ec);
-                                          return;
-                                      }
+                                                                 if (ec)
+                                                                 {
+                                                                     handleAsyncReadError(ec);
+                                                                     return;
+                                                                 }
 
-                                      if (m_stopped->load())
-                                      {
-                                          Log::debug(header(), "Read completed but client stopped");
-                                          return;
-                                      }
+                                                                 if (m_stopped->load())
+                                                                 {
+                                                                     Log::debug(header(), "Read completed but client stopped");
+                                                                     return;
+                                                                 }
 
-                                      Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
+                                                                 Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
 
-                                      if (bytes_transferred > 0)
-                                      {
-                                          // Process the message.
-                                          nx_data buffer(bytes_transferred);
-                                          std::istream is(receiveBuffer.get());
-                                          is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
+                                                                 if (bytes_transferred > 0)
+                                                                 {
+                                                                     // Process the message.
+                                                                     nx_data buffer(bytes_transferred);
+                                                                     std::istream is(receiveBuffer.get());
+                                                                     is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
 
-                                          try
-                                          {
-                                              auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
-                                              if (result == ClientAPI::ReadResult::success)
-                                              {
-                                                  Log::info(header(), "Message read successfully");
-                                              }
-                                          }
-                                          catch (const std::exception& e)
-                                          {
-                                              Log::error(header(), "Error processing message: ", e.what());
-                                          }
-                                      }
+                                                                     try
+                                                                     {
+                                                                         auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
+                                                                         if (result == ClientAPI::ReadResult::success)
+                                                                         {
+                                                                             Log::info(header(), "Message read successfully");
+                                                                         }
+                                                                     }
+                                                                     catch (const std::exception& e)
+                                                                     {
+                                                                         Log::error(header(), "Error processing message: ", e.what());
+                                                                     }
+                                                                 }
 
-                                      // Start the next async read.
-                                      if (current_socket->is_open() && !m_stopped->load())
-                                      {
-                                          startAsyncRead();
-                                      } }));
+                                                                 // Start the next async read.
+                                                                  if (current_socket->is_open() && !m_stopped->load())
+                                                                 {
+                                                                     startAsyncRead();
+                                                                 } }));
 }
 
 void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
