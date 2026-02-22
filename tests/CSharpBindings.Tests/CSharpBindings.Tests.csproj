@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <Target Name="CopyNativeLibraries" AfterTargets="Build">
-    <Copy SourceFiles="../../nexilis/build/libnexilis.so" DestinationFolder="$(OutputPath)" />
+    <Copy SourceFiles="../../nexilis/build/libnexilis.so;../../nexilis/build/libnexilisc.so" DestinationFolder="$(OutputPath)" />
   </Target>
 
 </Project>
