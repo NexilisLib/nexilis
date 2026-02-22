@@ -61,14 +61,15 @@ public:
 
 protected:
     std::thread m_ioContextThread;
-    std::thread m_portSwitchingThread;
 
 private:
     bool connectToServer();
+    bool connectToMainPort();
+    bool connectToSwitchedPort(uint16_t port);
     bool send(const nx_data& data);
     void startAsyncRead();
     void handleAsyncReadError(const boost::system::error_code& ec);
-    void handlePortSwitch();
+    void initiatePortSwitch(uint16_t port);
 
     // Thread-safe socket access
     std::shared_ptr<boost::asio::ip::tcp::socket> loadSocket() const;
@@ -81,13 +82,19 @@ private:
     std::shared_ptr<boost::asio::io_context> m_ioContext;
     std::shared_ptr<boost::asio::io_context::strand> m_strand;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
-    boost::atomic_shared_ptr<boost::asio::ip::tcp::socket> m_socket;
+
+    std::shared_ptr<boost::asio::ip::tcp::socket> m_mainSocket;
+    std::shared_ptr<boost::asio::ip::tcp::socket> m_switchedSocket;
+    boost::atomic_shared_ptr<boost::asio::ip::tcp::socket> m_activeSocket;
     boost::asio::ip::tcp::resolver m_resolver;
 
     std::shared_ptr<std::mutex> m_sendMutex;
     std::shared_ptr<std::mutex> m_receiveMutex;
     std::shared_ptr<std::mutex> m_portSwitchingMutex;
-    uint16_t m_serverPort;
+
+    uint16_t m_mainPort;
+    uint16_t m_switchedPort;
+    std::atomic<bool> m_useSwitchedPort;
 
     struct PendingSend
     {
