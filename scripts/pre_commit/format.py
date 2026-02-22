@@ -11,14 +11,14 @@ def format_all_files() -> int:
     changes_detected = False
 
     # Run Clang-Format recursively in the specified directories.
-    for _ in directories:
-        target_dir = get_nexilis_root()
+    for directory in directories:
+        target_dir = os.path.join(get_nexilis_root(), directory)
         if os.path.isdir(target_dir):
             print(f"Formatting files in directory: {target_dir}")
 
             # Check if files need formatting.
             find_check_command = (
-                rf'find "{target_dir}" -type f \( -name "*.hh" -o -name "*.cc" \) '
+                rf'find "{target_dir}" -not -path "*/third-party/*" -type f \( -name "*.hh" -o -name "*.cc" \) '
                 r'-exec clang-format --dry-run --Werror {} +'
             )
             result = subprocess.run(
@@ -32,7 +32,7 @@ def format_all_files() -> int:
                 changes_detected = True
                 # Actually apply formatting.
                 find_apply_command = (
-                    rf'find "{target_dir}" -type f \( -name "*.hh" -o -name "*.cc" \) '
+                    rf'find "{target_dir}" -not -path "*/third-party/*" -type f \( -name "*.hh" -o -name "*.cc" \) '
                     r'-exec clang-format -i {} +'
                 )
                 subprocess.run(find_apply_command, shell=True, check=True)
