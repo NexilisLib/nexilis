@@ -9,5 +9,4 @@
 .env
 **__pycache__
 **vgcore.*
-**Makefile
 **.make
