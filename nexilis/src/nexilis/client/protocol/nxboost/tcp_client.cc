@@ -191,13 +191,21 @@ void TCPClient::stop()
     if (m_mainSocket && m_mainSocket->is_open())
     {
         boost::system::error_code ec;
-        m_mainSocket->close(ec);
+        ec = m_mainSocket->close(ec);
+        if (ec)
+        {
+            Log::error(header(), "Error closing main socket");
+        }
     }
 
     if (m_switchedSocket && m_switchedSocket->is_open())
     {
         boost::system::error_code ec;
-        m_switchedSocket->close(ec);
+        ec = m_switchedSocket->close(ec);
+        if (ec)
+        {
+            Log::error(header(), "Error closing switched socket");
+        }
     }
 
     m_workGuard.reset();
@@ -284,7 +292,11 @@ void TCPClient::initiatePortSwitch(uint16_t port)
             {
                 Log::debug(header(), "Closing main socket");
                 boost::system::error_code ec;
-                m_mainSocket->close(ec);
+                ec = m_mainSocket->close(ec);
+                if (ec)
+                {
+                    Log::error(header(), "Error closing main socket");
+                }
             }
 
             Log::info(header(), "Successfully switched to port: ", port);
