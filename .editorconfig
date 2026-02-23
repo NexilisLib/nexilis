@@ -1,0 +1,51 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C and C++ - matches .clang-format
+[*.{c,cc,cpp,h,hh}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = off
+
+# C#
+[*.{cs,csproj,props,targets}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 140
+
+# Python
+[*.py]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 140
+
+# CMake
+[{CMakeLists.txt,*.cmake}]
+indent_style = space
+indent_size = 4
+max_line_length = 140
+
+# Makefiles require tabs
+[{Makefile,makefile,GNUmakefile,*.make}]
+indent_style = tab
+tab_width = 4
+
+# Nix
+[*.nix]
+indent_style = space
+indent_size = 2
+max_line_length = 140
+
+# Markdown - keep trailing spaces (used for line breaks)
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
