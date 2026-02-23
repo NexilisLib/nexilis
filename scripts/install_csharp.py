@@ -51,26 +51,36 @@ def build_native(nexilis_root, target_platform, build_type):
 
 def deploy_native(output_path, build_dir, target_platform, arch):
     """Deploy build artifacts to output directory"""
-    p = "libnexilis.dll" if target_platform == "Windows" else "libnexilis.so"
-    source_path = build_dir / p
-
-    if not source_path.exists():
-        raise FileNotFoundError(f"Native library not found at {source_path}")
+    libs = (
+        ["libnexilis.dll", "libnexilisc.dll"]
+        if target_platform == "Windows"
+        else ["libnexilis.so", "libnexilisc.so"]
+    )
 
     target_dir = output_path / target_platform / arch
     target_dir.mkdir(parents=True, exist_ok=True)
-    target_path = target_dir / p
 
-    if target_path.exists():
-        target_path.unlink()
+    deployed = []
+    for p in libs:
+        source_path = build_dir / p
 
-    shutil.copy2(source_path, target_path)
+        if not source_path.exists():
+            raise FileNotFoundError(f"Native library not found at {source_path}")
 
-    if not target_path.exists():
-        raise RuntimeError(f"Failed to copy library to {target_path}")
+        target_path = target_dir / p
 
-    print(f"Successfully deployed {p} to {target_path}")
-    return target_path
+        if target_path.exists():
+            target_path.unlink()
+
+        shutil.copy2(source_path, target_path)
+
+        if not target_path.exists():
+            raise RuntimeError(f"Failed to copy library to {target_path}")
+
+        print(f"Successfully deployed {p} to {target_path}")
+        deployed.append(target_path)
+
+    return deployed[0]
 
 
 def main():
