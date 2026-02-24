@@ -29,10 +29,7 @@ void nexilis_protocol_manager_destroy(nexilis_ProtocolManagerC* manager)
 nexilis_ProtocolDataC* nexilis_protocol_data_create(nexilis_ProtocolTypeC type)
 {
     auto data = new nexilis_ProtocolDataC();
-
-    auto protocol_data = nexilis::ProtocolManager::ProtocolData(static_cast<nexilis::Protocol::Type>(type));
-    data->data = &protocol_data;
-
+    data->data = new nexilis::ProtocolManager::ProtocolData(static_cast<nexilis::Protocol::Type>(type));
     return data;
 }
 

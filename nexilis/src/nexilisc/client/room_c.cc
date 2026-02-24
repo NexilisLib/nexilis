@@ -155,6 +155,7 @@ bool nexilis_room_contains_communication(const nexilis_Room* room, const nexilis
         return room->room->containsCommunication(*communication->communication);
     }
     assert(!"Undefined room");
+    return false;
 }
 
 bool nexilis_room_contains_communication_by_id(const nexilis_Room* room, uint64_t communication_id)
@@ -164,6 +165,7 @@ bool nexilis_room_contains_communication_by_id(const nexilis_Room* room, uint64_
         return room->room->containsCommunication(communication_id);
     }
     assert(!"Undefined room");
+    return false;
 }
 
 nexilis_Communication* nexilis_communication_create(const char* payload, nexilis_ClientSession* sender)
