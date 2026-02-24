@@ -82,6 +82,21 @@ jobs:
             exit 1
           fi
 
+  editorconfig-check:
+    name: EditorConfig Check
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run check_editorconfig.py
+        run: python scripts/pre_commit/check_editorconfig.py
+
   cpp-tests:
     name: Run Native Tests
     runs-on: ubuntu-24.04
