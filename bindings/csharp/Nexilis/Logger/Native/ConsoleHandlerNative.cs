@@ -13,3 +13,4 @@ namespace Nexilis.Logger
         public static extern ulong nexilis_logger_ConsoleHandler_get_id(IntPtr handler);
     }
 }
+

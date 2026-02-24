@@ -7,3 +7,4 @@ namespace Nexilis.Server
         WhiteListed = 2,
     }
 }
+

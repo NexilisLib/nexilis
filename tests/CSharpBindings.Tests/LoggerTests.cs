@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,7 +85,7 @@ namespace Nexilis.Tests
 
             // Clean up
             _logger.RemoveHandler(functionHandler.GetId());
-        } 
+        }
 
         [Fact]
         public void MultipleHandlersWithThreads()

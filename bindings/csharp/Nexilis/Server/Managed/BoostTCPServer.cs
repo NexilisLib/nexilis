@@ -17,8 +17,8 @@ namespace Nexilis.Server
             this._settings = settings;
 
             _handle = BoostTCPServerNative.nexilis_create_boost_tcp_server(
-                protocolManager.GetHandle(), 
-                this._settings.GetHandle(), 
+                protocolManager.GetHandle(),
+                this._settings.GetHandle(),
                 port
             );
 
@@ -78,3 +78,4 @@ namespace Nexilis.Server
         }
     }
 }
+

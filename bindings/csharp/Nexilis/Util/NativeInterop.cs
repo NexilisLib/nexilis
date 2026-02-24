@@ -17,7 +17,7 @@ namespace Nexilis
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
-        public static bool IsMainThread => _mainThreadId.HasValue && 
+        public static bool IsMainThread => _mainThreadId.HasValue &&
             Thread.CurrentThread.ManagedThreadId == _mainThreadId;
 
         public static T ExecuteSafe<T>(Func<T> nativeCall, string operationName)
@@ -44,7 +44,7 @@ namespace Nexilis
 
     public class NativeInteropException : Exception
     {
-        public NativeInteropException(string message, Exception inner) 
+        public NativeInteropException(string message, Exception inner)
             : base(message, inner) { }
     }
 }

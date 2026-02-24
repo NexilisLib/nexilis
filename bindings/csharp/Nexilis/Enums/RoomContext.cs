@@ -7,3 +7,4 @@ namespace Nexilis
         ROOM_CONTEXT_UNDEFINED
     }
 }
+

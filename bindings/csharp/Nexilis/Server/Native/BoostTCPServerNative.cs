@@ -15,3 +15,4 @@ namespace Nexilis.Server
         public static extern ProtocolType nexilis_boost_tcp_server_get_type(IntPtr server);
     }
 }
+

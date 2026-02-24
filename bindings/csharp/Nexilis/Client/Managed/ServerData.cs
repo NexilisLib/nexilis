@@ -131,7 +131,7 @@ namespace Nexilis.Client
         /// <summary>
         /// Gets the Boost UDP server address from the server data.
         /// </summary>
-        /// <returns>The Boost UDP server address from the server data.</returns>   
+        /// <returns>The Boost UDP server address from the server data.</returns>
         public string GetBoostUdpServerAddress()
         {
             return ServerDataNative.nexilis_server_data_get_boost_udp_server_adress(_serverDataPtr);

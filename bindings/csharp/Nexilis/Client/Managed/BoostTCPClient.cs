@@ -25,7 +25,8 @@ namespace Nexilis.Client
                 throw new ArgumentNullException(nameof(clientApi));
             }
 
-            _boostTcpClientPtr = BoostTCPClientNative.nexilis_boost_tcp_client_create(protocolManager.ProtocolManagerPtr, clientApi.ClientApiPtr);
+            _boostTcpClientPtr = BoostTCPClientNative.nexilis_boost_tcp_client_create(
+                    protocolManager.ProtocolManagerPtr, clientApi.ClientApiPtr);
         }
 
         /// <summary>
@@ -116,7 +117,9 @@ namespace Nexilis.Client
             }
 
             byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
-            BoostTCPClientNative.nexilis_boost_tcp_client_send_message_with_callback(_boostTcpClientPtr, messageBytes, (uint)messageBytes.Length, callback);
+            BoostTCPClientNative.nexilis_boost_tcp_client_send_message_with_callback(
+                    _boostTcpClientPtr, messageBytes, (uint)messageBytes.Length, callback);
         }
     }
 }
+

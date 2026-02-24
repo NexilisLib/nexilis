@@ -26,3 +26,4 @@ namespace Nexilis
         public static extern IntPtr nexilis_nx_data_get_data(ref RawNxData handle);
     }
 }
+
