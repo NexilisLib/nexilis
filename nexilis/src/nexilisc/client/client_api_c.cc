@@ -278,6 +278,7 @@ nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, u
     auto room = client_api->api->getRoom(room_id);
     auto const_room = new nexilis_Room;
     const_room->room = room;
+    const_room->owned = false;
     return const_room;
 }
 

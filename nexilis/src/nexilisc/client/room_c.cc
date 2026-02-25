@@ -29,6 +29,7 @@ nexilis_Room* nexilis_room_create(nexilis_RoomData* room_data, nexilis_RoomClien
 
     auto room = new nexilis_Room;
     room->room = new nexilis::client::Room(*room_data->data, std::move(clientSessions));
+    room->owned = true;
     return room;
 }
 
@@ -36,7 +37,7 @@ void nexilis_room_destroy(nexilis_Room* room)
 {
     if (room)
     {
-        if (room->room)
+        if (room->room && room->owned)
         {
             delete room->room;
             room->room = nullptr;

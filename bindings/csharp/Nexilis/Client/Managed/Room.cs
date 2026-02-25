@@ -57,7 +57,10 @@ namespace Nexilis.Client
             }
             finally
             {
-                RoomNative.nexilis_room_free_client_array(clientsArrayPtr, numClients);
+                // Pass 0 to only free the outer array, not the individual wrappers.
+                // The wrappers are owned by the returned ClientSession objects.
+                // TODO: add nexilis_client_session_free_wrapper to properly free wrappers on ClientSession disposal.
+                RoomNative.nexilis_room_free_client_array(clientsArrayPtr, 0);
             }
 
         }
@@ -101,7 +104,7 @@ namespace Nexilis.Client
             {
                 if (_nativePtr != IntPtr.Zero)
                 {
-                    RoomDataNative.nexilis_room_data_destroy(_nativePtr);
+                    RoomNative.nexilis_room_destroy(_nativePtr);
                     _nativePtr = IntPtr.Zero;
                 }
                 _disposed = true;

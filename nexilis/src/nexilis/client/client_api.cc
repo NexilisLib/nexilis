@@ -854,6 +854,7 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
 
 Room* ClientAPI::getRoom(uint64_t room_id)
 {
+    std::lock_guard<std::mutex> lock(*m_roomsMutex);
     for (auto& room : m_currentlyActiveRooms)
     {
         if (room.getId() == room_id)

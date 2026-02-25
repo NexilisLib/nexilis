@@ -15,6 +15,7 @@ extern "C" {
 struct nexilis_Room
 {
     nexilis::client::Room* room;
+    bool owned;
 };
 
 typedef struct nexilis_Communication nexilis_Communication;
