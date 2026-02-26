@@ -40,7 +40,7 @@ set(BUILD_SHARED_LIBS ON)
 function(configure_build_environment)
     # Nix devshell.
     if(DEFINED ENV{NIX_BUILD_CORES})
-        set(USE_SUBMODULES 0 PARENT_SCOPE)
+        set(USE_SUBMODULES 1 PARENT_SCOPE)
         set(IS_NIX 1 PARENT_SCOPE)
         set(IS_LOCAL 0 PARENT_SCOPE)
         set(IS_CI 0 PARENT_SCOPE)
@@ -107,17 +107,34 @@ if (USE_SUBMODULES)
     message(STATUS "Using boost submodules")
     set(BOOST_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost")
 
-    set(BOOST_LIBS
-        json system assert align config core static_assert
-        throw_exception container variant variant2 intrusive
-        mp11 move container_hash winapi describe predef endian
+    # Libraries to build (json and its dependencies)
+    set(BOOST_LIBS_TO_BUILD
+        # Core dependencies (order matters for some)
+        assert config core mp11 throw_exception static_assert
+        predef winapi align move describe endian variant2
+        intrusive container_hash compat
+        # Libraries with source files
+        container system json
     )
 
-    foreach(lib ${BOOST_LIBS})
+    # Glob ALL include directories for headers
+    file(GLOB BOOST_LIB_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/*")
+    set(NEXILIS_BOOST_INCLUDE_DIRS "")
+    foreach(lib_dir ${BOOST_LIB_DIRS})
+        set(lib_include_dir "${lib_dir}/include")
+        if(EXISTS ${lib_include_dir})
+            list(APPEND NEXILIS_BOOST_INCLUDE_DIRS "${lib_include_dir}")
+        endif()
+    endforeach()
+
+    # Build only the libraries we need
+    foreach(lib ${BOOST_LIBS_TO_BUILD})
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/${lib}/CMakeLists.txt)
            add_subdirectory(third-party/boost/libs/${lib})
         endif()
     endforeach()
+
+    set(NEXILIS_BOOST_INCLUDE_DIRS "${NEXILIS_BOOST_INCLUDE_DIRS}" CACHE STRING "Boost include directories for submodules" FORCE)
 else()
     message(STATUS "Using system boost")
     find_package(Boost 1.75 REQUIRED COMPONENTS json)
