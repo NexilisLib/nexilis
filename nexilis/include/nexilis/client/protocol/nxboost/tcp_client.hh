@@ -8,6 +8,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/asio/streambuf.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include <thread>
@@ -68,6 +69,8 @@ private:
     bool connectToSwitchedPort(uint16_t port);
     bool send(const nx_data& data);
     void startAsyncRead();
+    void doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> socket,
+                     std::shared_ptr<boost::asio::streambuf> buffer);
     void handleAsyncReadError(const boost::system::error_code& ec);
     void initiatePortSwitch(uint16_t port);
 

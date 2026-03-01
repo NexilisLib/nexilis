@@ -471,9 +471,13 @@ void TCPClient::startAsyncRead()
         return;
     }
 
-    auto receiveBuffer = std::make_shared<boost::asio::streambuf>();
     Log::debug(header(), "Starting async read on ", (m_useSwitchedPort ? "switched" : "main"), " port");
+    doAsyncRead(current_socket, std::make_shared<boost::asio::streambuf>());
+}
 
+void TCPClient::doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> current_socket,
+                             std::shared_ptr<boost::asio::streambuf> receiveBuffer)
+{
     // clang-format off
     boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
         boost::asio::bind_executor(*m_strand, [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
@@ -494,7 +498,8 @@ void TCPClient::startAsyncRead()
 
                 if (bytes_transferred > 0)
                 {
-                    // Process the message.
+                    // Read exactly bytes_transferred bytes (one \n-terminated message).
+                    // Any data beyond bytes_transferred stays in receiveBuffer for the next call.
                     nx_data buffer(bytes_transferred);
                     std::istream is(receiveBuffer.get());
                     is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
@@ -532,11 +537,12 @@ void TCPClient::startAsyncRead()
                     }
                 }
 
-                // Start the next async read.
+                // Continue reading with the same buffer so leftover data is not discarded.
                 if (current_socket->is_open() && !m_stopped->load())
                 {
-                    startAsyncRead();
-                } }));
+                    doAsyncRead(current_socket, receiveBuffer);
+                }
+            }));
     // clang-format on
 }
 
