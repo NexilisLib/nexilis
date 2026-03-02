@@ -476,7 +476,7 @@ void TCPClient::startAsyncRead()
 }
 
 void TCPClient::doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> current_socket,
-                             std::shared_ptr<boost::asio::streambuf> receiveBuffer)
+                            std::shared_ptr<boost::asio::streambuf> receiveBuffer)
 {
     // clang-format off
     boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
