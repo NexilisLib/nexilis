@@ -480,24 +480,30 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             auto movementVector = Vector2f(vecX, vecY);
                             auto mtx = std::make_shared<std::mutex>();
 
+                            // Capture start position before the thread so each tick computes
+                            // startPos + linear(progress, distance) rather than accumulating
+                            // eased offsets onto an already-moved position (which overshoots).
+                            Vector2f startPosition = user.getObject2D().getPosition();
+
                             // clang-format off
-                            std::thread([this, mtx, movementVector, &user, command, &protocol, &messageId, delta]()
+                            std::thread([this, mtx, movementVector, startPosition, &user, command, &protocol, &messageId, delta]()
                             {
                                 try
                                 {
                             // clang-format on
-                                    runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, &user, command, &protocol, &messageId](double progress)
+                                    runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, startPosition, &user, command, &protocol, &messageId](double progress)
                                     {
                                         auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
                                         assert(clientRoom);
 
-                                        double easedX = easing(progress, movementVector.x);
-                                        double easedY = easing(progress, movementVector.y);
+                                        // Linear gives responsive, predictable movement for a shooter.
+                                        // Add to startPosition (not currentPosition) to avoid per-tick accumulation drift.
+                                        double deltaX = linear(progress, movementVector.x);
+                                        double deltaY = linear(progress, movementVector.y);
 
-                                        Vector2f currentPosition = user.getObject2D().getPosition();
                                         Vector2f dimensions = user.getObject2D().getDimensions();
+                                        auto newMovedPosition = Vector2f(startPosition.x + deltaX, startPosition.y + deltaY);
 
-                                        auto newMovedPosition = Vector2f(easedX + currentPosition.x, easedY + currentPosition.y);
                                         bool limitedMovement = false;
                                         for (auto& c : clientRoom->getClients())
                                         {
@@ -530,16 +536,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                                         if (!limitedMovement)
                                         {
-                                            {
-                                                std::lock_guard<std::mutex> lock(*mtx);
-                                                user.getObject2D().setPosition(newMovedPosition);
-                                                std::map<std::string, boost::json::value> params = {
-                                                    {"x", boost::json::value(newMovedPosition.x)},
-                                                    {"y", boost::json::value(newMovedPosition.y)},
-                                                };
-                                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                                sendRoomCommand(roomCommand, user, protocol);
-                                            }
+                                            std::lock_guard<std::mutex> lock(*mtx);
+                                            user.getObject2D().setPosition(newMovedPosition);
+                                            std::map<std::string, boost::json::value> params = {
+                                                {"x", boost::json::value(newMovedPosition.x)},
+                                                {"y", boost::json::value(newMovedPosition.y)},
+                                            };
+                                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
+                                            sendRoomCommand(roomCommand, user, protocol);
                                         }
                                     });
                                 }
@@ -1164,7 +1168,13 @@ std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User
     {
         try
         {
-            runWithTickrate(m_settings.getTickrate(), movement->getDeltatime(), [this, &movement, &user, &protocol](double progress)
+            auto* room = RoomStorage::getRoomById(user.getRoomId());
+            auto* serverObject = room->getObject2DById(movement->getObjectId());
+            // Capture start position so each tick computes startPos + f(progress)
+            // instead of accumulating offsets onto an already-moved position.
+            Vector2f startPosition = serverObject->getPosition();
+
+            runWithTickrate(m_settings.getTickrate(), movement->getDeltatime(), [this, &movement, &user, &protocol, startPosition](double progress)
             {
                 auto func = movement->getMovementFunc();
                 auto amount = movement->getAmount();
@@ -1172,11 +1182,8 @@ std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User
                 auto* room = RoomStorage::getRoomById(user.getRoomId());
                 auto* serverObject = room->getObject2DById(movement->getObjectId());
 
-                double movementY = func(progress, amount.y);
-                double movementX = func(progress, amount.x);
-
-                Vector2f currentPosition = serverObject->getPosition();
-                Vector2f newPosition = Vector2f(currentPosition.x + movementX, currentPosition.y + movementY);
+                Vector2f newPosition = Vector2f(startPosition.x + func(progress, amount.x),
+                                               startPosition.y + func(progress, amount.y));
 
                 serverObject->setPosition(newPosition);
                 std::map<std::string, boost::json::value> messageParams
