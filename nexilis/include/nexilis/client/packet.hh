@@ -31,14 +31,6 @@ public:
         static nx_data clientId();
     };
 
-    class Info
-    {
-    public:
-        static nx_data general();
-        static nx_data clients();
-        static nx_data rooms();
-    };
-
     class Room
     {
     public:
@@ -98,6 +90,14 @@ public:
             static nx_data createMoving(Vector3f startingPosition, Vector3f dimensions, Vector3f movement,
                                         float deltaTime, MovementType movementType, const std::string& filepath);
         };
+    };
+
+    class Info
+    {
+    public:
+        static nx_data general();
+        static nx_data clients();
+        static nx_data rooms();
     };
 
     // Internal initilization function.
