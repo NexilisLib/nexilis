@@ -728,6 +728,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
 
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            Log::debug("Payload size: ", payload.size());
                             assert(payload.size() == 12);
                             auto vector = Util::convertToVector3(payload);
                             Log::debug(header(), "Position x:", vector.x, " y:", vector.y, " z:", vector.z);
