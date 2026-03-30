@@ -6,6 +6,7 @@
 #include <nexilis/movement/movement_3D.hh>
 #include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/server/command/command_result.hh>
 #include <nexilis/server/settings.hh>
 #include <nexilis/server/user.hh>
 
@@ -26,34 +27,6 @@ class Command : public NxClass
 {
 public:
     using ClientMsgType = std::map<std::string, boost::json::value>;
-
-    /// Result for reading the Nexilis command sequence.
-    enum class Result
-    {
-        /// Unimplemented actions.
-        unimplemented,
-
-        // Command success.
-        success,
-
-        // Logical failure in the command, failing is ok.
-        failure,
-
-        // Command is not found.
-        not_found,
-
-        // The input for command is not correct.
-        invalid_input,
-
-        // There is an error implementing command.
-        error,
-
-        // The command usage is unauthorized.
-        unauthorized
-    };
-
-    /// Get string value of the Result type.
-    static std::string resultTypeAsString(Result res);
 
     /// Constructor.
     /// \param settings The settings of the server.
@@ -77,7 +50,7 @@ public:
     /// \param protocol The protocol that was used in receiving the message.
     /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    Result read(const nx_data& command, User& user, Protocol& protocol, uint64_t messageId);
+    CommandResult read(const nx_data& command, User& user, Protocol& protocol, uint64_t messageId);
 
     /// Read the command from client.
     /// \param command_data The data for the command
@@ -86,11 +59,7 @@ public:
     /// \param protocol The protocol that was used in receiving the message.
     /// \param messageId The unique identifier for the message.
     /// \return Result from reading the command.
-    Result read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
-
-    /// Check the result of given command.
-    /// \param result The result of the command from read.
-    bool checkResult(Result result);
+    CommandResult read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
 
     Settings& getSettings()
     {

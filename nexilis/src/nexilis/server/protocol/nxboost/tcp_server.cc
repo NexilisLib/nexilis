@@ -1,5 +1,5 @@
 #include <nexilis/boost_tcp/socket.hh>
-#include <nexilis/server/command.hh>
+#include <nexilis/server/command/command.hh>
 #include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/util.hh>
@@ -370,9 +370,9 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                         auto msgPtr = static_cast<AuthMessage*>(handled_message.get());
 
                         // TODO fix this also
-                        Command::Result passCommand = getCommand().read(msgPtr->getData()[0], *msgPtr->getUser(), *this, msgPtr->getMessageId());
+                        CommandResult passCommand = getCommand().read(msgPtr->getData()[0], *msgPtr->getUser(), *this, msgPtr->getMessageId());
 
-                        if (passCommand == Command::Result::success)
+                        if (passCommand == CommandResult::success)
                         {
                             Log::info("Auth part 1 success");
 
@@ -398,9 +398,9 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                             auto port_data = Util::convertToByteVector(getPort());
                             command_data.insert(command_data.end(), port_data.begin(), port_data.end());
 
-                            Command::Result portCommand = getCommand().read(command_data, *msgPtr->getUser(), *this, msgPtr->getMessageId());
+                            CommandResult portCommand = getCommand().read(command_data, *msgPtr->getUser(), *this, msgPtr->getMessageId());
 
-                            if (portCommand == Command::Result::success)
+                            if (portCommand == CommandResult::success)
                             {
                                 Log::info(header(), "Auth fully complete");
                                 socket_wrapper->close();
@@ -414,7 +414,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                         }
                         else
                         {
-                            Log::info(header(), "Result: ", Command::resultTypeAsString(passCommand));
+                            Log::info(header(), "Result: ", asString(passCommand));
                         }
                     }
                     else
@@ -507,15 +507,15 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     auto msgPtr = static_cast<Message*>(handledMessage.get());
 
                     // Everything ok with initialization.
-                    Command::Result passCommand = getCommand().read(msgPtr->getData(), *msgPtr->getUser(), *this, msgPtr->getMessageId());
+                    CommandResult passCommand = getCommand().read(msgPtr->getData(), *msgPtr->getUser(), *this, msgPtr->getMessageId());
 
-                    if (passCommand == Command::Result::success)
+                    if (passCommand == CommandResult::success)
                     {
                         Log::info(header(), "command success");
                     }
                     else
                     {
-                        Log::warning(header(), "Result: ", Command::resultTypeAsString(passCommand));
+                        Log::warning(header(), "Result: ", asString(passCommand));
                     }
                 }
                 else

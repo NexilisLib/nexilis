@@ -1,7 +1,7 @@
 #ifdef __linux__
 
 #include <nexilis/nexilis_constants.hh>
-#include <nexilis/server/command.hh>
+#include <nexilis/server/command/command.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 
 #include <sys/socket.h>
@@ -191,11 +191,11 @@ void StreamServer::handleMessages()
                 if (type == BaseMessage::Type::message)
                 {
                     auto msgPtr = static_cast<Message*>(handledMessage.get());
-                    Command::Result result = getCommand().read(msgPtr->getData(), *msgPtr->getUser(), *this, msgPtr->getMessageId());
+                    CommandResult result = getCommand().read(msgPtr->getData(), *msgPtr->getUser(), *this, msgPtr->getMessageId());
 
-                    getCommand().checkResult(result);
+                    checkResult(result);
 
-                    if (result == Command::Result::success)
+                    if (result == CommandResult::success)
                     {
                         Log::info("Passed");
                     }

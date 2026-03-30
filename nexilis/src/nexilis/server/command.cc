@@ -3,7 +3,8 @@
 #include <nexilis/movement_type.hh>
 #include <nexilis/room_command_type.hh>
 #include <nexilis/server/client_storage.hh>
-#include <nexilis/server/command.hh>
+#include <nexilis/server/command/command.hh>
+#include <nexilis/server/command/commands.hh>
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/server/server_json.hh>
 
@@ -11,28 +12,6 @@
 
 namespace nexilis::server
 {
-
-std::string Command::resultTypeAsString(Result res)
-{
-    switch (res)
-    {
-        case Result::error:
-            return "error";
-        case Result::failure:
-            return "failure";
-        case Result::invalid_input:
-            return "invalid_input";
-        case Result::success:
-            return "success";
-        case Result::not_found:
-            return "not_found";
-        case Result::unauthorized:
-            return "unauthorized";
-        case Result::unimplemented:
-            return "unimplemented";
-    }
-    return "";
-}
 
 Command::Command(const Settings& settings)
     : NxClass("server::Command"),
@@ -56,46 +35,12 @@ Command& Command::operator=(Command&& other)
     return *this;
 }
 
-bool Command::checkResult(Result result)
-{
-    switch (result)
-    {
-        case Result::success:
-            return true;
-
-        case Result::unauthorized:
-            Log::error("Unauthorized");
-            break;
-
-        case Result::unimplemented:
-            Log::error("Unimplemented");
-            break;
-
-        case Result::not_found:
-            Log::error("Not found");
-            break;
-
-        case Result::invalid_input:
-            Log::error("Invalid input");
-            break;
-
-        case Result::error:
-            Log::error("Error");
-            break;
-
-        case Result::failure:
-            Log::error("Failure");
-            break;
-    }
-    return false;
-}
-
-Command::Result Command::read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId)
+CommandResult Command::read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId)
 {
     return Command::read(Util::convertToByteVector(command_data, length), client, protocol, messageId);
 }
 
-Command::Result Command::read(const nx_data& command, User& user, Protocol& protocol, uint64_t messageId)
+CommandResult Command::read(const nx_data& command, User& user, Protocol& protocol, uint64_t messageId)
 {
     assert(user.getId() != 0);
 
@@ -135,31 +80,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         // requires privileges.
                         case 0:
                         {
-                            Log::debug(header(), "setting::general::client_id");
-                            if (!user.hasRootAccess())
-                            {
-                                Log::error(header(), "Client needs root access for changing id");
-                                return Result::unauthorized;
-                            }
-                            // We are parsing Command, so remove two bytes from this switch statement.
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            uint64_t id = Util::convertToType<uint64_t>(payload);
-
-                            auto& clients = ClientStorage::getAllClients();
-
-                            for (auto c = clients.begin(); c != clients.end(); c++)
-                            {
-                                if (*c == user)
-                                {
-                                    assert(c->hasRootAccess());
-                                    assert(user.hasRootAccess());
-                                    c->setId(id);
-                                    return Result::success;
-                                }
-                            }
-
-                            Log::error(header(), "Error in CommandType::set::clientID");
-                            return Result::error;
+                            return Commands::Set::General::clientId(user, command);
                         }
 
                         // Set username to the client.
@@ -177,16 +98,16 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             }
                             else
                             {
-                                return Result::error;
+                                return CommandResult::error;
                             }
 
                             auto data = clientMessageData(CommandType::setting, "username", messageId, {{"username", boost::json::value(username)}});
                             sendMessageToClient(data, user, protocol);
 
-                            return Result::success;
+                            return CommandResult::success;
                         }
                     }
-                    return Result::not_found;
+                    return CommandResult::not_found;
                 }
 
                 // Protocol specific setting
@@ -203,7 +124,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 case 0:
                                 {
                                     Log::debug(header(), "setting::protocol::boostTCP::server_address");
-                                    return Result::unimplemented;
+                                    return CommandResult::unimplemented;
                                 }
 
                                 // Server port number
@@ -216,15 +137,15 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                     // TODO the following functions needs refactoring
                                     auto data = clientMessageData(CommandType::setting, "port", messageId, {{"port", boost::json::value(port)}});
                                     sendMessageToClient(data, user, protocol);
-                                    return Result::success;
+                                    return CommandResult::success;
                                 }
                             }
                         }
                     }
-                    return Result::not_found;
+                    return CommandResult::not_found;
                 }
             }
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::getting:
@@ -248,12 +169,12 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             sendMessageToClient(data, user, protocol);
 
                             Log::info(header(), "Sent message GET CLIENTID to client");
-                            return Result::success;
+                            return CommandResult::success;
                         }
                     }
                 }
             }
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::room:
@@ -278,14 +199,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!room)
                             {
                                 Log::error("Cannot find room with specified id!");
-                                return Result::invalid_input;
+                                return CommandResult::invalid_input;
                             }
                             else
                             {
                                 if (RoomStorage::getRoomById(roomId)->contains(user.getId()))
                                 {
                                     Log::error("Cannot join room where the client already is!");
-                                    return Result::failure;
+                                    return CommandResult::failure;
                                 }
 
                                 // Joining room.
@@ -297,7 +218,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 std::map<std::string, boost::json::value> params;
                                 auto roomCommand = createRoomCommand(roomId, user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
+                                return CommandResult::success;
                             }
                         }
 
@@ -309,7 +230,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!currentRoom)
                             {
                                 Log::warning("Client not currently in room so cannot leave current room.");
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             currentRoom->leaveRoom(user.getId());
@@ -319,7 +240,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             std::map<std::string, boost::json::value> params;
                             auto roomCommand = createRoomCommand(currentRoom->getId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         /// Create room.
@@ -332,22 +253,22 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (roomName.empty())
                             {
                                 Log::error("Room name cannot be empty");
-                                return Result::invalid_input;
+                                return CommandResult::invalid_input;
                             }
                             else if (roomName == "")
                             {
                                 Log::error("Room name cannot be an empty string");
-                                return Result::invalid_input;
+                                return CommandResult::invalid_input;
                             }
                             else if (roomName == " ")
                             {
                                 Log::error("Room name cannot be equal to \" \" ");
-                                return Result::invalid_input;
+                                return CommandResult::invalid_input;
                             }
                             else if (roomName.length() > 20)
                             {
                                 Log::error("Too long room name");
-                                return Result::invalid_input;
+                                return CommandResult::invalid_input;
                             }
                             else
                             {
@@ -359,7 +280,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 std::map<std::string, boost::json::value> params;
                                 auto roomCommand = createRoomCommand(newRoomId, user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
+                                return CommandResult::success;
                             }
                         }
                     }
@@ -378,7 +299,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 if (user.getRoomId() == 0)
                                 {
                                     Log::error("User not currently in room!");
-                                    return Result::error;
+                                    return CommandResult::error;
                                 }
 
                                 std::map<std::string, boost::json::value> params{
@@ -388,23 +309,23 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                                 auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                                 sendRoomCommand(roomCommand, user, protocol);
-                                return Result::success;
+                                return CommandResult::success;
                             }
 
                             // othercast
                             case 1:
                             {
-                                return Result::unimplemented;
+                                return CommandResult::unimplemented;
                             }
 
                             // unicast
                             case 2:
                             {
-                                return Result::unimplemented;
+                                return CommandResult::unimplemented;
                             }
                         }
                     }
-                        return Result::not_found;
+                        return CommandResult::not_found;
                 }
                 // Player 2D
                 case 2:
@@ -417,7 +338,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (user.getRoomId() == 0)
                             {
                                 Log::error(header(), "User not in room!");
-                                return Result::error;
+                                return CommandResult::error;
                             }
 
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
@@ -429,7 +350,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!currentRoom)
                             {
                                 Log::warning(header(), "Client not currently in room.");
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             user.getObject2D().setPosition(vector);
@@ -440,7 +361,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         // Dimensions 2D
@@ -454,7 +375,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!currentRoom)
                             {
                                 Log::error("Client not currently in room.");
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             std::map<std::string, boost::json::value> params{
@@ -465,7 +386,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         // Movement 2D, creates a thread that sends the new position with time of delta.
@@ -553,10 +474,10 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                                 } })
                                     .detach();
 
-                            return Result::success;
+                            return CommandResult::success;
                         }
                     }
-                    return Result::not_found;
+                    return CommandResult::not_found;
                 }
 
                 // Object2D
@@ -594,7 +515,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         case 1:
@@ -611,7 +532,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         // Move object
@@ -627,14 +548,14 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!room)
                             {
                                 Log::error("Client room not found!");
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             auto object = room->getObject2DById(objectId);
                             if (!object)
                             {
                                 Log::error("Object not found with id: ", objectId);
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             auto oldPosition = object->getPosition();
@@ -650,7 +571,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         // Create moving object
@@ -708,10 +629,10 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto base_move = std::make_unique<Movement2D>(MovementData(objectId, deltaTime, command, messageId), movement, movementFunction);
                             object2DMovement(std::move(base_move), user, protocol).detach();
-                            return Result::success;
+                            return CommandResult::success;
                         }
                     }
-                    return Result::not_found;
+                    return CommandResult::not_found;
                 }
                 // Player3D
                 case 4:
@@ -724,7 +645,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (user.getRoomId() == 0)
                             {
                                 Log::error(header(), "User not in room!");
-                                return Result::error;
+                                return CommandResult::error;
                             }
 
                             auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
@@ -738,7 +659,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!currentRoom)
                             {
                                 Log::warning(header(), "Client not currently in room.");
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             user.getObject3D().setPosition(vector);
@@ -750,7 +671,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         // Dimensions 3D
@@ -764,7 +685,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             if (!currentRoom)
                             {
                                 Log::error("Client not currently in room.");
-                                return Result::failure;
+                                return CommandResult::failure;
                             }
 
                             std::map<std::string, boost::json::value> params{
@@ -776,7 +697,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
 
                             auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
                             sendRoomCommand(roomCommand, user, protocol);
-                            return Result::success;
+                            return CommandResult::success;
                         }
 
                         // Movement 3D
@@ -835,12 +756,12 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                             })
                             .detach();
                             // clang-format on
-                            return Result::success;
+                            return CommandResult::success;
                         }
                     }
                 }
             }
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::authentication:
@@ -851,7 +772,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 case 0:
                 {
                     Log::info("New client wants to authenticate, not implemented");
-                    return Result::not_found;
+                    return CommandResult::not_found;
                 }
 
                 // Check authentication for root access.
@@ -866,18 +787,18 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         {
                             user.setRootAccess(true);
                             Log::info("Client ", user.getIPAddress(), " has root access!");
-                            return Result::success;
+                            return CommandResult::success;
                         }
                         else
                         {
                             Log::error("Wrong password!");
-                            return Result::invalid_input;
+                            return CommandResult::invalid_input;
                         }
                     }
                     else
                     {
                         Log::error("Trying to set password for server without auth!");
-                        return Result::unauthorized;
+                        return CommandResult::unauthorized;
                     }
                 }
 
@@ -894,32 +815,32 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                         {
                             user.setCommonAccess(true);
                             Log::info("Client ", user.getIPAddress(), " has common access!");
-                            return Result::success;
+                            return CommandResult::success;
                         }
                         else
                         {
                             Log::error("Wrong password!");
-                            return Result::invalid_input;
+                            return CommandResult::invalid_input;
                         }
                     }
                     else
                     {
                         Log::error("Trying to set password for server without auth!");
-                        return Result::unauthorized;
+                        return CommandResult::unauthorized;
                     }
                 }
             }
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::server_management:
         {
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::player_management:
         {
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::error:
@@ -931,10 +852,10 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                 case 0:
                 {
                     Log::critical("Internal server error: x");
-                    return Result::error;
+                    return CommandResult::error;
                 }
             }
-            return Result::not_found;
+            return CommandResult::not_found;
         }
 
         case CommandType::info:
@@ -954,7 +875,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     auto data = clientMessageData(CommandType::info, "server_data", messageId, params);
                     sendMessageToClient(data, user, protocol);
                     Log::info("Used Info::generalInfo");
-                    return Result::success;
+                    return CommandResult::success;
                 }
 
                 // Get data from the clients existing on the server.
@@ -971,7 +892,7 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     sendMessageToClient(data, user, protocol);
 
                     Log::info("Used Info::clientInfo");
-                    return Result::success;
+                    return CommandResult::success;
                 }
 
                 // Get data from the rooms existing on the server.
@@ -989,17 +910,17 @@ Command::Result Command::read(const nx_data& command, User& user, Protocol& prot
                     sendMessageToClient(data, user, protocol);
 
                     Log::info("Used Info::roomInfo");
-                    return Result::success;
+                    return CommandResult::success;
                 }
             }
-            return Result::not_found;
+            return CommandResult::not_found;
         }
         case CommandType::undefined:
         {
-            return Result::error;
+            return CommandResult::error;
         }
     }
-    return Result::not_found;
+    return CommandResult::not_found;
 }
 
 void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)

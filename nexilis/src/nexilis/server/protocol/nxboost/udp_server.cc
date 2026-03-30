@@ -1,5 +1,5 @@
 #include <nexilis/logger/log.hh>
-#include <nexilis/server/command.hh>
+#include <nexilis/server/command/command.hh>
 #include <nexilis/server/protocol/nxboost/udp_server.hh>
 
 #include <boost/asio/ip/address.hpp>
@@ -176,10 +176,10 @@ void UDPServer::receiveFromClients()
             {
                 auto msg_ptr = static_cast<Message*>(handledMessage.get());
 
-                Command::Result passCommand = getCommand().read(msg_ptr->getData(), *msg_ptr->getUser(), *this, msg_ptr->getMessageId());
+                CommandResult passCommand = getCommand().read(msg_ptr->getData(), *msg_ptr->getUser(), *this, msg_ptr->getMessageId());
                 switch (passCommand)
                 {
-                    case Command::Result::success:
+                    case CommandResult::success:
                         Log::info("UDPServer: Passed");
                         break;
 
