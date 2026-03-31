@@ -71,10 +71,12 @@ public:
         return m_settings;
     }
 
-private:
-    /// Send message to every protocol that is avainable for a client;
-    void sendMessageToClient(nx_data data, User& user, Protocol& protocol);
+    static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
+    /// Send message to every protocol that is avainable for a client.
+    static void sendMessageToClient(nx_data data, User& user, Protocol& protocol);
+
+private:
     nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
     void sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
 
@@ -102,7 +104,6 @@ private:
     // std::thread player2DMovement(Movement2D movement, const MovementParams& params);
     // std::thread player3DMovement(Movement3D movement, const MovementParams& params);
 
-    static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
     static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
 private:

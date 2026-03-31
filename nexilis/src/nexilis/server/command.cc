@@ -931,7 +931,7 @@ void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
         {
             if (!user.boostTCPSend(data))
             {
-                Log::error(header(), "Cannot send messages using (BOOST_TCP)");
+                Log::error("Cannot send messages using (BOOST_TCP)");
             }
             return;
         }
@@ -940,7 +940,7 @@ void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
         {
             if (!user.boostUDPSend(data))
             {
-                Log::error(header(), "Cannot send messages using (BOOST_UDP)");
+                Log::error("Cannot send messages using (BOOST_UDP)");
             }
             return;
         }
@@ -949,7 +949,7 @@ void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
         {
             if (!user.unixStreamSend(data))
             {
-                Log::error(header(), "Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
+                Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
             }
             return;
         }
@@ -960,12 +960,12 @@ void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
         case Protocol::Type::AF_INET_UDP_CLIENT:
         case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
         case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
-            Log::error(header(), "This function cannot be called with client protocol");
+            Log::error("This function cannot be called with client protocol");
             return;
 
         default:
         {
-            Log::error(header(), "Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
+            Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
             return;
         }
     }
