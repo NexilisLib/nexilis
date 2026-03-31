@@ -137,16 +137,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Get client id.
                         case 0:
                         {
-                            Log::debug(header(), "getting::general::client_id");
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"client_id", boost::json::value(user.getId())}};
-
-                            auto data = clientMessageData(CommandType::getting, "client_id", messageId, params);
-                            sendMessageToClient(data, user, protocol);
-
-                            Log::info(header(), "Sent message GET CLIENTID to client");
-                            return CommandResult::success;
+                            return Commands::Get::General::clientId(args);
                         }
                     }
                 }

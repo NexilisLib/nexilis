@@ -31,6 +31,23 @@ public:
             return m_messageId;
         }
 
+        friend std::ostream& operator<<(std::ostream& os, const DefaultArgs& obj)
+        {
+            os << obj.getUser().getId();
+
+            if (!obj.m_user.getUsername().empty())
+            {
+                os << " [" << obj.getUser().getUsername() << "]";
+            }
+
+            os << ":" << obj.getMessageId();
+            for (const auto& i : obj.getData())
+                os << i;
+
+            os << "\n";
+            return os;
+        }
+
     private:
         User& m_user;
         Protocol& m_protocol;
@@ -38,6 +55,7 @@ public:
         size_t m_messageId;
     };
 
+    // SET
     class Set
     {
     public:
@@ -57,7 +75,19 @@ public:
             };
         };
     };
+
+    // GET
+    class Get
+    {
+    public:
+        class General
+        {
+        public:
+            static CommandResult clientId(const DefaultArgs& args);
+        };
+    };
 };
+
 } // namespace nexilis::server
 
 #endif
