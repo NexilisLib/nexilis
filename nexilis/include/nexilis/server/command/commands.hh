@@ -45,7 +45,16 @@ public:
         {
         public:
             static CommandResult clientId(User& user, const nx_data& data);
-            static CommandResult username(DefaultArgs args);
+            static CommandResult username(const DefaultArgs& args);
+        };
+        class Protocol
+        {
+        public:
+            class BoostTCP
+            {
+            public:
+                static CommandResult port(const DefaultArgs& args);
+            };
         };
     };
 };

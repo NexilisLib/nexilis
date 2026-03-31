@@ -1,4 +1,3 @@
-#include <nexilis/logger/log.hh>
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command/commands.hh>
 

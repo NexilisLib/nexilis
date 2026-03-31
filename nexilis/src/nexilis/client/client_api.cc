@@ -139,14 +139,18 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 return ReadResult::success;
             }
-            // FIXME this is so bad.
             else if (type == "port")
             {
                 Log::debug(header(), "Received BoostTCP port message!");
                 std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                uint16_t port = createUint64(json, "port");
-                m_data.setBoostTCPPortNumber(port);
-                return ReadResult::success;
+
+                uint16_t boost_tcp_port = createUint64(json, "boost_tcp_port");
+                if (boost_tcp_port != 0)
+                {
+                    m_data.setBoostTCPPortNumber(boost_tcp_port);
+                    return ReadResult::success;
+                }
+                return ReadResult::error;
             }
             else
             {

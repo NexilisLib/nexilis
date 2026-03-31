@@ -64,6 +64,8 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
         arg4 = command[3];
     }
 
+    Commands::DefaultArgs args(user, protocol, command, messageId);
+
     Log::debug(header(), commandTypeAsString(arg));
     switch (arg)
     {
@@ -86,25 +88,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Set username to the client.
                         case 1:
                         {
-                            Log::debug(header(), "setting::general::username");
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            std::string username = Util::convertToString(payload);
-
-                            // Setting the username for internal client.
-                            auto* client = ClientStorage::getClientById(user.getId());
-                            if (client)
-                            {
-                                client->setUsername(username);
-                            }
-                            else
-                            {
-                                return CommandResult::error;
-                            }
-
-                            auto data = clientMessageData(CommandType::setting, "username", messageId, {{"username", boost::json::value(username)}});
-                            sendMessageToClient(data, user, protocol);
-
-                            return CommandResult::success;
+                            return Commands::Set::General::username(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -130,14 +114,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                                 // Server port number
                                 case 1:
                                 {
-                                    Log::debug(header(), "setting::protocol::boostTCP::server_port_number");
-                                    auto payload = Util::removeAmountOfBytesFromVector(command, 4);
-                                    uint16_t port = Util::convertoToUint16(payload);
-
-                                    // TODO the following functions needs refactoring
-                                    auto data = clientMessageData(CommandType::setting, "port", messageId, {{"port", boost::json::value(port)}});
-                                    sendMessageToClient(data, user, protocol);
-                                    return CommandResult::success;
+                                    return Commands::Set::Protocol::BoostTCP::port(args);
                                 }
                             }
                         }
