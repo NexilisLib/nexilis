@@ -71,15 +71,15 @@ public:
         return m_settings;
     }
 
+    // TODO create own interface for these static functions.
     static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
     /// Send message to every protocol that is avainable for a client.
     static void sendMessageToClient(nx_data data, User& user, Protocol& protocol);
+    static nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
+    static void sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
 
 private:
-    nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
-    void sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
-
     /// Send multiple messages with specified tickrate.
     void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
 

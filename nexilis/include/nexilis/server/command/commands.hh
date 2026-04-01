@@ -3,9 +3,11 @@
 
 #include <nexilis/server/command/command_result.hh>
 #include <nexilis/server/user.hh>
+#include <nexilis/util.hh>
 
 namespace nexilis::server
 {
+
 class Commands
 {
 public:
@@ -40,9 +42,7 @@ public:
                 os << " [" << obj.getUser().getUsername() << "]";
             }
 
-            os << ":" << obj.getMessageId();
-            for (const auto& i : obj.getData())
-                os << i;
+            os << ":" << Util::convertToString(obj.getData());
 
             os << "\n";
             return os;
@@ -84,6 +84,18 @@ public:
         {
         public:
             static CommandResult clientId(const DefaultArgs& args);
+        };
+    };
+
+    class Room
+    {
+    public:
+        class Management
+        {
+        public:
+            static CommandResult join(const DefaultArgs& args);
+            static CommandResult leave(const DefaultArgs& args);
+            static CommandResult create(const DefaultArgs& args);
         };
     };
 };

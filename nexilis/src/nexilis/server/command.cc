@@ -147,8 +147,6 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
 
         case CommandType::room:
         {
-            // Payload for room commands start after the third byte.
-            const uint8_t roomCommandPayloadAmount = 3;
             switch (arg2)
             {
                 // Management
@@ -159,97 +157,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Join room.
                         case 0:
                         {
-                            Log::debug(header(), "room::management::join");
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                            uint64_t roomId = Util::convertToType<uint64_t>(payload);
-                            auto* room = RoomStorage::getRoomById(roomId);
-
-                            if (!room)
-                            {
-                                Log::error("Cannot find room with specified id!");
-                                return CommandResult::invalid_input;
-                            }
-                            else
-                            {
-                                if (RoomStorage::getRoomById(roomId)->contains(user.getId()))
-                                {
-                                    Log::error("Cannot join room where the client already is!");
-                                    return CommandResult::failure;
-                                }
-
-                                // Joining room.
-                                room->joinRoom(user.getId());
-                                user.setRoomId(room->getId());
-                                assert(RoomStorage::getRoomById(roomId)->contains(user.getId()));
-                                assert(user.getRoomId() == roomId);
-
-                                std::map<std::string, boost::json::value> params;
-                                auto roomCommand = createRoomCommand(roomId, user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return CommandResult::success;
-                            }
+                            return Commands::Room::Management::join(args);
                         }
 
                         // Leave current room.
                         case 1:
                         {
-                            auto* currentRoom = RoomStorage::getRoomById(user.getRoomId());
-
-                            if (!currentRoom)
-                            {
-                                Log::warning("Client not currently in room so cannot leave current room.");
-                                return CommandResult::failure;
-                            }
-
-                            currentRoom->leaveRoom(user.getId());
-                            assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
-                            user.setRoomId(0);
-
-                            std::map<std::string, boost::json::value> params;
-                            auto roomCommand = createRoomCommand(currentRoom->getId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Management::leave(args);
                         }
 
                         /// Create room.
                         case 2:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
-                            uint8_t context = payload[0];
-                            std::string roomName = Util::convertToString(Util::removeAmountOfBytesFromVector(payload, 1));
-
-                            if (roomName.empty())
-                            {
-                                Log::error("Room name cannot be empty");
-                                return CommandResult::invalid_input;
-                            }
-                            else if (roomName == "")
-                            {
-                                Log::error("Room name cannot be an empty string");
-                                return CommandResult::invalid_input;
-                            }
-                            else if (roomName == " ")
-                            {
-                                Log::error("Room name cannot be equal to \" \" ");
-                                return CommandResult::invalid_input;
-                            }
-                            else if (roomName.length() > 20)
-                            {
-                                Log::error("Too long room name");
-                                return CommandResult::invalid_input;
-                            }
-                            else
-                            {
-                                auto newRoom = Room(RoomData(user.getId(), roomName, Util::getRandomUint64(), static_cast<RoomData::Context>(context)));
-
-                                auto newRoomId = newRoom.getId();
-                                RoomStorage::add(std::move(newRoom));
-
-                                std::map<std::string, boost::json::value> params;
-                                auto roomCommand = createRoomCommand(newRoomId, user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return CommandResult::success;
-                            }
+                            return Commands::Room::Management::create(args);
                         }
                     }
                     // Communicate
@@ -261,7 +181,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             case 0:
                             {
                                 // Get messagedata.
-                                auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                                auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                                 auto messageData = Util::convertToString(payload);
 
                                 if (user.getRoomId() == 0)
@@ -309,7 +229,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                                 return CommandResult::error;
                             }
 
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto vector = Util::convertToVector2(payload);
                             Log::debug(header(), "Position x:", vector.x, " y:", vector.y);
 
@@ -335,7 +255,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Dimensions 2D
                         case 1:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto vector = Util::convertToVector2(payload);
                             Log::debug(header(), "Dimension x:", vector.x, " y:", vector.y);
 
@@ -362,7 +282,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         case 2:
                         {
                             // Get messagedata
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto vecX = Util::floatFromFront(payload);
                             auto vecY = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
                             auto delta = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
@@ -457,7 +377,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         case 0:
                         {
                             // Get messagedata
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto position = Util::vector2fFromFront(payload);
                             auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
                             auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
@@ -488,7 +408,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
 
                         case 1:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto objectId = Util::uint64FromFront(payload);
 
                             // Remove from storage.
@@ -507,7 +427,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         case 2:
                         {
                             // Get messagedata.
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto objectId = Util::uint64FromFront(payload);
                             auto position = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
 
@@ -546,7 +466,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         case 3:
                         {
                             // Get messagedata.
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto startingPosition = Util::vector2fFromFront(payload);
                             auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
                             auto movement = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 16));
@@ -616,7 +536,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                                 return CommandResult::error;
                             }
 
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             Log::debug("Payload size: ", payload.size());
                             assert(payload.size() == 12);
                             auto vector = Util::convertToVector3(payload);
@@ -645,7 +565,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Dimensions 3D
                         case 1:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto vector = Util::convertToVector3(payload);
                             Log::debug("Dimension x:", vector.x, " y:", vector.y, " z:", vector.z);
 
@@ -671,7 +591,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Movement 3D
                         case 2:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, roomCommandPayloadAmount);
+                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
                             auto vec_x = Util::floatFromFront(payload);
                             auto vec_y = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
                             auto vec_z = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
@@ -943,7 +863,7 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
 {
     if (messageData.size() < 3)
     {
-        Log::error(header(), "Insufficient messageData");
+        Log::error("createRoomCommand: Insufficient messageData");
         return nx_data();
     }
 
