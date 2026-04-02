@@ -28,30 +28,23 @@
           ];
 
           shellHook = ''
-            export NEXILIS_PREFIX=${self.packages.${system}.lib}
+            echo "Building Nexilis from source..."
+            cd ../nexilis/
+            rm -rf build install
+            mkdir -p build
+            cd build
+            cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
+            make
+            make install
+            cd ../..
+
+            export NEXILIS_PREFIX=$(pwd)/nexilis/nexilis/install
+            export CMAKE_PREFIX_PATH=$NEXILIS_PREFIX:$CMAKE_PREFIX_PATH
             export LD_LIBRARY_PATH=$NEXILIS_PREFIX/lib:$LD_LIBRARY_PATH
 
             echo "Welcome to the Nexilis Dev Shell"
             echo "NEXILIS_PREFIX set to $NEXILIS_PREFIX"
-            python scripts/src/env.py
-
-            test-runner() {
-                python scripts/src/test_runner.py "$@"
-            }
-            echo "Available test-runner commands:"
-            echo "  test-runner --all      # Run all tests"
-            echo "  test-runner --cpp      # Run C++ tests"
-            echo "  nexilis_tests          # Run C++ tests directly"
-
-            cppcheck() {
-                python scripts/src/cppcheck.py
-            }
-            echo "Cppcheck command: cppcheck"
-
-            format() {
-                python scripts/src/format.py
-            }
-            echo "Formatter command: format"
+            python scripts/pre-commit/env.py
           '';
         };
 
@@ -59,15 +52,18 @@
           lib = pkgs.stdenv.mkDerivation {
             pname = "nexilis-library";
             version = "0.0.1";
-            src = ../.;
+            src = ../nexilis;
 
             nativeBuildInputs = [ pkgs.cmake ];
             buildInputs = [ pkgs.boost ];
 
+            # Force rebuild without using CMake cache.
+            dontUseCmakeBuildDir = true;
+
             configurePhase = ''
               mkdir -p build
               cd build
-              cmake ../nexilis -DCMAKE_INSTALL_PREFIX=$out
+              cmake .. -DCMAKE_INSTALL_PREFIX=$out
             '';
 
             buildPhase = ''
