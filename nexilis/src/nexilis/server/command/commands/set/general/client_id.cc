@@ -20,11 +20,12 @@ CommandResult Commands::Set::General::clientId(User& user, const nx_data& data)
 
     for (auto c = clients.begin(); c != clients.end(); c++)
     {
-        if (*c == user)
+        auto client = c->get();
+        if (*client == user)
         {
-            assert(c->hasRootAccess());
+            assert(client->hasRootAccess());
             assert(user.hasRootAccess());
-            c->setId(id);
+            client->setId(id);
             return CommandResult::success;
         }
     }

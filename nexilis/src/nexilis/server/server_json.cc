@@ -60,23 +60,23 @@ boost::json::object ServerJson::getServerData()
     return serverDataObj;
 }
 
-boost::json::array ServerJson::clientsToJSON(const std::vector<User>& clients)
+boost::json::array ServerJson::clientsToJSON(const std::vector<std::unique_ptr<User>>& clients)
 {
     boost::json::array resultingArray;
 
     for (const auto& client : clients)
     {
         boost::json::object clientObj;
-        if (client.getUsername().empty())
+        if (client->getUsername().empty())
         {
             clientObj["username"] = "UNIDENTIFIED_CLIENT";
         }
         else
         {
-            clientObj["username"] = client.getUsername();
+            clientObj["username"] = client->getUsername();
         }
-        clientObj["id"] = client.getId();
-        clientObj["roomId"] = client.getRoomId();
+        clientObj["id"] = client->getId();
+        clientObj["roomId"] = client->getRoomId();
         resultingArray.emplace_back(std::move(clientObj));
     }
     return resultingArray;

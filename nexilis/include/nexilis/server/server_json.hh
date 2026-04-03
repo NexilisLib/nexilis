@@ -31,7 +31,7 @@ private:
     static boost::json::array roomsToJSON(const std::vector<Room>& rooms);
 
     /// Get json data from client vector.
-    static boost::json::array clientsToJSON(const std::vector<User>& clients);
+    static boost::json::array clientsToJSON(const std::vector<std::unique_ptr<User>>& clients);
 };
 
 } // namespace nexilis::server

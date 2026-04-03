@@ -10,11 +10,11 @@ namespace nexilis::server
 class ClientStorage
 {
 public:
-    static void add(User&& client);
+    static void add(std::unique_ptr<User> client);
 
     static bool contains(uint64_t id);
 
-    static std::vector<User>& getAllClients();
+    static std::vector<std::unique_ptr<User>>& getAllClients();
 
     static User* getClientById(uint64_t id);
 
@@ -23,7 +23,7 @@ public:
     static void clear();
 
 private:
-    static std::vector<User> m_clients;
+    static std::vector<std::unique_ptr<User>> m_clients;
 };
 
 } // namespace nexilis::server

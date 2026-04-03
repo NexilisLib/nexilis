@@ -5,14 +5,9 @@
 namespace nexilis::server
 {
 
-std::vector<User> ClientStorage::m_clients = {};
+std::vector<std::unique_ptr<User>> ClientStorage::m_clients = {};
 
-std::vector<User>& ClientStorage::getAllClients()
-{
-    return m_clients;
-}
-
-void ClientStorage::add(User&& client)
+void ClientStorage::add(std::unique_ptr<User> client)
 {
     m_clients.emplace_back(std::move(client));
     Log::info("New client, total amount = ", m_clients.size());
@@ -21,23 +16,28 @@ void ClientStorage::add(User&& client)
 bool ClientStorage::contains(uint64_t id)
 {
     return std::find_if(m_clients.begin(), m_clients.end(),
-                        [id](const User& client)
+                        [id](const std::unique_ptr<User>& client)
                         {
-                            return client.getId() == id;
+                            return client->getId() == id;
                         }) != m_clients.end();
+}
+
+std::vector<std::unique_ptr<User>>& ClientStorage::getAllClients()
+{
+    return m_clients;
 }
 
 User* ClientStorage::getClientById(uint64_t id)
 {
     auto it = std::find_if(m_clients.begin(), m_clients.end(),
-                           [id](const User& client)
+                           [id](const std::unique_ptr<User>& client)
                            {
-                               return client.getId() == id;
+                               return client->getId() == id;
                            });
 
     if (it != m_clients.end())
     {
-        return &(*it);
+        return it->get();
     }
     else
     {
@@ -51,9 +51,9 @@ std::vector<User*> ClientStorage::getClientsByIpAddress(const std::string& ip_ad
 
     for (auto& client : m_clients)
     {
-        if (client.getIPAddress() == ip_address)
+        if (client->getIPAddress() == ip_address)
         {
-            result.push_back(&client);
+            result.push_back(client.get());
         }
     }
 

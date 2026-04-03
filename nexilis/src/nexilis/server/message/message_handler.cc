@@ -42,15 +42,16 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
 
     // Does the user actually exist?
     auto* user = ClientStorage::getClientById(clientId);
+    std::unique_ptr<User> newUserPtr;
     if (!user)
     {
         // Create a new user.
         uint64_t newId = Util::getRandomUint64();
-        User newlyCreatedUser(newId, address);
+        newUserPtr = std::make_unique<User>(newId, address);
         Log::info(header(), "Created new user: ", newId);
         auto username = Util::getRandomString(10);
-        newlyCreatedUser.setUsername(username);
-        user = &newlyCreatedUser;
+        newUserPtr->setUsername(username);
+        user = newUserPtr.get();
         newUser = true;
     }
     assert(user);
@@ -96,8 +97,13 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
                     Log::info(header(), "Correct password by user ", user->getId());
                     user->setCommonAccess(true);
 
+                    // Add to storage only if this was a new user.
+                    if (newUserPtr)
+                    {
+                        ClientStorage::add(std::move(newUserPtr));
+                    }
+
                     uint64_t newClientId = user->getId();
-                    ClientStorage::add(std::move(*user));
                     auto realNewClient = ClientStorage::getClientById(newClientId);
 
                     // Checking successfull client creation.
