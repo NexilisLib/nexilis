@@ -44,7 +44,7 @@
 
             echo "Welcome to the Nexilis Dev Shell"
             echo "NEXILIS_PREFIX set to $NEXILIS_PREFIX"
-            python scripts/pre-commit/env.py
+            python scripts/pre_commit/env.py
           '';
         };
 
