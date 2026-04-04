@@ -101,7 +101,7 @@ public:
         class Communicate
         {
         public:
-            static CommandResult broadcast(const DefaultArgs args);
+            static CommandResult broadcast(const DefaultArgs& args);
         };
     };
 };
