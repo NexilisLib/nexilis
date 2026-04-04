@@ -180,24 +180,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             // broadcast
                             case 0:
                             {
-                                // Get messagedata.
-                                auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                                auto messageData = Util::convertToString(payload);
-
-                                if (user.getRoomId() == 0)
-                                {
-                                    Log::error("User not currently in room!");
-                                    return CommandResult::error;
-                                }
-
-                                std::map<std::string, boost::json::value> params{
-                                        {"id", boost::json::value(user.getId())},
-                                        {"roomId", boost::json::value(user.getRoomId())},
-                                        {"message", boost::json::value(messageData)}};
-
-                                auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                sendRoomCommand(roomCommand, user, protocol);
-                                return CommandResult::success;
+                                return Commands::Room::Communicate::broadcast(args);
                             }
 
                             // othercast

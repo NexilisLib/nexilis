@@ -97,6 +97,12 @@ public:
             static CommandResult leave(const DefaultArgs& args);
             static CommandResult create(const DefaultArgs& args);
         };
+
+        class Communicate
+        {
+        public:
+            static CommandResult broadcast(const DefaultArgs args);
+        };
     };
 };
 
