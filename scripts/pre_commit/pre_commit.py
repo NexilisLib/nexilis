@@ -27,12 +27,14 @@ def run_minimal_checks():
     else:
         print("All best practice checks passed.")
 
-    include_directory, src_directory, exclude_directories = get_nexilis_dirs(nexilis_root)
+    include_directory, src_directory, exclude_directories = get_nexilis_dirs(
+        nexilis_root
+    )
     cppcheck_result = run_cppcheck(
         include_dir=include_directory,
         src_dir=src_directory,
         exclude_dirs=exclude_directories,
-        strict=False
+        strict=False,
     )
 
     print(cppcheck_result)
@@ -52,17 +54,12 @@ def run_tests():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Pre-commit script to run various checks.")
+        description="Pre-commit script to run various checks."
+    )
 
-    parser.add_argument(
-        "--all", action="store_true", help="Run all checks."
-    )
-    parser.add_argument(
-        "--minimal", action="store_true", help="Run minimal checks."
-    )
-    parser.add_argument(
-        "--tests", action="store_true", help="Run all tests."
-    )
+    parser.add_argument("--all", action="store_true", help="Run all checks.")
+    parser.add_argument("--minimal", action="store_true", help="Run minimal checks.")
+    parser.add_argument("--tests", action="store_true", help="Run all tests.")
     args = parser.parse_args()
 
     create_env_file()

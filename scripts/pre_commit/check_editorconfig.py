@@ -194,25 +194,7 @@ def find_git_root(start):
         return start
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Check files against .editorconfig rules."
-    )
-    parser.add_argument(
-        '--root',
-        type=str,
-        default=None,
-        help="Project root (default: git repo root or cwd)",
-    )
-    parser.add_argument(
-        'files',
-        nargs='*',
-        help="Files to check (default: all git-tracked files)",
-    )
-    args = parser.parse_args()
-
-    root = os.path.abspath(args.root) if args.root else find_git_root(os.getcwd())
-
+def check_editorconfig(root, files):
     editorconfig_path = os.path.join(root, '.editorconfig')
     if not os.path.isfile(editorconfig_path):
         print(f"Error: no .editorconfig found at {editorconfig_path}")
@@ -221,8 +203,8 @@ def main():
     sections = parse_editorconfig(editorconfig_path)
 
     files = (
-        [os.path.abspath(f) for f in args.files]
-        if args.files
+        [os.path.abspath(f) for f in files]
+        if files
         else get_tracked_files(root)
     )
 
@@ -243,6 +225,28 @@ def main():
         for v in violations:
             print(f"{rel}: {v}")
         total += len(violations)
+
+    return total
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Check files against .editorconfig rules."
+    )
+    parser.add_argument(
+        '--root',
+        type=str,
+        default=None,
+        help="Project root (default: git repo root or cwd)",
+    )
+    parser.add_argument(
+        'files',
+        nargs='*',
+        help="Files to check (default: all git-tracked files)",
+    )
+    args = parser.parse_args()
+
+    root = os.path.abspath(args.root) if args.root else find_git_root(os.getcwd())
+    total = check_editorconfig(root, args.files)
 
     if total:
         print(f"\n{total} violation(s) found.")
