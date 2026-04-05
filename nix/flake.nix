@@ -24,6 +24,7 @@
             pkgs.clang-tools
             (pkgs.python3.withPackages (ps: with ps; [
               python-dotenv
+              flake8
             ]))
           ];
 
