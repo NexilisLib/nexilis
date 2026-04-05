@@ -18,9 +18,10 @@ def install():
     subprocess.run(["cmake", "-B", "build", prefix], check=True)
 
     cpu_count = str(os.cpu_count())
-    subprocess.run([
-        "cmake", "--build", "build", "--target", "install", "-j", cpu_count
-        ], check=True)
+    subprocess.run(
+        ["cmake", "--build", "build", "--target", "install", "-j", cpu_count],
+        check=True,
+    )
 
     print("Nexilis installed successfully.")
 
@@ -74,21 +75,11 @@ def run_csharp_tests():
 
 def main():
     parser = argparse.ArgumentParser(description="Run tests for the Nexilis project.")
-    parser.add_argument(
-        "--all", action="store_true", help="Run all project tests."
-    )
-    parser.add_argument(
-        "--cpp", action="store_true", help="Run only C++ tests."
-    )
-    parser.add_argument(
-        "--c", action="store_true", help="Run only C tests."
-    )
-    parser.add_argument(
-        "--csharp", action="store_true", help="Run C# tests."
-    )
-    parser.add_argument(
-        "--premake5", action="store_true", help="Run premake5 testing."
-    )
+    parser.add_argument("--all", action="store_true", help="Run all project tests.")
+    parser.add_argument("--cpp", action="store_true", help="Run only C++ tests.")
+    parser.add_argument("--c", action="store_true", help="Run only C tests.")
+    parser.add_argument("--csharp", action="store_true", help="Run C# tests.")
+    parser.add_argument("--premake5", action="store_true", help="Run premake5 testing.")
     args = parser.parse_args()
 
     if not any([args.all, args.cpp, args.c, args.csharp, args.premake5]):

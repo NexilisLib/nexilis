@@ -11,10 +11,10 @@ import subprocess
 
 def expand_braces(pattern):
     """Expand {a,b,c} alternatives into a list of patterns."""
-    match = re.search(r'\{([^{}]*)\}', pattern)
+    match = re.search(r"\{([^{}]*)\}", pattern)
     if not match:
         return [pattern]
-    options = match.group(1).split(',')
+    options = match.group(1).split(",")
     result = []
     for opt in options:
         new_pat = pattern[:match.start()] + opt.strip() + pattern[match.end():]
@@ -26,7 +26,7 @@ def matches_pattern(pattern, rel_path):
     """Check if a relative file path matches an editorconfig glob pattern."""
     filename = os.path.basename(rel_path)
     for p in expand_braces(pattern):
-        if '/' in p:
+        if "/" in p:
             if fnmatch.fnmatch(rel_path, p):
                 return True
         else:
@@ -42,18 +42,18 @@ def parse_editorconfig(editorconfig_path):
     current_pattern = None
     current_rules = {}
 
-    with open(editorconfig_path, 'r', encoding='utf-8') as f:
+    with open(editorconfig_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith('#') or line.startswith(';'):
+            if not line or line.startswith("#") or line.startswith(";"):
                 continue
-            if line.startswith('[') and line.endswith(']'):
+            if line.startswith("[") and line.endswith("]"):
                 if current_pattern is not None:
                     sections.append((current_pattern, current_rules))
                 current_pattern = line[1:-1]
                 current_rules = {}
-            elif '=' in line and current_pattern is not None:
-                key, _, value = line.partition('=')
+            elif "=" in line and current_pattern is not None:
+                key, _, value = line.partition("=")
                 current_rules[key.strip().lower()] = value.strip().lower()
 
     if current_pattern is not None:
@@ -70,14 +70,14 @@ def get_rules_for_file(rel_path, sections):
     """
     rules = {}
     for pattern, section_rules in sections:
-        if pattern == '*' or matches_pattern(pattern, rel_path):
+        if pattern == "*" or matches_pattern(pattern, rel_path):
             rules.update(section_rules)
     return rules
 
 
 def is_binary(data):
     """Heuristic: treat files containing null bytes as binary."""
-    return b'\x00' in data
+    return b"\x00" in data
 
 
 def check_file(filepath, rules):
@@ -88,7 +88,7 @@ def check_file(filepath, rules):
     violations = []
 
     try:
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             raw = f.read()
     except OSError as e:
         return [f"cannot read file: {e}"]
@@ -97,68 +97,66 @@ def check_file(filepath, rules):
         return []
 
     # --- charset ---
-    if rules.get('charset') == 'utf-8':
+    if rules.get("charset") == "utf-8":
         try:
-            raw.decode('utf-8')
+            raw.decode("utf-8")
         except UnicodeDecodeError:
             violations.append("not valid UTF-8")
             return violations  # Text checks are meaningless after this
 
     # --- end_of_line ---
-    eol = rules.get('end_of_line')
-    if eol == 'lf':
-        if b'\r\n' in raw:
+    eol = rules.get("end_of_line")
+    if eol == "lf":
+        if b"\r\n" in raw:
             violations.append("CRLF line endings (expected LF)")
-        elif b'\r' in raw:
+        elif b"\r" in raw:
             violations.append("CR line endings (expected LF)")
-    elif eol == 'crlf':
-        without_crlf = raw.replace(b'\r\n', b'')
-        if b'\n' in without_crlf or b'\r' in without_crlf:
+    elif eol == "crlf":
+        without_crlf = raw.replace(b"\r\n", b"")
+        if b"\n" in without_crlf or b"\r" in without_crlf:
             violations.append("bare LF/CR line endings (expected CRLF)")
 
     # --- insert_final_newline ---
-    insert_final = rules.get('insert_final_newline')
-    if insert_final == 'true':
-        if raw and not raw.endswith(b'\n'):
+    insert_final = rules.get("insert_final_newline")
+    if insert_final == "true":
+        if raw and not raw.endswith(b"\n"):
             violations.append("missing final newline")
         elif not raw:
             violations.append("missing final newline (empty file)")
-    elif insert_final == 'false':
-        if raw.endswith(b'\n'):
+    elif insert_final == "false":
+        if raw.endswith(b"\n"):
             violations.append("unexpected final newline")
 
     # Decode for line-level checks
-    text = raw.decode('utf-8', errors='replace')
+    text = raw.decode("utf-8", errors="replace")
     lines = text.splitlines()
 
     # --- trim_trailing_whitespace ---
-    if rules.get('trim_trailing_whitespace') == 'true':
+    if rules.get("trim_trailing_whitespace") == "true":
         for i, line in enumerate(lines, 1):
-            if line != line.rstrip(' \t'):
+            if line != line.rstrip(" \t"):
                 violations.append(f"trailing whitespace on line {i}")
 
     # --- indent_style ---
-    indent_style = rules.get('indent_style')
-    if indent_style == 'space':
+    indent_style = rules.get("indent_style")
+    if indent_style == "space":
         for i, line in enumerate(lines, 1):
-            if line.startswith('\t'):
+            if line.startswith("\t"):
                 violations.append(f"tab indentation on line {i} (expected spaces)")
-    elif indent_style == 'tab':
+    elif indent_style == "tab":
         for i, line in enumerate(lines, 1):
-            if line and line[0] == ' ' and line.lstrip(' '):
+            if line and line[0] == " " and line.lstrip(" "):
                 violations.append(f"space indentation on line {i} (expected tabs)")
 
     # --- max_line_length ---
-    max_len_str = rules.get('max_line_length', 'off')
-    if max_len_str != 'off':
+    max_len_str = rules.get("max_line_length", "off")
+    if max_len_str != "off":
         try:
             max_len = int(max_len_str)
             for i, line in enumerate(lines, 1):
                 length = len(line)
                 if length > max_len:
-                    violations.append(
-                        f"line {i} too long ({length} > {max_len})"
-                    )
+                    violations.append(f"line {i} too long ({length} > {max_len})")
         except ValueError:
             pass
 
@@ -168,7 +166,7 @@ def check_file(filepath, rules):
 def get_tracked_files(root):
     """Return absolute paths of all git-tracked files."""
     result = subprocess.run(
-        ['git', 'ls-files'],
+        ["git", "ls-files"],
         cwd=root,
         capture_output=True,
         text=True,
@@ -183,7 +181,7 @@ def find_git_root(start):
     """Walk up to find the git repository root."""
     try:
         result = subprocess.run(
-            ['git', 'rev-parse', '--show-toplevel'],
+            ["git", "rev-parse", "--show-toplevel"],
             cwd=start,
             capture_output=True,
             text=True,
@@ -195,25 +193,21 @@ def find_git_root(start):
 
 
 def check_editorconfig(root, files):
-    editorconfig_path = os.path.join(root, '.editorconfig')
+    editorconfig_path = os.path.join(root, ".editorconfig")
     if not os.path.isfile(editorconfig_path):
         print(f"Error: no .editorconfig found at {editorconfig_path}")
         sys.exit(1)
 
     sections = parse_editorconfig(editorconfig_path)
 
-    files = (
-        [os.path.abspath(f) for f in files]
-        if files
-        else get_tracked_files(root)
-    )
+    files = [os.path.abspath(f) for f in files] if files else get_tracked_files(root)
 
     total = 0
     for filepath in sorted(files):
         if not os.path.isfile(filepath):
             continue
         try:
-            rel = os.path.relpath(filepath, root).replace(os.sep, '/')
+            rel = os.path.relpath(filepath, root).replace(os.sep, "/")
         except ValueError:
             rel = os.path.basename(filepath)
 
@@ -228,19 +222,20 @@ def check_editorconfig(root, files):
 
     return total
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Check files against .editorconfig rules."
     )
     parser.add_argument(
-        '--root',
+        "--root",
         type=str,
         default=None,
         help="Project root (default: git repo root or cwd)",
     )
     parser.add_argument(
-        'files',
-        nargs='*',
+        "files",
+        nargs="*",
         help="Files to check (default: all git-tracked files)",
     )
     args = parser.parse_args()

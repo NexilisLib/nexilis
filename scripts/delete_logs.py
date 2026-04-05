@@ -4,7 +4,9 @@ import sys
 
 
 def confirm_delete():
-    confirmed = input("Are you sure you want to delete logs? (yes/no): ").strip().lower()
+    confirmed = (
+        input("Are you sure you want to delete logs? (yes/no): ").strip().lower()
+    )
     return confirmed == "yes"
 
 

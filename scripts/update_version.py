@@ -36,10 +36,10 @@ def update_doxyfile(version):
     content = doxyfile_path.read_text()
 
     updated = re.sub(
-        r'^(PROJECT_NUMBER\s*=\s*).*$',
+        r"^(PROJECT_NUMBER\s*=\s*).*$",
         f'\\g<1>"{version}"',
         content,
-        flags=re.MULTILINE
+        flags=re.MULTILINE,
     )
 
     doxyfile_path.write_text(updated)
@@ -49,8 +49,7 @@ def update_doxyfile(version):
 def main():
     parser = argparse.ArgumentParser(description="Update Nexilis version")
     parser.add_argument(
-        "version",
-        help="Version string in format X.Y.Z-TYPE (e.g '0.0.1-unstable)"
+        "version", help="Version string in format X.Y.Z-TYPE (e.g '0.0.1-unstable)"
     )
     args = parser.parse_args()
 

@@ -8,16 +8,16 @@ import os
 
 
 def get_constants_file_path(nexilis_root) -> str:
-    return nexilis_root + '/nexilis/include/nexilis/nexilis_constants.hh'
+    return nexilis_root + "/nexilis/include/nexilis/nexilis_constants.hh"
 
 
 # Read the aliases from the aliases file.
 def read_aliases(file_path) -> dict:
     alias_map = {}
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         for line in file:
             # Match using type alias lines (e.g., using nx_data = std::vector<uint8_t>;).
-            using_match = re.match(r'using\s+(\w+)\s+=\s+(.+);', line)
+            using_match = re.match(r"using\s+(\w+)\s+=\s+(.+);", line)
             if using_match:
                 alias = using_match.group(1)
                 value = using_match.group(2)
@@ -31,7 +31,7 @@ def analyze_cpp_file(file_path, alias_map) -> tuple[int, list[tuple[str, str, in
     if file_path == get_constants_file_path(get_nexilis_root()):
         return 0, []
 
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         content = file.read()
 
     total_replacements = 0
@@ -51,7 +51,7 @@ def analyze_cpp_file(file_path, alias_map) -> tuple[int, list[tuple[str, str, in
 
 # Apply the replacements in the source file.
 def apply_replacements(file_path, alias_map):
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         content = file.read()
 
     # Replace each value with its corresponding alias.
@@ -59,7 +59,7 @@ def apply_replacements(file_path, alias_map):
         content = re.sub(re.escape(value), alias, content)
 
     # Write the changes back to the source file.
-    with open(file_path, 'w') as file:
+    with open(file_path, "w") as file:
         file.write(content)
 
 
@@ -83,7 +83,7 @@ def process_files(target_path, alias_map) -> tuple[int, list[tuple[str, str, int
     elif os.path.isdir(target_path):
         for root, dirs, files in os.walk(target_path):
             for file in files:
-                if file.endswith(('.cc', '.hh')):
+                if file.endswith((".cc", ".hh")):
                     file_path = os.path.join(root, file)
                     replacements, changes = analyze_cpp_file(file_path, alias_map)
                     total_replacements += replacements
@@ -111,7 +111,7 @@ def process_all_files(alias_map) -> int:
     print(f"Total replacements: {total_replacements}")
     response = input("Do you want to write changes? (y/n):").strip().lower()
 
-    if response == 'y':
+    if response == "y":
         for file_path, _, __, ___ in changes:
             apply_replacements(file_path, alias_map)
         return 2
@@ -122,17 +122,19 @@ def process_all_files(alias_map) -> int:
 
 
 def main():
-    changes = process_all_files(read_aliases(get_constants_file_path(get_nexilis_root())))
-    if (changes == 0):
+    changes = process_all_files(
+        read_aliases(get_constants_file_path(get_nexilis_root()))
+    )
+    if changes == 0:
         print("Everything OK")
         return 0
-    elif (changes == 1):
+    elif changes == 1:
         print("Unused type aliases found. No changes made.")
         return 1
-    elif (changes == 2):
+    elif changes == 2:
         print("Unused type aliases replaced with type aliases.")
         return 0
-    elif (changes == -1):
+    elif changes == -1:
         print("Error.")
         return 1
 

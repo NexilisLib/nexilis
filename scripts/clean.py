@@ -10,10 +10,12 @@ def read_gitignore(gitignore_path):
     """Read the .gitignore file and return a list of patterns."""
     patterns = []
     if os.path.isfile(gitignore_path):
-        with open(gitignore_path, 'r') as file:
+        with open(gitignore_path, "r") as file:
             for line in file:
                 line = line.strip()
-                if line and not line.startswith('#'):  # Ignore comments and empty lines.
+                if line and not line.startswith(
+                    "#"
+                ):  # Ignore comments and empty lines.
                     patterns.append(line)
     return patterns
 
@@ -51,7 +53,7 @@ def prompt_for_env_deletion(base_dir):
     env_path = os.path.join(base_dir, ".env")
     if os.path.isfile(env_path):
         response = input("Do you want to delete the .env file? (y/n): ").strip().lower()
-        if response == 'y':
+        if response == "y":
             print(f"Deleting .env file: {env_path}")
             os.remove(env_path)
         else:
@@ -61,7 +63,7 @@ def prompt_for_env_deletion(base_dir):
 def main():
     # Locale nexilis root .gitignore, TODO add support for other .gitignore files.
     base_dir = get_nexilis_root()
-    gitignore_path = os.path.join(base_dir, '.gitignore')
+    gitignore_path = os.path.join(base_dir, ".gitignore")
 
     # Read .gitignore patterns.
     patterns = read_gitignore(gitignore_path)

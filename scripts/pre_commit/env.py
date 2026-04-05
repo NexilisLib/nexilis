@@ -38,10 +38,11 @@ def create_env_file(output_dir: str = None):
 def main():
     parser = argparse.ArgumentParser(description="Create .env file with NEXILIS_ROOT")
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=str,
         default=None,
-        help="Directory to create .env file in (default: nexilis root)"
+        help="Directory to create .env file in (default: nexilis root)",
     )
     args = parser.parse_args()
 

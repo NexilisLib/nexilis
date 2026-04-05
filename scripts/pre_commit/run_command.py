@@ -10,7 +10,7 @@ def run_command(
     env: Optional[dict] = None,
     shell: bool = True,
     quiet: bool = False,
-    check: bool = True
+    check: bool = True,
 ) -> subprocess.CompletedProcess:
     """
     Run a shell command with optional working directory and environment variables.
@@ -48,5 +48,5 @@ def run_command(
         shell=shell,
         check=check,
         text=True,
-        capture_output=True
+        capture_output=True,
     )

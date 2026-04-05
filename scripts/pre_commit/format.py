@@ -21,13 +21,10 @@ def format_all_files() -> int:
                 rf'find "{target_dir}"'
                 r' -not -path "*/third-party/*"'
                 r' -type f \( -name "*.hh" -o -name "*.cc" \)'
-                r' -exec clang-format --dry-run --Werror {} +'
+                r" -exec clang-format --dry-run --Werror {} +"
             )
             result = subprocess.run(
-                find_check_command,
-                shell=True,
-                capture_output=True,
-                text=True
+                find_check_command, shell=True, capture_output=True, text=True
             )
 
             if result.returncode != 0:
@@ -37,7 +34,7 @@ def format_all_files() -> int:
                     rf'find "{target_dir}"'
                     r' -not -path "*/third-party/*"'
                     r' -type f \( -name "*.hh" -o -name "*.cc" \)'
-                    r' -exec clang-format -i {} +'
+                    r" -exec clang-format -i {} +"
                 )
                 subprocess.run(find_apply_command, shell=True, check=True)
                 print(f"Formatted files in {target_dir}")

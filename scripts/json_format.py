@@ -6,7 +6,7 @@ import sys
 # Format single JSON file.
 def format_json_file(file_path):
     try:
-        with open(file_path, 'r+') as f:
+        with open(file_path, "r+") as f:
             json_data = json.load(f)
             f.seek(0)
 
@@ -43,13 +43,13 @@ def format_json_files(directory):
     # Iterate over each file.
     for file in files:
         # Check if file ends with .json
-        if file.endswith('.json'):
+        if file.endswith(".json"):
             # Format file.
             format_json_file(os.path.join(directory, file))
 
 
 # Specify the directory containing JSON files.
-directory_path = '.'
+directory_path = "."
 
 # Call the function to format JSON files in the directory.
 format_json_files(directory_path)
