@@ -124,6 +124,9 @@ public:
         class Player3D
         {
         public:
+            static CommandResult position(const DefaultArgs& args);
+            static CommandResult dimension(const DefaultArgs& args);
+            static CommandResult movement(const DefaultArgs& args);
         };
 
         class Object3D

@@ -265,121 +265,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         /// Position 3D
                         case 0:
                         {
-                            if (user.getRoomId() == 0)
-                            {
-                                Log::error(header(), "User not in room!");
-                                return CommandResult::error;
-                            }
-
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            Log::debug("Payload size: ", payload.size());
-                            assert(payload.size() == 12);
-                            auto vector = Util::convertToVector3(payload);
-                            Log::debug(header(), "Position x:", vector.x, " y:", vector.y, " z:", vector.z);
-
-                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-
-                            if (!currentRoom)
-                            {
-                                Log::warning(header(), "Client not currently in room.");
-                                return CommandResult::failure;
-                            }
-
-                            user.getObject3D().setPosition(vector);
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"x", boost::json::value(vector.x)},
-                                    {"y", boost::json::value(vector.y)},
-                                    {"z", boost::json::value(vector.z)}};
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Player3D::position(args);
                         }
 
                         // Dimensions 3D
                         case 1:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto vector = Util::convertToVector3(payload);
-                            Log::debug("Dimension x:", vector.x, " y:", vector.y, " z:", vector.z);
-
-                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-                            if (!currentRoom)
-                            {
-                                Log::error("Client not currently in room.");
-                                return CommandResult::failure;
-                            }
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"x", boost::json::value(vector.x)},
-                                    {"y", boost::json::value(vector.y)},
-                                    {"z", boost::json::value(vector.z)}};
-
-                            user.getObject3D().setDimensions(vector);
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Player3D::dimension(args);
                         }
 
                         // Movement 3D
                         case 2:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto vec_x = Util::floatFromFront(payload);
-                            auto vec_y = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
-                            auto vec_z = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                            auto delta = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 12));
-                            auto movement_vector = Vector3f(vec_x, vec_y, vec_z);
-                            auto mtx = std::make_shared<std::mutex>();
-
-                            // clang-format off
-                            std::thread([this, mtx, movement_vector, &user, command, &protocol, &messageId, delta]()
-                            {
-                                try
-                                {
-                                    runWithTickrate(m_settings.getTickrate(), delta,
-                                        [&mtx, movement_vector, &user, command, &protocol, &messageId](double progress)
-                                    {
-                                        auto* room = RoomStorage::getRoomById(user.getRoomId());
-                                        assert(room);
-
-                                        double eased_x = Movement::easing(progress, movement_vector.x);
-                                        double eased_y = Movement::easing(progress, movement_vector.y);
-                                        double eased_z = Movement::easing(progress, movement_vector.z);
-
-                                        auto current_pos = user.getObject3D().getPosition();
-                                        auto new_pos = Vector3f(eased_x + current_pos.x, eased_y + current_pos.y, eased_z + current_pos.z);
-
-                                        // TODO validation here.
-
-                                        {
-                                            std::lock_guard<std::mutex> lock(*mtx);
-                                            user.getObject3D().setPosition(new_pos);
-                                            std::map<std::string, boost::json::value> params
-                                            {
-                                                {"x", boost::json::value(new_pos.x)},
-                                                {"y", boost::json::value(new_pos.y)},
-                                                {"z", boost::json::value(new_pos.z)},
-                                            };
-                                            auto room_command = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                            sendRoomCommand(room_command, user, protocol);
-                                        }
-                                    });
-                                }
-                                catch (const std::exception& e)
-                                {
-                                    Log::error(header(), "Error with 3D movement thread: ", e.what());
-                                }
-                                catch (...)
-                                {
-                                    Log::error(header(), "Other error with 3D movement thread");
-                                }
-                            })
-                            .detach();
-                            // clang-format on
-                            return CommandResult::success;
+                            return Commands::Room::Player3D::movement(args);
                         }
                     }
                 }

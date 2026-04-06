@@ -13,9 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
-#include <memory>
 #include <string>
-#include <thread>
 
 namespace nexilis::server
 {
@@ -91,9 +89,6 @@ private:
         float tickrate;
         float delta_time;
     };
-
-    // std::thread player2DMovement(Movement2D movement, const MovementParams& params);
-    // std::thread player3DMovement(Movement3D movement, const MovementParams& params);
 
     static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
