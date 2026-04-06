@@ -22,6 +22,8 @@ std::string asString(CommandResult res)
             return "unauthorized";
         case CommandResult::unimplemented:
             return "unimplemented";
+        case CommandResult::failed_room_send:
+            return "failed_room_send";
     }
     return "";
 }
@@ -55,6 +57,9 @@ bool checkResult(CommandResult result)
 
         case CommandResult::failure:
             Log::error("Failure");
+            break;
+        case CommandResult::failed_room_send:
+            Log::error("Failed room send");
             break;
     }
     return false;

@@ -172,180 +172,54 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             return Commands::Room::Management::create(args);
                         }
                     }
-                    // Communicate
-                    case 1:
+                    return CommandResult::not_found;
+                }
+                // Communicate
+                case 1:
+                {
+                    switch (arg3)
                     {
-                        switch (arg3)
+                        // broadcast
+                        case 0:
                         {
-                            // broadcast
-                            case 0:
-                            {
-                                return Commands::Room::Communicate::broadcast(args);
-                            }
+                            return Commands::Room::Communicate::broadcast(args);
+                        }
 
-                            // othercast
-                            case 1:
-                            {
-                                return CommandResult::unimplemented;
-                            }
+                        // othercast
+                        case 1:
+                        {
+                            return CommandResult::unimplemented;
+                        }
 
-                            // unicast
-                            case 2:
-                            {
-                                return CommandResult::unimplemented;
-                            }
+                        // unicast
+                        case 2:
+                        {
+                            return CommandResult::unimplemented;
                         }
                     }
-                        return CommandResult::not_found;
+                    return CommandResult::not_found;
                 }
                 // Player 2D
                 case 2:
                 {
                     switch (arg3)
                     {
-                        /// Position 2D
+                        // Position 2D
                         case 0:
                         {
-                            if (user.getRoomId() == 0)
-                            {
-                                Log::error(header(), "User not in room!");
-                                return CommandResult::error;
-                            }
-
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto vector = Util::convertToVector2(payload);
-                            Log::debug(header(), "Position x:", vector.x, " y:", vector.y);
-
-                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-
-                            if (!currentRoom)
-                            {
-                                Log::warning(header(), "Client not currently in room.");
-                                return CommandResult::failure;
-                            }
-
-                            user.getObject2D().setPosition(vector);
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"x", boost::json::value(vector.x)},
-                                    {"y", boost::json::value(vector.y)}};
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Player2D::position(args);
                         }
 
                         // Dimensions 2D
                         case 1:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto vector = Util::convertToVector2(payload);
-                            Log::debug(header(), "Dimension x:", vector.x, " y:", vector.y);
-
-                            auto currentRoom = RoomStorage::getRoomById(user.getRoomId());
-                            if (!currentRoom)
-                            {
-                                Log::error("Client not currently in room.");
-                                return CommandResult::failure;
-                            }
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"x", boost::json::value(vector.x)},
-                                    {"y", boost::json::value(vector.y)}};
-
-                            user.getObject2D().setDimensions(vector);
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Player2D::dimension(args);
                         }
 
-                        // Movement 2D, creates a thread that sends the new position with time of delta.
-                        // In 16 thread CPU: when delta = 0.1f -> ~6 updates.
+                        // Movement 2D
                         case 2:
                         {
-                            // Get messagedata
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto vecX = Util::floatFromFront(payload);
-                            auto vecY = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 4));
-                            auto delta = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                            auto movementVector = Vector2f(vecX, vecY);
-                            auto mtx = std::make_shared<std::mutex>();
-
-                            // Capture start position before the thread so each tick computes
-                            // startPos + linear(progress, distance) rather than accumulating
-                            // eased offsets onto an already-moved position (which overshoots).
-                            Vector2f startPosition = user.getObject2D().getPosition();
-
-                            // clang-format off
-                            std::thread([this, mtx, movementVector, startPosition, &user, command, &protocol, &messageId, delta]()
-                            {
-                                try
-                                {
-                            // clang-format on
-                                    runWithTickrate(m_settings.getTickrate(), delta, [this, &mtx, movementVector, startPosition, &user, command, &protocol, &messageId](double progress)
-                                    {
-                                        auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
-                                        assert(clientRoom);
-
-                                        // Linear gives responsive, predictable movement for a shooter.
-                                        // Add to startPosition (not currentPosition) to avoid per-tick accumulation drift.
-                                        double deltaX = linear(progress, movementVector.x);
-                                        double deltaY = linear(progress, movementVector.y);
-
-                                        Vector2f dimensions = user.getObject2D().getDimensions();
-                                        auto newMovedPosition = Vector2f(startPosition.x + deltaX, startPosition.y + deltaY);
-
-                                        bool limitedMovement = false;
-                                        for (auto& c : clientRoom->getClients())
-                                        {
-                                            User* roomClient = ClientStorage::getClientById(c);
-
-                                            if (roomClient && roomClient->getId() != user.getId())
-                                            {
-                                                Vector2f roomClientPosition;
-                                                Vector2f roomClientDimensions;
-                                                {
-                                                    std::lock_guard<std::mutex> lock(*mtx);
-                                                    roomClientPosition = roomClient->getObject2D().getPosition();
-                                                    roomClientDimensions = roomClient->getObject2D().getDimensions();
-                                                }
-
-                                                // Assumed square.
-                                                if (
-                                                        newMovedPosition.x - dimensions.x / 2 < roomClientPosition.x + roomClientDimensions.x / 2 &&
-                                                        newMovedPosition.x + dimensions.x / 2 > roomClientPosition.x - roomClientDimensions.x / 2 &&
-                                                        newMovedPosition.y - dimensions.y / 2 < roomClientPosition.y + roomClientDimensions.y / 2 &&
-                                                        newMovedPosition.y + dimensions.y / 2 > roomClientPosition.y - roomClientDimensions.y / 2
-                                                   )
-                                                {
-                                                    Log::info("Players tried to hit each other!");
-                                                    limitedMovement = true;
-                                                    return;
-                                                }
-                                            }
-                                        }
-
-                                        if (!limitedMovement)
-                                        {
-                                            std::lock_guard<std::mutex> lock(*mtx);
-                                            user.getObject2D().setPosition(newMovedPosition);
-                                            std::map<std::string, boost::json::value> params = {
-                                                {"x", boost::json::value(newMovedPosition.x)},
-                                                {"y", boost::json::value(newMovedPosition.y)},
-                                            };
-                                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                                            sendRoomCommand(roomCommand, user, protocol);
-                                        }
-                                    });
-                                }
-                                catch (std::exception& e)
-                                {
-                                    Log::error(e.what());
-                                } })
-                                    .detach();
-
-                            return CommandResult::success;
+                            return Commands::Room::Player2D::movement(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -794,35 +668,30 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
     return CommandResult::not_found;
 }
 
-void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
+bool Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
 {
+    auto check = [&protocol](bool v)
+    {
+        if (!v)
+        {
+            Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
+        }
+        return v;
+    };
+
     switch (protocol.getType())
     {
         case Protocol::Type::BOOST_TCP_SERVER:
         {
-            if (!user.boostTCPSend(data))
-            {
-                Log::error("Cannot send messages using (BOOST_TCP)");
-            }
-            return;
+            return check(user.boostTCPSend(data));
         }
-
         case Protocol::Type::BOOST_UDP_SERVER:
         {
-            if (!user.boostUDPSend(data))
-            {
-                Log::error("Cannot send messages using (BOOST_UDP)");
-            }
-            return;
+            return check(user.boostUDPSend(data));
         }
-
         case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
         {
-            if (!user.unixStreamSend(data))
-            {
-                Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
-            }
-            return;
+            return check(user.unixStreamSend(data));
         }
 
         case Protocol::Type::BOOST_TCP_CLIENT:
@@ -832,12 +701,12 @@ void Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
         case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
         case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
             Log::error("This function cannot be called with client protocol");
-            return;
+            return false;
 
         default:
         {
             Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
-            return;
+            return false;
         }
     }
 }
@@ -906,7 +775,7 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
     return clientMessageData(CommandType::room, roomCommandType, messageId, all_params);
 }
 
-void Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)
+bool Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)
 {
     auto& rooms = RoomStorage::getAllRooms();
     for (auto& room : rooms)
@@ -917,10 +786,11 @@ void Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protoco
             {
                 auto* client = ClientStorage::getClientById(roomClient);
                 assert(*client == user);
-                sendMessageToClient(data, *client, protocol);
+                return sendMessageToClient(data, *client, protocol);
             }
         }
     }
+    return false;
 }
 
 void Command::runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction)

@@ -103,6 +103,30 @@ public:
         public:
             static CommandResult broadcast(const DefaultArgs& args);
         };
+
+        class Player2D
+        {
+        public:
+            static CommandResult position(const DefaultArgs& args);
+            static CommandResult dimension(const DefaultArgs& args);
+            static CommandResult movement(const DefaultArgs& args);
+        };
+
+        class Object2D
+        {
+        public:
+            // static CommandResult
+        };
+
+        class Player3D
+        {
+        public:
+        };
+
+        class Object3D
+        {
+        public:
+        };
     };
 };
 

@@ -27,7 +27,10 @@ enum class CommandResult
     error,
 
     // The command usage is unauthorized.
-    unauthorized
+    unauthorized,
+
+    // Command failed in sending the room data command
+    failed_room_send
 };
 
 std::string asString(CommandResult res);
