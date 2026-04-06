@@ -9,8 +9,6 @@
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/server/server_json.hh>
 
-#include <thread>
-
 namespace nexilis::server
 {
 
@@ -561,7 +559,6 @@ bool Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protoco
             for (auto& roomClient : room.getClients())
             {
                 auto* client = ClientStorage::getClientById(roomClient);
-                assert(*client == user);
                 return sendMessageToClient(data, *client, protocol);
             }
         }

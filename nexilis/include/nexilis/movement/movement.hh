@@ -6,6 +6,8 @@
 #include <nexilis/nx_data.hh>
 #include <nexilis/types/vector2.hh>
 
+#include <functional>
+
 namespace nexilis
 {
 
@@ -13,6 +15,8 @@ template <typename T>
 class Movement
 {
 public:
+    using MovementFunc = std::function<double(double, double)>;
+
     enum class Type
     {
         _2D,

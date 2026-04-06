@@ -81,6 +81,7 @@ public:
     static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
 
 private:
+    /*
     struct MovementParams
     {
         MovementData movement_data;
@@ -89,6 +90,7 @@ private:
         float tickrate;
         float delta_time;
     };
+    */
 
     static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 

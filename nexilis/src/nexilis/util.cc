@@ -371,6 +371,21 @@ Vector2f Util::vector2fFromFront(const nx_data& vector2)
     return result;
 }
 
+Vector3f Util::vector3fFromFront(const nx_data& vector3)
+{
+    if (vector3.size() < 12)
+    {
+        Log::error("Not enough data to read Vector2f");
+        return Vector3f();
+    }
+
+    Vector3f result;
+    memcpy(&result.x, vector3.data(), sizeof(float));
+    memcpy(&result.y, vector3.data() + sizeof(float), sizeof(float));
+    memcpy(&result.z, vector3.data() + sizeof(float) * 2, sizeof(float));
+    return result;
+}
+
 std::string Util::getDateAndTime()
 {
     // Get the current time.

@@ -132,6 +132,10 @@ public:
         class Object3D
         {
         public:
+            static CommandResult create(const DefaultArgs& args);
+            static CommandResult remove(const DefaultArgs& args);
+            static CommandResult move(const DefaultArgs& args);
+            static CommandResult createMoving(const DefaultArgs& args);
         };
     };
 };

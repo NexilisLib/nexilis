@@ -5,16 +5,12 @@
 
 #include <nexilis/types/vector2.hh>
 
-#include <functional>
-
 namespace nexilis
 {
 
 class Movement2D : public Movement<Vector2f>
 {
 public:
-    using MovementFunc = std::function<double(double, double)>;
-
     /// Constructor.
     explicit Movement2D(const MovementData& params, Vector2f movement_amount, const MovementFunc& movement_function)
         : Movement<Vector2f>(params),

@@ -71,6 +71,11 @@ public:
     /// Virtual destructor.
     virtual ~Vector3() = default;
 
+    Vector3 operator+(const Vector3 other)
+    {
+        return Vector3(x + other.x, y + other.y, z + other.z);
+    }
+
     /// Vector::getType implementation.
     VectorType getType() override
     {

@@ -12,8 +12,11 @@ CommandResult Commands::Set::Protocol::BoostTCP::port(const DefaultArgs& args)
     uint16_t port = Util::convertoToUint16(payload);
 
     auto data = Command::clientMessageData(CommandType::setting, "port", args.getMessageId(), {{"boost_tcp_port", boost::json::value(port)}});
-    Command::sendMessageToClient(args.getData(), args.getUser(), args.getProtocol());
-    return CommandResult::success;
+    if (Command::sendMessageToClient(args.getData(), args.getUser(), args.getProtocol()))
+    {
+        return CommandResult::success;
+    }
+    return CommandResult::failed_room_send;
 }
 
 } // namespace nexilis::server

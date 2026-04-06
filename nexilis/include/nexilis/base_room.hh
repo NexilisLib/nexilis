@@ -72,6 +72,10 @@ public:
 
     void deleteObject2D(uint64_t id);
 
+    Object3D* getObject3DById(uint64_t id);
+
+    void deleteObject3D(uint64_t id);
+
 private:
     RoomData m_roomData;
     std::vector<Object2D> m_objects2D;

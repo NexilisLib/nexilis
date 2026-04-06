@@ -4,16 +4,12 @@
 #include <nexilis/movement/movement.hh>
 #include <nexilis/types/vector3.hh>
 
-#include <functional>
-
 namespace nexilis
 {
 
 class Movement3D : public Movement<Vector3f>
 {
 public:
-    using MovementFunc = std::function<double(double, double, double)>;
-
     /// Constructor.
     explicit Movement3D(const MovementData& params, Vector3f movement_amount, const MovementFunc& movement_function);
 
@@ -29,7 +25,7 @@ public:
         return m_movementAmount;
     }
 
-    MovementFunc getMovement() const
+    MovementFunc getMovementFunc() const
     {
         return m_movementFunction;
     }

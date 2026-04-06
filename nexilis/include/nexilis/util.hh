@@ -14,7 +14,6 @@
 #include <filesystem>
 #include <optional>
 #include <string>
-#include <thread>
 
 namespace nexilis
 {
@@ -89,6 +88,10 @@ public:
     /// Get the first eight bytes from vector and return it as Vector2f.
     /// \ingroup FrontConversions
     static Vector2f vector2fFromFront(const nx_data& vec);
+
+    /// Get the first 12 bytes from vector and return it as Vector3f.
+    /// \ingroup FrontConversions
+    static Vector3f vector3fFromFront(const nx_data& vec);
 
     /// Remove amount of bytes from the beginning of the vector.
     /// \return The updated vector.

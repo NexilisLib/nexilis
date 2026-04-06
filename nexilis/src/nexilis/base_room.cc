@@ -80,6 +80,23 @@ Object2D* BaseRoom::getObject2DById(uint64_t id)
     return nullptr;
 }
 
+Object3D* BaseRoom::getObject3DById(uint64_t id)
+{
+    if (getContext() != RoomData::Context::_3D)
+    {
+        Log::error("No 3D context");
+    }
+
+    for (auto& object : m_objects3D)
+    {
+        if (object.getId() == id)
+        {
+            return &object;
+        }
+    }
+    return nullptr;
+}
+
 void BaseRoom::deleteObject2D(uint64_t objectId)
 {
     auto it = std::find_if(m_objects2D.begin(), m_objects2D.end(),
@@ -91,6 +108,25 @@ void BaseRoom::deleteObject2D(uint64_t objectId)
     if (it != m_objects2D.end())
     {
         m_objects2D.erase(it);
+        Log::info("Deleted object: ", objectId);
+    }
+    else
+    {
+        Log::info("Could not find object ", objectId, " for deletion");
+    }
+}
+
+void BaseRoom::deleteObject3D(uint64_t objectId)
+{
+    auto it = std::find_if(m_objects3D.begin(), m_objects3D.end(),
+                           [objectId](const Object3D& obj)
+                           {
+                               return obj.getId() == objectId;
+                           });
+
+    if (it != m_objects3D.end())
+    {
+        m_objects3D.erase(it);
         Log::info("Deleted object: ", objectId);
     }
     else
