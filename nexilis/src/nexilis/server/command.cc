@@ -5,6 +5,7 @@
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/command/commands.hh>
+#include <nexilis/server/movement.hh>
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/server/server_json.hh>
 
@@ -233,148 +234,25 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Create object
                         case 0:
                         {
-                            // Get messagedata
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto position = Util::vector2fFromFront(payload);
-                            auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                            auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 16);
-                            auto filepath = Util::convertToString(fileBytes);
-
-                            // Create server object.
-                            auto object = Object2D(Util::getRandomUint64(), position, dimensions);
-                            object.setFilepath(filepath);
-                            uint64_t objectId = object.getId();
-                            Log::info("Created object with id: ", objectId);
-
-                            // Add to storage.
-                            auto room = RoomStorage::getRoomById(user.getRoomId());
-                            room->addObject(std::move(object));
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"positionX", boost::json::value(position.x)},
-                                    {"positionY", boost::json::value(position.y)},
-                                    {"dimensionX", boost::json::value(dimensions.x)},
-                                    {"dimensionY", boost::json::value(dimensions.y)},
-                                    {"filepath", boost::json::value(filepath)},
-                                    {"id", boost::json::value(objectId)}};
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Object2D::create(args);
                         }
 
+                        // Delete object
                         case 1:
                         {
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto objectId = Util::uint64FromFront(payload);
-
-                            // Remove from storage.
-                            auto room = RoomStorage::getRoomById(user.getRoomId());
-                            room->deleteObject2D(objectId);
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"id", boost::json::value(objectId)}};
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Object2D::remove(args);
                         }
 
                         // Move object
                         case 2:
                         {
-                            // Get messagedata.
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto objectId = Util::uint64FromFront(payload);
-                            auto position = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-
-                            // Get object from server storage.
-                            auto room = RoomStorage::getRoomById(user.getRoomId());
-                            if (!room)
-                            {
-                                Log::error("Client room not found!");
-                                return CommandResult::failure;
-                            }
-
-                            auto object = room->getObject2DById(objectId);
-                            if (!object)
-                            {
-                                Log::error("Object not found with id: ", objectId);
-                                return CommandResult::failure;
-                            }
-
-                            auto oldPosition = object->getPosition();
-                            auto newPosition = oldPosition + position;
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"objectId", boost::json::value(objectId)},
-                                    {"x", boost::json::value(newPosition.x)},
-                                    {"y", boost::json::value(newPosition.y)}};
-
-                            // Move object in server storage.
-                            object->setPosition(newPosition);
-
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-                            return CommandResult::success;
+                            return Commands::Room::Object2D::move(args);
                         }
 
                         // Create moving object
                         case 3:
                         {
-                            // Get messagedata.
-                            auto payload = Util::removeAmountOfBytesFromVector(command, 3);
-                            auto startingPosition = Util::vector2fFromFront(payload);
-                            auto dimensions = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 8));
-                            auto movement = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(payload, 16));
-                            auto deltaTime = Util::floatFromFront(Util::removeAmountOfBytesFromVector(payload, 24));
-                            auto movementType = static_cast<MovementType>(payload[28]);
-                            auto fileBytes = Util::removeAmountOfBytesFromVector(payload, 29);
-                            auto filepath = Util::convertToString(fileBytes);
-
-                            // Create new object.
-                            auto object = Object2D(Util::getRandomUint64(), startingPosition, dimensions);
-                            object.setFilepath(filepath);
-                            uint64_t objectId = object.getId();
-                            Log::info("Created object with id: ", objectId);
-
-                            // Add newly created object to storage.
-                            auto room = RoomStorage::getRoomById(user.getRoomId());
-                            room->addObject(std::move(object));
-
-                            std::map<std::string, boost::json::value> params{
-                                    {"createMovingType", boost::json::value("create")},
-                                    {"positionX", boost::json::value(startingPosition.x)},
-                                    {"positionY", boost::json::value(startingPosition.y)},
-                                    {"dimensionX", boost::json::value(dimensions.x)},
-                                    {"dimensionY", boost::json::value(dimensions.y)},
-                                    {"filepath", boost::json::value(filepath)},
-                                    {"id", boost::json::value(objectId)}};
-                            auto roomCommand = createRoomCommand(user.getRoomId(), user, command, params, messageId);
-                            sendRoomCommand(roomCommand, user, protocol);
-
-                            std::function<double(double, double)> movementFunction;
-                            switch (movementType)
-                            {
-                                case MovementType::eased:
-                                    movementFunction = [this](double progress, double totalDistance) -> double
-                                    {
-                                        return this->easing(progress, totalDistance);
-                                    };
-                                    break;
-                                case MovementType::linear:
-                                    movementFunction = [this](double progress, double totalDistance) -> double
-                                    {
-                                        return this->linear(progress, totalDistance);
-                                    };
-                                    break;
-                                default:
-                                    Log::error(header(), "Undefined movement type!");
-                            }
-
-                            auto base_move = std::make_unique<Movement2D>(MovementData(objectId, deltaTime, command, messageId), movement, movementFunction);
-                            object2DMovement(std::move(base_move), user, protocol).detach();
-                            return CommandResult::success;
+                            return Commands::Room::Object2D::createMoving(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -462,14 +340,14 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                                 try
                                 {
                                     runWithTickrate(m_settings.getTickrate(), delta,
-                                        [this, &mtx, movement_vector, &user, command, &protocol, &messageId](double progress)
+                                        [&mtx, movement_vector, &user, command, &protocol, &messageId](double progress)
                                     {
                                         auto* room = RoomStorage::getRoomById(user.getRoomId());
                                         assert(room);
 
-                                        double eased_x = easing(progress, movement_vector.x);
-                                        double eased_y = easing(progress, movement_vector.y);
-                                        double eased_z = easing(progress, movement_vector.z);
+                                        double eased_x = Movement::easing(progress, movement_vector.x);
+                                        double eased_y = Movement::easing(progress, movement_vector.y);
+                                        double eased_z = Movement::easing(progress, movement_vector.z);
 
                                         auto current_pos = user.getObject3D().getPosition();
                                         auto new_pos = Vector3f(eased_x + current_pos.x, eased_y + current_pos.y, eased_z + current_pos.z);
@@ -810,62 +688,6 @@ void Command::runWithTickrate(double tickrate, double durationSeconds, const std
         tickFunction(progress);
         std::this_thread::sleep_until(loopStart + interval);
     }
-}
-
-double Command::easing(double progress, double totalDistance)
-{
-    double easedValue = progress * progress;
-    double messageValue = totalDistance * easedValue;
-    return messageValue;
-}
-
-double Command::linear(double progress, double totalDistance)
-{
-    return totalDistance * progress;
-}
-
-std::thread Command::object2DMovement(std::unique_ptr<Movement2D> movement, User& user, Protocol& protocol)
-{
-    // clang-format off
-    return std::thread([this, &movement, &user, &protocol]()
-    {
-        try
-        {
-            auto* room = RoomStorage::getRoomById(user.getRoomId());
-            auto* serverObject = room->getObject2DById(movement->getObjectId());
-            // Capture start position so each tick computes startPos + f(progress)
-            // instead of accumulating offsets onto an already-moved position.
-            Vector2f startPosition = serverObject->getPosition();
-
-            runWithTickrate(m_settings.getTickrate(), movement->getDeltatime(), [this, &movement, &user, &protocol, startPosition](double progress)
-            {
-                auto func = movement->getMovementFunc();
-                auto amount = movement->getAmount();
-
-                auto* room = RoomStorage::getRoomById(user.getRoomId());
-                auto* serverObject = room->getObject2DById(movement->getObjectId());
-
-                Vector2f newPosition = Vector2f(startPosition.x + func(progress, amount.x),
-                                               startPosition.y + func(progress, amount.y));
-
-                serverObject->setPosition(newPosition);
-                std::map<std::string, boost::json::value> messageParams
-                {
-                    {"createMovingType", boost::json::value("update")},
-                    {"objectId", boost::json::value(serverObject->getId())},
-                    {"x", boost::json::value(newPosition.x)},
-                    {"y", boost::json::value(newPosition.y)}
-                };
-                auto roomCommand = createRoomCommand(user.getRoomId(), user, movement->getMessageData(), messageParams, movement->getMessageId());
-                sendRoomCommand(roomCommand, user, protocol);
-            });
-        }
-        catch (const std::exception& e)
-        {
-            Log::error(e.what());
-        }
-    });
-    // clang-format on
 }
 
 nx_data Command::clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params)

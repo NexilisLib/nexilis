@@ -1,6 +1,7 @@
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/command/commands.hh>
+#include <nexilis/server/movement.hh>
 #include <nexilis/server/room_storage.hh>
 
 namespace nexilis::server
@@ -39,8 +40,8 @@ CommandResult Commands::Room::Player2D::movement(const DefaultArgs& args)
 
                 // Linear gives responsive, predictable movement for a shooter.
                 // Add to startPosition (not currentPosition) to avoid per-tick accumulation drift.
-                double deltaX = Command::linear(progress, movementVector.x);
-                double deltaY = Command::linear(progress, movementVector.y);
+                double deltaX = Movement::linear(progress, movementVector.x);
+                double deltaY = Movement::linear(progress, movementVector.y);
 
                 Vector2f dimensions = user.getObject2D().getDimensions();
                 auto newMovedPosition = Vector2f(startPosition.x + deltaX, startPosition.y + deltaY);

@@ -115,7 +115,10 @@ public:
         class Object2D
         {
         public:
-            // static CommandResult
+            static CommandResult create(const DefaultArgs& args);
+            static CommandResult remove(const DefaultArgs& args);
+            static CommandResult move(const DefaultArgs& args);
+            static CommandResult createMoving(const DefaultArgs& args);
         };
 
         class Player3D

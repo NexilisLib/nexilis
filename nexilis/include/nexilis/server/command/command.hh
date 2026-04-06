@@ -79,19 +79,10 @@ public:
     static bool sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
     static nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
 
-    /// Smooth movement.
-    static double easing(double progress, double totalDistance);
-
-    /// Linear movement.
-    static double linear(double progress, double totalDistance);
-
     /// Send multiple messages with specified tickrate.
     static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
 
 private:
-    /// 2D movement thread.
-    std::thread object2DMovement(std::unique_ptr<Movement2D> movement, User& user, Protocol& protocol);
-
     struct MovementParams
     {
         MovementData movement_data;
