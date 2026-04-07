@@ -284,6 +284,32 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         }
                     }
                 }
+                // Object3D
+                case 5:
+                {
+                    switch (arg3)
+                    {
+                        case 0:
+                        {
+                            return Commands::Room::Object3D::create(args);
+                        }
+
+                        case 1:
+                        {
+                            return Commands::Room::Object3D::remove(args);
+                        }
+
+                        case 2:
+                        {
+                            return Commands::Room::Object3D::move(args);
+                        }
+
+                        case 3:
+                        {
+                            return Commands::Room::Object3D::createMoving(args);
+                        }
+                    }
+                }
             }
             return CommandResult::not_found;
         }
