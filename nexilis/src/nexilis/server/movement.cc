@@ -5,6 +5,18 @@
 namespace nexilis::server
 {
 
+Settings* Movement::m_settings = nullptr;
+
+bool Movement::isInitialized()
+{
+    return m_settings;
+}
+
+void Movement::_initialize(Settings& settings)
+{
+    m_settings = &settings;
+}
+
 double Movement::easing(double progress, double totalDistance)
 {
     double easedValue = progress * progress;
@@ -30,7 +42,7 @@ std::thread Movement::object2D(std::unique_ptr<Movement2D> movement, User& user,
             // instead of accumulating offsets onto an already-moved position.
             Vector2f startPosition = serverObject->getPosition();
 
-            Command::runWithTickrate(60.f, movement->getDeltatime(), [&movement, &user, &protocol, startPosition](double progress)
+            Command::runWithTickrate(m_settings->getTickrate(), movement->getDeltatime(), [&movement, &user, &protocol, startPosition](double progress)
             {
                 auto func = movement->getMovementFunc();
                 auto amount = movement->getAmount();
@@ -75,7 +87,7 @@ std::thread Movement::object3D(std::unique_ptr<Movement3D> movement, User& user,
             // instead of accumulating offsets onto an already-moved position.
             auto startPosition = serverObject->getPosition();
 
-            Command::runWithTickrate(60.f, movement->getDeltatime(), [&movement, &user, &protocol, startPosition](double progress)
+            Command::runWithTickrate(m_settings->getTickrate(), movement->getDeltatime(), [&movement, &user, &protocol, startPosition](double progress)
             {
                 auto func = movement->getMovementFunc();
                 auto amount = movement->getAmount();
