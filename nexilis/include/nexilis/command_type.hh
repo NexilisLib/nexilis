@@ -71,8 +71,7 @@ enum class CommandType : uint8_t
     server_management = 4,
     player_management = 5,
     error = 7,
-    info = 8,
-    undefined = 9
+    undefined = 8
 };
 
 std::string commandTypeAsString(CommandType command_type);

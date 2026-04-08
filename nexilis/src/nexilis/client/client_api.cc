@@ -169,11 +169,78 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 m_isInitialized = true;
                 return ReadResult::success;
             }
+
+            else if (type == "room_data")
+            {
+                if (json.find("rooms") != json.end())
+                {
+                    auto rooms = json.at("rooms").as_array();
+                    std::vector<Room> newRooms;
+                    for (const auto& room : rooms)
+                    {
+                        std::string name = createString(room, "name");
+                        uint64_t maxSize = createUint64(room, "maxSize");
+                        uint64_t context = createUint64(room, "context");
+                        uint64_t creatorId = createUint64(room, "creatorId");
+                        uint64_t id = createUint64(room, "id");
+
+                        std::vector<ClientSession> roomClients;
+
+                        if (room.as_object().find("clients") != room.as_object().end())
+                        {
+                            auto clients = room.at("clients").as_array();
+                            Log::info("Clients size: ", clients.size());
+
+                            for (const auto& client : clients)
+                            {
+                                uint64_t client_id = createUint64(client, "id");
+                                std::string username = createString(client, "name");
+
+                                float object2DX = createFloat(client, "roomPositionX");
+                                float object2DY = createFloat(client, "roomPositionY");
+                                float dimension2DX = createFloat(client, "roomDimensionX");
+                                float dimension2DY = createFloat(client, "roomDimensionY");
+
+                                ClientSession newClient(client_id, this);
+                                Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
+                                newClient.getObject2D().setPosition({object2DX, object2DY});
+                                newClient.getObject2D().setDimensions({dimension2DX, dimension2DY});
+                                newClient.setUsername(username);
+                                roomClients.emplace_back(std::move(newClient));
+                            }
+                        }
+                        auto roomData = RoomData(creatorId, name, id, static_cast<RoomData::Context>(context), maxSize);
+                        newRooms.emplace_back(Room(roomData, std::move(roomClients)));
+                    }
+                    if (m_roomsMutex && m_roomsMutex.get() != nullptr)
+                    {
+                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                        m_currentlyActiveRooms = std::move(newRooms);
+                        FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
+                    }
+                    else
+                    {
+                        Log::error(header(), "roomsMutex is not initialized");
+                    }
+                    return ReadResult::success;
+                }
+            }
+            else if (type == "client_data")
+            {
+                Log::error("Not implemented");
+                return ReadResult::not_implemented;
+            }
+            else if (type == "server_data")
+            {
+                Log::error("Not implemented");
+                return ReadResult::not_implemented;
+            }
             else
             {
-                Log::error("Unused path");
+                Log::error("Wrong type!");
                 return ReadResult::not_found;
             }
+            return ReadResult::not_found;
         }
 
         case CommandType::room:
@@ -584,85 +651,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         case CommandType::player_management:
             break;
         case CommandType::error:
-            return ReadResult::error;
-
-        case CommandType::info:
-        {
-            if (type == "room_data")
-            {
-                if (json.find("rooms") != json.end())
-                {
-                    auto rooms = json.at("rooms").as_array();
-                    std::vector<Room> newRooms;
-                    for (const auto& room : rooms)
-                    {
-                        std::string name = createString(room, "name");
-                        uint64_t maxSize = createUint64(room, "maxSize");
-                        uint64_t context = createUint64(room, "context");
-                        uint64_t creatorId = createUint64(room, "creatorId");
-                        uint64_t id = createUint64(room, "id");
-
-                        std::vector<ClientSession> roomClients;
-
-                        if (room.as_object().find("clients") != room.as_object().end())
-                        {
-                            auto clients = room.at("clients").as_array();
-                            Log::info("Clients size: ", clients.size());
-
-                            for (const auto& client : clients)
-                            {
-                                uint64_t client_id = createUint64(client, "id");
-                                std::string username = createString(client, "name");
-
-                                float object2DX = createFloat(client, "roomPositionX");
-                                float object2DY = createFloat(client, "roomPositionY");
-                                float dimension2DX = createFloat(client, "roomDimensionX");
-                                float dimension2DY = createFloat(client, "roomDimensionY");
-
-                                ClientSession newClient(client_id, this);
-                                Log::info("Position set in room x: ", object2DX, " y: ", object2DY);
-                                newClient.getObject2D().setPosition({object2DX, object2DY});
-                                newClient.getObject2D().setDimensions({dimension2DX, dimension2DY});
-                                newClient.setUsername(username);
-                                roomClients.emplace_back(std::move(newClient));
-                            }
-                        }
-                        auto roomData = RoomData(creatorId, name, id, static_cast<RoomData::Context>(context), maxSize);
-                        newRooms.emplace_back(Room(roomData, std::move(roomClients)));
-                    }
-                    if (m_roomsMutex && m_roomsMutex.get() != nullptr)
-                    {
-                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                        m_currentlyActiveRooms = std::move(newRooms);
-                        FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
-                    }
-                    else
-                    {
-                        Log::error(header(), "roomsMutex is not initialized");
-                    }
-                    return ReadResult::success;
-                }
-            }
-            else if (type == "client_data")
-            {
-                Log::error("Not implemented");
-                return ReadResult::not_implemented;
-            }
-            else if (type == "server_data")
-            {
-                Log::error("Not implemented");
-                return ReadResult::not_implemented;
-            }
-            else
-            {
-                Log::error("Wrong type!");
-                return ReadResult::not_found;
-            }
-            return ReadResult::not_found;
-        }
-        case CommandType::undefined:
-            return ReadResult::error;
-        default:
             return ReadResult::error;
     }
     return ReadResult::not_found;

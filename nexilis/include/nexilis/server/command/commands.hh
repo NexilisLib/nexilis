@@ -85,6 +85,16 @@ public:
         public:
             static CommandResult clientId(const DefaultArgs& args);
         };
+        class Info
+        {
+        public:
+            static CommandResult general(const DefaultArgs& args);
+            static CommandResult clients(const DefaultArgs& args);
+            static CommandResult rooms(const DefaultArgs& args);
+
+        private:
+            static CommandResult create(const DefaultArgs& args, const std::pair<boost::json::object, std::string>& json_data);
+        };
     };
 
     class Room

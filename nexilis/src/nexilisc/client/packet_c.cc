@@ -63,17 +63,17 @@ nx_data_c nexilis_packet_room_player3D_movement_direct(float x, float y, float z
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(nexilis::Vector3f(x, y, z), deltatime));
 }
 
-nx_data_c nexilis_packet_info_general()
+nx_data_c nexilis_packet_get_info_general()
 {
-    return convert_nx_data(nexilis::client::Packet::Info::general());
+    return convert_nx_data(nexilis::client::Packet::Get::Info::general());
 }
 
-nx_data_c nexilis_packet_info_clients()
+nx_data_c nexilis_packet_get_info_clients()
 {
-    return convert_nx_data(nexilis::client::Packet::Info::clients());
+    return convert_nx_data(nexilis::client::Packet::Get::Info::clients());
 }
 
-nx_data_c nexilis_packet_info_rooms()
+nx_data_c nexilis_packet_get_info_rooms()
 {
-    return convert_nx_data(nexilis::client::Packet::Info::rooms());
+    return convert_nx_data(nexilis::client::Packet::Get::Info::rooms());
 }

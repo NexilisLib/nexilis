@@ -21,8 +21,6 @@ std::string commandTypeAsString(CommandType command_type)
             return "player_management";
         case CommandType::error:
             return "error";
-        case CommandType::info:
-            return "info";
         case CommandType::undefined:
             return "undefined";
     }
@@ -45,8 +43,6 @@ CommandType commandTypeFromString(const std::string& str)
         return CommandType::player_management;
     else if (str == "error")
         return CommandType::error;
-    else if (str == "info")
-        return CommandType::info;
     else
         return CommandType::undefined;
 }

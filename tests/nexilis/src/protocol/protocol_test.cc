@@ -251,7 +251,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
             }
 
             this->client->sendMessage(
-                    nexilis::client::Packet::Info::rooms(),
+                    nexilis::client::Packet::Get::Info::rooms(),
                     this->api->waitUntilRoomsCreated(promise));
 
             send_success = true;

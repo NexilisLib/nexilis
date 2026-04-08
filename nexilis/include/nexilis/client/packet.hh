@@ -26,9 +26,21 @@ public:
     class Get
     {
     public:
-        // The server sends the client identification to server.
-        // This is mandatory packet to establish client connection.
-        static nx_data clientId();
+        class General
+        {
+        public:
+            // The server sends the client identification to server.
+            // This is mandatory packet to establish client connection.
+            static nx_data clientId();
+        };
+
+        class Info
+        {
+        public:
+            static nx_data general();
+            static nx_data clients();
+            static nx_data rooms();
+        };
     };
 
     class Room
@@ -90,14 +102,6 @@ public:
             static nx_data createMoving(Vector3f startingPosition, Vector3f dimensions, Vector3f movement,
                                         float deltaTime, MovementType movementType, const std::string& filepath);
         };
-    };
-
-    class Info
-    {
-    public:
-        static nx_data general();
-        static nx_data clients();
-        static nx_data rooms();
     };
 
     // Internal initilization function.

@@ -34,12 +34,39 @@ nx_data Packet::Set::username(const std::string& name)
     return id;
 }
 
-nx_data Packet::Get::clientId()
+nx_data Packet::Get::General::clientId()
 {
     auto id = clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(0);
     id.emplace_back(0);
+    return id;
+}
+
+nx_data Packet::Get::Info::general()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::getting));
+    id.emplace_back(1);
+    id.emplace_back(0);
+    return id;
+}
+
+nx_data Packet::Get::Info::clients()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::getting));
+    id.emplace_back(1);
+    id.emplace_back(1);
+    return id;
+}
+
+nx_data Packet::Get::Info::rooms()
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::getting));
+    id.emplace_back(1);
+    id.emplace_back(2);
     return id;
 }
 
@@ -228,30 +255,6 @@ nx_data Packet::Room::Player3D::movement(Vector3f movement, float deltatime)
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Player3D::movement));
 
     emplaceAll(id, movement, deltatime);
-    return id;
-}
-
-nx_data Packet::Info::general()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::info));
-    id.emplace_back(0);
-    return id;
-}
-
-nx_data Packet::Info::clients()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::info));
-    id.emplace_back(1);
-    return id;
-}
-
-nx_data Packet::Info::rooms()
-{
-    auto id = clientIdentification();
-    id.emplace_back(static_cast<uint8_t>(CommandType::info));
-    id.emplace_back(2);
     return id;
 }
 

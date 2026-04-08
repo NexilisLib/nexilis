@@ -145,6 +145,25 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         }
                     }
                 }
+                // Server info type
+                case 1:
+                {
+                    switch (arg3)
+                    {
+                        case 0:
+                        {
+                            return Commands::Get::Info::general(args);
+                        }
+                        case 1:
+                        {
+                            return Commands::Get::Info::clients(args);
+                        }
+                        case 2:
+                        {
+                            return Commands::Get::Info::rooms(args);
+                        }
+                    }
+                }
             }
             return CommandResult::not_found;
         }
@@ -408,63 +427,6 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
             return CommandResult::not_found;
         }
 
-        case CommandType::info:
-        {
-            switch (arg2)
-            {
-                // Get all public information from a server.
-                case 0:
-                {
-                    Log::debug(header(), "info::server_data");
-                    auto server_data = ServerJson::getServerData();
-                    Command::ClientMsgType params;
-                    for (const auto& [key, value] : server_data)
-                    {
-                        params[key] = value;
-                    }
-                    auto data = clientMessageData(CommandType::info, "server_data", messageId, params);
-                    sendMessageToClient(data, user, protocol);
-                    Log::info("Used Info::generalInfo");
-                    return CommandResult::success;
-                }
-
-                // Get data from the clients existing on the server.
-                case 1:
-                {
-                    Log::debug(header(), "info::client_data");
-                    auto client_data = ServerJson::getClientData();
-                    Command::ClientMsgType params;
-                    for (const auto& [key, value] : client_data)
-                    {
-                        params[key] = value;
-                    }
-                    auto data = clientMessageData(CommandType::info, "client_data", messageId, params);
-                    sendMessageToClient(data, user, protocol);
-
-                    Log::info("Used Info::clientInfo");
-                    return CommandResult::success;
-                }
-
-                // Get data from the rooms existing on the server.
-                case 2:
-                {
-                    Log::debug(header(), "info::room_data");
-
-                    auto roomData = ServerJson::getRoomData();
-                    Command::ClientMsgType params;
-                    for (const auto& [key, value] : roomData)
-                    {
-                        params[key] = value;
-                    }
-                    auto data = clientMessageData(CommandType::info, "room_data", messageId, params);
-                    sendMessageToClient(data, user, protocol);
-
-                    Log::info("Used Info::roomInfo");
-                    return CommandResult::success;
-                }
-            }
-            return CommandResult::not_found;
-        }
         case CommandType::undefined:
         {
             return CommandResult::error;
