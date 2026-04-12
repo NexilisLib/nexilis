@@ -105,7 +105,8 @@ std::thread Movement::object3D(std::unique_ptr<Movement3D> movement, User& user,
                     {"createMovingType", boost::json::value("update")},
                     {"objectId", boost::json::value(serverObject->getId())},
                     {"x", boost::json::value(newPosition.x)},
-                    {"y", boost::json::value(newPosition.y)}
+                    {"y", boost::json::value(newPosition.y)},
+                    {"z", boost::json::value(newPosition.z)}
                 };
 
                 auto roomCommand = Command::createRoomCommand(user.getRoomId(), user, movement->getMessageData(), messageParams, movement->getMessageId());

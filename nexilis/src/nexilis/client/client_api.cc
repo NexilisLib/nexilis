@@ -651,6 +651,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         case CommandType::player_management:
             break;
         case CommandType::error:
+        case CommandType::undefined:
             return ReadResult::error;
     }
     return ReadResult::not_found;

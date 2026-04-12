@@ -1,5 +1,5 @@
-#ifndef NEXILIS_USER_HH
-#define NEXILIS_USER_HH
+#ifndef NEXILIS_SERVER_USER_HH
+#define NEXILIS_SERVER_USER_HH
 
 #include <cstdint>
 #include <nexilis/base_client.hh>

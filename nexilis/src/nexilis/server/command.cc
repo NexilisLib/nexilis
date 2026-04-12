@@ -144,6 +144,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             return Commands::Get::General::clientId(args);
                         }
                     }
+                    return CommandResult::not_found;
                 }
                 // Server info type
                 case 1:
@@ -163,6 +164,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             return Commands::Get::Info::rooms(args);
                         }
                     }
+                    return CommandResult::not_found;
                 }
             }
             return CommandResult::not_found;
@@ -302,6 +304,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             return Commands::Room::Player3D::movement(args);
                         }
                     }
+                    return CommandResult::not_found;
                 }
                 // Object3D
                 case 5:
