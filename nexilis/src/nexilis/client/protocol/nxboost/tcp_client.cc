@@ -263,6 +263,7 @@ bool TCPClient::connectToServer()
     // First connect to main port.
     if (!connectToMainPort())
     {
+        Log::error(header(), "Cannot connect to the main port in server!");
         updateProtocolStatus(ProtocolStatus::error);
         return false;
     }
@@ -285,6 +286,7 @@ void TCPClient::initiatePortSwitch(uint16_t port)
         if (connectToSwitchedPort(port))
         {
             Log::debug(header(), "Connected to switched port, updating active socket");
+            std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
             storeSocket(m_switchedSocket);
             m_useSwitchedPort = true;
 
@@ -292,6 +294,11 @@ void TCPClient::initiatePortSwitch(uint16_t port)
             {
                 Log::debug(header(), "Closing main socket");
                 boost::system::error_code ec;
+                ec = m_mainSocket->cancel(ec);
+                if (ec)
+                {
+                    Log::error(header(), "Error cancelling main socket");
+                }
                 ec = m_mainSocket->close(ec);
                 if (ec)
                 {
@@ -315,9 +322,16 @@ void TCPClient::initiatePortSwitch(uint16_t port)
 
 bool TCPClient::send(const nx_data& data)
 {
-    if (getProtocolStatus() != ProtocolStatus::connected || m_stopped->load())
+    std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
+    if (getProtocolStatus() != ProtocolStatus::connected)
     {
         Log::warning(header(), "Cannot send in state: ", getProtocolStatusString());
+        return false;
+    }
+
+    if (m_stopped->load())
+    {
+        Log::warning(header(), "Cannot send when m_stopped is false");
         return false;
     }
 
@@ -548,29 +562,37 @@ void TCPClient::doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> curren
 
 void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
 {
+    if (!ec)
+    {
+        return;
+    }
+
+    Log::debug(header(), "Async read error: ", ec.message(), " (", ec.value(), "), category: ", ec.category().name());
+
     if (ec == boost::asio::error::eof)
     {
         Log::info(header(), "Connection closed by server (EOF) - this is normal");
+        updateProtocolStatus(ProtocolStatus::error);
     }
     else if (ec == boost::asio::error::connection_reset)
     {
         Log::info(header(), "Connection reset by peer");
+        updateProtocolStatus(ProtocolStatus::error);
     }
     else if (ec == boost::asio::error::operation_aborted)
     {
         Log::debug(header(), "Async read aborted (normal during shutdown)");
-        return;
     }
     else if (ec == boost::asio::error::not_connected)
     {
         Log::warning(header(), "Socket not connected");
+        updateProtocolStatus(ProtocolStatus::error);
     }
     else
     {
         Log::error(header(), "Async read error: ", ec.message(), " (", ec.value(), ")");
+        updateProtocolStatus(ProtocolStatus::error);
     }
-
-    updateProtocolStatus(ProtocolStatus::error);
 }
 
 std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::loadSocket() const
