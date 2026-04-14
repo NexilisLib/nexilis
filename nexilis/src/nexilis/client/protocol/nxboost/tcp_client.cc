@@ -322,7 +322,6 @@ void TCPClient::initiatePortSwitch(uint16_t port)
 
 bool TCPClient::send(const nx_data& data)
 {
-    std::lock_guard<std::mutex> lock(*m_portSwitchingMutex);
     if (getProtocolStatus() != ProtocolStatus::connected)
     {
         Log::warning(header(), "Cannot send in state: ", getProtocolStatusString());
