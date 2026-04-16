@@ -290,8 +290,18 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "create")
                 {
-                    // TODO
-                    return ReadResult::not_implemented;
+                    Log::info("ROOMACTION CREATE CALLED");
+                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+
+                    auto creator = createUint64(json, "clientId");
+                    auto room_name = createString(json, "room_name");
+                    auto room_id = createUint64(json, "room_id");
+                    auto room_ctx = createUint64(json, "room_context");
+
+                    auto room_data = RoomData(creator, room_name, room_id, static_cast<RoomData::Context>(room_ctx));
+                    auto room = Room(std::move(room_data), {});
+                    m_currentlyActiveRooms.emplace_back(std::move(room));
+                    return ReadResult::success;
                 }
                 return ReadResult::error;
             }
