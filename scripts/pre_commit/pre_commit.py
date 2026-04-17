@@ -8,6 +8,7 @@ from format import format_all_files
 from cppcheck import run_cppcheck, get_nexilis_dirs
 from test_runner import install, run_cpp_tests, run_c_tests, run_csharp_tests
 from best_practises import process_all_files, read_aliases, get_constants_file_path
+from check_editorconfig import check_editorconfig
 
 
 def run_minimal_checks():
@@ -42,6 +43,13 @@ def run_minimal_checks():
         print("Cppcheck passed.")
     else:
         print("Cppcheck failed.")
+        sys.exit(1)
+
+    editorconfig = check_editorconfig(nexilis_root, "*")
+    if editorconfig == 0:
+        print("Editorconfig check passed")
+    else:
+        print("Editorconfig check failed")
         sys.exit(1)
 
 

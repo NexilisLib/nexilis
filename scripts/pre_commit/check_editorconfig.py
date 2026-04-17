@@ -17,7 +17,7 @@ def expand_braces(pattern):
     options = match.group(1).split(",")
     result = []
     for opt in options:
-        new_pat = pattern[:match.start()] + opt.strip() + pattern[match.end():]
+        new_pat = pattern[: match.start()] + opt.strip() + pattern[match.end() :]
         result.extend(expand_braces(new_pat))
     return result
 
@@ -210,6 +210,9 @@ def check_editorconfig(root, files):
             rel = os.path.relpath(filepath, root).replace(os.sep, "/")
         except ValueError:
             rel = os.path.basename(filepath)
+
+        if rel == "VERSION.txt":
+            continue
 
         rules = get_rules_for_file(rel, sections)
         if not rules:
