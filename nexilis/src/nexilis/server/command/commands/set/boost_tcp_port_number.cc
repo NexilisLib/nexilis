@@ -8,11 +8,12 @@ namespace nexilis::server
 
 CommandResult Commands::Set::Protocol::BoostTCP::port(const DefaultArgs& args)
 {
+    Log::info("Commands::Set::Protocol::BoostTCP::port used!");
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 4);
     uint16_t port = Util::convertoToUint16(payload);
 
     auto data = Command::clientMessageData(CommandType::setting, "port", args.getMessageId(), {{"boost_tcp_port", boost::json::value(port)}});
-    if (Command::sendMessageToClient(args.getData(), args.getUser(), args.getProtocol()))
+    if (Command::sendMessageToClient(data, args.getUser(), args.getProtocol()))
     {
         return CommandResult::success;
     }

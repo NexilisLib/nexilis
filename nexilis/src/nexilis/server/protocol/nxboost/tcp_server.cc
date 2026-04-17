@@ -374,7 +374,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
 
                         if (passCommand == CommandResult::success)
                         {
-                            Log::info("Auth part 1 success");
+                            Log::info(header(), "Auth part 1 success");
 
                             if (!m_firstClientConnected->load())
                             {

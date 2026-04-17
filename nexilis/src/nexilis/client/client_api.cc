@@ -141,7 +141,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             }
             else if (type == "port")
             {
-                Log::debug(header(), "Received BoostTCP port message!");
                 std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                 uint16_t boost_tcp_port = createUint64(json, "boost_tcp_port");
@@ -290,7 +289,6 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "create")
                 {
-                    Log::info("ROOMACTION CREATE CALLED");
                     std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                     auto creator = createUint64(json, "clientId");
