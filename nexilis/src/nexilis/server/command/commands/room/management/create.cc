@@ -43,12 +43,21 @@ CommandResult Commands::Room::Management::create(const DefaultArgs& args)
 
         std::map<std::string, boost::json::value> params{
                 {"room_name", boost::json::value(roomName)},
-                {"room_id", boost::json::value(newRoomId)},
+                {"clientId", boost::json::value(args.getUser().getId())},
+                {"action", boost::json::value("create")},
+                {"roomId", boost::json::value(newRoomId)},
                 {"room_context", boost::json::value(context)}};
 
-        auto roomCommand = Command::createRoomCommand(newRoomId, args.getUser(), args.getData(), params, args.getMessageId());
-        Command::sendRoomCommand(roomCommand, args.getUser(), args.getProtocol());
-        return CommandResult::success;
+        auto data = Command::clientMessageData(CommandType::room, "management", args.getMessageId(), params);
+
+        if (Command::sendMessageToClient(data, args.getUser(), args.getProtocol()))
+        {
+            return CommandResult::success;
+        }
+        else
+        {
+            return CommandResult::failed_room_send;
+        }
     }
 }
 

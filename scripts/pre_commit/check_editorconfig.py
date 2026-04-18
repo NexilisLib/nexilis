@@ -17,7 +17,7 @@ def expand_braces(pattern):
     options = match.group(1).split(",")
     result = []
     for opt in options:
-        new_pat = pattern[: match.start()] + opt.strip() + pattern[match.end() :]
+        new_pat = pattern[: match.start()] + opt.strip() + pattern[match.end():]
         result.extend(expand_braces(new_pat))
     return result
 
