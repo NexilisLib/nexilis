@@ -23,6 +23,33 @@ void waitFor(uint32_t seconds, bool condition)
     }
 }
 
+template <typename Client, typename Server>
+void waitRoomInfo(std::shared_ptr<Client>& client, std::shared_ptr<Server>& server, std::unique_ptr<nexilis::client::ClientAPI>& api)
+{
+    const auto environment = nexilis::detectRuntimeType();
+    const bool is_ci = environment == nexilis::EnvironmentType::ci;
+    const auto send_timeout = is_ci ? std::chrono::seconds(10) : std::chrono::seconds(3);
+
+    std::promise<void> promise;
+    auto future = promise.get_future();
+    client->sendMessage(
+            nexilis::client::Packet::Get::Info::rooms(),
+            api->waitUntilRoomsCreated(promise));
+
+    auto status = future.wait_for(send_timeout);
+    if (status != std::future_status::ready)
+    {
+        std::ostringstream oss;
+        oss << "Test timeout - Final state:\n"
+            << "  Client connected: " << client->isConnected() << "\n"
+            << "  Server connections: " << server->activeConnectionsCount() << "\n"
+            << "  Active rooms: " << api->getActiveRooms().size() << "\n"
+            << "  Protocol status: " << client->getProtocolStatusString() << std::endl
+            << "  CI Environment: " << (is_ci ? "Yes" : "No");
+        std::cerr << oss.str() << std::endl;
+    }
+}
+
 template <typename Server, typename Client>
 class ProtocolTest : public ::testing::Test
 {
@@ -205,6 +232,21 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomClientConnected)
     EXPECT_EQ(server->activeConnectionsCount(), 1);
 }
 
+TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomCreation)
+{
+    ASSERT_FALSE(client->isConnected());
+    ASSERT_FALSE(server->hasActiveConnections());
+    this->clientStart();
+
+    waitRoomInfo(this->client, this->server, this->api);
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "test"));
+    waitRoomInfo(this->client, this->server, this->api);
+
+    EXPECT_EQ(api->getActiveRooms().size(), 2);
+}
+
 TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
 {
     // Fresh state.
@@ -282,5 +324,6 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
         std::cerr << oss.str() << std::endl;
     }
 
+    EXPECT_EQ(api->getActiveRooms().size(), 2);
     EXPECT_EQ(status, std::future_status::ready);
 }
