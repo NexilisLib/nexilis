@@ -189,6 +189,39 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPActiveConnectionsCountFromOne)
     EXPECT_EQ(server->activeConnectionsCount(), 1);
 }
 
+TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPCreateRoom)
+{
+    this->clientStart();
+
+    EXPECT_EQ(api->getActiveRooms().size(), 0);
+
+    auto ctx = nexilis::RoomData::Context::_2D;
+    auto create_room = nexilis::client::Packet::Room::Management::create(ctx, "room_mayn");
+
+    this->client->sendMessage(create_room);
+    waitFor(5, api->getActiveRooms().size() == 1);
+
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+}
+
+TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
+{
+    this->clientStart();
+
+    EXPECT_EQ(api->getActiveRooms().size(), 0);
+
+    auto ctx = nexilis::RoomData::Context::_2D;
+    // auto user =
+    auto create_room = nexilis::client::Packet::Room::Management::create(ctx, "room1");
+
+    this->client->sendMessage(create_room);
+    waitFor(5, api->getActiveRooms().size() == 1);
+
+    // auto join_room = nexilis::client::Packet::Room::Management::join(uint64_t roomId)
+
+    // EXPECT_EQ(api->getActiveRooms().size(), 1);
+}
+
 using BasicBoostUDPTest = ProtocolTestBoostTCP<nexilis::server::nxboost::UDPServer,
                                                nexilis::client::nxboost::UDPClient>;
 

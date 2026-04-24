@@ -43,6 +43,19 @@ nx_data Packet::Get::General::clientId()
     return id;
 }
 
+// TODO Get username
+
+nx_data Packet::Get::General::roomId(uint64_t client_id)
+{
+    auto id = clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::getting));
+    id.emplace_back(0);
+    id.emplace_back(2);
+    auto client_bytes = Util::convertToByteVector(client_id);
+    emplace(id, client_bytes);
+    return id;
+}
+
 nx_data Packet::Get::Info::general()
 {
     auto id = clientIdentification();

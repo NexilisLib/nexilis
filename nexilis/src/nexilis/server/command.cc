@@ -143,6 +143,10 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         {
                             return Commands::Get::General::clientId(args);
                         }
+                        case 1:
+                        {
+                            return Commands::Get::General::roomId(args);
+                        }
                     }
                     return CommandResult::not_found;
                 }

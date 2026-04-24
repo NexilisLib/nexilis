@@ -169,6 +169,17 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 return ReadResult::success;
             }
 
+            if (type == "client_id")
+            {
+                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+
+                uint64_t clientId = createUint64(json, "room_id");
+                setClientId(clientId);
+                Packet::_initialize(*this);
+                m_isInitialized = true;
+                return ReadResult::success;
+            }
+
             else if (type == "room_data")
             {
                 if (json.find("rooms") != json.end())

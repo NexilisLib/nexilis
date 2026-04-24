@@ -32,6 +32,7 @@ public:
             // The server sends the client identification to server.
             // This is mandatory packet to establish client connection.
             static nx_data clientId();
+            static nx_data roomId(uint64_t client_id);
         };
 
         class Info

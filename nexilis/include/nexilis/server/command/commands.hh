@@ -84,6 +84,7 @@ public:
         {
         public:
             static CommandResult clientId(const DefaultArgs& args);
+            static CommandResult roomId(const DefaultArgs& args);
         };
         class Info
         {
