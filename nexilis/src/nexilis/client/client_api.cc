@@ -22,7 +22,6 @@ ClientAPI::ClientAPI(ServerData data)
 ClientAPI::ClientAPI(ClientAPI&& other)
     : NxClass(std::move(other)),
       m_data(std::move(other.m_data)),
-      m_clientId(std::move(other.m_clientId)),
       m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
       m_messageIds(std::move(other.m_messageIds)),
       m_callbacks(std::move(other.m_callbacks)),
@@ -39,7 +38,6 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
     if (this != &other)
     {
         m_data = std::move(other.m_data);
-        m_clientId = std::move(other.m_clientId);
         m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
         m_messageIds = std::move(other.m_messageIds);
         m_callbacks = std::move(other.m_callbacks);
@@ -64,7 +62,7 @@ bool ClientAPI::clientInRoom()
         auto& clients = r->getClients();
         for (auto c = clients.begin(); c != clients.end(); c++)
         {
-            if (c->getId() == m_clientId)
+            if (c->getId() == getClientData().getClientId())
             {
                 return true;
             }
@@ -82,7 +80,7 @@ uint64_t ClientAPI::clientRoomId()
         auto& clients = r->getClients();
         for (auto c = clients.begin(); c != clients.end(); c++)
         {
-            if (c->getId() == m_clientId)
+            if (c->getId() == getClientData().getClientId())
             {
                 return r->getId();
             }
@@ -132,7 +130,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                 // The clients that we are avare of.
-                auto* client = getClientFromRoom(m_clientId);
+                auto* client = getClientFromRoom(getClientData().getClientId());
                 if (client)
                 {
                     client->setUsername(username);
@@ -163,20 +161,20 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
                 uint64_t clientId = createUint64(json, "client_id");
-                setClientId(clientId);
+                getClientData().setClientId(clientId);
+
+                // Basically must be called for anything to work.
                 Packet::_initialize(*this);
                 m_isInitialized = true;
                 return ReadResult::success;
             }
 
-            if (type == "client_id")
+            if (type == "room_id")
             {
                 std::lock_guard<std::mutex> lock(*m_roomsMutex);
 
-                uint64_t clientId = createUint64(json, "room_id");
-                setClientId(clientId);
-                Packet::_initialize(*this);
-                m_isInitialized = true;
+                uint64_t room_id = createUint64(json, "room_id");
+                getClientData().setRoomId(room_id);
                 return ReadResult::success;
             }
 
@@ -894,32 +892,32 @@ ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
 
 bool ClientAPI::IsInetUDPReady()
 {
-    return m_clientId && !getInetUDPServerAddress().empty();
+    return getClientData().getClientId() && !getInetUDPServerAddress().empty();
 }
 
 bool ClientAPI::isInetTCPReady()
 {
-    return m_clientId && !getInetTCPServerAddress().empty();
+    return getClientData().getClientId() && !getInetTCPServerAddress().empty();
 }
 
 bool ClientAPI::isBoostTCPReady()
 {
-    return m_clientId && !getBoostTCPServerAddress().empty();
+    return getClientData().getClientId() && !getBoostTCPServerAddress().empty();
 }
 
 bool ClientAPI::isBoostUDPReady()
 {
-    return m_clientId && !getBoostUDPServerAddress().empty();
+    return getClientData().getClientId() && !getBoostUDPServerAddress().empty();
 }
 
 bool ClientAPI::isUnixDgramReady()
 {
-    return m_clientId && !m_data.getUnixDgramServerPath().empty();
+    return getClientData().getClientId() && !m_data.getUnixDgramServerPath().empty();
 }
 
 bool ClientAPI::isUnixStreamReady()
 {
-    return m_clientId != 0 && !getUnixStreamPath().empty();
+    return getClientData().getClientId() != 0 && !getUnixStreamPath().empty();
 }
 
 void ClientAPI::waitUntilInetUDPReady()

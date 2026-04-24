@@ -28,6 +28,34 @@ namespace nexilis::client
 class ClientAPI : public NxClass
 {
 public:
+    class ClientData
+    {
+    public:
+        uint64_t getClientId() const
+        {
+            return m_clientId;
+        };
+
+        uint64_t getRoomId() const
+        {
+            return m_roomId;
+        }
+
+        void setClientId(uint64_t id)
+        {
+            m_clientId = id;
+        }
+
+        void setRoomId(uint64_t id)
+        {
+            m_roomId = id;
+        }
+
+    private:
+        uint64_t m_clientId = 0;
+        uint64_t m_roomId = 0;
+    };
+
     /// Constructor.
     explicit ClientAPI(ServerData data);
 
@@ -104,7 +132,7 @@ public:
     uint64_t getClientId() const
     {
         assert(m_isInitialized);
-        return m_clientId;
+        return m_clientData.getClientId();
     }
 
     std::string getClientPassword() const
@@ -232,9 +260,9 @@ public:
 
 private:
     /// Setters.
-    void setClientId(uint64_t id)
+    ClientData& getClientData()
     {
-        m_clientId = id;
+        return m_clientData;
     }
 
     /// Read the command part of the message.
@@ -251,8 +279,7 @@ private:
     /// The initialization data for the ClientAPI.
     ServerData m_data;
 
-    /// The client id for the user of the client API.
-    uint64_t m_clientId = 0;
+    ClientData m_clientData;
 
     /// Rooms that client knows about.
     std::vector<client::Room> m_currentlyActiveRooms;
