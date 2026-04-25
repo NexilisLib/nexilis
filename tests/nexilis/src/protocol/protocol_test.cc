@@ -211,15 +211,25 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
     EXPECT_EQ(api->getActiveRooms().size(), 0);
 
     auto ctx = nexilis::RoomData::Context::_2D;
-    // auto user =
     auto create_room = nexilis::client::Packet::Room::Management::create(ctx, "room1");
 
     this->client->sendMessage(create_room);
     waitFor(5, api->getActiveRooms().size() == 1);
 
-    // auto join_room = nexilis::client::Packet::Room::Management::join(uint64_t roomId)
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+    auto& room = api->getActiveRooms()[0];
 
-    // EXPECT_EQ(api->getActiveRooms().size(), 1);
+    EXPECT_EQ(room.getClients().size(), 0);
+    auto room_id = api->getActiveRooms()[0].getId();
+    auto join_room = nexilis::client::Packet::Room::Management::join(room_id);
+    this->client->sendMessage(join_room);
+
+    auto rooms_update = nexilis::client::Packet::Get::Info::general();
+    this->client->sendMessage(rooms_update);
+
+    // TODO fixes in ClientAPI
+    // EXPECT_EQ(room.getClients().size(), 1);
+    // EXPECT_EQ(api->getActiveRooms()[0].getClients().size(), 1);
 }
 
 using BasicBoostUDPTest = ProtocolTestBoostTCP<nexilis::server::nxboost::UDPServer,

@@ -37,7 +37,8 @@ CommandResult Commands::Room::Management::join(const DefaultArgs& args)
     assert(RoomStorage::getRoomById(roomId)->contains(user_id));
     assert(args.getUser().getRoomId() == roomId);
 
-    std::map<std::string, boost::json::value> params;
+    std::map<std::string, boost::json::value> params{{"type", boost::json::value("join")}};
+
     auto roomCommand = Command::createRoomCommand(roomId, args.getUser(), args.getData(), params, args.getMessageId());
     Command::sendRoomCommand(roomCommand, args.getUser(), args.getProtocol());
     return CommandResult::success;
