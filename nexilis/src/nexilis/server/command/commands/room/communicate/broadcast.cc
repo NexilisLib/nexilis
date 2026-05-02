@@ -4,7 +4,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Communicate::broadcast(const DefaultArgs& args)
+CommandResult ServerImpl::room_communicate_broadcast(const DefaultArgs& args)
 {
     auto& user = args.getUser();
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 3);

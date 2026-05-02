@@ -6,7 +6,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Management::join(const DefaultArgs& args)
+CommandResult ServerImpl::room_management_join(const DefaultArgs& args)
 {
     Log::debug("Commands::Room::Management::join", args);
     auto user_id = args.getUser().getId();

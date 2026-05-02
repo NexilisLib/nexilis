@@ -4,9 +4,9 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Get::General::clientId(const Commands::DefaultArgs& args)
+CommandResult ServerImpl::get_general_clientId(const DefaultArgs& args)
 {
-    // Log::debug("getting::general::client_id", args);
+    Log::info("setting::general::client_id", args);
 
     std::map<std::string, boost::json::value> params{
             {"client_id", boost::json::value(args.getUser().getId())}};

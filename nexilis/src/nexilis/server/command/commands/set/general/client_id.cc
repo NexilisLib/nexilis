@@ -4,9 +4,11 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Set::General::clientId(User& user, const nx_data& data)
+CommandResult ServerImpl::set_general_clientId(const DefaultArgs& args)
 {
     Log::debug("setting::general::client_id");
+    auto& user = args.getUser();
+    auto data = args.getData();
     if (!user.hasRootAccess())
     {
         Log::error("Client needs root access for changing id");

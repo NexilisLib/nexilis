@@ -4,7 +4,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Get::General::roomId(const Commands::DefaultArgs& args)
+CommandResult ServerImpl::get_general_roomId(const DefaultArgs& args)
 {
     Log::debug("getting::general::client_id", args);
 

@@ -6,7 +6,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Set::General::username(const DefaultArgs& args)
+CommandResult ServerImpl::set_general_username(const DefaultArgs& args)
 {
     Log::debug("setting::general::username", args);
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 3);

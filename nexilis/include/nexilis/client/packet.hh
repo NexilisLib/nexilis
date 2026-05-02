@@ -2,113 +2,76 @@
 #define NEXILIS_PACKET_HH
 
 #include <nexilis/client/client_api.hh>
-#include <nexilis/command_type.hh>
+#include <nexilis/command_packet_base.hh>
 #include <nexilis/movement_type.hh>
-#include <nexilis/nexilis_constants.hh>
-#include <nexilis/nx_data.hh>
-#include <nexilis/room_command_type.hh>
-#include <nexilis/room_data.hh>
-#include <nexilis/types/vector2.hh>
 
 namespace nexilis::client
 {
 
-class Packet
+struct ClientImpl
+{
+    // Set::General
+    static nx_data set_general_clientId(uint64_t newId);
+    static nx_data set_general_username(const std::string& name);
+
+    // Get::General
+    static nx_data get_general_clientId();
+    static nx_data get_general_roomId(uint64_t client_id);
+
+    // Get::Info
+    static nx_data get_info_general();
+    static nx_data get_info_clients();
+    static nx_data get_info_rooms();
+
+    // Room::Management
+    static nx_data room_management_join(uint64_t roomId);
+    static nx_data room_management_leave();
+    static nx_data room_management_create(RoomData::Context context, const std::string& roomName);
+
+    static nx_data room_communicate_broadcast(const std::string& message);
+    static nx_data room_communicate_othercast(const std::string& message);
+    static nx_data room_communicate_unicast(uint64_t userId, const std::string& message);
+
+    static nx_data room_player2d_position(Vector2f position);
+
+    static nx_data room_player2d_dimension(Vector2f dimensions);
+
+    static nx_data room_player2d_movement(Vector2f movement, float deltatime);
+
+    static nx_data room_object2d_create(Vector2f position, Vector2f dimensions, const std::string& filePath);
+
+    static nx_data room_object2d_destroy(uint64_t objectId);
+
+    static nx_data room_object2d_move(uint64_t objectId, Vector2f newPosition);
+
+    static nx_data room_object2d_createMoving(Vector2f startingPosition, Vector2f dimensions,
+                                              Vector2f movement, float deltaTime,
+                                              MovementType movementType, const std::string& filepath);
+
+    static nx_data room_player3d_position(Vector3f position);
+
+    static nx_data room_player3d_dimension(Vector3f dimensions);
+
+    static nx_data room_player3d_movement(Vector3f movement, float deltatime);
+
+    static nx_data room_object3d_create(Vector3f position, Vector3f dimensions, const std::string& filePath);
+
+    static nx_data room_object3d_destroy(uint64_t objectId);
+
+    static nx_data room_object3d_move(uint64_t objectId, Vector3f newPosition);
+
+    static nx_data room_object3d_createmoving(Vector3f startingPosition, Vector3f dimensions,
+                                              Vector3f movement, float deltaTime,
+                                              MovementType movementType, const std::string& filepath);
+};
+using Packet = CommandPacketBase<ClientImpl>;
+
+class _Packet
 {
 public:
-    class Set
-    {
-    public:
-        static nx_data clientId(uint64_t newId);
-        static nx_data username(const std::string& name);
-    };
-
-    class Get
-    {
-    public:
-        class General
-        {
-        public:
-            // The server sends the client identification to server.
-            // This is mandatory packet to establish client connection.
-            static nx_data clientId();
-            static nx_data roomId(uint64_t client_id);
-        };
-
-        class Info
-        {
-        public:
-            static nx_data general();
-            static nx_data clients();
-            static nx_data rooms();
-        };
-    };
-
-    class Room
-    {
-    public:
-        class Management
-        {
-        public:
-            static nx_data join(uint64_t roomId);
-            static nx_data leave();
-            static nx_data create(RoomData::Context context, const std::string& roomName);
-        };
-
-        class Communicate
-        {
-        public:
-            /// Send message to everyone in room context.
-            static nx_data broadcast(const std::string& message);
-
-            /// Send message to everyone except yourself in room context.
-            static nx_data othercast(const std::string& message);
-
-            /// Send message to specific user.
-            static nx_data unicast(uint64_t userId, const std::string& message);
-        };
-
-        class Player2D
-        {
-        public:
-            static nx_data position(Vector2f position);
-            static nx_data dimensions(Vector2f dimensions);
-            static nx_data movement(Vector2f movement, float deltatime);
-        };
-
-        class Object2D
-        {
-        public:
-            static nx_data create(Vector2f position, Vector2f dimensions, const std::string& filePath);
-            static nx_data destroy(uint64_t objectId);
-            static nx_data move(uint64_t objectId, Vector2f newPosition);
-            static nx_data createMoving(Vector2f startingPosition, Vector2f dimensions, Vector2f movement,
-                                        float deltaTime, MovementType movementType, const std::string& filepath);
-        };
-
-        class Player3D
-        {
-        public:
-            static nx_data position(Vector3f position);
-            static nx_data dimensions(Vector3f dimensions);
-            static nx_data movement(Vector3f movement, float deltatime);
-        };
-
-        class Object3D
-        {
-        public:
-            static nx_data create(Vector3f position, Vector3f dimensions, const std::string& filePath);
-            static nx_data destroy(uint64_t objectId);
-            static nx_data move(uint64_t objectId, Vector3f newPosition);
-            static nx_data createMoving(Vector3f startingPosition, Vector3f dimensions, Vector3f movement,
-                                        float deltaTime, MovementType movementType, const std::string& filepath);
-        };
-    };
-
     // Internal initilization function.
     static void _initialize(ClientAPI& clientApi);
-
-private:
+    static nx_data clientIdentification();
     static void emplace(nx_data& originalData, const nx_data& newData);
 
     template <typename... Args>
@@ -117,7 +80,7 @@ private:
         (emplace(originalData, Util::convertToByteVector(std::forward<Args>(args))), ...);
     }
 
-    static nx_data clientIdentification();
+private:
     static ClientAPI* m_clientApi;
 };
 

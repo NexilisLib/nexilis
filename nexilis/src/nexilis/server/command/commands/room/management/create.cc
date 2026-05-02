@@ -7,7 +7,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Management::create(const DefaultArgs& args)
+CommandResult room_management_create(const DefaultArgs& args)
 {
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 3);
     uint8_t context = payload[0];

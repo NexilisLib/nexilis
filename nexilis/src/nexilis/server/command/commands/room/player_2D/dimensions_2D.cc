@@ -5,7 +5,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Player2D::dimension(const DefaultArgs& args)
+CommandResult ServerImpl::room_player2d_dimension(const DefaultArgs& args)
 {
     auto& user = args.getUser();
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 3);

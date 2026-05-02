@@ -1,7 +1,13 @@
 #include <nexilis/server/command/commands.hh>
 #include <nexilis/server/server_json.hh>
 
-nexilis::server::CommandResult nexilis::server::Commands::Get::Info::general(const DefaultArgs& args)
+namespace nexilis::server
 {
-    return Commands::Get::Info::create(args, std::make_pair(ServerJson::getServerData(), "server_data"));
+
+CommandResult ServerImpl::get_info_general(const DefaultArgs& args)
+{
+    return CommandResult::unimplemented;
+    // return Commands::Get::Info::create(args, std::make_pair(ServerJson::getServerData(), "server_data"));
 }
+
+} // namespace nexilis::server

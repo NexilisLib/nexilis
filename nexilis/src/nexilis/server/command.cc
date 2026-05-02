@@ -63,7 +63,8 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
         arg4 = command[3];
     }
 
-    Commands::DefaultArgs args(user, protocol, command, messageId);
+    // DefaultArgs from Commands.
+    DefaultArgs args(user, protocol, command, messageId);
 
     if (!Movement::isInitialized())
     {
@@ -86,13 +87,13 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // requires privileges.
                         case 0:
                         {
-                            return Commands::Set::General::clientId(user, command);
+                            return ServerImpl::set_general_clientId(args);
                         }
 
                         // Set username to the client.
                         case 1:
                         {
-                            return Commands::Set::General::username(args);
+                            return ServerImpl::set_general_username(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -118,7 +119,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                                 // Server port number
                                 case 1:
                                 {
-                                    return Commands::Set::Protocol::BoostTCP::port(args);
+                                    return ServerImpl::set_protocol_boosttcp_port(args);
                                 }
                             }
                         }
@@ -141,11 +142,11 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Get client id.
                         case 0:
                         {
-                            return Commands::Get::General::clientId(args);
+                            return ServerImpl::get_general_clientId(args);
                         }
                         case 1:
                         {
-                            return Commands::Get::General::roomId(args);
+                            return ServerImpl::get_general_roomId(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -157,15 +158,15 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                     {
                         case 0:
                         {
-                            return Commands::Get::Info::general(args);
+                            return ServerImpl::get_info_general(args);
                         }
                         case 1:
                         {
-                            return Commands::Get::Info::clients(args);
+                            return ServerImpl::get_info_clients(args);
                         }
                         case 2:
                         {
-                            return Commands::Get::Info::rooms(args);
+                            return ServerImpl::get_info_rooms(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -186,19 +187,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Join room.
                         case 0:
                         {
-                            return Commands::Room::Management::join(args);
+                            return ServerImpl::room_management_join(args);
                         }
 
                         // Leave current room.
                         case 1:
                         {
-                            return Commands::Room::Management::leave(args);
+                            return ServerImpl::room_management_leave(args);
                         }
 
                         /// Create room.
                         case 2:
                         {
-                            return Commands::Room::Management::create(args);
+                            return ServerImpl::room_management_create(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -211,19 +212,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // broadcast
                         case 0:
                         {
-                            return Commands::Room::Communicate::broadcast(args);
+                            return ServerImpl::room_communicate_broadcast(args);
                         }
 
                         // othercast
                         case 1:
                         {
-                            return CommandResult::unimplemented;
+                            return ServerImpl::room_communicate_othercast(args);
                         }
 
                         // unicast
                         case 2:
                         {
-                            return CommandResult::unimplemented;
+                            return ServerImpl::room_communicate_unicast(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -236,19 +237,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Position 2D
                         case 0:
                         {
-                            return Commands::Room::Player2D::position(args);
+                            return ServerImpl::room_player2d_position(args);
                         }
 
-                        // Dimensions 2D
+                        // Dimension 2D
                         case 1:
                         {
-                            return Commands::Room::Player2D::dimension(args);
+                            return ServerImpl::room_player2d_dimension(args);
                         }
 
                         // Movement 2D
                         case 2:
                         {
-                            return Commands::Room::Player2D::movement(args);
+                            return ServerImpl::room_player2d_movement(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -262,25 +263,25 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Create object
                         case 0:
                         {
-                            return Commands::Room::Object2D::create(args);
+                            return ServerImpl::room_object2d_create(args);
                         }
 
                         // Delete object
                         case 1:
                         {
-                            return Commands::Room::Object2D::remove(args);
+                            return ServerImpl::room_object2d_destroy(args);
                         }
 
                         // Move object
                         case 2:
                         {
-                            return Commands::Room::Object2D::move(args);
+                            return ServerImpl::room_object2d_move(args);
                         }
 
                         // Create moving object
                         case 3:
                         {
-                            return Commands::Room::Object2D::createMoving(args);
+                            return ServerImpl::room_object2d_createMoving(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -293,19 +294,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         /// Position 3D
                         case 0:
                         {
-                            return Commands::Room::Player3D::position(args);
+                            return ServerImpl::room_player3d_position(args);
                         }
 
-                        // Dimensions 3D
+                        // Dimension 3D
                         case 1:
                         {
-                            return Commands::Room::Player3D::dimension(args);
+                            return ServerImpl::room_player3d_dimension(args);
                         }
 
                         // Movement 3D
                         case 2:
                         {
-                            return Commands::Room::Player3D::movement(args);
+                            return ServerImpl::room_player3d_movement(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -317,22 +318,22 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                     {
                         case 0:
                         {
-                            return Commands::Room::Object3D::create(args);
+                            return ServerImpl::room_object3d_create(args);
                         }
 
                         case 1:
                         {
-                            return Commands::Room::Object3D::remove(args);
+                            return ServerImpl::room_object3d_destroy(args);
                         }
 
                         case 2:
                         {
-                            return Commands::Room::Object3D::move(args);
+                            return ServerImpl::room_object3d_move(args);
                         }
 
                         case 3:
                         {
-                            return Commands::Room::Object3D::createMoving(args);
+                            return ServerImpl::room_object3d_createMoving(args);
                         }
                     }
                 }
@@ -497,6 +498,7 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
     auto action = messageData[2];
 
     std::string roomCommandAction;
+    // TODO rewrite this better oh no.
     switch (roomType)
     {
         case RoomCommandType::Root::management:
@@ -506,22 +508,22 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
         }
         case RoomCommandType::Root::player2D:
         {
-            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::Player2D>(action));
+            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::PlayerType>(action));
             break;
         }
         case RoomCommandType::Root::object2D:
         {
-            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::Object2D>(action));
+            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::ObjectType>(action));
             break;
         }
         case RoomCommandType::Root::player3D:
         {
-            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::Player3D>(action));
+            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::PlayerType>(action));
             break;
         }
         case RoomCommandType::Root::object3D:
         {
-            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::Object3D>(action));
+            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::ObjectType>(action));
             break;
         }
         case RoomCommandType::Root::communication:

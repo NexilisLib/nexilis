@@ -164,7 +164,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 getClientData().setClientId(clientId);
 
                 // Basically must be called for anything to work.
-                Packet::_initialize(*this);
+                _Packet::_initialize(*this);
                 m_isInitialized = true;
                 return ReadResult::success;
             }

@@ -5,7 +5,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Management::leave(const DefaultArgs& args)
+CommandResult ServerImpl::room_management_leave(const DefaultArgs& args)
 {
     auto& user = args.getUser();
     auto* currentRoom = RoomStorage::getRoomById(user.getRoomId());

@@ -6,7 +6,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Player3D::movement(const DefaultArgs& args)
+CommandResult ServerImpl::room_player3d_movement(const DefaultArgs& args)
 {
     auto& user = args.getUser();
     auto& protocol = args.getProtocol();

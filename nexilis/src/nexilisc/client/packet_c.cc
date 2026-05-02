@@ -40,17 +40,19 @@ nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f* position)
         nexilis::FileLog::error("Incorrect vector for nexilis_packet_room_player3D_position");
         return nx_data_c{};
     }
+
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::position(convert_vector3f(position)));
 }
 
 nx_data_c nexilis_packet_room_player3D_position_direct(float x, float y, float z)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Player3D::position(nexilis::Vector3f(x, y, z)));
+    auto position = nexilis::client::Packet::Room::Player3D::position(nexilis::Vector3f(x, y, z));
+    return convert_nx_data(position);
 }
 
-nx_data_c nexilis_packet_room_player3D_dimensions(nexilis_Vector3f* dimensions)
+nx_data_c nexilis_packet_room_player3D_dimension(nexilis_Vector3f* dimensions)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimensions(convert_vector3f(dimensions)));
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimension(convert_vector3f(dimensions)));
 }
 
 nx_data_c nexilis_packet_room_player3D_movement(nexilis_Vector3f* movement, float deltaTime)
