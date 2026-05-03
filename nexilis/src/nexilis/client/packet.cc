@@ -348,7 +348,6 @@ nx_data ClientImpl::room_object3d_createmoving(Vector3f startingPosition, Vector
                                                Vector3f movement, float deltaTime,
                                                MovementType movementType, const std::string& filepath)
 {
-    return nx_data{};
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object3D));
