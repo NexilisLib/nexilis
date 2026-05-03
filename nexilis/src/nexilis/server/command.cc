@@ -218,13 +218,15 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // othercast
                         case 1:
                         {
-                            return ServerImpl::room_communicate_othercast(args);
+                            return CommandResult::unimplemented;
+                            // return ServerImpl::room_communicate_othercast(args);
                         }
 
                         // unicast
                         case 2:
                         {
-                            return ServerImpl::room_communicate_unicast(args);
+                            return CommandResult::unimplemented;
+                            // return ServerImpl::room_communicate_unicast(args);
                         }
                     }
                     return CommandResult::not_found;

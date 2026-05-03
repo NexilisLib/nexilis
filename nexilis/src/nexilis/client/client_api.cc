@@ -178,7 +178,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 return ReadResult::success;
             }
 
-            else if (type == "room_data")
+            else if (type == "info_rooms")
             {
                 if (json.find("rooms") != json.end())
                 {
