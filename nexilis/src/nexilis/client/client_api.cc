@@ -164,7 +164,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 getClientData().setClientId(clientId);
 
                 // Basically must be called for anything to work.
-                Packet::_initialize(*this);
+                _Packet::_initialize(*this);
                 m_isInitialized = true;
                 return ReadResult::success;
             }
@@ -178,7 +178,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 return ReadResult::success;
             }
 
-            else if (type == "room_data")
+            else if (type == "info_rooms")
             {
                 if (json.find("rooms") != json.end())
                 {

@@ -6,7 +6,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Set::Protocol::BoostTCP::port(const DefaultArgs& args)
+CommandResult ServerImpl::set_protocol_boosttcp_port(const DefaultArgs& args)
 {
     Log::info("Commands::Set::Protocol::BoostTCP::port used!");
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 4);

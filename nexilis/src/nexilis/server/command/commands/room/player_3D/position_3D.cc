@@ -5,7 +5,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Player3D::position(const DefaultArgs& args)
+CommandResult ServerImpl::room_player3d_position(const DefaultArgs& args)
 {
     auto& user = args.getUser();
 

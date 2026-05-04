@@ -7,7 +7,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Management::create(const DefaultArgs& args)
+CommandResult ServerImpl::room_management_create(const DefaultArgs& args)
 {
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 3);
     uint8_t context = payload[0];
@@ -26,11 +26,6 @@ CommandResult Commands::Room::Management::create(const DefaultArgs& args)
     else if (roomName == " ")
     {
         Log::error("Room name cannot be equal to \" \" ");
-        return CommandResult::invalid_input;
-    }
-    else if (roomName.length() > 20)
-    {
-        Log::error("Too long room name");
         return CommandResult::invalid_input;
     }
     else

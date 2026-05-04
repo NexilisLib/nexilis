@@ -5,7 +5,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Object3D::move(const DefaultArgs& args)
+CommandResult ServerImpl::room_object3d_move(const DefaultArgs& args)
 {
     auto& user = args.getUser();
 

@@ -7,7 +7,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Player2D::movement(const DefaultArgs& args)
+CommandResult ServerImpl::room_player2d_movement(const DefaultArgs& args)
 {
     // Movement 2D, creates a thread that sends the new position with time of delta.
     // In 16 thread CPU: when delta = 0.1f -> ~6 updates.

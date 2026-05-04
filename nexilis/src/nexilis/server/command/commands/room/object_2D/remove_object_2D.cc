@@ -5,7 +5,7 @@
 namespace nexilis::server
 {
 
-CommandResult Commands::Room::Object2D::remove(const DefaultArgs& args)
+CommandResult ServerImpl::room_object2d_destroy(const DefaultArgs& args)
 {
     auto& user = args.getUser();
     auto data = args.getData();
