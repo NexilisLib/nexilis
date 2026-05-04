@@ -28,11 +28,6 @@ CommandResult ServerImpl::room_management_create(const DefaultArgs& args)
         Log::error("Room name cannot be equal to \" \" ");
         return CommandResult::invalid_input;
     }
-    else if (roomName.length() > 20)
-    {
-        Log::error("Too long room name");
-        return CommandResult::invalid_input;
-    }
     else
     {
         auto room_data = RoomData(args.getUser().getId(), roomName, Util::getRandomUint64(), static_cast<RoomData::Context>(context));
