@@ -71,7 +71,6 @@ public:
     /// Deleted copy assignment operator.
     ClientAPI& operator=(const ClientAPI& other) = delete;
 
-public:
     /// Result from ClientAPI::readMessage(const nx_data&).
     enum class ReadResult
     {
@@ -117,7 +116,6 @@ public:
         return m_isInitialized;
     }
 
-public:
     /// Room stuff
     /// Is client currently in a room.
     /// \return True if the client is currently in the room.
@@ -173,7 +171,6 @@ public:
         return m_2DoverlappingAllowed;
     }
 
-public:
     /// Stuff related to specific connnections.
 
     /// If the client UDP af_inet connection is ready.
@@ -280,6 +277,8 @@ private:
     ServerData m_data;
 
     ClientData m_clientData;
+
+    // TODO make a data structure for the rest of the stuff needed stuff for clientAPI
 
     /// Rooms that client knows about.
     std::vector<client::Room> m_currentlyActiveRooms;
