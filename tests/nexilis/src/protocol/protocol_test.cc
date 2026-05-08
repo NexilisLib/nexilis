@@ -224,12 +224,63 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
     auto join_room = nexilis::client::Packet::Room::Management::join(room_id);
     this->client->sendMessage(join_room);
 
-    auto rooms_update = nexilis::client::Packet::Get::Info::general();
-    this->client->sendMessage(rooms_update);
+    // TODO create abstraction for the following code
+    const auto environment = nexilis::detectRuntimeType();
+    const bool is_ci = environment == nexilis::EnvironmentType::ci;
+    const int max_send_attempts = is_ci ? 5 : 3;
+    const auto send_timeout = is_ci ? std::chrono::seconds(10) : std::chrono::seconds(3);
 
-    // TODO fixes in ClientAPI
-    // EXPECT_EQ(room.getClients().size(), 1);
-    // EXPECT_EQ(api->getActiveRooms()[0].getClients().size(), 1);
+    std::promise<void> promise;
+    auto future = promise.get_future();
+    bool send_success = false;
+
+    // Enhanced send with retries.
+    for (int attempt = 0; attempt < max_send_attempts && !send_success; ++attempt)
+    {
+        try
+        {
+            // Check if we're mid-port-switch.
+            if (client->getProtocolStatus() == nexilis::client::ProtocolStatus::switching_ports)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(200 * (attempt + 1)));
+                continue;
+            }
+
+            this->client->sendMessage(
+                    nexilis::client::Packet::Get::Info::rooms(),
+                    this->api->waitUntilRoomsCreated(promise));
+
+            send_success = true;
+        }
+        catch (const std::exception& e)
+        {
+            if (attempt == max_send_attempts - 1)
+            {
+                FAIL() << "Message send failed after " << max_send_attempts
+                       << " attempts: " << e.what();
+            }
+            std::cout << "Send attempt " << (attempt + 1) << " failed: " << e.what() << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    // Verify results with CI-extended timeout.
+    auto status = future.wait_for(send_timeout);
+    if (status != std::future_status::ready)
+    {
+        std::ostringstream oss;
+        oss << "Test timeout - Final state:\n"
+            << "  Client connected: " << client->isConnected() << "\n"
+            << "  Server connections: " << server->activeConnectionsCount() << "\n"
+            << "  Active rooms: " << api->getActiveRooms().size() << "\n"
+            << "  Protocol status: " << client->getProtocolStatusString() << std::endl
+            << "  CI Environment: " << (is_ci ? "Yes" : "No");
+        std::cerr << oss.str() << std::endl;
+    }
+
+    EXPECT_EQ(status, std::future_status::ready);
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+    EXPECT_EQ(api->getActiveRooms()[0].getClients().size(), 1);
 }
 
 using BasicBoostUDPTest = ProtocolTestBoostTCP<nexilis::server::nxboost::UDPServer,
