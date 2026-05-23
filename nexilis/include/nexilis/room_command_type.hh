@@ -28,7 +28,8 @@ public:
     {
         join = 0,
         leave = 1,
-        create = 2
+        create = 2,
+        remove = 3
     };
 
     enum class Communication : uint8_t

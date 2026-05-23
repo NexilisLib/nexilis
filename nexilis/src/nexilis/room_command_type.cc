@@ -36,6 +36,8 @@ std::string RoomCommandType::ManagementTypeToString(RoomCommandType::Management 
             return "leave";
         case RoomCommandType::Management::create:
             return "create";
+        case RoomCommandType::Management::remove:
+            return "remove";
         default:
             Log::error("ManagementTypeToString no type found!");
             return "";

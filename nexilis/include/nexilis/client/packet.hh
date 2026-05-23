@@ -27,6 +27,7 @@ struct ClientImpl
     static nx_data room_management_join(uint64_t roomId);
     static nx_data room_management_leave();
     static nx_data room_management_create(RoomData::Context context, const std::string& roomName);
+    static nx_data room_management_remove(uint64_t roomId);
 
     static nx_data room_communicate_broadcast(const std::string& message);
     static nx_data room_communicate_othercast(const std::string& message);

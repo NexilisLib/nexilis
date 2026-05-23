@@ -178,6 +178,16 @@ nx_data ClientImpl::room_management_create(RoomData::Context context, const std:
     return id;
 }
 
+nx_data ClientImpl::room_management_remove(uint64_t roomId)
+{
+    auto id = _Packet::clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::remove));
+    emplaceAll(id, roomId);
+    return id;
+}
+
 // Room::Communicate
 nx_data ClientImpl::room_communicate_broadcast(const std::string& message)
 {

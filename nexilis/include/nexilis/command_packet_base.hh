@@ -89,6 +89,11 @@ public:
             {
                 return Impl::room_management_create(std::forward<Args>(args)...);
             }
+            template <typename... Args>
+            static auto remove(Args&&... args)
+            {
+                return Impl::room_management_remove(std::forward<Args>(args)...);
+            }
         };
         struct Communicate
         {

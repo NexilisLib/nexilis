@@ -75,6 +75,7 @@ struct ServerImpl
     static CommandResult room_management_join(const DefaultArgs& args);
     static CommandResult room_management_leave(const DefaultArgs& args);
     static CommandResult room_management_create(const DefaultArgs& args);
+    static CommandResult room_management_remove(const DefaultArgs& args);
 
     // Room::Communicate
     static CommandResult room_communicate_broadcast(const DefaultArgs& args);
