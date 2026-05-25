@@ -230,6 +230,30 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
     EXPECT_EQ(api->getActiveRooms()[0].getClients().size(), 1);
 }
 
+TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPMultipleRoomContexts)
+{
+    ASSERT_FALSE(client->isConnected());
+    ASSERT_FALSE(server->hasActiveConnections());
+    this->clientStart();
+
+    // Create a 2D room
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "2D_room"));
+    waitRoomInfo(this->client, this->server, this->api);
+
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+
+    // Create a 3D room
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_3D, "3D_room"));
+    waitRoomInfo(this->client, this->server, this->api);
+
+    EXPECT_EQ(api->getActiveRooms().size(), 2);
+
+    // Verify room contexts
+    auto& rooms = api->getActiveRooms();
+    EXPECT_EQ(rooms[0].getContext(), nexilis::RoomData::Context::_2D);
+    EXPECT_EQ(rooms[1].getContext(), nexilis::RoomData::Context::_3D);
+}
+
 using BasicBoostUDPTest = ProtocolTestBoostTCP<nexilis::server::nxboost::UDPServer,
                                                nexilis::client::nxboost::UDPClient>;
 
@@ -301,4 +325,78 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomInfoRooms)
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 1);
+}
+
+// Test for room deletion
+TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomDelete)
+{
+    ASSERT_FALSE(client->isConnected());
+    ASSERT_FALSE(server->hasActiveConnections());
+    this->clientStart();
+
+    waitRoomInfo(this->client, this->server, this->api);
+    // Initially should have one room from setup
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+
+    // Create a new room
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "test_room"));
+    waitRoomInfo(this->client, this->server, this->api);
+
+    EXPECT_EQ(api->getActiveRooms().size(), 2);
+
+    // Delete the created room
+    auto room_id = api->getActiveRooms()[1].getId();
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::remove(room_id));
+    waitRoomInfo(this->client, this->server, this->api);
+
+    // Should be back to one room
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+}
+
+// Test for room joining with invalid room ID
+TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPJoinRoomInvalid)
+{
+    ASSERT_FALSE(client->isConnected());
+    ASSERT_FALSE(server->hasActiveConnections());
+    this->clientStart();
+
+    // Try to join a non-existent room
+    auto invalid_room_id = static_cast<uint64_t>(999999);
+    auto join_room = nexilis::client::Packet::Room::Management::join(invalid_room_id);
+    this->client->sendMessage(join_room);
+
+    // Should not crash, but should fail gracefully
+    // We'll just verify the client doesn't crash
+    EXPECT_TRUE(client->isConnected());
+}
+
+// Test for client leaving room
+TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPLeaveRoom)
+{
+    ASSERT_FALSE(client->isConnected());
+    ASSERT_FALSE(server->hasActiveConnections());
+    this->clientStart();
+
+    // Create a new room
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "test_room"));
+    waitRoomInfo(this->client, this->server, this->api);
+
+    EXPECT_EQ(api->getActiveRooms().size(), 2);
+
+    // Join the new room
+    auto room_id = api->getActiveRooms()[1].getId();
+    auto join_room = nexilis::client::Packet::Room::Management::join(room_id);
+    this->client->sendMessage(join_room);
+    waitRoomInfo(this->client, this->server, this->api);
+
+    // Should be in the room now
+    EXPECT_TRUE(api->clientInRoom());
+    EXPECT_EQ(api->clientRoomId(), room_id);
+
+    // Leave the room
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::leave());
+    waitRoomInfo(this->client, this->server, this->api);
+
+    // Should no longer be in a room
+    EXPECT_FALSE(api->clientInRoom());
 }
