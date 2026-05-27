@@ -60,7 +60,8 @@ public:
     {
     public:
         /// Constructor.
-        ClientAPIData() : m_roomsMutex(std::make_unique<std::mutex>())
+        ClientAPIData()
+            : m_roomsMutex(std::make_unique<std::mutex>())
         {
         }
 
