@@ -14,39 +14,25 @@ namespace nexilis::client
 
 ClientAPI::ClientAPI(ServerData data)
     : NxClass("ClientAPI"),
-      m_data(data),
-      m_roomsMutex(std::make_unique<std::mutex>())
+      m_serverData(data)
 {
 }
 
 ClientAPI::ClientAPI(ClientAPI&& other)
     : NxClass(std::move(other)),
-      m_data(std::move(other.m_data)),
-      m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
-      m_messageIds(std::move(other.m_messageIds)),
-      m_callbacks(std::move(other.m_callbacks)),
-      m_roomsMutex(std::move(other.m_roomsMutex))
+      m_serverData(std::move(other.m_serverData)),
+      m_clientData(std::move(other.m_clientData)),
+      m_clientAPIData(std::move(other.m_clientAPIData))
 {
-    if (!other.m_roomsMutex)
-    {
-        other.m_roomsMutex = std::make_unique<std::mutex>();
-    }
 }
 
 ClientAPI& ClientAPI::operator=(ClientAPI&& other)
 {
     if (this != &other)
     {
-        m_data = std::move(other.m_data);
-        m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
-        m_messageIds = std::move(other.m_messageIds);
-        m_callbacks = std::move(other.m_callbacks);
-        m_roomsMutex = std::move(other.m_roomsMutex);
-
-        if (!other.m_roomsMutex)
-        {
-            other.m_roomsMutex = std::make_unique<std::mutex>();
-        }
+        m_serverData = std::move(other.m_serverData);
+        m_clientData = std::move(other.m_clientData);
+        m_clientAPIData = std::move(other.m_clientAPIData);
 
         NxClass::operator=(std::move(other));
     }
@@ -92,21 +78,22 @@ uint64_t ClientAPI::clientRoomId()
 uint64_t ClientAPI::getNewMessageId()
 {
     uint64_t newId = Util::getRandomUint64();
+    auto& messageIds = m_clientAPIData.getMessageIds();
 
-    if (std::find(m_messageIds.begin(), m_messageIds.end(), newId) != m_messageIds.end())
+    if (std::find(messageIds.begin(), messageIds.end(), newId) != messageIds.end())
     {
         return getNewMessageId();
     }
     else
     {
-        m_messageIds.emplace_back(newId);
+        messageIds.emplace_back(newId);
         return newId;
     }
 }
 
 void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()>>& callback)
 {
-    m_callbacks.emplace_back(callback);
+    m_clientAPIData.getCallbacks().emplace_back(callback);
 }
 
 ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
@@ -120,6 +107,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
     auto type = json["type"];
     Log::debug(header(), "Received type: ", type, " message");
 
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+
     switch (command)
     {
         case CommandType::setting:
@@ -127,7 +116,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             if (type == "username")
             {
                 std::string username = createString(json, "username");
-                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                std::lock_guard<std::mutex> lock(*mtx);
 
                 // The clients that we are avare of.
                 auto* client = getClientFromRoom(getClientData().getClientId());
@@ -139,12 +128,12 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             }
             else if (type == "port")
             {
-                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                std::lock_guard<std::mutex> lock(*mtx);
 
                 uint16_t boost_tcp_port = createUint64(json, "boost_tcp_port");
                 if (boost_tcp_port != 0)
                 {
-                    m_data.setBoostTCPPortNumber(boost_tcp_port);
+                    m_serverData.setBoostTCPPortNumber(boost_tcp_port);
                     return ReadResult::success;
                 }
                 return ReadResult::error;
@@ -158,20 +147,20 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
         {
             if (type == "client_id")
             {
-                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                std::lock_guard<std::mutex> lock(*mtx);
 
                 uint64_t clientId = createUint64(json, "client_id");
                 getClientData().setClientId(clientId);
 
                 // Basically must be called for anything to work.
                 _Packet::_initialize(*this);
-                m_isInitialized = true;
+                m_clientAPIData.initialize();
                 return ReadResult::success;
             }
 
             if (type == "room_id")
             {
-                std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                std::lock_guard<std::mutex> lock(*mtx);
 
                 uint64_t room_id = createUint64(json, "room_id");
                 getClientData().setRoomId(room_id);
@@ -220,11 +209,11 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         auto roomData = RoomData(creatorId, name, id, static_cast<RoomData::Context>(context), maxSize);
                         newRooms.emplace_back(Room(roomData, std::move(roomClients)));
                     }
-                    if (m_roomsMutex && m_roomsMutex.get() != nullptr)
+                    if (mtx && mtx.get() != nullptr)
                     {
-                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                        m_currentlyActiveRooms = std::move(newRooms);
-                        FileLog::debug("Currently active rooms in ClientAPI: ", m_currentlyActiveRooms.size());
+                        std::lock_guard<std::mutex> lock(*mtx);
+                        m_clientAPIData.setCurrentlyActiveRooms(std::move(newRooms));
+                        FileLog::debug("Currently active rooms in ClientAPI: ", m_clientAPIData.getCurrentlyActiveRooms().size());
                     }
                     else
                     {
@@ -271,8 +260,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
             {
                 if (roomAction == "join")
                 {
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                    for (auto& room : m_currentlyActiveRooms)
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+                    for (auto& room : rooms)
                     {
                         if (room.getId() == roomId)
                         {
@@ -285,8 +275,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "leave")
                 {
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                    for (auto& room : m_currentlyActiveRooms)
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+                    for (auto& room : rooms)
                     {
                         if (room.getId() == roomId)
                         {
@@ -298,14 +289,15 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 }
                 else if (roomAction == "create")
                 {
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
 
                     auto room_name = createString(json, "room_name");
                     auto room_ctx = createUint64(json, "room_context");
 
                     auto room_data = RoomData(clientId, room_name, roomId, static_cast<RoomData::Context>(room_ctx));
                     auto room = Room(std::move(room_data), {});
-                    m_currentlyActiveRooms.emplace_back(std::move(room));
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+                    rooms.emplace_back(std::move(room));
                     return ReadResult::success;
                 }
                 return ReadResult::error;
@@ -316,15 +308,16 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     float vectorX = createFloat(json, "x");
                     float vectorY = createFloat(json, "y");
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
 
-                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    for (auto&& room = rooms.begin(); room != rooms.end(); room++)
                     {
                         for (auto& client : room->getClients())
                         {
                             if (client.getId() == clientId)
                             {
-                                if (overlappingAllowed2D())
+                                if (isOverlappingAllowed2D())
                                 {
                                     client.getObject2D().setPosition({vectorX, vectorY});
                                     return ReadResult::success;
@@ -361,9 +354,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     float vectorX = createFloat(json, "x");
                     float vectorY = createFloat(json, "y");
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
 
-                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    for (auto&& room = rooms.begin(); room != rooms.end(); room++)
                     {
                         for (auto& client : room->getClients())
                         {
@@ -389,7 +383,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     float y = createFloat(json, "y");
                     float z = createFloat(json, "z");
                     auto client = getClientFromRoom(clientId);
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
                     if (client)
                     {
                         client->getObject3D().setPosition(Vector3(x, y, z));
@@ -406,7 +400,7 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     float y = createFloat(json, "y");
                     float z = createFloat(json, "z");
                     auto client = getClientFromRoom(clientId);
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
                     if (client)
                     {
                         client->getObject3D().setDimensions(Vector3(x, y, z));
@@ -424,9 +418,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     float vector_z = createFloat(json, "z");
                     auto pos = Vector3f(vector_x, vector_y, vector_z);
 
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
 
-                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    for (auto&& room = rooms.begin(); room != rooms.end(); room++)
                     {
                         for (auto& client : room->getClients())
                         {
@@ -454,9 +449,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     float dimensionY = createFloat(json, "dimensionY");
                     std::string filePath = createString(json, "filepath");
                     uint64_t id = createUint64(json, "id");
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
 
-                    for (auto& room : m_currentlyActiveRooms)
+                    for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                     {
                         if (room.getId() == roomId)
                         {
@@ -471,8 +466,8 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 else if (roomAction == "destroy")
                 {
                     uint64_t objectId = createUint64(json, "id");
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
-                    for (auto& room : m_currentlyActiveRooms)
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                     {
                         if (room.getId() == roomId)
                         {
@@ -487,9 +482,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                     uint64_t objectId = createUint64(json, "objectId");
                     float newPositionX = createFloat(json, "x");
                     float newPositionY = createFloat(json, "y");
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
 
-                    for (auto& room : m_currentlyActiveRooms)
+                    for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                     {
                         if (room.getId() == roomId)
                         {
@@ -512,9 +507,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         float dimensionY = createFloat(json, "dimensionY");
                         std::string filepath = createString(json, "filepath");
                         uint64_t id = createUint64(json, "id");
-                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                        std::lock_guard<std::mutex> lock(*mtx);
 
-                        for (auto& room : m_currentlyActiveRooms)
+                        for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                         {
                             if (room.getId() == roomId)
                             {
@@ -531,9 +526,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         float positionX = createFloat(json, "x");
                         float positionY = createFloat(json, "y");
                         uint64_t objectId = createUint64(json, "objectId");
-                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                        std::lock_guard<std::mutex> lock(*mtx);
 
-                        for (auto& room : m_currentlyActiveRooms)
+                        for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                         {
                             if (room.getId() == roomId)
                             {
@@ -567,9 +562,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         float dimensionY = createFloat(json, "dimensionY");
                         std::string filepath = createString(json, "filepath");
                         uint64_t id = createUint64(json, "id");
-                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                        std::lock_guard<std::mutex> lock(*mtx);
 
-                        for (auto& room : m_currentlyActiveRooms)
+                        for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                         {
                             if (room.getId() == roomId)
                             {
@@ -586,9 +581,9 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                         float positionX = createFloat(json, "x");
                         float positionY = createFloat(json, "y");
                         uint64_t objectId = createUint64(json, "objectId");
-                        std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                        std::lock_guard<std::mutex> lock(*mtx);
 
-                        for (auto& room : m_currentlyActiveRooms)
+                        for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
                         {
                             if (room.getId() == roomId)
                             {
@@ -617,9 +612,10 @@ ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
                 {
                     uint64_t id = createUint64(json, "id");
                     std::string message = createString(json, "message");
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
 
-                    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+                    for (auto&& room = rooms.begin(); room != rooms.end(); room++)
                     {
                         ClientSession* sender = nullptr;
                         for (auto& client : room->getClients())
@@ -750,13 +746,14 @@ void ClientAPI::readCallback(boost::json::value callback)
         cb = 0;
     }
 
-    // Calling callback.
-    for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
+    // Calling a callback.
+    auto& callbacks = m_clientAPIData.getCallbacks();
+    for (auto it = callbacks.begin(); it != callbacks.end(); ++it)
     {
         if (it->first == cb)
         {
             it->second();
-            it = m_callbacks.erase(it);
+            it = callbacks.erase(it);
             break;
         }
     }
@@ -832,13 +829,13 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
             while (attempts++ < max_attempts)
             {
                 {
-                    if (!m_roomsMutex)
+                    if (!m_clientAPIData.getRoomsMutex())
                     {
-                        Log::error(header(), "m_roomsMutex is null in waitUntilRoomsCreated");
+                        Log::error(header(), "mtx is null in waitUntilRoomsCreated");
                         break;
                     }
 
-                    std::lock_guard<std::mutex> lock(*m_roomsMutex);
+                    std::lock_guard<std::mutex> lock(*m_clientAPIData.getRoomsMutex());
                     if (!getActiveRooms().empty())
                     {
                         promise_ptr->set_value();
@@ -862,8 +859,8 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
 
 Room* ClientAPI::getRoom(uint64_t room_id)
 {
-    std::lock_guard<std::mutex> lock(*m_roomsMutex);
-    for (auto& room : m_currentlyActiveRooms)
+    std::lock_guard<std::mutex> lock(*m_clientAPIData.getRoomsMutex());
+    for (auto& room : m_clientAPIData.getCurrentlyActiveRooms())
     {
         if (room.getId() == room_id)
         {
@@ -875,9 +872,9 @@ Room* ClientAPI::getRoom(uint64_t room_id)
 
 ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
 {
-    // TODO better
     ClientSession* returned_client = nullptr;
-    for (auto&& room = m_currentlyActiveRooms.begin(); room != m_currentlyActiveRooms.end(); room++)
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+    for (auto&& room = rooms.begin(); room != rooms.end(); room++)
     {
         for (auto& client : room->getClients())
         {
@@ -912,7 +909,7 @@ bool ClientAPI::isBoostUDPReady()
 
 bool ClientAPI::isUnixDgramReady()
 {
-    return getClientData().getClientId() && !m_data.getUnixDgramServerPath().empty();
+    return getClientData().getClientId() && !m_serverData.getUnixDgramServerPath().empty();
 }
 
 bool ClientAPI::isUnixStreamReady()

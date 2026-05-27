@@ -56,6 +56,131 @@ public:
         uint64_t m_roomId = 0;
     };
 
+    class ClientAPIData
+    {
+    public:
+        /// Constructor.
+        ClientAPIData()
+            : m_roomsMutex(std::make_unique<std::mutex>())
+        {
+        }
+
+        /// Move constructor.
+        ClientAPIData(ClientAPIData&& other)
+            : m_isInitialized(std::move(other.m_isInitialized)),
+              m_isOverLappingAllowed2D(std::move(other.m_isOverLappingAllowed2D)),
+              m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
+              m_messageIds(std::move(other.m_messageIds)),
+              m_callbacks(std::move(other.m_callbacks)),
+              m_roomsMutex(std::move(other.m_roomsMutex))
+        {
+            if (!other.m_roomsMutex)
+            {
+                other.m_roomsMutex = std::make_unique<std::mutex>();
+            }
+        }
+
+        /// Move assignment operator.
+        ClientAPIData& operator=(ClientAPIData&& other)
+        {
+            if (this != &other)
+            {
+                m_isInitialized = std::move(other.m_isInitialized);
+                m_isOverLappingAllowed2D = std::move(other.m_isOverLappingAllowed2D);
+                m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
+                m_messageIds = std::move(other.m_messageIds);
+                m_callbacks = std::move(other.m_callbacks);
+                m_roomsMutex = std::move(other.m_roomsMutex);
+
+                if (!other.m_roomsMutex)
+                {
+                    other.m_roomsMutex = std::make_unique<std::mutex>();
+                }
+            }
+            return *this;
+        }
+
+        /// Deleted copy constructor.
+        ClientAPIData(const ClientAPIData& other) = delete;
+
+        /// Deleted copy assignment operator.
+        ClientAPIData& operator=(const ClientAPIData& other) = delete;
+
+        void initialize()
+        {
+            m_isInitialized = true;
+        }
+
+        bool isInitialized() const
+        {
+            return m_isInitialized;
+        }
+
+        bool isOverlappingAllowed2D() const
+        {
+            return m_isOverLappingAllowed2D;
+        }
+
+        void setOverlapStatus2D(bool status)
+        {
+            m_isOverLappingAllowed2D = status;
+        }
+
+        const std::vector<client::Room>& getCurrentlyActiveRooms() const
+        {
+            return m_currentlyActiveRooms;
+        }
+
+        std::vector<client::Room>& getCurrentlyActiveRooms()
+        {
+            return m_currentlyActiveRooms;
+        }
+
+        void setCurrentlyActiveRooms(std::vector<client::Room>&& rooms)
+        {
+            m_currentlyActiveRooms = std::move(rooms);
+        }
+
+        const std::vector<uint64_t>& getMessageIds() const
+        {
+            return m_messageIds;
+        }
+
+        std::vector<uint64_t>& getMessageIds()
+        {
+            return m_messageIds;
+        }
+
+        std::vector<std::pair<uint64_t, std::function<void()>>>& getCallbacks()
+        {
+            return m_callbacks;
+        }
+
+        std::unique_ptr<std::mutex>& getRoomsMutex()
+        {
+            return m_roomsMutex;
+        }
+
+    private:
+        /// Is the server aware of the client, is "Packet" initialized.
+        bool m_isInitialized = false;
+
+        /// Can the 2D elements overlap each other.
+        bool m_isOverLappingAllowed2D = false;
+
+        /// Rooms that the client knows about.
+        std::vector<client::Room> m_currentlyActiveRooms;
+
+        /// Existing message id's.
+        std::vector<uint64_t> m_messageIds;
+
+        /// Currently existing callbacks.
+        std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
+
+        // Mutex for room operations.
+        std::unique_ptr<std::mutex> m_roomsMutex;
+    };
+
     /// Constructor.
     explicit ClientAPI(ServerData data);
 
@@ -113,7 +238,7 @@ public:
     /// Is the server aware of the client, is the ClientAPI and Packet ready for use.
     bool isInitialized() const
     {
-        return m_isInitialized;
+        return m_clientAPIData.isInitialized();
     }
 
     /// Room stuff
@@ -129,13 +254,13 @@ public:
     /// General.
     uint64_t getClientId() const
     {
-        assert(m_isInitialized);
+        assert(m_clientAPIData.isInitialized());
         return m_clientData.getClientId();
     }
 
     std::string getClientPassword() const
     {
-        return m_data.getPassword();
+        return m_serverData.getPassword();
     }
 
     std::string getClientUsername(uint64_t client_id)
@@ -145,9 +270,13 @@ public:
     }
 
     /// Return a reference of the currently active rooms.
-    std::vector<Room>& getActiveRooms()
+    const std::vector<client::Room>& getActiveRooms() const
     {
-        return m_currentlyActiveRooms;
+        return m_clientAPIData.getCurrentlyActiveRooms();
+    }
+    std::vector<client::Room>& getActiveRooms()
+    {
+        return m_clientAPIData.getCurrentlyActiveRooms();
     }
 
     /// Get a reference to a room from room id.
@@ -160,15 +289,15 @@ public:
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
 
     /// Set the value of 2D overlapping.
-    void set2DOverlapStatus(bool status)
+    void setOverLapStatus2D(bool status)
     {
-        m_2DoverlappingAllowed = status;
+        m_clientAPIData.setOverlapStatus2D(status);
     }
 
     /// Get the value of 2D overlapping.
-    bool overlappingAllowed2D() const
+    bool isOverlappingAllowed2D() const
     {
-        return m_2DoverlappingAllowed;
+        return m_clientAPIData.isOverlappingAllowed2D();
     }
 
     /// Stuff related to specific connnections.
@@ -212,47 +341,47 @@ public:
     /// af_inet UDP.
     std::string getInetUDPServerAddress() const
     {
-        return m_data.getInetUDPServerAddress();
+        return m_serverData.getInetUDPServerAddress();
     }
 
     /// af_inet TCP.
     std::string getInetTCPServerAddress() const
     {
-        return m_data.getInetTCPServerAddress();
+        return m_serverData.getInetTCPServerAddress();
     }
 
     /// boost TCP
     std::string getBoostTCPServerAddress() const
     {
-        return m_data.getBoostTCPServerAddress();
+        return m_serverData.getBoostTCPServerAddress();
     }
 
     uint16_t getBoostTCPServerPortNumber() const
     {
-        return m_data.getBoostTCPServerPortNumber();
+        return m_serverData.getBoostTCPServerPortNumber();
     }
 
     void setBoostTCPPortNumber(uint16_t port)
     {
-        m_data.setBoostTCPPortNumber(port);
+        m_serverData.setBoostTCPPortNumber(port);
     }
 
     /// boost UDP
     std::string getBoostUDPServerAddress() const
     {
-        return m_data.getBoostUDPServerAddress();
+        return m_serverData.getBoostUDPServerAddress();
     }
 
     /// af_unix DGRAM.
     std::string getUnixDgramPath() const
     {
-        return m_data.getUnixDgramServerPath();
+        return m_serverData.getUnixDgramServerPath();
     }
 
     /// af_unix STREAM.
     std::string getUnixStreamPath() const
     {
-        return m_data.getUnixStreamServerPath();
+        return m_serverData.getUnixStreamServerPath();
     }
 
 private:
@@ -274,28 +403,11 @@ private:
 
 private:
     /// The initialization data for the ClientAPI.
-    ServerData m_data;
+    ServerData m_serverData;
 
     ClientData m_clientData;
 
-    // TODO make a data structure for the rest of the stuff needed stuff for clientAPI
-
-    /// Rooms that client knows about.
-    std::vector<client::Room> m_currentlyActiveRooms;
-
-    /// Existing message id's.
-    std::vector<uint64_t> m_messageIds;
-
-    /// Currently existing callbacks.
-    std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
-
-    /// Can the 2D elements overlap each other.
-    bool m_2DoverlappingAllowed = false;
-
-    /// Is the server aware of the client, is "Packet" initialized.
-    bool m_isInitialized = false;
-
-    std::unique_ptr<std::mutex> m_roomsMutex;
+    ClientAPIData m_clientAPIData;
 };
 
 } // namespace nexilis::client
