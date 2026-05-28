@@ -12,7 +12,10 @@ CommandResult ServerImpl::set_protocol_boosttcp_port(const DefaultArgs& args)
     auto payload = Util::removeAmountOfBytesFromVector(args.getData(), 4);
     uint16_t port = Util::convertoToUint16(payload);
 
-    auto data = Command::clientMessageData(CommandType::setting, "port", args.getMessageId(), {{"boost_tcp_port", boost::json::value(port)}});
+    auto data = Command::clientMessageData(CommandType::setting, "port", args.getMessageId(),
+                                           {{"protocol", boost::json::value("boost_tcp")},
+                                            {"port", boost::json::value(port)},
+                                            {"boost_tcp_port", boost::json::value(port)}});
     if (Command::sendMessageToClient(data, args.getUser(), args.getProtocol()))
     {
         return CommandResult::success;

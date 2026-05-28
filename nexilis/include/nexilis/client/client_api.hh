@@ -346,6 +346,11 @@ public:
         m_serverData.setBoostTCPPortNumber(port);
     }
 
+    void setProtocolPort(const std::string& protocol, uint16_t port)
+    {
+        m_serverData.setProtocolPort(protocol, port);
+    }
+
     /// boost UDP
     std::string getBoostUDPServerAddress() const
     {

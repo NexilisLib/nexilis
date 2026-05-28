@@ -6,6 +6,7 @@
 #include <nexilis/client/command/room/object2d.hh>
 #include <nexilis/client/command/room/player2d.hh>
 #include <nexilis/client/command/room/player3d.hh>
+#include <nexilis/client/command/set/port.hh>
 #include <nexilis/client/command/set/username.hh>
 #include <nexilis/client/command_parser.hh>
 
@@ -21,9 +22,17 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::
     }
     else if (type == "port")
     {
-        uint16_t port = static_cast<uint16_t>(json.at("boost_tcp_port").as_uint64());
-        // For port setting, we would need to create a separate command class
-        return nullptr;
+        std::string protocol = "boost_tcp";
+        if (json.contains("protocol"))
+            protocol = json.at("protocol").as_string().c_str();
+
+        uint16_t port = 0;
+        if (json.contains("port"))
+            port = static_cast<uint16_t>(json.at("port").as_uint64());
+        else if (json.contains("boost_tcp_port"))
+            port = static_cast<uint16_t>(json.at("boost_tcp_port").as_uint64());
+
+        return std::make_unique<SetPortCommand>(protocol, port);
     }
     return nullptr;
 }

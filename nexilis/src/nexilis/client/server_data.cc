@@ -6,9 +6,13 @@ namespace nexilis::client
 ServerData::ServerData(ServerData&& other)
     : m_password(std::move(other.m_password)),
       m_inetUDPServerAddress(std::move(other.m_inetUDPServerAddress)),
+      m_inetUDPServerPort(other.m_inetUDPServerPort),
       m_inetTCPServerAddress(std::move(other.m_inetTCPServerAddress)),
+      m_inetTCPServerPort(other.m_inetTCPServerPort),
       m_boostTCPServerAddress(std::move(other.m_boostTCPServerAddress)),
+      m_boostTCPServerPort(other.m_boostTCPServerPort),
       m_boostUDPServerAddress(std::move(other.m_boostUDPServerAddress)),
+      m_boostUDPServerPort(other.m_boostUDPServerPort),
       m_unixDgramServerPath(std::move(other.m_unixDgramServerPath)),
       m_unixStreamServerPath(std::move(other.m_unixStreamServerPath))
 {
@@ -17,9 +21,13 @@ ServerData::ServerData(ServerData&& other)
 ServerData::ServerData(const ServerData& other)
     : m_password(other.m_password),
       m_inetUDPServerAddress(other.m_inetUDPServerAddress),
+      m_inetUDPServerPort(other.m_inetUDPServerPort),
       m_inetTCPServerAddress(other.m_inetTCPServerAddress),
+      m_inetTCPServerPort(other.m_inetTCPServerPort),
       m_boostTCPServerAddress(other.m_boostTCPServerAddress),
+      m_boostTCPServerPort(other.m_boostTCPServerPort),
       m_boostUDPServerAddress(other.m_boostUDPServerAddress),
+      m_boostUDPServerPort(other.m_boostUDPServerPort),
       m_unixDgramServerPath(other.m_unixDgramServerPath),
       m_unixStreamServerPath(other.m_unixStreamServerPath)
 {
@@ -31,9 +39,13 @@ ServerData& ServerData::operator=(ServerData&& other)
     {
         m_password = std::move(other.m_password);
         m_inetUDPServerAddress = std::move(other.m_inetUDPServerAddress);
+        m_inetUDPServerPort = other.m_inetUDPServerPort;
         m_inetTCPServerAddress = std::move(other.m_inetTCPServerAddress);
+        m_inetTCPServerPort = other.m_inetTCPServerPort;
         m_boostTCPServerAddress = std::move(other.m_boostTCPServerAddress);
+        m_boostTCPServerPort = other.m_boostTCPServerPort;
         m_boostUDPServerAddress = std::move(other.m_boostUDPServerAddress);
+        m_boostUDPServerPort = other.m_boostUDPServerPort;
         m_unixDgramServerPath = std::move(other.m_unixDgramServerPath);
         m_unixStreamServerPath = std::move(other.m_unixStreamServerPath);
     }
@@ -46,9 +58,13 @@ ServerData& ServerData::operator=(const ServerData& other)
     {
         m_password = other.m_password;
         m_inetUDPServerAddress = other.m_inetUDPServerAddress;
+        m_inetUDPServerPort = other.m_inetUDPServerPort;
         m_inetTCPServerAddress = other.m_inetTCPServerAddress;
+        m_inetTCPServerPort = other.m_inetTCPServerPort;
         m_boostTCPServerAddress = other.m_boostTCPServerAddress;
+        m_boostTCPServerPort = other.m_boostTCPServerPort;
         m_boostUDPServerAddress = other.m_boostUDPServerAddress;
+        m_boostUDPServerPort = other.m_boostUDPServerPort;
         m_unixDgramServerPath = other.m_unixDgramServerPath;
         m_unixStreamServerPath = other.m_unixStreamServerPath;
     }
