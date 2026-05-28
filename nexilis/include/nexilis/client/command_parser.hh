@@ -26,8 +26,10 @@ public:
             case CommandType::setting:
                 return parseSettingCommand(json, type);
             case CommandType::getting:
-            case CommandType::authentication:
+                return parseGettingCommand(json, type);
             case CommandType::room:
+                return parseRoomCommand(json, type);
+            case CommandType::authentication:
             case CommandType::error:
             default:
                 return nullptr;
@@ -37,6 +39,8 @@ public:
 
 private:
     static std::unique_ptr<BaseAPICommand> parseSettingCommand(const boost::json::object& json, std::string_view type);
+    static std::unique_ptr<BaseAPICommand> parseGettingCommand(const boost::json::object& json, std::string_view type);
+    static std::unique_ptr<BaseAPICommand> parseRoomCommand(const boost::json::object& json, std::string_view type);
 };
 
 } // namespace nexilis::client
