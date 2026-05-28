@@ -2,6 +2,7 @@
 #define NEXILIS_CLIENT_COMMAND_PARSER_HH
 
 #include <nexilis/client/base_api_command.hh>
+#include <nexilis/client/command/error.hh>
 #include <nexilis/command_type.hh>
 
 namespace nexilis::client
@@ -14,8 +15,7 @@ public:
     {
         if (!json.contains("command") || !json.contains("type"))
         {
-            // return std::make_unique<ErrorCommand>(ReadResult::error);
-            return nullptr;
+            return std::make_unique<ErrorCommand>(ReadResult::error);
         }
 
         auto cmd_type = commandTypeFromString(json.at("command").as_string().c_str());
@@ -29,8 +29,9 @@ public:
                 return parseGettingCommand(json, type);
             case CommandType::room:
                 return parseRoomCommand(json, type);
-            case CommandType::authentication:
             case CommandType::error:
+                return parseErrorCommand(type);
+            case CommandType::authentication:
             default:
                 return nullptr;
         }
@@ -41,6 +42,7 @@ private:
     static std::unique_ptr<BaseAPICommand> parseSettingCommand(const boost::json::object& json, std::string_view type);
     static std::unique_ptr<BaseAPICommand> parseGettingCommand(const boost::json::object& json, std::string_view type);
     static std::unique_ptr<BaseAPICommand> parseRoomCommand(const boost::json::object& json, std::string_view type);
+    static std::unique_ptr<BaseAPICommand> parseErrorCommand(std::string_view type);
 };
 
 } // namespace nexilis::client

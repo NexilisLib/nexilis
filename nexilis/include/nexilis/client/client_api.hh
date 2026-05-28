@@ -221,6 +221,16 @@ public:
 
     uint64_t getNewMessageId();
 
+    void setClientId(uint64_t id)
+    {
+        m_clientData.setClientId(id);
+    }
+
+    void setRoomId(uint64_t id)
+    {
+        m_clientData.setRoomId(id);
+    }
+
     /// General.
     uint64_t getClientId() const
     {

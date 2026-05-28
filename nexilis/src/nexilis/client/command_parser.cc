@@ -1,3 +1,6 @@
+#include <nexilis/client/command/get/client_id.hh>
+#include <nexilis/client/command/get/info_rooms.hh>
+#include <nexilis/client/command/get/room_id.hh>
 #include <nexilis/client/command/room/communication.hh>
 #include <nexilis/client/command/room/management.hh>
 #include <nexilis/client/command/room/object2d.hh>
@@ -27,8 +30,27 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseGettingCommand(const boost::json::object& json, std::string_view type)
 {
-    // For getting commands, we don't currently have implementations as they're handled directly
-    // in the ClientAPI::readCommand method
+    if (type == "client_id")
+    {
+        uint64_t client_id = json.at("client_id").as_uint64();
+        return std::make_unique<GetClientIdCommand>(client_id);
+    }
+
+    if (type == "room_id")
+    {
+        uint64_t room_id = json.at("room_id").as_uint64();
+        return std::make_unique<GetRoomIdCommand>(room_id);
+    }
+
+    if (type == "info_rooms")
+    {
+        if (json.contains("rooms"))
+        {
+            return std::make_unique<GetInfoRoomsCommand>(json.at("rooms"));
+        }
+        return std::make_unique<ErrorCommand>(ReadResult::invalid_input);
+    }
+
     return nullptr;
 }
 
@@ -133,6 +155,30 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     }
 
     return nullptr;
+}
+
+std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_view type)
+{
+    ReadResult result = ReadResult::error;
+
+    if (type == "not_found")
+        result = ReadResult::not_found;
+    else if (type == "failure")
+        result = ReadResult::failure;
+    else if (type == "invalid_input")
+        result = ReadResult::invalid_input;
+    else if (type == "unauthorized")
+        result = ReadResult::unauthorized;
+    else if (type == "not_implemented")
+        result = ReadResult::not_implemented;
+    else if (type == "client_missing_room")
+        result = ReadResult::client_missing_room;
+    else if (type == "clean")
+        result = ReadResult::clean;
+    else
+        result = ReadResult::error;
+
+    return std::make_unique<ErrorCommand>(result);
 }
 
 } // namespace nexilis::client
