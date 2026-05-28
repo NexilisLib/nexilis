@@ -521,7 +521,7 @@ void TCPClient::doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> curren
                     {
                         auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
                         Log::debug(header(), "readMessage result: ", ClientAPI::readResultStr(result));
-                        if (result == ClientAPI::ReadResult::success)
+                        if (result == ReadResult::success)
                         {
                             Log::info(header(), "Message read successfully");
 

@@ -158,7 +158,7 @@ void UDPClient::receiveLoop()
 
         auto byteVector = Util::convertToByteVector(m_receiveBuffer.data(), receivedBytes);
         auto result = ClientProtocol::getClientAPI()->readMessage(byteVector);
-        if (result == ClientAPI::ReadResult::success)
+        if (result == ReadResult::success)
         {
             Log::debug("BoostUDPClient: Message read successfully");
         }

@@ -4,6 +4,7 @@
 #include <nexilis/logger/file_log.hh>
 #include <nexilis/logger/log.hh>
 
+#include <nexilis/client/read_result.hh>
 #include <nexilis/client/room.hh>
 #include <nexilis/client/server_data.hh>
 #include <nexilis/nx_class.hh>
@@ -195,37 +196,6 @@ public:
 
     /// Deleted copy assignment operator.
     ClientAPI& operator=(const ClientAPI& other) = delete;
-
-    /// Result from ClientAPI::readMessage(const nx_data&).
-    enum class ReadResult
-    {
-        /// The payload has nothing with nexilis.
-        clean,
-
-        /// Command success.
-        success,
-
-        /// Allowed failure.
-        failure,
-
-        /// Something wrong with the command data.
-        not_found,
-
-        /// The input for command is not correct.
-        invalid_input,
-
-        /// Internal error.
-        error,
-
-        /// The command usage is unauthorized.
-        unauthorized,
-
-        /// Client is not found in the correct room.
-        client_missing_room,
-
-        /// Missing feature.
-        not_implemented
-    };
 
     /// Get ReadResult string value.
     /// \param res The ReadResult enum from "readMessage"

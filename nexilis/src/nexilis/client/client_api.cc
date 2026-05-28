@@ -1,5 +1,6 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/client_session.hh>
+#include <nexilis/client/command_parser.hh>
 #include <nexilis/client/packet.hh>
 #include <nexilis/command_type.hh>
 #include <nexilis/json.hh>
@@ -96,8 +97,11 @@ void ClientAPI::addCallback(const std::pair<uint64_t, const std::function<void()
     m_clientAPIData.getCallbacks().emplace_back(callback);
 }
 
-ClientAPI::ReadResult ClientAPI::readCommand(boost::json::object json)
+ReadResult ClientAPI::readCommand(boost::json::object json)
 {
+    // auto cmd = CommandParser::parse(json);
+    // return cmd->execute(*this, m_clientAPIData);
+
     if (!json.contains("command") || !json.contains("type"))
     {
         return ReadResult::error;
@@ -694,7 +698,7 @@ std::string ClientAPI::readResultStr(ReadResult res)
     return "not_found";
 }
 
-ClientAPI::ReadResult ClientAPI::readMessage(const nx_data& message)
+ReadResult ClientAPI::readMessage(const nx_data& message)
 {
     boost::json::object json;
     try
