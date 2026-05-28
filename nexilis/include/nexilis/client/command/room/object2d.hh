@@ -10,12 +10,12 @@ namespace nexilis::client
 class RoomObject2DCommand : public BaseAPICommand
 {
 public:
-    RoomObject2DCommand(std::string action, uint64_t room_id, uint64_t object_id, float x, float y, float w, float h, std::string filepath = "")
+    RoomObject2DCommand(std::string action, uint64_t room_id, uint64_t object_id, float x, float y, float w, float h, const std::string& filepath = "")
         : m_action(action), m_room_id(room_id), m_object_id(object_id), m_x(x), m_y(y), m_w(w), m_h(h), m_filepath(filepath)
     {
     }
 
-    ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
+    ReadResult execute(ClientAPI&, ClientAPI::ClientAPIData& data) override
     {
         auto& mtx = data.getRoomsMutex();
         std::lock_guard<std::mutex> lock(*mtx);

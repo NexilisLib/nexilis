@@ -19,6 +19,15 @@ public:
     {
     }
 
+    static uint64_t toUint64(const boost::json::value& val)
+    {
+        if (val.is_uint64())
+            return val.as_uint64();
+        if (val.is_int64())
+            return static_cast<uint64_t>(val.as_int64());
+        return 0;
+    }
+
     ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
     {
         if (!m_rooms.is_array())
@@ -34,21 +43,10 @@ public:
             if (room.at("name").is_string())
                 name = room.at("name").as_string().c_str();
 
-            uint64_t maxSize = 0;
-            if (room.at("maxSize").is_uint64())
-                maxSize = room.at("maxSize").as_uint64();
-
-            uint64_t context = 0;
-            if (room.at("context").is_uint64())
-                context = room.at("context").as_uint64();
-
-            uint64_t creatorId = 0;
-            if (room.at("creatorId").is_uint64())
-                creatorId = room.at("creatorId").as_uint64();
-
-            uint64_t id = 0;
-            if (room.at("id").is_uint64())
-                id = room.at("id").as_uint64();
+            uint64_t maxSize = toUint64(room.at("maxSize"));
+            uint64_t context = toUint64(room.at("context"));
+            uint64_t creatorId = toUint64(room.at("creatorId"));
+            uint64_t id = toUint64(room.at("id"));
 
             std::vector<ClientSession> roomClients;
 
@@ -58,9 +56,7 @@ public:
 
                 for (const auto& client : clients)
                 {
-                    uint64_t client_id = 0;
-                    if (client.at("id").is_uint64())
-                        client_id = client.at("id").as_uint64();
+                    uint64_t client_id = toUint64(client.at("id"));
 
                     std::string username;
                     if (client.at("name").is_string())

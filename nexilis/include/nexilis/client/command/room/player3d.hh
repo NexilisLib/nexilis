@@ -15,7 +15,7 @@ public:
     {
     }
 
-    ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
+    ReadResult execute(ClientAPI&, ClientAPI::ClientAPIData& data) override
     {
         auto& mtx = data.getRoomsMutex();
         std::lock_guard<std::mutex> lock(*mtx);

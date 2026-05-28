@@ -13,6 +13,20 @@
 namespace nexilis::client
 {
 
+namespace
+{
+
+uint64_t toUint64(const boost::json::value& val)
+{
+    if (val.is_uint64())
+        return val.as_uint64();
+    if (val.is_int64())
+        return static_cast<uint64_t>(val.as_int64());
+    return 0;
+}
+
+} // anonymous namespace
+
 std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::json::object& json, std::string_view type)
 {
     if (type == "username")
@@ -28,9 +42,9 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::
 
         uint16_t port = 0;
         if (json.contains("port"))
-            port = static_cast<uint16_t>(json.at("port").as_uint64());
+            port = static_cast<uint16_t>(toUint64(json.at("port")));
         else if (json.contains("boost_tcp_port"))
-            port = static_cast<uint16_t>(json.at("boost_tcp_port").as_uint64());
+            port = static_cast<uint16_t>(toUint64(json.at("boost_tcp_port")));
 
         return std::make_unique<SetPortCommand>(protocol, port);
     }
@@ -41,13 +55,13 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseGettingCommand(const boost::
 {
     if (type == "client_id")
     {
-        uint64_t client_id = json.at("client_id").as_uint64();
+        uint64_t client_id = toUint64(json.at("client_id"));
         return std::make_unique<GetClientIdCommand>(client_id);
     }
 
     if (type == "room_id")
     {
-        uint64_t room_id = json.at("room_id").as_uint64();
+        uint64_t room_id = toUint64(json.at("room_id"));
         return std::make_unique<GetRoomIdCommand>(room_id);
     }
 
@@ -79,17 +93,25 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
     if (json.contains("roomId"))
     {
-        room_id = json.at("roomId").as_uint64();
+        room_id = toUint64(json.at("roomId"));
     }
 
     if (json.contains("clientId"))
     {
-        client_id = json.at("clientId").as_uint64();
+        client_id = toUint64(json.at("clientId"));
     }
 
     if (type == "management")
     {
-        return std::make_unique<RoomManagementCommand>(action, room_id, client_id);
+        std::string room_name;
+        if (json.contains("room_name"))
+            room_name = json.at("room_name").as_string().c_str();
+
+        uint64_t room_context = 0;
+        if (json.contains("room_context"))
+            room_context = toUint64(json.at("room_context"));
+
+        return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name, room_context);
     }
     else if (type == "player2D")
     {
@@ -129,7 +151,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
         if (json.contains("id"))
         {
-            object_id = json.at("id").as_uint64();
+            object_id = toUint64(json.at("id"));
         }
         if (json.contains("positionX"))
         {
@@ -168,7 +190,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_view type)
 {
-    ReadResult result = ReadResult::error;
+    ReadResult result;
 
     if (type == "not_found")
         result = ReadResult::not_found;

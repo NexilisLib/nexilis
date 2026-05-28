@@ -10,8 +10,10 @@ namespace nexilis::client
 class RoomManagementCommand : public BaseAPICommand
 {
 public:
-    RoomManagementCommand(std::string action, uint64_t room_id, uint64_t client_id)
-        : m_action(action), m_room_id(room_id), m_client_id(client_id)
+    RoomManagementCommand(std::string action, uint64_t room_id, uint64_t client_id,
+                          std::string room_name = "", uint64_t room_context = 0)
+        : m_action(action), m_room_id(room_id), m_client_id(client_id),
+          m_room_name(std::move(room_name)), m_room_context(room_context)
     {
     }
 
@@ -49,8 +51,10 @@ public:
         }
         else if (m_action == "create")
         {
-            // This would require additional parameters from the JSON that aren't in the current structure
-            return ReadResult::not_implemented;
+            auto roomData = RoomData(m_client_id, m_room_name, m_room_id,
+                                     static_cast<RoomData::Context>(m_room_context));
+            rooms.emplace_back(Room(roomData, std::vector<ClientSession>()));
+            return ReadResult::success;
         }
         return ReadResult::error;
     }
@@ -59,6 +63,8 @@ private:
     std::string m_action;
     uint64_t m_room_id;
     uint64_t m_client_id;
+    std::string m_room_name;
+    uint64_t m_room_context;
 };
 
 } // namespace nexilis::client

@@ -10,12 +10,12 @@ namespace nexilis::client
 class RoomCommunicationCommand : public BaseAPICommand
 {
 public:
-    RoomCommunicationCommand(std::string action, uint64_t room_id, uint64_t client_id, std::string message)
+    RoomCommunicationCommand(std::string action, uint64_t room_id, uint64_t client_id, const std::string& message)
         : m_action(action), m_room_id(room_id), m_client_id(client_id), m_message(message)
     {
     }
 
-    ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
+    ReadResult execute(ClientAPI&, ClientAPI::ClientAPIData& data) override
     {
         auto& mtx = data.getRoomsMutex();
         std::lock_guard<std::mutex> lock(*mtx);
