@@ -4,6 +4,7 @@
 #include <nexilis/logger/file_log.hh>
 #include <nexilis/logger/log.hh>
 
+#include <nexilis/client/read_result.hh>
 #include <nexilis/client/room.hh>
 #include <nexilis/client/server_data.hh>
 #include <nexilis/nx_class.hh>
@@ -196,37 +197,6 @@ public:
     /// Deleted copy assignment operator.
     ClientAPI& operator=(const ClientAPI& other) = delete;
 
-    /// Result from ClientAPI::readMessage(const nx_data&).
-    enum class ReadResult
-    {
-        /// The payload has nothing with nexilis.
-        clean,
-
-        /// Command success.
-        success,
-
-        /// Allowed failure.
-        failure,
-
-        /// Something wrong with the command data.
-        not_found,
-
-        /// The input for command is not correct.
-        invalid_input,
-
-        /// Internal error.
-        error,
-
-        /// The command usage is unauthorized.
-        unauthorized,
-
-        /// Client is not found in the correct room.
-        client_missing_room,
-
-        /// Missing feature.
-        not_implemented
-    };
-
     /// Get ReadResult string value.
     /// \param res The ReadResult enum from "readMessage"
     static std::string readResultStr(ReadResult res);
@@ -250,6 +220,16 @@ public:
     uint64_t clientRoomId();
 
     uint64_t getNewMessageId();
+
+    void setClientId(uint64_t id)
+    {
+        m_clientData.setClientId(id);
+    }
+
+    void setRoomId(uint64_t id)
+    {
+        m_clientData.setRoomId(id);
+    }
 
     /// General.
     uint64_t getClientId() const
@@ -364,6 +344,11 @@ public:
     void setBoostTCPPortNumber(uint16_t port)
     {
         m_serverData.setBoostTCPPortNumber(port);
+    }
+
+    void setProtocolPort(const std::string& protocol, uint16_t port)
+    {
+        m_serverData.setProtocolPort(protocol, port);
     }
 
     /// boost UDP

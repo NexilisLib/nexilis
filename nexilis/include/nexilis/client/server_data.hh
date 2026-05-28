@@ -46,6 +46,16 @@ public:
         m_inetUDPServerAddress = serverAddress;
     }
 
+    uint16_t getInetUDPServerPort() const
+    {
+        return m_inetUDPServerPort;
+    }
+
+    void setInetUDPServerPort(uint16_t port)
+    {
+        m_inetUDPServerPort = port;
+    }
+
     /// af_inet TCP
     const std::string& getInetTCPServerAddress() const
     {
@@ -55,6 +65,16 @@ public:
     void setInetTCP(const std::string& serverAddress)
     {
         m_inetTCPServerAddress = serverAddress;
+    }
+
+    uint16_t getInetTCPServerPort() const
+    {
+        return m_inetTCPServerPort;
+    }
+
+    void setInetTCPServerPort(uint16_t port)
+    {
+        m_inetTCPServerPort = port;
     }
 
     /// boost TCP.
@@ -89,6 +109,16 @@ public:
         m_boostUDPServerAddress = serverAddress;
     }
 
+    uint16_t getBoostUDPServerPort() const
+    {
+        return m_boostUDPServerPort;
+    }
+
+    void setBoostUDPServerPort(uint16_t port)
+    {
+        m_boostUDPServerPort = port;
+    }
+
     /// af_unix DGRAM
     const std::string& getUnixDgramServerPath() const
     {
@@ -111,15 +141,29 @@ public:
         m_unixStreamServerPath = socketPath;
     }
 
+    void setProtocolPort(const std::string& protocol, uint16_t port)
+    {
+        if (protocol == "boost_tcp")
+            m_boostTCPServerPort = port;
+        else if (protocol == "boost_udp")
+            m_boostUDPServerPort = port;
+        else if (protocol == "inet_tcp")
+            m_inetTCPServerPort = port;
+        else if (protocol == "inet_udp")
+            m_inetUDPServerPort = port;
+    }
+
 private:
     /// The server password.
     std::string m_password;
 
     /// af_inet UDP
     std::string m_inetUDPServerAddress;
+    uint16_t m_inetUDPServerPort = 0;
 
     /// af_inet TCP
     std::string m_inetTCPServerAddress;
+    uint16_t m_inetTCPServerPort = 0;
 
     /// boost TCP
     std::string m_boostTCPServerAddress;
@@ -127,6 +171,7 @@ private:
 
     /// boost UDP
     std::string m_boostUDPServerAddress;
+    uint16_t m_boostUDPServerPort = 0;
 
     /// af_unix DGRAM
     std::string m_unixDgramServerPath;
