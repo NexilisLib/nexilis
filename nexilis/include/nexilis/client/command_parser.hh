@@ -11,32 +11,7 @@ namespace nexilis::client
 class CommandParser
 {
 public:
-    static std::unique_ptr<BaseAPICommand> parse(const boost::json::object& json)
-    {
-        if (!json.contains("command") || !json.contains("type"))
-        {
-            return std::make_unique<ErrorCommand>(ReadResult::error);
-        }
-
-        auto cmd_type = commandTypeFromString(json.at("command").as_string().c_str());
-        auto type = json.at("type").as_string();
-
-        switch (cmd_type)
-        {
-            case CommandType::setting:
-                return parseSettingCommand(json, type);
-            case CommandType::getting:
-                return parseGettingCommand(json, type);
-            case CommandType::room:
-                return parseRoomCommand(json, type);
-            case CommandType::error:
-                return parseErrorCommand(type);
-            case CommandType::authentication:
-            default:
-                return nullptr;
-        }
-        return nullptr;
-    }
+    static std::unique_ptr<BaseAPICommand> parse(const boost::json::object& json);
 
 private:
     static std::unique_ptr<BaseAPICommand> parseSettingCommand(const boost::json::object& json, std::string_view type);
