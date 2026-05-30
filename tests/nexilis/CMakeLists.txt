@@ -25,6 +25,8 @@ find_package(GTest REQUIRED)
 add_executable(nexilis_tests
     src/main.cc
 
+    src/command_spec_test.cc
+
     src/logging/logger_test.cc
     src/logging/log_test.cc
 
