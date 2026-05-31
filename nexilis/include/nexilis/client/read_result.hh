@@ -7,23 +7,23 @@ namespace nexilis::client
 /// Result from ClientAPI::readMessage(const nx_data&).
 enum class ReadResult
 {
-    /// The payload has nothing with nexilis.
-    clean,
-
     /// Command success.
     success,
 
-    /// Allowed failure.
+    /// Client experiences a failure in executing the command.
     failure,
+
+    // Failure in parsing.
+    parsing_failed,
+
+    // TODO
+    // command_generation,
 
     /// Something wrong with the command data.
     not_found,
 
-    /// The input for command is not correct.
+    /// The input for command is not valid.
     invalid_input,
-
-    /// Internal error.
-    error,
 
     /// The command usage is unauthorized.
     unauthorized,
@@ -32,7 +32,10 @@ enum class ReadResult
     client_missing_room,
 
     /// Missing feature.
-    not_implemented
+    not_implemented,
+
+    /// Anything else
+    error
 };
 
 } // namespace nexilis::client

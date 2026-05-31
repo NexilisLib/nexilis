@@ -109,10 +109,12 @@ std::string ClientAPI::readResultStr(ReadResult res)
 {
     switch (res)
     {
-        case ReadResult::not_found:
-            return "not_found";
         case ReadResult::error:
             return "error";
+        case ReadResult::parsing_failed:
+            return "parsing_failed";
+        case ReadResult::not_found:
+            return "not_found";
         case ReadResult::success:
             return "success";
         case ReadResult::client_missing_room:
@@ -121,14 +123,12 @@ std::string ClientAPI::readResultStr(ReadResult res)
             return "failure";
         case ReadResult::not_implemented:
             return "not_implemented";
-        case ReadResult::clean:
-            return "clean";
         case ReadResult::unauthorized:
             return "unauthorized";
         case ReadResult::invalid_input:
             return "invalid_input";
     }
-    return "not_found";
+    return std::string();
 }
 
 ReadResult ClientAPI::readMessage(const nx_data& message)

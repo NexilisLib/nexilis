@@ -27,11 +27,17 @@ uint64_t toUint64(const boost::json::value& val)
 
 } // anonymous namespace
 
+template <typename... Args>
+std::unique_ptr<ErrorCommand<Args...>> makeError(ReadResult result, Args&&... args)
+{
+    return std::make_unique<ErrorCommand<Args...>>(result, std::forward<Args>(args)...);
+}
+
 std::unique_ptr<BaseAPICommand> CommandParser::parse(const boost::json::object& json)
 {
     if (!json.contains("command") || !json.contains("type"))
     {
-        return std::make_unique<ErrorCommand>(ReadResult::error);
+        return makeError(ReadResult::parsing_failed, "no \"command\" or \"type\" found!");
     }
 
     auto cmd_type = commandTypeFromString(json.at("command").as_string().c_str());
@@ -49,9 +55,9 @@ std::unique_ptr<BaseAPICommand> CommandParser::parse(const boost::json::object& 
             return parseErrorCommand(type);
         case CommandType::authentication:
         default:
-            return nullptr;
+            return makeError(ReadResult::parsing_failed, "command parsing failed to execute");
     }
-    return nullptr;
+    return makeError(ReadResult::parsing_failed, "command type not found");
 }
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::json::object& json, std::string_view type)
@@ -75,7 +81,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::
 
         return std::make_unique<SetPortCommand>(protocol, port);
     }
-    return nullptr;
+    return makeError(ReadResult::parsing_failed, "cannot find set command type");
 }
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseGettingCommand(const boost::json::object& json, std::string_view type)
@@ -86,22 +92,23 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseGettingCommand(const boost::
         return std::make_unique<GetClientIdCommand>(client_id);
     }
 
-    if (type == "room_id")
+    else if (type == "room_id")
     {
         uint64_t room_id = toUint64(json.at("room_id"));
         return std::make_unique<GetRoomIdCommand>(room_id);
     }
 
-    if (type == "info_rooms")
+    else if (type == "info_rooms")
     {
         if (json.contains("rooms"))
         {
             return std::make_unique<GetInfoRoomsCommand>(json.at("rooms"));
         }
-        return std::make_unique<ErrorCommand>(ReadResult::invalid_input);
+
+        return makeError(ReadResult::invalid_input);
     }
 
-    return nullptr;
+    return makeError(ReadResult::parsing_failed, "cannot find get command type");
 }
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::json::object& json, std::string_view type)
@@ -212,12 +219,14 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         return std::make_unique<RoomCommunicationCommand>(action, room_id, client_id, message);
     }
 
-    return nullptr;
+    return makeError(ReadResult::parsing_failed, "cannot find room command type");
 }
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_view type)
 {
     ReadResult result;
+
+    // TODO improve this function when all ReadResult errorcodes are ready
 
     if (type == "not_found")
         result = ReadResult::not_found;
@@ -231,12 +240,10 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_vie
         result = ReadResult::not_implemented;
     else if (type == "client_missing_room")
         result = ReadResult::client_missing_room;
-    else if (type == "clean")
-        result = ReadResult::clean;
     else
         result = ReadResult::error;
 
-    return std::make_unique<ErrorCommand>(result);
+    return ErrorCommand<>::make_unique(result);
 }
 
 } // namespace nexilis::client

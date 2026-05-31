@@ -65,7 +65,7 @@ public:
                     }
                 }
             }
-            return ReadResult::clean;
+            return ReadResult::failure;
         }
         return ReadResult::not_found;
     }

@@ -61,7 +61,7 @@ public:
                     }
                 }
             }
-            return ReadResult::clean;
+            return ReadResult::failure;
         }
         else if (m_action == "dimensions")
         {
