@@ -35,7 +35,7 @@ public:
                     return ReadResult::success;
                 }
             }
-            return ReadResult::error;
+            return ReadResult::command_execution;
         }
         else if (m_action == "leave")
         {
@@ -47,7 +47,7 @@ public:
                     return ReadResult::success;
                 }
             }
-            return ReadResult::error;
+            return ReadResult::command_execution;
         }
         else if (m_action == "create")
         {
@@ -56,7 +56,7 @@ public:
             rooms.emplace_back(Room(roomData, std::vector<ClientSession>()));
             return ReadResult::success;
         }
-        return ReadResult::error;
+        return ReadResult::not_found;
     }
 
 private:

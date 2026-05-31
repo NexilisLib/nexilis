@@ -21,7 +21,7 @@ public:
     {
         auto& mtx = data.getRoomsMutex();
         if (!mtx)
-            return ReadResult::command_generation;
+            return ReadResult::command_execution;
         std::lock_guard<std::mutex> lock(*mtx);
 
         api.setClientId(m_client_id);

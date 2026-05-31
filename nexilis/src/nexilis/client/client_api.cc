@@ -109,12 +109,12 @@ std::string ClientAPI::readResultStr(ReadResult res)
 {
     switch (res)
     {
-        case ReadResult::error:
-            return "error";
         case ReadResult::parsing_failed:
             return "parsing_failed";
-        case ReadResult::command_generation:
-            return "command_generation";
+        case ReadResult::command_execution:
+            return "command_execution";
+        case ReadResult::error_in_json_conversion:
+            return "error_in_json_conversion";
         case ReadResult::not_found:
             return "not_found";
         case ReadResult::success:
@@ -144,7 +144,7 @@ ReadResult ClientAPI::readMessage(const nx_data& message)
     catch (...)
     {
         Util::debugUint8Vector(message);
-        return ReadResult::error;
+        return ReadResult::error_in_json_conversion;
     }
 
     auto result = readCommand(json);

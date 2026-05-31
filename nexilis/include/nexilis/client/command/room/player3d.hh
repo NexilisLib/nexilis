@@ -35,7 +35,7 @@ public:
                     }
                 }
             }
-            return ReadResult::client_missing_room;
+            return ReadResult::command_execution;
         }
         else if (m_action == "dimensions")
         {
@@ -50,7 +50,7 @@ public:
                     }
                 }
             }
-            return ReadResult::client_missing_room;
+            return ReadResult::command_execution;
         }
         else if (m_action == "movement")
         {
@@ -65,7 +65,7 @@ public:
                     }
                 }
             }
-            return ReadResult::failure;
+            return ReadResult::command_execution;
         }
         return ReadResult::not_found;
     }

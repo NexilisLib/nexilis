@@ -8,7 +8,7 @@ Nexilis is client and server API for multiplayer game development with TCP/UDP.
 nexilis/          - Core C++ library (client + server)
 bindings/         - Language bindings (C#)
 tests/            - Test suites
-examples/         = Examples of library usage
+examples/         - Examples of library usage
 docs/             - Documentation
 ```
 

@@ -17,8 +17,10 @@ public:
     ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData&) override
     {
         auto* client = api.getClientFromRoom(api.getClientId());
-        if (client)
-            client->setUsername(m_username);
+        if (!client)
+            return ReadResult::command_execution;
+
+        client->setUsername(m_username);
         return ReadResult::success;
     }
 

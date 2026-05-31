@@ -13,9 +13,6 @@
 namespace nexilis::client
 {
 
-namespace
-{
-
 uint64_t toUint64(const boost::json::value& val)
 {
     if (val.is_uint64())
@@ -24,8 +21,6 @@ uint64_t toUint64(const boost::json::value& val)
         return static_cast<uint64_t>(val.as_int64());
     return 0;
 }
-
-} // anonymous namespace
 
 template <typename... Args>
 std::unique_ptr<ErrorCommand<Args...>> makeError(ReadResult result, Args&&... args)
@@ -116,7 +111,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     // Parse room commands based on 'type' and 'action' fields
     if (!json.contains("action"))
     {
-        return nullptr;
+        return makeError(ReadResult::parsing_failed, "missing \"action\"");
     }
 
     std::string action = json.at("action").as_string().c_str();
@@ -225,7 +220,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_view type)
 {
     auto result = readResultFromString(type);
-    return ErrorCommand<>::make_unique(result.value_or(ReadResult::error));
+    return ErrorCommand<>::make_unique(result.value_or(ReadResult::parsing_failed));
 }
 
 } // namespace nexilis::client
