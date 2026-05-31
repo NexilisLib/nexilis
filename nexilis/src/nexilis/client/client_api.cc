@@ -113,6 +113,8 @@ std::string ClientAPI::readResultStr(ReadResult res)
             return "error";
         case ReadResult::parsing_failed:
             return "parsing_failed";
+        case ReadResult::command_generation:
+            return "command_generation";
         case ReadResult::not_found:
             return "not_found";
         case ReadResult::success:

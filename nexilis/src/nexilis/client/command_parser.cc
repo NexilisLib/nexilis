@@ -224,26 +224,8 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_view type)
 {
-    ReadResult result;
-
-    // TODO improve this function when all ReadResult errorcodes are ready
-
-    if (type == "not_found")
-        result = ReadResult::not_found;
-    else if (type == "failure")
-        result = ReadResult::failure;
-    else if (type == "invalid_input")
-        result = ReadResult::invalid_input;
-    else if (type == "unauthorized")
-        result = ReadResult::unauthorized;
-    else if (type == "not_implemented")
-        result = ReadResult::not_implemented;
-    else if (type == "client_missing_room")
-        result = ReadResult::client_missing_room;
-    else
-        result = ReadResult::error;
-
-    return ErrorCommand<>::make_unique(result);
+    auto result = readResultFromString(type);
+    return ErrorCommand<>::make_unique(result.value_or(ReadResult::error));
 }
 
 } // namespace nexilis::client
