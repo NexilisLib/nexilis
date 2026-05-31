@@ -67,6 +67,18 @@ void ClientProtocol::updateProtocolStatus(ProtocolStatus status)
     }
 }
 
+nx_data ClientProtocol::frame(const nx_data& payload)
+{
+    nx_data framed;
+    uint32_t net_len = static_cast<uint32_t>(payload.size());
+    framed.push_back(static_cast<uint8_t>((net_len >> 24) & 0xFF));
+    framed.push_back(static_cast<uint8_t>((net_len >> 16) & 0xFF));
+    framed.push_back(static_cast<uint8_t>((net_len >> 8) & 0xFF));
+    framed.push_back(static_cast<uint8_t>(net_len & 0xFF));
+    framed.insert(framed.end(), payload.begin(), payload.end());
+    return framed;
+}
+
 void ClientProtocol::sendMessageWithCallback(const nx_data& message, const std::function<void()>& callback)
 {
     m_api->addCallback(ClientProtocol::createCallback(message, callback));

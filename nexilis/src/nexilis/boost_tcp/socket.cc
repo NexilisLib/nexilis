@@ -8,6 +8,8 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
 
+#include <cstdint>
+
 namespace nexilis::boost_tcp
 {
 
@@ -141,19 +143,42 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
         }
 
         boost::system::error_code ec;
+
+        // Read 4-byte length prefix (big-endian uint32_t)
+        uint8_t len_buf[4];
+        size_t read_len = boost::asio::read(*m_socket,
+                                            boost::asio::buffer(len_buf),
+                                            boost::asio::transfer_exactly(4), ec);
+
+        if (ec || read_len != 4)
+        {
+            m_socket->non_blocking(original_blocking);
+            close();
+            return false;
+        }
+
+        uint32_t payload_size = (static_cast<uint32_t>(len_buf[0]) << 24) |
+                                (static_cast<uint32_t>(len_buf[1]) << 16) |
+                                (static_cast<uint32_t>(len_buf[2]) << 8) |
+                                (static_cast<uint32_t>(len_buf[3]));
+
+        if (payload_size == 0)
+        {
+            m_socket->non_blocking(original_blocking);
+            data.clear();
+            return true;
+        }
+
+        // Read exactly payload_size bytes
         boost::asio::streambuf buf;
-        boost::asio::read(*m_socket, buf, boost::asio::transfer_at_least(1), ec);
+        read_len = boost::asio::read(*m_socket, buf,
+                                     boost::asio::transfer_exactly(payload_size), ec);
 
         // Restore blocking mode
         m_socket->non_blocking(original_blocking);
 
         if (ec)
         {
-            if (ec == boost::asio::error::would_block ||
-                ec == boost::asio::error::operation_aborted)
-            {
-                return false;
-            }
             close();
             return false;
         }

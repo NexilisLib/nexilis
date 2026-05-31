@@ -4,6 +4,7 @@
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/protocol_status.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/nx_data.hh>
 #include <nexilis/protocol.hh>
 
 namespace nexilis::client
@@ -55,6 +56,9 @@ public:
 
     /// Change the connection status of client protocol.
     void updateProtocolStatus(ProtocolStatus status);
+
+    /// Prepend a 4-byte big-endian length prefix for TCP message framing.
+    static nx_data frame(const nx_data& payload);
 
 protected:
     void start(Protocol::Type type);

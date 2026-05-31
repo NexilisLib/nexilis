@@ -11,6 +11,9 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
 
+#include <cstdint>
+#include <memory>
+
 namespace nexilis::client::nxboost
 {
 
@@ -350,10 +353,12 @@ bool TCPClient::send(const nx_data& data)
 
     try
     {
+        auto framed = std::make_shared<nx_data>(ClientProtocol::frame(data));
+
         // clang-format off
-        boost::asio::async_write(*current_socket, boost::asio::buffer(data),
+        boost::asio::async_write(*current_socket, boost::asio::buffer(*framed),
             boost::asio::bind_executor(*m_strand,
-                [this, current_socket, messageId](const boost::system::error_code& ec, std::size_t size)
+                [this, current_socket, messageId, framed](const boost::system::error_code& ec, std::size_t size)
                     {
                         if (!ec)
                         {
