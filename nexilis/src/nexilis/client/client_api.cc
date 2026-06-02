@@ -198,62 +198,6 @@ void ClientAPI::readCallback(boost::json::value callback)
     }
 }
 
-std::string ClientAPI::createString(const boost::json::value& context, const std::string& key)
-{
-    std::string item;
-    bool readGood = true;
-    if (context.at(key).if_string())
-    {
-        item = context.at(key).as_string();
-    }
-    else
-    {
-        readGood = false;
-    }
-    assert(readGood);
-    return item;
-}
-
-uint64_t ClientAPI::createUint64(const boost::json::value& context, const std::string& key)
-{
-    uint64_t item;
-    bool readGood = true;
-    if (context.at(key).if_uint64())
-    {
-        item = context.at(key).as_uint64();
-    }
-    else if (context.at(key).if_int64())
-    {
-        item = static_cast<uint64_t>(context.at(key).as_int64());
-    }
-    else
-    {
-        readGood = false;
-    }
-    if (!readGood)
-    {
-        Log::error("Could not read item with key: ", key);
-        return 0;
-    }
-    return item;
-}
-
-float ClientAPI::createFloat(const boost::json::value& context, const std::string& key)
-{
-    float item = 0.f;
-    bool readGood = true;
-    if (context.at(key).if_double())
-    {
-        item = context.at(key).as_double();
-    }
-    else
-    {
-        readGood = false;
-    }
-    assert(readGood);
-    return item;
-}
-
 std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promise)
 {
     // Capture promise by value to avoid dangling reference.

@@ -221,6 +221,43 @@ nx_data Util::convertToByteVector(uint8_t value)
     return nx_data{value};
 }
 
+template <typename T>
+T boostJsonValue(const std::function<bool()>& if_exists, const std::function<T()>& as)
+{
+    if (!if_exists())
+    {
+        throw std::runtime_error("Key does not exist or the value is off wrong type");
+    }
+    return as();
+}
+
+std::string Util::createString(const boost::json::value& ctx, const std::string& key)
+{
+    // clang-format off
+    return boostJsonValue<std::string>(
+            [&ctx, &key]() { return ctx.at(key).if_string(); },
+            [&ctx, &key]() { return static_cast<std::string>(ctx.at(key).as_string()); });
+    // clang-format on
+}
+
+uint64_t Util::createUint64(const boost::json::value& ctx, const std::string& key)
+{
+    // clang-format off
+    return boostJsonValue<uint64_t>(
+            [&ctx, &key]() { return ctx.at(key).if_uint64(); },
+            [&ctx, &key]() { return static_cast<uint64_t>(ctx.at(key).as_uint64()); });
+    // clang-format on
+}
+
+double Util::createDouble(const boost::json::value& ctx, const std::string& key)
+{
+    // clang-format off
+    return boostJsonValue<double>(
+            [&ctx, &key]() { return ctx.at(key).if_double(); },
+            [&ctx, &key]() { return static_cast<double>(ctx.at(key).as_double()); });
+    // clang-format on
+}
+
 uint64_t Util::getRandomUint64()
 {
     std::mt19937_64 generator(rand_dev());

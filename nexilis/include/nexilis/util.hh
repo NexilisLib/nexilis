@@ -66,6 +66,53 @@ public:
     /// Convert nx_data to Vector3f
     static Vector3f convertToVector3(const nx_data& bytes);
 
+    /// \defgroup BytevectorConversions Functions that converts items to byte vectors.
+
+    /// \ingroup BytevectorConversions
+    template <typename EnumType>
+    static nx_data convertToByteVector(EnumType e,
+                                       typename std::enable_if<std::is_enum<EnumType>::value>::type* = nullptr)
+    {
+        using UnderlyingType = typename std::underlying_type<EnumType>::type;
+        return convertToByteVector(static_cast<uint8_t>(static_cast<UnderlyingType>(e)));
+    }
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(const char* command_data, uint64_t length);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(uint64_t value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(uint16_t value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(const boost::json::object& obj);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(float value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(Vector2f value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(Vector3f value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(const std::string& value);
+
+    /// \ingroup BytevectorConversions
+    static nx_data convertToByteVector(uint8_t value);
+
+    /// Get a boost json key value as a string.
+    static std::string createString(const boost::json::value& ctx, const std::string& key);
+
+    /// Get a boost json key value as a uint64.
+    static uint64_t createUint64(const boost::json::value& ctx, const std::string& key);
+
+    /// Get a boost json key value as a float.
+    static double createDouble(const boost::json::value& ctx, const std::string& key);
+
     /// Return uint16_t from two bytes.
     static uint16_t uint8PairToUint16(uint8_t lowByte, uint8_t highByte);
 
@@ -115,52 +162,12 @@ public:
     /// \ingroup RandFunctions
     static std::string getRandomString(uint64_t charAmount);
 
-    /// \defgroup BytevectorConversions Functions that converts items to byte vectors.
-
-    /// \ingroup BytevectorConversions
-    template <typename EnumType>
-    static nx_data convertToByteVector(EnumType e,
-                                       typename std::enable_if<std::is_enum<EnumType>::value>::type* = nullptr)
-    {
-        using UnderlyingType = typename std::underlying_type<EnumType>::type;
-        return convertToByteVector(static_cast<uint8_t>(static_cast<UnderlyingType>(e)));
-    }
-
-    /// Byte vector conversions.
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(const char* command_data, uint64_t length);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(uint64_t value);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(uint16_t value);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(const boost::json::object& obj);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(float value);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(Vector2f value);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(Vector3f value);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(const std::string& value);
-
-    /// \ingroup BytevectorConversions
-    static nx_data convertToByteVector(uint8_t value);
+    static std::string getDateAndTime();
 
     /// Logging.
     static std::string getColorMessage(logger::LogLevel logLevel, const std::string& data);
     static void printColorMessageToConsole(logger::LogLevel logLevel, const std::string& data);
     static void debugUint8Vector(const nx_data& vector);
-
-    /// Other
-    static std::string getDateAndTime();
 
     /// File stuff
     static void deleteIfExists(const std::filesystem::path& filePath);

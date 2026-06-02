@@ -382,10 +382,6 @@ private:
     /// Read the callback part of the message.
     void readCallback(boost::json::value callback);
 
-    std::string createString(const boost::json::value& context, const std::string& key);
-    uint64_t createUint64(const boost::json::value& context, const std::string& key);
-    float createFloat(const boost::json::value& context, const std::string& key);
-
 private:
     /// The initialization data for the ClientAPI.
     ServerData m_serverData;
