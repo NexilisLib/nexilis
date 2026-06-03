@@ -63,7 +63,7 @@ public:
             }
             return ReadResult::command_execution;
         }
-        else if (m_action == "dimensions")
+        else if (m_action == "dimension")
         {
             for (auto&& room = rooms.begin(); room != rooms.end(); room++)
             {

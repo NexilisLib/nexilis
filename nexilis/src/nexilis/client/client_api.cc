@@ -161,10 +161,8 @@ ReadResult ClientAPI::readMessage(const nx_data& message)
     else
     {
         Log::error("Server returned other than \"success\"");
-        Log::debug("ReadResult value: ", readResultStr(result));
-        std::string stringMessage = Util::convertToString(message);
-        // TODO format output json
-        Log::error("Data: ", stringMessage);
+        Log::error("ReadResult value: ", readResultStr(result));
+        Log::error("Received message: ", Util::convertToString(message));
     }
     return result;
 }
