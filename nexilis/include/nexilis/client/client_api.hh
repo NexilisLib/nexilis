@@ -266,7 +266,7 @@ public:
     ClientSession* getClientFromRoom(uint64_t client_id);
 
     /// Let the program wait until nexilis has created all the rooms.
-    std::function<void()> waitUntilRoomsCreated(std::promise<void>& future);
+    std::function<void()> waitUntilRoomsCreated(std::promise<void>& future, const uint16_t max_attempts = 50, const uint16_t timeout = 100);
 
     /// Set the value of 2D overlapping.
     void setOverLapStatus2D(bool status)

@@ -172,7 +172,7 @@ void ClientAPI::readCallback(boost::json::value callback)
     uint64_t cb;
     if (callback.if_uint64())
     {
-        cb = callback.as_uint64();
+        cb = static_cast<uint64_t>(callback.as_uint64());
     }
     else if (callback.if_int64())
     {
@@ -196,17 +196,13 @@ void ClientAPI::readCallback(boost::json::value callback)
     }
 }
 
-std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promise)
+std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promise, const uint16_t max_attempts, const uint16_t timeout)
 {
-    // Capture promise by value to avoid dangling reference.
-    return [promise_ptr = std::shared_ptr<std::promise<void>>(&promise, [](auto*) {}), this]()
+    return [promise_ptr = std::shared_ptr<std::promise<void>>(&promise, [](auto*) {}), max_attempts, timeout, this]()
     {
         try
         {
-            // Max 5 seconds waiting time.
-            constexpr int max_attempts = 50;
             int attempts = 0;
-
             while (attempts++ < max_attempts)
             {
                 {
@@ -224,10 +220,10 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
                     }
                 }
                 Log::debug(header(), "Tried to getActiveRooms data!");
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
             }
 
-            // Timeout reached.
+            // Timeout reached (100 * max_attempts) ms.
             promise_ptr->set_exception(std::make_exception_ptr(
                     std::runtime_error("Timeout waiting for rooms creation")));
         }
