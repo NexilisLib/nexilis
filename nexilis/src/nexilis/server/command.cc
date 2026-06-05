@@ -566,11 +566,14 @@ bool Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protoco
     {
         if (room.getId() == user.getRoomId())
         {
+            bool all_success = true;
             for (auto& roomClient : room.getClients())
             {
                 auto* client = ClientStorage::getClientById(roomClient);
-                return sendMessageToClient(data, *client, protocol);
+                if (!sendMessageToClient(data, *client, protocol))
+                    all_success = false;
             }
+            return all_success;
         }
     }
     return false;
