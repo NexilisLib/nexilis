@@ -20,8 +20,8 @@ CommandResult ServerImpl::room_player2d_dimension(const DefaultArgs& args)
     }
 
     std::map<std::string, boost::json::value> params{
-            {"x", boost::json::value(vector.x)},
-            {"y", boost::json::value(vector.y)}};
+            {"width", boost::json::value(vector.x)},
+            {"height", boost::json::value(vector.y)}};
 
     user.getObject2D().setDimensions(vector);
 

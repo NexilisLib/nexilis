@@ -182,21 +182,21 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         {
             object_id = toUint64(json.at("id"));
         }
-        if (json.contains("positionX"))
+        if (json.contains("x"))
         {
-            x = static_cast<float>(json.at("positionX").as_double());
+            x = static_cast<float>(json.at("x").as_double());
         }
-        if (json.contains("positionY"))
+        if (json.contains("y"))
         {
-            y = static_cast<float>(json.at("positionY").as_double());
+            y = static_cast<float>(json.at("y").as_double());
         }
-        if (json.contains("dimensionX"))
+        if (json.contains("width"))
         {
-            w = static_cast<float>(json.at("dimensionX").as_double());
+            w = static_cast<float>(json.at("width").as_double());
         }
-        if (json.contains("dimensionY"))
+        if (json.contains("height"))
         {
-            h = static_cast<float>(json.at("dimensionY").as_double());
+            h = static_cast<float>(json.at("height").as_double());
         }
         if (json.contains("filepath"))
         {

@@ -63,20 +63,20 @@ public:
                         username = client.at("name").as_string().c_str();
 
                     float object2DX = 0.0f;
-                    if (client.at("roomPositionX").is_double())
-                        object2DX = static_cast<float>(client.at("roomPositionX").as_double());
+                    if (client.at("x").is_double())
+                        object2DX = static_cast<float>(client.at("x").as_double());
 
                     float object2DY = 0.0f;
-                    if (client.at("roomPositionY").is_double())
-                        object2DY = static_cast<float>(client.at("roomPositionY").as_double());
+                    if (client.at("y").is_double())
+                        object2DY = static_cast<float>(client.at("y").as_double());
 
                     float dimension2DX = 0.0f;
-                    if (client.at("roomDimensionX").is_double())
-                        dimension2DX = static_cast<float>(client.at("roomDimensionX").as_double());
+                    if (client.at("width").is_double())
+                        dimension2DX = static_cast<float>(client.at("width").as_double());
 
                     float dimension2DY = 0.0f;
-                    if (client.at("roomDimensionY").is_double())
-                        dimension2DY = static_cast<float>(client.at("roomDimensionY").as_double());
+                    if (client.at("height").is_double())
+                        dimension2DY = static_cast<float>(client.at("height").as_double());
 
                     ClientSession newClient(client_id, &api);
                     newClient.getObject2D().setPosition({object2DX, object2DY});

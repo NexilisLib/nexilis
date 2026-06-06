@@ -35,10 +35,10 @@ CommandResult ServerImpl::room_object2d_createMoving(const DefaultArgs& args)
 
     std::map<std::string, boost::json::value> params{
             {"createMovingType", boost::json::value("create")},
-            {"positionX", boost::json::value(startingPosition.x)},
-            {"positionY", boost::json::value(startingPosition.y)},
-            {"dimensionX", boost::json::value(dimensions.x)},
-            {"dimensionY", boost::json::value(dimensions.y)},
+            {"x", boost::json::value(startingPosition.x)},
+            {"y", boost::json::value(startingPosition.y)},
+            {"width", boost::json::value(dimensions.x)},
+            {"height", boost::json::value(dimensions.y)},
             {"filepath", boost::json::value(filepath)},
             {"id", boost::json::value(objectId)}};
     auto roomCommand = Command::createRoomCommand(user.getRoomId(), user, data, params, args.getMessageId());
