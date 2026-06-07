@@ -61,8 +61,13 @@ public:
         return m_id;
     }
 
-    const VectorType& getPosition() const
+    VectorType getPosition() const
     {
+        if (m_mutex)
+        {
+            std::lock_guard lock(*m_mutex);
+            return m_position;
+        }
         return m_position;
     }
 

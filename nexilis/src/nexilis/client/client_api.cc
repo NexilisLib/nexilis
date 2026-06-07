@@ -42,8 +42,10 @@ ClientAPI& ClientAPI::operator=(ClientAPI&& other)
 
 bool ClientAPI::clientInRoom()
 {
-    auto& rooms = getActiveRooms();
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
 
+    auto& rooms = getActiveRooms();
     for (auto r = rooms.begin(); r != rooms.end(); r++)
     {
         auto& clients = r->getClients();
@@ -60,8 +62,10 @@ bool ClientAPI::clientInRoom()
 
 uint64_t ClientAPI::clientRoomId()
 {
-    auto& rooms = getActiveRooms();
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
 
+    auto& rooms = getActiveRooms();
     for (auto r = rooms.begin(); r != rooms.end(); r++)
     {
         auto& clients = r->getClients();
@@ -249,6 +253,9 @@ Room* ClientAPI::getRoom(uint64_t room_id)
 
 ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
 {
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
+
     ClientSession* returned_client = nullptr;
     auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
     for (auto&& room = rooms.begin(); room != rooms.end(); room++)
@@ -262,6 +269,49 @@ ClientSession* ClientAPI::getClientFromRoom(uint64_t client_id)
         }
     }
     return returned_client;
+}
+
+Vector3f ClientAPI::getClientPosition3D(uint64_t client_id)
+{
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
+
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+    for (auto&& room = rooms.begin(); room != rooms.end(); room++)
+    {
+        for (auto& client : room->getClients())
+        {
+            if (client.getId() == client_id)
+            {
+                return client.getObject3D().getPosition();
+            }
+        }
+    }
+    return Vector3f();
+}
+
+std::vector<ClientAPI::RemotePlayerSnapshot> ClientAPI::getRemotePlayersSnapshot(uint64_t room_id, uint64_t my_id)
+{
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
+
+    std::vector<RemotePlayerSnapshot> result;
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+    for (auto& room : rooms)
+    {
+        if (room.getId() == room_id)
+        {
+            for (auto& client : room.getClients())
+            {
+                if (client.getId() == my_id)
+                    continue;
+                auto pos = client.getObject3D().getPosition();
+                result.push_back({client.getId(), pos.x, pos.y, pos.z});
+            }
+            break;
+        }
+    }
+    return result;
 }
 
 bool ClientAPI::IsInetUDPReady()

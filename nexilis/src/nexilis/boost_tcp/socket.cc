@@ -113,8 +113,8 @@ bool Socket::send(const nx_data& data)
 
 bool Socket::receive(nx_data& data, size_t timeout_ms)
 {
-    std::unique_lock<std::mutex> lock(m_mutex, std::try_to_lock);
-    if (!lock.owns_lock() || !m_connected)
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_connected)
     {
         return false;
     }

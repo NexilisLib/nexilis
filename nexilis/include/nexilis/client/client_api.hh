@@ -265,6 +265,20 @@ public:
     /// Get client pointer from any room.
     ClientSession* getClientFromRoom(uint64_t client_id);
 
+    /// Get a copy of a client's 3D position.
+    Vector3f getClientPosition3D(uint64_t client_id);
+
+    struct RemotePlayerSnapshot
+    {
+        uint64_t id;
+        float x, y, z;
+    };
+
+    /// Get a snapshot of all remote players in a room.
+    /// \param room_id The room to query.
+    /// \param my_id The local client id to exclude from results.
+    std::vector<RemotePlayerSnapshot> getRemotePlayersSnapshot(uint64_t room_id, uint64_t my_id);
+
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future, const uint16_t max_attempts = 50, const uint16_t timeout = 100);
 
