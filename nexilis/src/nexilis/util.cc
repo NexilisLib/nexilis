@@ -258,6 +258,15 @@ double Util::createDouble(const boost::json::value& ctx, const std::string& key)
     // clang-format on
 }
 
+uint64_t Util::toUint64(const boost::json::value& val)
+{
+    if (val.is_uint64())
+        return val.as_uint64();
+    if (val.is_int64())
+        return static_cast<uint64_t>(val.as_int64());
+    return 0;
+}
+
 uint64_t Util::getRandomUint64()
 {
     std::mt19937_64 generator(rand_dev());

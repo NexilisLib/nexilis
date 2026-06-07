@@ -113,6 +113,9 @@ public:
     /// Get a boost json key value as a float.
     static double createDouble(const boost::json::value& ctx, const std::string& key);
 
+    // Convert boost::json::value into uint64_t.
+    static uint64_t toUint64(const boost::json::value& val);
+
     /// Return uint16_t from two bytes.
     static uint16_t uint8PairToUint16(uint8_t lowByte, uint8_t highByte);
 

@@ -13,15 +13,6 @@
 namespace nexilis::client
 {
 
-uint64_t toUint64(const boost::json::value& val)
-{
-    if (val.is_uint64())
-        return val.as_uint64();
-    if (val.is_int64())
-        return static_cast<uint64_t>(val.as_int64());
-    return 0;
-}
-
 template <typename... Args>
 std::unique_ptr<ErrorCommand<Args...>> makeError(ReadResult result, Args&&... args)
 {
@@ -70,9 +61,9 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::
 
         uint16_t port = 0;
         if (json.contains("port"))
-            port = static_cast<uint16_t>(toUint64(json.at("port")));
+            port = static_cast<uint16_t>(Util::toUint64(json.at("port")));
         else if (json.contains("boost_tcp_port"))
-            port = static_cast<uint16_t>(toUint64(json.at("boost_tcp_port")));
+            port = static_cast<uint16_t>(Util::toUint64(json.at("boost_tcp_port")));
 
         return std::make_unique<SetPortCommand>(protocol, port);
     }
@@ -83,13 +74,13 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseGettingCommand(const boost::
 {
     if (type == "client_id")
     {
-        uint64_t client_id = toUint64(json.at("client_id"));
+        uint64_t client_id = Util::toUint64(json.at("client_id"));
         return std::make_unique<GetClientIdCommand>(client_id);
     }
 
     else if (type == "room_id")
     {
-        uint64_t room_id = toUint64(json.at("room_id"));
+        uint64_t room_id = Util::toUint64(json.at("room_id"));
         return std::make_unique<GetRoomIdCommand>(room_id);
     }
 
@@ -122,12 +113,12 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
     if (json.contains("room_id"))
     {
-        room_id = toUint64(json.at("room_id"));
+        room_id = Util::toUint64(json.at("room_id"));
     }
 
     if (json.contains("client_id"))
     {
-        client_id = toUint64(json.at("client_id"));
+        client_id = Util::toUint64(json.at("client_id"));
     }
 
     if (type == "management")
@@ -138,7 +129,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
         uint64_t room_context = 0;
         if (json.contains("room_context"))
-            room_context = toUint64(json.at("room_context"));
+            room_context = Util::toUint64(json.at("room_context"));
 
         return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name, room_context);
     }
@@ -180,7 +171,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
         if (json.contains("id"))
         {
-            object_id = toUint64(json.at("id"));
+            object_id = Util::toUint64(json.at("id"));
         }
         if (json.contains("x"))
         {

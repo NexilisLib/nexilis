@@ -3,11 +3,6 @@
 
 #include <nexilis/client/base_api_command.hh>
 
-#include <boost/json/value.hpp>
-
-#include <mutex>
-#include <string>
-
 namespace nexilis::client
 {
 
@@ -17,15 +12,6 @@ public:
     explicit GetInfoRoomsCommand(boost::json::value rooms)
         : m_rooms(std::move(rooms))
     {
-    }
-
-    static uint64_t toUint64(const boost::json::value& val)
-    {
-        if (val.is_uint64())
-            return val.as_uint64();
-        if (val.is_int64())
-            return static_cast<uint64_t>(val.as_int64());
-        return 0;
     }
 
     ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
@@ -43,10 +29,10 @@ public:
             if (room.at("name").is_string())
                 name = room.at("name").as_string().c_str();
 
-            uint64_t maxSize = toUint64(room.at("max_size"));
-            uint64_t context = toUint64(room.at("context"));
-            uint64_t creatorId = toUint64(room.at("creator_id"));
-            uint64_t id = toUint64(room.at("room_id"));
+            uint64_t maxSize = Util::toUint64(room.at("max_size"));
+            uint64_t context = Util::toUint64(room.at("context"));
+            uint64_t creatorId = Util::toUint64(room.at("creator_id"));
+            uint64_t id = Util::toUint64(room.at("room_id"));
 
             std::vector<ClientSession> roomClients;
 
@@ -56,7 +42,7 @@ public:
 
                 for (const auto& client : clients)
                 {
-                    uint64_t client_id = toUint64(client.at("id"));
+                    uint64_t client_id = Util::toUint64(client.at("id"));
 
                     std::string username;
                     if (client.at("name").is_string())
