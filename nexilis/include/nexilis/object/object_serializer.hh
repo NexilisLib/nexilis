@@ -2,10 +2,9 @@
 #define NEXILIS_OBJECT_SERIALIZER_HH
 
 #include <nexilis/nexilis_constants.hh>
-#include <nexilis/object/object2d.hh>
-#include <nexilis/object/object3d.hh>
 
-#include <memory>
+#include <nexilis/object/object_2d.hh>
+#include <nexilis/object/object_3d.hh>
 
 namespace nexilis
 {
@@ -13,20 +12,21 @@ namespace nexilis
 class ObjectSerializer
 {
 public:
+    template <typename T>
     static nx_data data(const std::unique_ptr<Object<T>> object)
     {
         return object.getData();
     }
 
-    virtual Object2D* asObject2D(const nx_data& data)
+    virtual Object2D* asObject2D(const nx_data& input_data)
     {
-        (void)data;
+        (void)input_data;
         return nullptr;
     }
 
-    virtual Object3D* asObject3D(const nx_data& data)
+    virtual Object3D* asObject3D(const nx_data& input_data)
     {
-        (void)data;
+        (void)input_data;
         return nullptr;
     }
 };

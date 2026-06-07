@@ -38,9 +38,9 @@ CommandResult ServerImpl::room_management_create(const DefaultArgs& args)
 
         std::map<std::string, boost::json::value> params{
                 {"room_name", boost::json::value(roomName)},
-                {"clientId", boost::json::value(args.getUser().getId())},
+                {"client_id", boost::json::value(args.getUser().getId())},
                 {"action", boost::json::value("create")},
-                {"roomId", boost::json::value(newRoomId)},
+                {"room_id", boost::json::value(newRoomId)},
                 {"room_context", boost::json::value(context)}};
 
         auto data = Command::clientMessageData(CommandType::room, "management", args.getMessageId(), params);

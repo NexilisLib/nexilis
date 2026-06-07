@@ -224,7 +224,7 @@ nx_data ClientImpl::room_player2d_position(Vector2f position)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::position));
     emplaceAll(id, position);
     return id;
@@ -234,7 +234,7 @@ nx_data ClientImpl::room_player2d_dimension(Vector2f dimensions)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::dimension));
     emplaceAll(id, dimensions);
     return id;
@@ -244,7 +244,7 @@ nx_data ClientImpl::room_player2d_movement(Vector2f movement, float deltatime)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::movement));
     emplaceAll(id, movement, deltatime);
     return id;
@@ -255,7 +255,7 @@ nx_data ClientImpl::room_object2d_create(Vector2f position, Vector2f dimensions,
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create));
     emplaceAll(id, position, dimensions, filePath);
     return id;
@@ -265,7 +265,7 @@ nx_data ClientImpl::room_object2d_destroy(uint64_t objectId)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::destroy));
     emplaceAll(id, objectId);
     return id;
@@ -275,7 +275,7 @@ nx_data ClientImpl::room_object2d_move(uint64_t objectId, Vector2f newPosition)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::move));
     emplaceAll(id, objectId, newPosition);
     return id;
@@ -287,8 +287,8 @@ nx_data ClientImpl::room_object2d_createMoving(Vector2f startingPosition, Vector
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object2D));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::createMoving));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create_moving));
     emplaceAll(id, startingPosition, dimensions, movement, deltaTime, movementType, filepath);
     return id;
 }
@@ -298,7 +298,7 @@ nx_data ClientImpl::room_player3d_position(Vector3f position)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::position));
     emplaceAll(id, position);
     return id;
@@ -308,7 +308,7 @@ nx_data ClientImpl::room_player3d_dimension(Vector3f dimensions)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::dimension));
     emplaceAll(id, dimensions);
     return id;
@@ -318,7 +318,7 @@ nx_data ClientImpl::room_player3d_movement(Vector3f movement, float deltatime)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::movement));
     emplaceAll(id, movement, deltatime);
     return id;
@@ -328,7 +328,7 @@ nx_data ClientImpl::room_object3d_create(Vector3f position, Vector3f dimensions,
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create));
     emplaceAll(id, position, dimensions, filePath);
     return id;
@@ -338,7 +338,7 @@ nx_data ClientImpl::room_object3d_destroy(uint64_t objectId)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::destroy));
     emplaceAll(id, objectId);
     return id;
@@ -348,7 +348,7 @@ nx_data ClientImpl::room_object3d_move(uint64_t objectId, Vector3f newPosition)
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::move));
     emplaceAll(id, objectId, newPosition);
     return id;
@@ -360,8 +360,8 @@ nx_data ClientImpl::room_object3d_createmoving(Vector3f startingPosition, Vector
 {
     auto id = _Packet::clientIdentification();
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object3D));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::createMoving));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create_moving));
     emplaceAll(id, startingPosition, dimensions, movement, deltaTime, movementType, filepath);
     return id;
 }

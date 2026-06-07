@@ -514,22 +514,22 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
             roomCommandAction = RoomCommandType::ManagementTypeToString(static_cast<RoomCommandType::Management>(action));
             break;
         }
-        case RoomCommandType::Root::player2D:
+        case RoomCommandType::Root::player_2D:
         {
             roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::PlayerType>(action));
             break;
         }
-        case RoomCommandType::Root::object2D:
+        case RoomCommandType::Root::object_2D:
         {
             roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::ObjectType>(action));
             break;
         }
-        case RoomCommandType::Root::player3D:
+        case RoomCommandType::Root::player_3D:
         {
             roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::PlayerType>(action));
             break;
         }
-        case RoomCommandType::Root::object3D:
+        case RoomCommandType::Root::object_3D:
         {
             roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::ObjectType>(action));
             break;
@@ -551,8 +551,8 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
 
     auto all_params = ClientMsgType{
             {"action", boost::json::value(roomCommandAction)},
-            {"roomId", boost::json::value(roomId)},
-            {"clientId", boost::json::value(user.getId())},
+            {"room_id", boost::json::value(roomId)},
+            {"client_id", boost::json::value(user.getId())},
     };
     all_params.insert(params.begin(), params.end());
 

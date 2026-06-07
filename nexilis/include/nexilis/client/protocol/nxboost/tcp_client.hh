@@ -101,8 +101,8 @@ private:
 
     struct PendingSend
     {
-        uint64_t messageId;
-        std::shared_ptr<std::promise<void>> promise;
+        uint64_t messageId = 0;
+        std::shared_ptr<std::promise<void>> promise = nullptr;
     };
 
     std::unordered_map<uint64_t, std::shared_ptr<std::promise<void>>> m_pendingSends;

@@ -50,7 +50,7 @@ CommandResult ServerImpl::room_management_remove(const DefaultArgs& args)
 
     std::map<std::string, boost::json::value> params{
             {"action", boost::json::value("remove")},
-            {"roomId", boost::json::value(roomId)}};
+            {"room_id", boost::json::value(roomId)}};
 
     auto roomCommand = Command::createRoomCommand(roomId, args.getUser(), args.getData(), params, args.getMessageId());
     Command::sendRoomCommand(roomCommand, args.getUser(), args.getProtocol());

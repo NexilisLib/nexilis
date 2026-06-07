@@ -43,10 +43,10 @@ public:
             if (room.at("name").is_string())
                 name = room.at("name").as_string().c_str();
 
-            uint64_t maxSize = toUint64(room.at("maxSize"));
+            uint64_t maxSize = toUint64(room.at("max_size"));
             uint64_t context = toUint64(room.at("context"));
-            uint64_t creatorId = toUint64(room.at("creatorId"));
-            uint64_t id = toUint64(room.at("id"));
+            uint64_t creatorId = toUint64(room.at("creator_id"));
+            uint64_t id = toUint64(room.at("room_id"));
 
             std::vector<ClientSession> roomClients;
 

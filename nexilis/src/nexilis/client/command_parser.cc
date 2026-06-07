@@ -120,14 +120,14 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     uint64_t room_id = 0;
     uint64_t client_id = 0;
 
-    if (json.contains("roomId"))
+    if (json.contains("room_id"))
     {
-        room_id = toUint64(json.at("roomId"));
+        room_id = toUint64(json.at("room_id"));
     }
 
-    if (json.contains("clientId"))
+    if (json.contains("client_id"))
     {
-        client_id = toUint64(json.at("clientId"));
+        client_id = toUint64(json.at("client_id"));
     }
 
     if (type == "management")
@@ -142,7 +142,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
         return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name, room_context);
     }
-    else if (type == "player2D")
+    else if (type == "player_2D")
     {
         float x = 0.0f, y = 0.0f;
         if (json.contains("x"))
@@ -155,7 +155,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         }
         return std::make_unique<RoomPlayer2DCommand>(action, client_id, x, y);
     }
-    else if (type == "player3D")
+    else if (type == "player_3D")
     {
         float x = 0.0f, y = 0.0f, z = 0.0f;
         if (json.contains("x"))
@@ -172,7 +172,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         }
         return std::make_unique<RoomPlayer3DCommand>(action, client_id, x, y, z);
     }
-    else if (type == "object2D")
+    else if (type == "object_2D")
     {
         uint64_t object_id = 0;
         float x = 0.0f, y = 0.0f, w = 0.0f, h = 0.0f;

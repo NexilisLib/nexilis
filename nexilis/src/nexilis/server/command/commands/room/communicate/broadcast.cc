@@ -18,7 +18,7 @@ CommandResult ServerImpl::room_communicate_broadcast(const DefaultArgs& args)
 
     std::map<std::string, boost::json::value> params{
             {"id", boost::json::value(user.getId())},
-            {"roomId", boost::json::value(user.getRoomId())},
+            {"room_id", boost::json::value(user.getRoomId())},
             {"message", boost::json::value(messageData)}};
 
     auto roomCommand = Command::createRoomCommand(user.getRoomId(), user, args.getData(), params, args.getMessageId());

@@ -17,10 +17,10 @@ public:
     {
         management = 0,
         communication = 1,
-        player2D = 2,
-        object2D = 3,
-        player3D = 4,
-        object3D = 5,
+        player_2D = 2,
+        object_2D = 3,
+        player_3D = 4,
+        object_3D = 5,
         undefined = 6
     };
 
@@ -51,8 +51,7 @@ public:
         create = 0,
         destroy = 1,
         move = 2,
-        createMoving = 3,
-        createMovingTest = 4
+        create_moving = 3
     };
 
     static std::string RoomTypeToString(Root type);
@@ -67,11 +66,11 @@ public:
     {
         if constexpr (std::is_same_v<VectorType, Vector2<decltype(v)>>)
         {
-            return Root::player2D;
+            return Root::player_2D;
         }
         else if constexpr (std::is_same_v<VectorType, Vector3<decltype(v)>>)
         {
-            return Root::player3D;
+            return Root::player_3D;
         }
         return Root::undefined;
     }
@@ -81,11 +80,11 @@ public:
     {
         if constexpr (std::is_same_v<VectorType, Vector2<decltype(v)>>)
         {
-            return Root::object2D;
+            return Root::object_2D;
         }
         else if constexpr (std::is_same_v<VectorType, Vector3<decltype(v)>>)
         {
-            return Root::object3D;
+            return Root::object_3D;
         }
         return Root::undefined;
     }

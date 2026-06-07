@@ -12,14 +12,14 @@ std::string RoomCommandType::RoomTypeToString(RoomCommandType::Root type)
             return "management";
         case RoomCommandType::Root::communication:
             return "communication";
-        case RoomCommandType::Root::player2D:
-            return "player2D";
-        case RoomCommandType::Root::object2D:
-            return "object2D";
-        case RoomCommandType::Root::player3D:
-            return "player3D";
-        case RoomCommandType::Root::object3D:
-            return "object3D";
+        case RoomCommandType::Root::player_2D:
+            return "player_2D";
+        case RoomCommandType::Root::object_2D:
+            return "object_2D";
+        case RoomCommandType::Root::player_3D:
+            return "player_3D";
+        case RoomCommandType::Root::object_3D:
+            return "object_3D";
         default:
             Log::error("RoomTypeToString no type found!");
             return "undefined";
@@ -70,10 +70,8 @@ std::string RoomCommandType::ObjectTypeToString(RoomCommandType::ObjectType obje
             return "destroy";
         case RoomCommandType::ObjectType::move:
             return "move";
-        case RoomCommandType::ObjectType::createMoving:
-            return "createMoving";
-        case RoomCommandType::ObjectType::createMovingTest:
-            return "createMovingTest";
+        case RoomCommandType::ObjectType::create_moving:
+            return "create_moving";
         default:
             Log::error("Object2DTypeToString no type found!");
             return "";

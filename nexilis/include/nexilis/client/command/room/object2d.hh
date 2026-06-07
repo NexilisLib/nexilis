@@ -62,7 +62,7 @@ public:
             }
             return ReadResult::failure;
         }
-        else if (m_action == "createMoving" || m_action == "createMovingTest")
+        else if (m_action == "create_moving")
         {
             // Both createMoving and createMovingTest use same logic
             for (auto& room : data.getCurrentlyActiveRooms())

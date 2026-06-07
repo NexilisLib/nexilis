@@ -76,7 +76,7 @@ boost::json::array ServerJson::clientsToJSON(const std::vector<std::unique_ptr<U
             clientObj["username"] = client->getUsername();
         }
         clientObj["id"] = client->getId();
-        clientObj["roomId"] = client->getRoomId();
+        clientObj["room_id"] = client->getRoomId();
         resultingArray.emplace_back(std::move(clientObj));
     }
     return resultingArray;
@@ -100,9 +100,9 @@ boost::json::array ServerJson::roomsToJSON(const std::vector<Room>& rooms)
             roomObj["name"] = room.getName();
         }
 
-        roomObj["maxSize"] = room.getMaxSize();
-        roomObj["id"] = room.getId();
-        roomObj["creatorId"] = room.getCreatorId();
+        roomObj["max_size"] = room.getMaxSize();
+        roomObj["room_id"] = room.getId();
+        roomObj["creator_id"] = room.getCreatorId();
         roomObj["context"] = static_cast<uint32_t>(room.getContext());
 
         // Get data from clients in a room.
