@@ -28,12 +28,12 @@ CommandResult ServerImpl::room_object3d_create(const DefaultArgs& args)
     room->addObject(std::move(object));
 
     std::map<std::string, boost::json::value> params{
-            {"positionX", boost::json::value(position.x)},
-            {"positionY", boost::json::value(position.y)},
-            {"positionZ", boost::json::value(position.z)},
-            {"dimensionX", boost::json::value(dimensions.x)},
-            {"dimensionY", boost::json::value(dimensions.y)},
-            {"dimensionZ", boost::json::value(dimensions.z)},
+            {"x", boost::json::value(position.x)},
+            {"y", boost::json::value(position.y)},
+            {"z", boost::json::value(position.z)},
+            {"w", boost::json::value(dimensions.x)},
+            {"h", boost::json::value(dimensions.y)},
+            {"d", boost::json::value(dimensions.z)},
             {"filepath", boost::json::value(filepath)},
             {"id", boost::json::value(objectId)}};
 

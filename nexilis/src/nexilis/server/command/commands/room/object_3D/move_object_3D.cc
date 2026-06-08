@@ -35,7 +35,8 @@ CommandResult ServerImpl::room_object3d_move(const DefaultArgs& args)
     std::map<std::string, boost::json::value> params{
             {"objectId", boost::json::value(objectId)},
             {"x", boost::json::value(newPosition.x)},
-            {"y", boost::json::value(newPosition.y)}};
+            {"y", boost::json::value(newPosition.y)},
+            {"z", boost::json::value(newPosition.z)}};
 
     // Move object in server storage.
     object->setPosition(newPosition);

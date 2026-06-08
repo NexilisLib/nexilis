@@ -4,6 +4,7 @@
 #include <nexilis/client/command/room/communication.hh>
 #include <nexilis/client/command/room/management.hh>
 #include <nexilis/client/command/room/object2d.hh>
+#include <nexilis/client/command/room/object3d.hh>
 #include <nexilis/client/command/room/player2d.hh>
 #include <nexilis/client/command/room/player3d.hh>
 #include <nexilis/client/command/set/port.hh>
@@ -194,6 +195,46 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
             filepath = json.at("filepath").as_string().c_str();
         }
         return std::make_unique<RoomObject2DCommand>(action, room_id, object_id, x, y, w, h, filepath);
+    }
+    else if (type == "object_3D")
+    {
+        uint64_t object_id = 0;
+        float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f, h = 0.0f, d = 0.0f;
+        std::string filepath = "";
+
+        if (json.contains("id"))
+        {
+            object_id = Util::toUint64(json.at("id"));
+        }
+        if (json.contains("x"))
+        {
+            x = static_cast<float>(json.at("x").as_double());
+        }
+        if (json.contains("y"))
+        {
+            y = static_cast<float>(json.at("y").as_double());
+        }
+        if (json.contains("z"))
+        {
+            z = static_cast<float>(json.at("z").as_double());
+        }
+        if (json.contains("w"))
+        {
+            w = static_cast<float>(json.at("w").as_double());
+        }
+        if (json.contains("h"))
+        {
+            h = static_cast<float>(json.at("h").as_double());
+        }
+        if (json.contains("d"))
+        {
+            d = static_cast<float>(json.at("d").as_double());
+        }
+        if (json.contains("filepath"))
+        {
+            filepath = json.at("filepath").as_string().c_str();
+        }
+        return std::make_unique<RoomObject3DCommand>(action, room_id, object_id, x, y, z, w, h, d, filepath);
     }
     else if (type == "communication")
     {
