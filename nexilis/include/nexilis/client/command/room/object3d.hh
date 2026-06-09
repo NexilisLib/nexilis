@@ -26,7 +26,7 @@ public:
             {
                 if (room.getId() == m_room_id)
                 {
-                    auto object = Object3D(m_object_id, {m_z, m_y, m_z}, {m_w, m_h, m_d});
+                    auto object = Object3D(m_object_id, {m_x, m_y, m_z}, {m_w, m_h, m_d});
                     object.setFilepath(m_filepath);
                     room.addObject(std::move(object));
                     return ReadResult::success;
