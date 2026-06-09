@@ -58,6 +58,11 @@ public:
 
     uint64_t getId() const
     {
+        if (m_mutex)
+        {
+            std::lock_guard lock(*m_mutex);
+            return m_id;
+        }
         return m_id;
     }
 
@@ -71,6 +76,26 @@ public:
         return m_position;
     }
 
+    VectorType getDimensions() const
+    {
+        if (m_mutex)
+        {
+            std::lock_guard lock(*m_mutex);
+            return m_dimensions;
+        }
+        return m_dimensions;
+    }
+
+    std::string getFilepath() const
+    {
+        if (m_mutex)
+        {
+            std::lock_guard lock(*m_mutex);
+            return m_filepath;
+        }
+        return m_filepath;
+    }
+
     void setPosition(const VectorType& pos)
     {
         if (!m_mutex)
@@ -79,11 +104,6 @@ public:
         }
         std::lock_guard lock(*m_mutex);
         m_position = pos;
-    }
-
-    const VectorType& getDimensions() const
-    {
-        return m_dimensions;
     }
 
     void setDimensions(const VectorType& dim)
@@ -104,11 +124,6 @@ public:
         }
         std::lock_guard lock(*m_mutex);
         m_filepath = filepath;
-    }
-
-    const std::string& getFilepath() const
-    {
-        return m_filepath;
     }
 
 protected:

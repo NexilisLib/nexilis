@@ -290,6 +290,29 @@ Vector3f ClientAPI::getClientPosition3D(uint64_t client_id)
     return Vector3f();
 }
 
+std::vector<ClientAPI::RemoteObject3DSnapshot> ClientAPI::getRemoteObjects3DSnapshot(uint64_t room_id)
+{
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
+
+    std::vector<RemoteObject3DSnapshot> result;
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+    for (auto& room : rooms)
+    {
+        if (room.getId() == room_id)
+        {
+            for (auto& obj : room.getObjects3D())
+            {
+                auto pos = obj.getPosition();
+                auto dim = obj.getDimensions();
+                result.push_back({obj.getId(), pos.x, pos.y, pos.z, dim.x, dim.y, dim.z});
+            }
+            break;
+        }
+    }
+    return result;
+}
+
 std::vector<ClientAPI::RemotePlayerSnapshot> ClientAPI::getRemotePlayersSnapshot(uint64_t room_id, uint64_t my_id)
 {
     auto& mtx = m_clientAPIData.getRoomsMutex();

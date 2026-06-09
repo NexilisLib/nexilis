@@ -274,6 +274,15 @@ public:
         float x, y, z;
     };
 
+    struct RemoteObject3DSnapshot
+    {
+        uint64_t id;
+        float x, y, z;
+        float w, h, d;
+    };
+
+    std::vector<RemoteObject3DSnapshot> getRemoteObjects3DSnapshot(uint64_t room_id);
+
     /// Get a snapshot of all remote players in a room.
     /// \param room_id The room to query.
     /// \param my_id The local client id to exclude from results.
