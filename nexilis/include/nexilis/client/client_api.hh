@@ -272,6 +272,7 @@ public:
     {
         uint64_t id;
         float x, y, z;
+        float w, h, d;
     };
 
     struct RemoteObject3DSnapshot

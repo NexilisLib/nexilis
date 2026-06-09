@@ -329,7 +329,8 @@ std::vector<ClientAPI::RemotePlayerSnapshot> ClientAPI::getRemotePlayersSnapshot
                 if (client.getId() == my_id)
                     continue;
                 auto pos = client.getObject3D().getPosition();
-                result.push_back({client.getId(), pos.x, pos.y, pos.z});
+                auto dim = client.getObject3D().getDimensions();
+                result.push_back({client.getId(), pos.x, pos.y, pos.z, dim.x, dim.y, dim.z});
             }
             break;
         }
