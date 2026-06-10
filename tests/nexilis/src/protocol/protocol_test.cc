@@ -195,8 +195,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPCreateRoom)
 
     EXPECT_EQ(api->getActiveRooms().size(), 0);
 
-    auto ctx = nexilis::RoomData::Context::_2D;
-    auto create_room = nexilis::client::Packet::Room::Management::create(ctx, "room_mayn");
+    auto create_room = nexilis::client::Packet::Room::Management::create("room_mayn");
 
     this->client->sendMessage(create_room);
     waitFor(5, api->getActiveRooms().size() == 1);
@@ -210,8 +209,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
 
     EXPECT_EQ(api->getActiveRooms().size(), 0);
 
-    auto ctx = nexilis::RoomData::Context::_2D;
-    auto create_room = nexilis::client::Packet::Room::Management::create(ctx, "room1");
+    auto create_room = nexilis::client::Packet::Room::Management::create("room1");
 
     this->client->sendMessage(create_room);
     waitFor(5, api->getActiveRooms().size() == 1);
@@ -237,13 +235,13 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPMultipleRoomContexts)
     this->clientStart();
 
     // Create a 2D room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "2D_room"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("2D_room", nexilis::RoomData::Context::_2D));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 1);
 
     // Create a 3D room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_3D, "3D_room"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("3D_room", nexilis::RoomData::Context::_3D));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
@@ -306,7 +304,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomCreation)
     waitRoomInfo(this->client, this->server, this->api);
     EXPECT_EQ(api->getActiveRooms().size(), 1);
 
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "test"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("test"));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
@@ -339,7 +337,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomDelete)
     EXPECT_EQ(api->getActiveRooms().size(), 1);
 
     // Create a new room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "test_room"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("test_room"));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
@@ -378,7 +376,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPLeaveRoom)
     this->clientStart();
 
     // Create a new room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(nexilis::RoomData::Context::_2D, "test_room"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("test_room"));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);

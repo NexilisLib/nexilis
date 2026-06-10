@@ -103,7 +103,8 @@ boost::json::array ServerJson::roomsToJSON(const std::vector<Room>& rooms)
         roomObj["max_size"] = room.getMaxSize();
         roomObj["room_id"] = room.getId();
         roomObj["creator_id"] = room.getCreatorId();
-        roomObj["context"] = static_cast<uint32_t>(room.getContext());
+        auto ctx = room.getContext();
+        roomObj["context"] = static_cast<uint32_t>(ctx);
 
         // Get data from clients in a room.
         boost::json::array clientArray;
@@ -147,27 +148,32 @@ boost::json::array ServerJson::roomsToJSON(const std::vector<Room>& rooms)
             roomObj["clients"] = std::move(clientArray);
         }
 
-        if (!room.getObjects3D().empty())
+        // 2D context cannot have 3D objects.
+        if (ctx != RoomData::Context::_2D)
         {
-            boost::json::array obj3DArray;
-            for (const auto& obj : room.getObjects3D())
+            if (!room.getObjects3D().empty())
             {
-                auto pos = obj.getPosition();
-                auto dim = obj.getDimensions();
-                boost::json::object objData;
-                objData["id"] = obj.getId();
-                objData["x"] = static_cast<double>(pos.x);
-                objData["y"] = static_cast<double>(pos.y);
-                objData["z"] = static_cast<double>(pos.z);
-                objData["w"] = static_cast<double>(dim.x);
-                objData["h"] = static_cast<double>(dim.y);
-                objData["d"] = static_cast<double>(dim.z);
-                objData["filepath"] = obj.getFilepath();
-                obj3DArray.emplace_back(std::move(objData));
+                boost::json::array obj3DArray;
+                for (const auto& obj : room.getObjects3D())
+                {
+                    auto pos = obj.getPosition();
+                    auto dim = obj.getDimensions();
+                    boost::json::object objData;
+                    objData["id"] = obj.getId();
+                    objData["x"] = static_cast<double>(pos.x);
+                    objData["y"] = static_cast<double>(pos.y);
+                    objData["z"] = static_cast<double>(pos.z);
+                    objData["w"] = static_cast<double>(dim.x);
+                    objData["h"] = static_cast<double>(dim.y);
+                    objData["d"] = static_cast<double>(dim.z);
+                    objData["filepath"] = obj.getFilepath();
+                    obj3DArray.emplace_back(std::move(objData));
+                }
+                roomObj["objects_3d"] = std::move(obj3DArray);
             }
-            roomObj["objects_3d"] = std::move(obj3DArray);
         }
 
+        // 3D context can have 2D objects, they just don't have depth.
         if (!room.getObjects2D().empty())
         {
             boost::json::array obj2DArray;

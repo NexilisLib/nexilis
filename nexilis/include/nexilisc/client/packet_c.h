@@ -19,7 +19,7 @@ extern "C"
     // Room management
     nx_data_c nexilis_packet_room_management_join(uint64_t room_id);
     nx_data_c nexilis_packet_room_management_leave();
-    nx_data_c nexilis_packet_room_management_create(nexilis_RoomContext ctx, const char* room_name);
+    nx_data_c nexilis_packet_room_management_create(const char* room_name, nexilis_RoomContext ctx = ROOM_CONTEXT_3D);
 
     // Room player3D
     nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f* position);

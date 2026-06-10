@@ -30,9 +30,9 @@ public:
                 name = room.at("name").as_string().c_str();
 
             uint64_t maxSize = Util::toUint64(room.at("max_size"));
-            uint64_t context = Util::toUint64(room.at("context"));
             uint64_t creatorId = Util::toUint64(room.at("creator_id"));
             uint64_t id = Util::toUint64(room.at("room_id"));
+            auto ctx = static_cast<RoomData::Context>(Util::toUint64(room.at("context")));
 
             std::vector<ClientSession> roomClients;
 
@@ -72,35 +72,38 @@ public:
                 }
             }
 
-            auto roomData = RoomData(creatorId, name, id,
-                                     static_cast<RoomData::Context>(context), maxSize);
+            auto roomData = RoomData(creatorId, name, id, ctx, maxSize);
             newRooms.emplace_back(Room(roomData, std::move(roomClients)));
 
-            // Parse 3D objects from the room info.
-            if (room.as_object().contains("objects_3d"))
+            // 2D context room cannot have 3D objects.
+            if (ctx != RoomData::Context::_2D)
             {
-                auto& roomRef = newRooms.back();
-                auto objects = room.at("objects_3d").as_array();
-                for (const auto& obj : objects)
+                // Parse 3D objects from the room info.
+                if (room.as_object().contains("objects_3d"))
                 {
-                    uint64_t obj_id = Util::toUint64(obj.at("id"));
-                    float x = static_cast<float>(obj.at("x").as_double());
-                    float y = static_cast<float>(obj.at("y").as_double());
-                    float z = static_cast<float>(obj.at("z").as_double());
-                    float w = static_cast<float>(obj.at("w").as_double());
-                    float h = static_cast<float>(obj.at("h").as_double());
-                    float d = static_cast<float>(obj.at("d").as_double());
-                    std::string filepath;
-                    if (obj.as_object().contains("filepath"))
-                        filepath = obj.at("filepath").as_string().c_str();
+                    auto& roomRef = newRooms.back();
+                    auto objects = room.at("objects_3d").as_array();
+                    for (const auto& obj : objects)
+                    {
+                        uint64_t obj_id = Util::toUint64(obj.at("id"));
+                        float x = static_cast<float>(obj.at("x").as_double());
+                        float y = static_cast<float>(obj.at("y").as_double());
+                        float z = static_cast<float>(obj.at("z").as_double());
+                        float w = static_cast<float>(obj.at("w").as_double());
+                        float h = static_cast<float>(obj.at("h").as_double());
+                        float d = static_cast<float>(obj.at("d").as_double());
+                        std::string filepath;
+                        if (obj.as_object().contains("filepath"))
+                            filepath = obj.at("filepath").as_string().c_str();
 
-                    auto object3D = Object3D(obj_id, {x, y, z}, {w, h, d});
-                    object3D.setFilepath(filepath);
-                    roomRef.addObject(std::move(object3D));
+                        auto object3D = Object3D(obj_id, {x, y, z}, {w, h, d});
+                        object3D.setFilepath(filepath);
+                        roomRef.addObject(std::move(object3D));
+                    }
                 }
             }
 
-            // Parse 2D objects from the room info.
+            // Parse 2D objects, they are allowed to exist in all contexts.
             if (room.as_object().contains("objects_2d"))
             {
                 auto& roomRef = newRooms.back();

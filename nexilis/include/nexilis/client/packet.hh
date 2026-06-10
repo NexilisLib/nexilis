@@ -26,7 +26,7 @@ struct ClientImpl
     // Room::Management
     static nx_data room_management_join(uint64_t roomId);
     static nx_data room_management_leave();
-    static nx_data room_management_create(RoomData::Context context, const std::string& roomName);
+    static nx_data room_management_create(const std::string& roomName, RoomData::Context ctx = RoomData::Context::_3D);
     static nx_data room_management_remove(uint64_t roomId);
 
     static nx_data room_communicate_broadcast(const std::string& message);

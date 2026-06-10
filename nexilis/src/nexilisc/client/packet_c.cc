@@ -27,10 +27,10 @@ nx_data_c nexilis_packet_room_management_leave()
     return convert_nx_data(nexilis::client::Packet::Room::Management::leave());
 }
 
-nx_data_c nexilis_packet_room_management_create(nexilis_RoomContext ctx, const char* room_name)
+nx_data_c nexilis_packet_room_management_create(const char* room_name, nexilis_RoomContext ctx)
 {
     return convert_nx_data(nexilis::client::Packet::Room::Management::create(
-            nexilis::RoomData::Context(ctx), std::string(room_name)));
+            std::string(room_name), nexilis::RoomData::Context(ctx)));
 }
 
 nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f* position)

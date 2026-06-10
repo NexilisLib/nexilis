@@ -21,7 +21,7 @@ public:
     /// \param roomId The id of the created room.
     /// \param context The context for dimensions in a room.
     /// \param maxSize The maximum size of the room.
-    RoomData(uint64_t creatorId, const std::string& name, uint64_t roomId, Context context, uint32_t maxSize = NEXILIS_DEFAULT_ROOM_CLIENT_AMOUNT);
+    RoomData(uint64_t creatorId, const std::string& name, uint64_t roomId, Context context = Context::_3D, uint32_t maxSize = NEXILIS_DEFAULT_ROOM_CLIENT_AMOUNT);
 
     /// Copy constructor.
     RoomData(const RoomData& other);

@@ -29,34 +29,28 @@ BaseRoom& BaseRoom::operator=(BaseRoom&& other)
 
 void BaseRoom::addObject(Object2D&& object)
 {
-    if (getContext() != RoomData::Context::_2D)
-    {
-        Log::error("No 2D context");
-    }
     m_objects2D.emplace_back(std::move(object));
 }
 
 void BaseRoom::addObject(Object3D&& object)
 {
-    if (getContext() != RoomData::Context::_3D)
+    if (getContext() == RoomData::Context::_2D)
     {
-        Log::error("No 3D context");
+        Log::error("Cannot add 3D object in a 2D context room");
+        return;
     }
     m_objects3D.emplace_back(std::move(object));
 }
 
 const std::vector<Object2D>& BaseRoom::getObjects2D() const
 {
-    if (getContext() != RoomData::Context::_2D)
-    {
-        Log::error("No 2D context");
-    }
+    // 2D objects are allowed to exist in 3D context.
     return m_objects2D;
 }
 
 const std::vector<Object3D>& BaseRoom::getObjects3D() const
 {
-    if (getContext() != RoomData::Context::_3D)
+    if (getContext() == RoomData::Context::_2D)
     {
         Log::error("No 3D context");
     }
@@ -65,11 +59,6 @@ const std::vector<Object3D>& BaseRoom::getObjects3D() const
 
 Object2D* BaseRoom::getObject2DById(uint64_t id)
 {
-    if (getContext() != RoomData::Context::_2D)
-    {
-        Log::error("No 2D context");
-    }
-
     for (auto& object : m_objects2D)
     {
         if (object.getId() == id)
@@ -82,9 +71,10 @@ Object2D* BaseRoom::getObject2DById(uint64_t id)
 
 Object3D* BaseRoom::getObject3DById(uint64_t id)
 {
-    if (getContext() != RoomData::Context::_3D)
+    if (getContext() == RoomData::Context::_2D)
     {
         Log::error("No 3D context");
+        return nullptr;
     }
 
     for (auto& object : m_objects3D)
