@@ -75,6 +75,52 @@ public:
             auto roomData = RoomData(creatorId, name, id,
                                      static_cast<RoomData::Context>(context), maxSize);
             newRooms.emplace_back(Room(roomData, std::move(roomClients)));
+
+            // Parse 3D objects from the room info.
+            if (room.as_object().contains("objects_3d"))
+            {
+                auto& roomRef = newRooms.back();
+                auto objects = room.at("objects_3d").as_array();
+                for (const auto& obj : objects)
+                {
+                    uint64_t obj_id = Util::toUint64(obj.at("id"));
+                    float x = static_cast<float>(obj.at("x").as_double());
+                    float y = static_cast<float>(obj.at("y").as_double());
+                    float z = static_cast<float>(obj.at("z").as_double());
+                    float w = static_cast<float>(obj.at("w").as_double());
+                    float h = static_cast<float>(obj.at("h").as_double());
+                    float d = static_cast<float>(obj.at("d").as_double());
+                    std::string filepath;
+                    if (obj.as_object().contains("filepath"))
+                        filepath = obj.at("filepath").as_string().c_str();
+
+                    auto object3D = Object3D(obj_id, {x, y, z}, {w, h, d});
+                    object3D.setFilepath(filepath);
+                    roomRef.addObject(std::move(object3D));
+                }
+            }
+
+            // Parse 2D objects from the room info.
+            if (room.as_object().contains("objects_2d"))
+            {
+                auto& roomRef = newRooms.back();
+                auto objects = room.at("objects_2d").as_array();
+                for (const auto& obj : objects)
+                {
+                    uint64_t obj_id = Util::toUint64(obj.at("id"));
+                    float x = static_cast<float>(obj.at("x").as_double());
+                    float y = static_cast<float>(obj.at("y").as_double());
+                    float w = static_cast<float>(obj.at("w").as_double());
+                    float h = static_cast<float>(obj.at("h").as_double());
+                    std::string filepath;
+                    if (obj.as_object().contains("filepath"))
+                        filepath = obj.at("filepath").as_string().c_str();
+
+                    auto object2D = Object2D(obj_id, {x, y}, {w, h});
+                    object2D.setFilepath(filepath);
+                    roomRef.addObject(std::move(object2D));
+                }
+            }
         }
 
         auto& mtx = data.getRoomsMutex();

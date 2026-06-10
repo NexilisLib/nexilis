@@ -30,8 +30,7 @@ public:
 
     nx_data getData() override
     {
-        nx_data a;
-        return a;
+        return baseData();
     }
 };
 

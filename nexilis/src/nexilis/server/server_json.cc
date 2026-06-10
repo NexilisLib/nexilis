@@ -146,6 +146,47 @@ boost::json::array ServerJson::roomsToJSON(const std::vector<Room>& rooms)
         {
             roomObj["clients"] = std::move(clientArray);
         }
+
+        if (!room.getObjects3D().empty())
+        {
+            boost::json::array obj3DArray;
+            for (const auto& obj : room.getObjects3D())
+            {
+                auto pos = obj.getPosition();
+                auto dim = obj.getDimensions();
+                boost::json::object objData;
+                objData["id"] = obj.getId();
+                objData["x"] = static_cast<double>(pos.x);
+                objData["y"] = static_cast<double>(pos.y);
+                objData["z"] = static_cast<double>(pos.z);
+                objData["w"] = static_cast<double>(dim.x);
+                objData["h"] = static_cast<double>(dim.y);
+                objData["d"] = static_cast<double>(dim.z);
+                objData["filepath"] = obj.getFilepath();
+                obj3DArray.emplace_back(std::move(objData));
+            }
+            roomObj["objects_3d"] = std::move(obj3DArray);
+        }
+
+        if (!room.getObjects2D().empty())
+        {
+            boost::json::array obj2DArray;
+            for (const auto& obj : room.getObjects2D())
+            {
+                auto pos = obj.getPosition();
+                auto dim = obj.getDimensions();
+                boost::json::object objData;
+                objData["id"] = obj.getId();
+                objData["x"] = static_cast<double>(pos.x);
+                objData["y"] = static_cast<double>(pos.y);
+                objData["w"] = static_cast<double>(dim.x);
+                objData["h"] = static_cast<double>(dim.y);
+                objData["filepath"] = obj.getFilepath();
+                obj2DArray.emplace_back(std::move(objData));
+            }
+            roomObj["objects_2d"] = std::move(obj2DArray);
+        }
+
         resultingArray.emplace_back(std::move(roomObj));
     }
     return resultingArray;
