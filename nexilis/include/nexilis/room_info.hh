@@ -7,10 +7,27 @@
 namespace nexilis
 {
 
-struct RoomInfo
+class RoomInfo
 {
-    uint64_t id;
-    std::string name;
+public:
+    // Constructor
+    RoomInfo(uint64_t id, const std::string& name)
+        : m_id(id), m_name(name)
+    {
+    }
+
+    uint64_t getId() const
+    {
+        return m_id;
+    }
+    const std::string& getName() const
+    {
+        return m_name;
+    }
+
+private:
+    uint64_t m_id;
+    std::string m_name;
 };
 
 } // namespace nexilis
