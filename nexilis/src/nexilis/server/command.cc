@@ -494,6 +494,35 @@ bool Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
     }
 }
 
+std::string roomActionToString(RoomCommandType::Root root, uint8_t action)
+{
+    switch (root)
+    {
+        case RoomCommandType::Root::management:
+            return RoomCommandType::ManagementTypeToString(
+                    static_cast<RoomCommandType::Management>(action));
+
+        case RoomCommandType::Root::player_2D:
+        case RoomCommandType::Root::player_3D:
+            return RoomCommandType::PlayerTypeToString(
+                    static_cast<RoomCommandType::PlayerType>(action));
+
+        case RoomCommandType::Root::object_2D:
+        case RoomCommandType::Root::object_3D:
+            return RoomCommandType::ObjectTypeToString(
+                    static_cast<RoomCommandType::ObjectType>(action));
+
+        case RoomCommandType::Root::communication:
+            return RoomCommandType::CommunicationTypeToString(
+                    static_cast<RoomCommandType::Communication>(action));
+
+        case RoomCommandType::Root::undefined:
+        default:
+            Log::error("createRoomCommand: Undefined roomType or unsupported action");
+            return {};
+    }
+}
+
 nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const std::map<std::string, boost::json::value>& params, uint64_t messageId)
 {
     if (messageData.size() < 3)
@@ -502,61 +531,31 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
         return nx_data();
     }
 
-    auto roomType = static_cast<RoomCommandType::Root>(messageData[1]);
+    auto room_type = static_cast<RoomCommandType::Root>(messageData[1]);
     auto action = messageData[2];
 
-    std::string roomCommandAction;
-    // TODO rewrite this better oh no.
-    switch (roomType)
+    std::string room_command_action = roomActionToString(room_type, action);
+    if (room_command_action.empty())
     {
-        case RoomCommandType::Root::management:
-        {
-            roomCommandAction = RoomCommandType::ManagementTypeToString(static_cast<RoomCommandType::Management>(action));
-            break;
-        }
-        case RoomCommandType::Root::player_2D:
-        {
-            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::PlayerType>(action));
-            break;
-        }
-        case RoomCommandType::Root::object_2D:
-        {
-            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::ObjectType>(action));
-            break;
-        }
-        case RoomCommandType::Root::player_3D:
-        {
-            roomCommandAction = RoomCommandType::PlayerTypeToString(static_cast<RoomCommandType::PlayerType>(action));
-            break;
-        }
-        case RoomCommandType::Root::object_3D:
-        {
-            roomCommandAction = RoomCommandType::ObjectTypeToString(static_cast<RoomCommandType::ObjectType>(action));
-            break;
-        }
-        case RoomCommandType::Root::communication:
-        {
-            roomCommandAction = RoomCommandType::CommunicationTypeToString(static_cast<RoomCommandType::Communication>(action));
-            break;
-        }
-        case RoomCommandType::Root::undefined:
-        {
-            Log::error("Command: Undefined roomCommandAction");
-            break;
-        }
+        Log::error("createRoomCommand: Failed to convert room action to string");
+        return nx_data();
     }
-    std::string roomCommandType = RoomCommandType::RoomTypeToString(roomType);
-    assert(!roomCommandType.empty());
-    assert(!roomCommandAction.empty());
+
+    std::string room_command_type = RoomCommandType::RoomTypeToString(room_type);
+    if (room_command_type.empty())
+    {
+        Log::error("createRoomCommand: Failed to convert roomType");
+        return nx_data();
+    }
 
     auto all_params = ClientMsgType{
-            {"action", boost::json::value(roomCommandAction)},
+            {"action", boost::json::value(room_command_action)},
             {"room_id", boost::json::value(roomId)},
             {"client_id", boost::json::value(user.getId())},
     };
     all_params.insert(params.begin(), params.end());
 
-    return clientMessageData(CommandType::room, roomCommandType, messageId, all_params);
+    return clientMessageData(CommandType::room, room_command_type, messageId, all_params);
 }
 
 bool Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)
