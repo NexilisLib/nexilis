@@ -65,6 +65,7 @@ Room& Room::operator=(Room&& other)
 {
     if (this != &other)
     {
+        static_cast<BaseRoom&>(*this) = static_cast<BaseRoom&&>(other);
         m_clients = std::move(other.m_clients);
         m_roomMessages = std::move(other.m_roomMessages);
     }

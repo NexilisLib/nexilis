@@ -20,6 +20,8 @@ std::string RoomCommandType::RoomTypeToString(RoomCommandType::Root type)
             return "player_3D";
         case RoomCommandType::Root::object_3D:
             return "object_3D";
+        case RoomCommandType::Root::game_item:
+            return "game_item";
         default:
             Log::error("RoomTypeToString no type found!");
             return "undefined";
@@ -74,6 +76,22 @@ std::string RoomCommandType::ObjectTypeToString(RoomCommandType::ObjectType obje
             return "create_moving";
         default:
             Log::error("Object2DTypeToString no type found!");
+            return "";
+    }
+}
+
+std::string RoomCommandType::GameItemActionToString(RoomCommandType::GameItemAction action)
+{
+    switch (action)
+    {
+        case RoomCommandType::GameItemAction::create:
+            return "create";
+        case RoomCommandType::GameItemAction::update:
+            return "update";
+        case RoomCommandType::GameItemAction::destroy:
+            return "destroy";
+        default:
+            Log::error("GameItemActionToString no type found!");
             return "";
     }
 }

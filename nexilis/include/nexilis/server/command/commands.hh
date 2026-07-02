@@ -103,6 +103,11 @@ struct ServerImpl
     static CommandResult room_object3d_destroy(const DefaultArgs& args);
     static CommandResult room_object3d_move(const DefaultArgs& args);
     static CommandResult room_object3d_createMoving(const DefaultArgs& args);
+
+    // Room::GameItem
+    static CommandResult room_gameitem_create(const DefaultArgs& args);
+    static CommandResult room_gameitem_update(const DefaultArgs& args);
+    static CommandResult room_gameitem_destroy(const DefaultArgs& args);
 };
 
 using Commands = CommandPacketBase<ServerImpl>;

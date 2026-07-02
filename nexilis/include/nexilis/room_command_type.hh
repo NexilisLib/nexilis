@@ -21,7 +21,8 @@ public:
         object_2D = 3,
         player_3D = 4,
         object_3D = 5,
-        undefined = 6
+        game_item = 6,
+        undefined = 7
     };
 
     enum class Management : uint8_t
@@ -54,12 +55,20 @@ public:
         create_moving = 3
     };
 
+    enum class GameItemAction : uint8_t
+    {
+        create = 0,
+        update = 1,
+        destroy = 2
+    };
+
     static std::string RoomTypeToString(Root type);
 
     static std::string ManagementTypeToString(Management management);
     static std::string CommunicationTypeToString(Communication communication);
     static std::string PlayerTypeToString(PlayerType player);
     static std::string ObjectTypeToString(ObjectType object);
+    static std::string GameItemActionToString(GameItemAction action);
 
     template <typename VectorType>
     static Root getRootPlayerType(const VectorType& v)

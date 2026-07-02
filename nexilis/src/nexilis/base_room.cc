@@ -12,7 +12,8 @@ BaseRoom::BaseRoom(const RoomData& roomData)
 BaseRoom::BaseRoom(BaseRoom&& other)
     : m_roomData(std::move(other.m_roomData)),
       m_objects2D(std::move(other.m_objects2D)),
-      m_objects3D(std::move(other.m_objects3D))
+      m_objects3D(std::move(other.m_objects3D)),
+      m_gameItems(std::move(other.m_gameItems))
 {
 }
 
@@ -23,6 +24,7 @@ BaseRoom& BaseRoom::operator=(BaseRoom&& other)
         m_roomData = std::move(other.m_roomData);
         m_objects2D = std::move(other.m_objects2D);
         m_objects3D = std::move(other.m_objects3D);
+        m_gameItems = std::move(other.m_gameItems);
     }
     return *this;
 }
@@ -122,6 +124,76 @@ void BaseRoom::deleteObject3D(uint64_t objectId)
     else
     {
         Log::info("Could not find object ", objectId, " for deletion");
+    }
+}
+
+void BaseRoom::addGameItem(GameItem&& item)
+{
+    if (getContext() == RoomData::Context::_2D)
+    {
+        Log::error("Cannot add GameItem in a 2D context room");
+        return;
+    }
+    m_gameItems.emplace_back(std::move(item));
+}
+
+const std::vector<GameItem>& BaseRoom::getGameItems() const
+{
+    if (getContext() == RoomData::Context::_2D)
+    {
+        Log::error("No 3D context for game items");
+    }
+    return m_gameItems;
+}
+
+GameItem* BaseRoom::getGameItemById(uint64_t id)
+{
+    if (getContext() == RoomData::Context::_2D)
+    {
+        Log::error("No 3D context");
+        return nullptr;
+    }
+
+    for (auto& item : m_gameItems)
+    {
+        if (item.getId() == id)
+        {
+            return &item;
+        }
+    }
+    return nullptr;
+}
+
+void BaseRoom::deleteGameItem(uint64_t id)
+{
+    auto it = std::find_if(m_gameItems.begin(), m_gameItems.end(),
+                           [id](const GameItem& item)
+                           {
+                               return item.getId() == id;
+                           });
+
+    if (it != m_gameItems.end())
+    {
+        m_gameItems.erase(it);
+        Log::info("Deleted game item: ", id);
+    }
+    else
+    {
+        Log::info("Could not find game item ", id, " for deletion");
+    }
+}
+
+void BaseRoom::updateGameItemStatus(uint64_t id, const std::string& status)
+{
+    auto* item = getGameItemById(id);
+    if (item)
+    {
+        item->setStatus(status);
+        Log::info("Updated game item ", id, " status to: ", status);
+    }
+    else
+    {
+        Log::info("Could not find game item ", id, " for status update");
     }
 }
 

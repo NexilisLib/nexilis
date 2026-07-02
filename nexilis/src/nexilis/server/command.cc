@@ -344,6 +344,29 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             return ServerImpl::room_object3d_createMoving(args);
                         }
                     }
+                    break;
+                }
+
+                // GameItem
+                case 6:
+                {
+                    switch (arg3)
+                    {
+                        case 0:
+                        {
+                            return ServerImpl::room_gameitem_create(args);
+                        }
+
+                        case 1:
+                        {
+                            return ServerImpl::room_gameitem_update(args);
+                        }
+
+                        case 2:
+                        {
+                            return ServerImpl::room_gameitem_destroy(args);
+                        }
+                    }
                 }
             }
             return CommandResult::not_found;
@@ -511,6 +534,10 @@ std::string roomActionToString(RoomCommandType::Root root, uint8_t action)
         case RoomCommandType::Root::object_3D:
             return RoomCommandType::ObjectTypeToString(
                     static_cast<RoomCommandType::ObjectType>(action));
+
+        case RoomCommandType::Root::game_item:
+            return RoomCommandType::GameItemActionToString(
+                    static_cast<RoomCommandType::GameItemAction>(action));
 
         case RoomCommandType::Root::communication:
             return RoomCommandType::CommunicationTypeToString(

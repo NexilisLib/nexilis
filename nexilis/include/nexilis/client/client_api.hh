@@ -11,6 +11,7 @@
 
 #include <nexilis/json.hh>
 #include <nexilis/nexilis_constants.hh>
+#include <nexilis/object/game_item.hh>
 #include <nexilis/object/object_2d.hh>
 #include <nexilis/object/object_3d.hh>
 #include <nexilis/types/vector2.hh>
@@ -270,19 +271,31 @@ public:
 
     struct RemotePlayerSnapshot
     {
-        uint64_t id;
-        float x, y, z;
-        float w, h, d;
+        uint64_t id = 0;
+        float x = 0.0f, y = 0.0f, z = 0.0f;
+        float w = 0.0f, h = 0.0f, d = 0.0f;
     };
 
     struct RemoteObject3DSnapshot
     {
-        uint64_t id;
-        float x, y, z;
-        float w, h, d;
+        uint64_t id = 0;
+        float x = 0.0f, y = 0.0f, z = 0.0f;
+        float w = 0.0f, h = 0.0f, d = 0.0f;
+    };
+
+    struct RemoteGameItemSnapshot
+    {
+        uint64_t id = 0;
+        std::string item_type;
+        float x = 0.0f, y = 0.0f, z = 0.0f;
+        float w = 0.0f, h = 0.0f, d = 0.0f;
+        std::string status;
+        std::string filepath;
     };
 
     std::vector<RemoteObject3DSnapshot> getRemoteObjects3DSnapshot(uint64_t room_id);
+
+    std::vector<RemoteGameItemSnapshot> getRemoteGameItemsSnapshot(uint64_t room_id);
 
     /// Get a snapshot of all remote players in a room.
     /// \param room_id The room to query.

@@ -313,6 +313,32 @@ std::vector<ClientAPI::RemoteObject3DSnapshot> ClientAPI::getRemoteObjects3DSnap
     return result;
 }
 
+std::vector<ClientAPI::RemoteGameItemSnapshot> ClientAPI::getRemoteGameItemsSnapshot(uint64_t room_id)
+{
+    auto& mtx = m_clientAPIData.getRoomsMutex();
+    std::lock_guard<std::mutex> lock(*mtx);
+
+    std::vector<RemoteGameItemSnapshot> result;
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
+    for (auto& room : rooms)
+    {
+        if (room.getId() == room_id)
+        {
+            for (auto& item : room.getGameItems())
+            {
+                auto pos = item.getPosition();
+                auto dim = item.getDimensions();
+                result.push_back({item.getId(), item.getType(),
+                                  pos.x, pos.y, pos.z,
+                                  dim.x, dim.y, dim.z,
+                                  item.getStatus(), item.getFilepath()});
+            }
+            break;
+        }
+    }
+    return result;
+}
+
 std::vector<ClientAPI::RemotePlayerSnapshot> ClientAPI::getRemotePlayersSnapshot(uint64_t room_id, uint64_t my_id)
 {
     auto& mtx = m_clientAPIData.getRoomsMutex();

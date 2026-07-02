@@ -366,4 +366,39 @@ nx_data ClientImpl::room_object3d_createmoving(Vector3f startingPosition, Vector
     return id;
 }
 
+// Room::GameItem
+nx_data ClientImpl::room_gameitem_create(Vector3f position, Vector3f dimensions,
+                                         const std::string& type, const std::string& status,
+                                         const std::string& filepath)
+{
+    auto id = _Packet::clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::game_item));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::GameItemAction::create));
+    emplaceAll(id, position, dimensions);
+    std::string combined = type + '\0' + status + '\0' + filepath;
+    emplaceAll(id, combined);
+    return id;
+}
+
+nx_data ClientImpl::room_gameitem_update(uint64_t itemId, const std::string& status)
+{
+    auto id = _Packet::clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::game_item));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::GameItemAction::update));
+    emplaceAll(id, itemId, status);
+    return id;
+}
+
+nx_data ClientImpl::room_gameitem_destroy(uint64_t itemId)
+{
+    auto id = _Packet::clientIdentification();
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::game_item));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::GameItemAction::destroy));
+    emplaceAll(id, itemId);
+    return id;
+}
+
 } // namespace nexilis::client

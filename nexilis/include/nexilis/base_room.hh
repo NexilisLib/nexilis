@@ -1,6 +1,7 @@
 #ifndef NEXILIS_BASE_ROOM_HH
 #define NEXILIS_BASE_ROOM_HH
 
+#include <nexilis/object/game_item.hh>
 #include <nexilis/object/object_2d.hh>
 #include <nexilis/object/object_3d.hh>
 #include <nexilis/room_data.hh>
@@ -76,10 +77,17 @@ public:
 
     void deleteObject3D(uint64_t id);
 
+    void addGameItem(GameItem&& item);
+    const std::vector<GameItem>& getGameItems() const;
+    GameItem* getGameItemById(uint64_t id);
+    void deleteGameItem(uint64_t id);
+    void updateGameItemStatus(uint64_t id, const std::string& status);
+
 private:
     RoomData m_roomData;
     std::vector<Object2D> m_objects2D;
     std::vector<Object3D> m_objects3D;
+    std::vector<GameItem> m_gameItems;
 };
 
 } // namespace nexilis

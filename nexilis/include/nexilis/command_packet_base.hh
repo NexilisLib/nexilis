@@ -203,6 +203,25 @@ public:
                 return Impl::room_object3d_createmoving(std::forward<Args>(args)...);
             }
         };
+
+        struct GameItem
+        {
+            template <typename... Args>
+            static auto create(Args&&... args)
+            {
+                return Impl::room_gameitem_create(std::forward<Args>(args)...);
+            }
+            template <typename... Args>
+            static auto update(Args&&... args)
+            {
+                return Impl::room_gameitem_update(std::forward<Args>(args)...);
+            }
+            template <typename... Args>
+            static auto destroy(Args&&... args)
+            {
+                return Impl::room_gameitem_destroy(std::forward<Args>(args)...);
+            }
+        };
     };
 };
 

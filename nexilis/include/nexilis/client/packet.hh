@@ -64,6 +64,12 @@ struct ClientImpl
     static nx_data room_object3d_createmoving(Vector3f startingPosition, Vector3f dimensions,
                                               Vector3f movement, float deltaTime,
                                               MovementType movementType, const std::string& filepath);
+
+    static nx_data room_gameitem_create(Vector3f position, Vector3f dimensions,
+                                        const std::string& type, const std::string& status,
+                                        const std::string& filepath);
+    static nx_data room_gameitem_update(uint64_t itemId, const std::string& status);
+    static nx_data room_gameitem_destroy(uint64_t itemId);
 };
 using Packet = CommandPacketBase<ClientImpl>;
 
