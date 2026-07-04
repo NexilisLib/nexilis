@@ -45,9 +45,11 @@ CommandResult ServerImpl::room_management_join(const DefaultArgs& args)
     auto& protocol = args.getProtocol();
     for (auto& existingClientId : room->getClients())
     {
-        if (existingClientId == user_id) continue;
+        if (existingClientId == user_id)
+            continue;
         auto* existingUser = ClientStorage::getClientById(existingClientId);
-        if (!existingUser) continue;
+        if (!existingUser)
+            continue;
 
         // Send "join" to create a ClientSession on the joining client
         std::map<std::string, boost::json::value> joinParams{{"type", boost::json::value("join")}};
