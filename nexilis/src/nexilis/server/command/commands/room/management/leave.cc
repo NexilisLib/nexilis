@@ -17,12 +17,12 @@ CommandResult ServerImpl::room_management_leave(const DefaultArgs& args)
     }
 
     currentRoom->leaveRoom(user.getId());
-    assert(!RoomStorage::getRoomById(user.getRoomId())->contains(user.getId()));
-    user.setRoomId(0);
 
     std::map<std::string, boost::json::value> params;
     auto roomCommand = Command::createRoomCommand(currentRoom->getId(), user, args.getData(), params, args.getMessageId());
     Command::sendRoomCommand(roomCommand, user, args.getProtocol());
+
+    user.setRoomId(0);
     return CommandResult::success;
 }
 

@@ -40,9 +40,46 @@ CommandResult ServerImpl::room_management_join(const DefaultArgs& args)
     auto roomCommand = Command::createRoomCommand(roomId, args.getUser(), args.getData(), params, args.getMessageId());
     Command::sendRoomCommand(roomCommand, args.getUser(), args.getProtocol());
 
-    // Send existing game items to the joining client
+    // Send existing players to the joining client
     auto& user = args.getUser();
     auto& protocol = args.getProtocol();
+    for (auto& existingClientId : room->getClients())
+    {
+        if (existingClientId == user_id) continue;
+        auto* existingUser = ClientStorage::getClientById(existingClientId);
+        if (!existingUser) continue;
+
+        // Send "join" to create a ClientSession on the joining client
+        std::map<std::string, boost::json::value> joinParams{{"type", boost::json::value("join")}};
+        auto joinMsg = Command::createRoomCommand(roomId, *existingUser, args.getData(), joinParams, args.getMessageId());
+        Command::sendMessageToClient(joinMsg, user, protocol);
+
+        // Send current position
+        auto pos = existingUser->getObject3D().getPosition();
+        std::map<std::string, boost::json::value> posParams{
+                {"action", boost::json::value("position")},
+                {"room_id", boost::json::value(roomId)},
+                {"client_id", boost::json::value(existingClientId)},
+                {"x", boost::json::value(pos.x)},
+                {"y", boost::json::value(pos.y)},
+                {"z", boost::json::value(pos.z)}};
+        auto posMsg = Command::clientMessageData(CommandType::room, "player_3D", 0, posParams);
+        Command::sendMessageToClient(posMsg, user, protocol);
+
+        // Send current dimensions
+        auto dim = existingUser->getObject3D().getDimensions();
+        std::map<std::string, boost::json::value> dimParams{
+                {"action", boost::json::value("dimensions")},
+                {"room_id", boost::json::value(roomId)},
+                {"client_id", boost::json::value(existingClientId)},
+                {"x", boost::json::value(dim.x)},
+                {"y", boost::json::value(dim.y)},
+                {"z", boost::json::value(dim.z)}};
+        auto dimMsg = Command::clientMessageData(CommandType::room, "player_3D", 0, dimParams);
+        Command::sendMessageToClient(dimMsg, user, protocol);
+    }
+
+    // Send existing game items to the joining client
     for (auto& item : room->getGameItems())
     {
         auto pos = item.getPosition();
