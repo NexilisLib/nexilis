@@ -4,9 +4,9 @@
 #include <nexilis/logger/file_log.hh>
 #include <nexilis/logger/log.hh>
 
+#include <nexilis/client/client_config.hh>
 #include <nexilis/client/read_result.hh>
 #include <nexilis/client/room.hh>
-#include <nexilis/client/server_data.hh>
 #include <nexilis/nx_class.hh>
 
 #include <nexilis/json.hh>
@@ -184,7 +184,7 @@ public:
     };
 
     /// Constructor.
-    explicit ClientAPI(ServerData data);
+    explicit ClientAPI(ClientConfig data);
 
     /// Move constructor.
     ClientAPI(ClientAPI&& other);
@@ -239,9 +239,9 @@ public:
         return m_clientData.getClientId();
     }
 
-    const server::AuthenticationMode& getAuthenticationMode() const
+    server::AuthenticationMode getMode() const
     {
-        return m_serverData.getAuthenticationMode();
+        return m_serverData.getMode();
     }
 
     std::string getClientPassword() const
@@ -426,7 +426,7 @@ private:
 
 private:
     /// The initialization data for the ClientAPI.
-    ServerData m_serverData;
+    ClientConfig m_serverData;
 
     ClientData m_clientData;
 

@@ -5,8 +5,8 @@
 #include <nexilis/ports.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/message/message_handler.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/server_protocol.hh>
-#include <nexilis/server/settings.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -22,7 +22,7 @@ class TCPServer : public Protocol,
 {
 public:
     /// Constructor.
-    explicit TCPServer(const Settings& settings) noexcept;
+    explicit TCPServer(const ServerConfig& settings) noexcept;
 
     /// Destructor.
     ~TCPServer();

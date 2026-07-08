@@ -5,14 +5,14 @@
 namespace nexilis::server
 {
 
-Settings* Movement::m_settings = nullptr;
+ServerConfig* Movement::m_settings = nullptr;
 
 bool Movement::isInitialized()
 {
     return m_settings;
 }
 
-void Movement::_initialize(Settings& settings)
+void Movement::_initialize(ServerConfig& settings)
 {
     m_settings = &settings;
 }

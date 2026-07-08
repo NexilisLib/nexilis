@@ -6,8 +6,8 @@
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/config.hh>
 #include <nexilis/server/room_storage.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/server_json.hh>
-#include <nexilis/server/settings.hh>
 
 #include <nexilis/logger/log.hh>
 
@@ -26,7 +26,7 @@ MessageHandler::MessageHandler()
 // Message id 8 bytes
 // Command bytes (at least 2 bytes), second parameter of MessageHandler::Message.
 
-std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, const nx_data& payload, Settings* authentication)
+std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, const nx_data& payload, ServerConfig* authentication)
 {
     Log::debug(header(), "Payload size: ", payload.size());
     Util::debugUint8Vector(payload);

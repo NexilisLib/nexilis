@@ -13,7 +13,7 @@ int main()
 
     nexilis::ProtocolManager protocol_manager;
 
-    nexilis::server::Settings settings;
+    nexilis::server::ServerConfig settings;
     settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
@@ -23,10 +23,10 @@ int main()
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    nexilis::client::ServerData server_data;
+    nexilis::client::ClientConfig server_data;
     server_data.setPassword("salasana");
     server_data.setBoostTCPAddress("127.0.0.1");
-    server_data.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
+    server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
 
     nexilis::client::ClientAPI client_api(server_data);
     auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);

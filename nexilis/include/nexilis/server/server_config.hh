@@ -1,7 +1,7 @@
-#ifndef NEXILIS_AUTHENTICATION_HH
-#define NEXILIS_AUTHENTICATION_HH
+#ifndef NEXILIS_SERVER_CONFIG_HH
+#define NEXILIS_SERVER_CONFIG_HH
 
-#include <nexilis/server/authentication_mode.hh>
+#include <nexilis/auth_config.hh>
 
 #include <cassert>
 #include <string>
@@ -9,17 +9,29 @@
 namespace nexilis::server
 {
 
-/// Nexilis Server-side API.
-class Settings
+class ServerConfig : public AuthConfig
 {
 public:
+    ServerConfig() = default;
+
+    using AuthConfig::AuthConfig;
+
     // Normal password.
-    void setPassphrase(const std::string& password);
-    bool isPassphrase(const std::string& password);
-    bool hasPassphrase();
+    void setPassphrase(const std::string& password)
+    {
+        setPassword(password);
+    }
+    bool isPassphrase(const std::string& password)
+    {
+        return AuthConfig::isPassword(password);
+    }
+    bool hasPassphrase()
+    {
+        return AuthConfig::hasPassword();
+    }
     const std::string& getPassphrase() const
     {
-        return m_password;
+        return getPassword();
     }
 
     // Root password.
@@ -31,16 +43,6 @@ public:
         return m_rootPassword;
     }
 
-    void setMode(AuthenticationMode mode)
-    {
-        m_mode = mode;
-    }
-
-    AuthenticationMode getMode() const
-    {
-        return m_mode;
-    }
-
     // Tickrate
     void setTickrate(float tickrate);
     float getTickrate() const
@@ -50,8 +52,6 @@ public:
 
 private:
     std::string m_rootPassword;
-    std::string m_password;
-    AuthenticationMode m_mode = AuthenticationMode::empty;
     float m_tickrate = 60.f;
 };
 

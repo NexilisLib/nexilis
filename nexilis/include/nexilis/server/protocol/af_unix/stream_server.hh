@@ -4,8 +4,8 @@
 #define NEXILIS_AF_UNIX_SOCK_STREAM_SERVER_HH
 
 #include <nexilis/protocol.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/server_protocol.hh>
-#include <nexilis/server/settings.hh>
 
 #include <thread>
 
@@ -17,7 +17,7 @@ class StreamServer : public Protocol,
 {
 public:
     /// Constructor.
-    StreamServer(const Settings& settings, const std::string& socketPath);
+    StreamServer(const ServerConfig& settings, const std::string& socketPath);
 
     /// Destructor.
     ~StreamServer();

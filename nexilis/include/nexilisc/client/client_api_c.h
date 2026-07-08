@@ -1,7 +1,7 @@
 #ifndef NEXILISC_CLIENT_API_C_H
 #define NEXILISC_CLIENT_API_C_H
 
-#include <nexilisc/client/server_data_c.h>
+#include <nexilisc/client/client_config_c.h>
 #include <nexilisc/client/rooms_collection.h>
 
 #include <nexilis/client/client_api.hh>
@@ -15,7 +15,7 @@ struct nexilis_ClientAPI
     nexilis::client::ClientAPI* api;
 };
 
-nexilis_ClientAPI* nexilis_client_api_create(nexilis_ServerData* server_data);
+nexilis_ClientAPI* nexilis_client_api_create(nexilis_ClientConfigC* config);
 void nexilis_client_api_destroy(nexilis_ClientAPI* client_api);
 
 bool nexilis_client_api_is_inet_udp_ready(const nexilis_ClientAPI* client_api);

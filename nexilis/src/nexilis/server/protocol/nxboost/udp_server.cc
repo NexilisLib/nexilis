@@ -8,7 +8,7 @@
 namespace nexilis::server::nxboost
 {
 
-UDPServer::UDPServer(const Settings& settings)
+UDPServer::UDPServer(const ServerConfig& settings)
     : ServerProtocol(settings),
       NxClass("server::nxboost::UDPServer"),
       m_stopped(std::make_unique<std::atomic<bool>>(false)),
@@ -153,7 +153,7 @@ void UDPServer::receiveFromClients()
             // Create a new buffer containing only the received bytes.
             nx_data received_message(m_receiveBuffer.begin(), m_receiveBuffer.begin() + bytes_received);
 
-            auto handledMessage = getMessageHandler().readMessage(address, received_message, &getCommand().getSettings());
+            auto handledMessage = getMessageHandler().readMessage(address, received_message, &getSettings());
 
             // clang-format off
             if (!handledMessage->getUser()->isBoostUDPSet())

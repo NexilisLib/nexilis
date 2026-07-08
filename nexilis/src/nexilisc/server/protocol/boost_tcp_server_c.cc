@@ -6,13 +6,13 @@ struct nexilis_BoostTCPServer
     nexilis::server::nxboost::TCPServer* server;
 };
 
-nexilis_BoostTCPServer* nexilis_create_boost_tcp_server(nexilis_ProtocolManagerC* manager, nexilis_server_SettingsC* settings)
+nexilis_BoostTCPServer* nexilis_create_boost_tcp_server(nexilis_ProtocolManagerC* manager, nexilis_server_ConfigC* config)
 {
-    if (manager && manager->manager && settings && settings->settings)
+    if (manager && manager->manager && config && config->settings)
     {
         auto server = new nexilis_BoostTCPServer();
         server->server = new nexilis::server::nxboost::TCPServer(
-                manager->manager->createProtocol<nexilis::server::nxboost::TCPServer>(*settings->settings));
+                manager->manager->createProtocol<nexilis::server::nxboost::TCPServer>(*config->settings));
         return server;
     }
     return nullptr;
@@ -47,14 +47,14 @@ void nexilis_boost_tcp_server_stop(nexilis_BoostTCPServer* server)
     }
 }
 
-nexilis_server_SettingsC nexilis_boost_tcp_server_get_settings(nexilis_BoostTCPServer* server)
+nexilis_server_ConfigC nexilis_boost_tcp_server_get_settings(nexilis_BoostTCPServer* server)
 {
-    auto settings = nexilis_server_SettingsC();
+    auto config = nexilis_server_ConfigC();
     if (server && server->server)
     {
-        settings.settings = &server->server->getSettings();
+        config.settings = &server->server->getSettings();
     }
-    return settings;
+    return config;
 }
 
 nexilis_ProtocolTypeC nexilis_boost_tcp_server_get_type(nexilis_BoostTCPServer* server)

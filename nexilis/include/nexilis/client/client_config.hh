@@ -1,7 +1,7 @@
-#ifndef NEXILIS_CLIENT_SERVER_DATA_HH
-#define NEXILIS_CLIENT_SERVER_DATA_HH
+#ifndef NEXILIS_CLIENT_CONFIG_HH
+#define NEXILIS_CLIENT_CONFIG_HH
 
-#include <nexilis/server/authentication_mode.hh>
+#include <nexilis/auth_config.hh>
 
 #include <cstdint>
 #include <string>
@@ -9,43 +9,12 @@
 namespace nexilis::client
 {
 
-class ServerData
+class ClientConfig : public AuthConfig
 {
 public:
-    /// Default constructor.
-    ServerData() = default;
+    ClientConfig() = default;
 
-    /// Move constructor.
-    ServerData(ServerData&& other);
-
-    /// Move assignment operator.
-    ServerData& operator=(ServerData&& other);
-
-    /// Copy constructor.
-    ServerData(const ServerData& other);
-
-    /// Copy assignment operator.
-    ServerData& operator=(const ServerData& other);
-
-    const server::AuthenticationMode& getAuthenticationMode() const
-    {
-        return m_authenticationMode;
-    }
-
-    void setAuthenticationMode(server::AuthenticationMode authentication_mode)
-    {
-        m_authenticationMode = authentication_mode;
-    }
-
-    const std::string& getPassword() const
-    {
-        return m_password;
-    }
-
-    void setPassword(const std::string& password)
-    {
-        m_password = password;
-    }
+    using AuthConfig::AuthConfig;
 
     /// af_inet UDP
     const std::string& getInetUDPServerAddress() const
@@ -166,12 +135,6 @@ public:
     }
 
 private:
-    // Authentication mode.
-    server::AuthenticationMode m_authenticationMode;
-
-    /// The server password.
-    std::string m_password;
-
     /// af_inet UDP
     std::string m_inetUDPServerAddress;
     uint16_t m_inetUDPServerPort = 0;

@@ -12,7 +12,7 @@
 namespace nexilis::server
 {
 
-Command::Command(const Settings& settings)
+Command::Command(const ServerConfig& settings)
     : NxClass("server::Command"),
       m_settings(settings)
 {

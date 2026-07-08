@@ -12,7 +12,7 @@ int main()
     nexilis::ProtocolManager protocol_manager;
 
     // Server.
-    nexilis::server::Settings settings;
+    nexilis::server::ServerConfig settings;
     settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");

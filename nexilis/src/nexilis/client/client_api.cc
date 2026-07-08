@@ -13,7 +13,7 @@
 namespace nexilis::client
 {
 
-ClientAPI::ClientAPI(ServerData data)
+ClientAPI::ClientAPI(ClientConfig data)
     : NxClass("ClientAPI"),
       m_serverData(data)
 {

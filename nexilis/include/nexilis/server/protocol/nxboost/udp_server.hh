@@ -2,8 +2,8 @@
 #define NEXILIS_BOOST_UDP_SERVER_HH
 
 #include <nexilis/protocol.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/server_protocol.hh>
-#include <nexilis/server/settings.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
@@ -19,7 +19,7 @@ class UDPServer : public Protocol,
 {
 public:
     /// Constructor.
-    explicit UDPServer(const Settings& settings);
+    explicit UDPServer(const ServerConfig& settings);
 
     /// Destructor.
     ~UDPServer();

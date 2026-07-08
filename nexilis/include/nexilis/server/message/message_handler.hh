@@ -2,7 +2,7 @@
 #define NEXILIS_MESSAGE_HANDLER_HH
 
 #include <nexilis/nx_class.hh>
-#include <nexilis/server/settings.hh>
+#include <nexilis/server/server_config.hh>
 
 #include <nexilis/server/message/message.hh>
 
@@ -27,7 +27,7 @@ public:
     /// \param address The incoming message sender address.
     /// \param message The incoming message data.
     /// \param authentication The server authentication levels.
-    std::unique_ptr<BaseMessage> readMessage(std::string address, const nx_data& payload, Settings* authentication);
+    std::unique_ptr<BaseMessage> readMessage(std::string address, const nx_data& payload, ServerConfig* authentication);
 
 private:
     Message handlePayload(const nx_data& payload, User* user, const std::string& address);

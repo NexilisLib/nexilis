@@ -6,10 +6,10 @@ namespace Nexilis.Server
     public class BoostTCPServer : IDisposable
     {
         private IntPtr _handle;
-        private Settings _settings;
+        private ServerConfig _settings;
         private bool _disposed = false;
 
-        public BoostTCPServer(ProtocolManager protocolManager, Settings settings, int port)
+        public BoostTCPServer(ProtocolManager protocolManager, ServerConfig settings, int port)
         {
             NullCheck.ThrowIfNull(protocolManager, nameof(protocolManager));
             NullCheck.ThrowIfNull(settings, nameof(settings));
@@ -52,7 +52,7 @@ namespace Nexilis.Server
             }
         }
 
-        public Settings GetSettings()
+        public ServerConfig GetServerConfig()
         {
             ThrowIfDisposed();
             return _settings;

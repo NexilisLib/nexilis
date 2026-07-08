@@ -100,7 +100,7 @@ protected:
     void createDefaultServerData()
     {
         server_data.setPassword("salasana");
-        server_data.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
+        server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
     }
 
     void createClientAPI()
@@ -122,8 +122,8 @@ protected:
     std::shared_ptr<Server> server;
     std::shared_ptr<Client> client;
 
-    nexilis::server::Settings settings;
-    nexilis::client::ServerData server_data;
+    nexilis::server::ServerConfig settings;
+    nexilis::client::ClientConfig server_data;
     std::unique_ptr<nexilis::client::ClientAPI> api;
 };
 

@@ -13,7 +13,7 @@
 namespace nexilis::server::nxboost
 {
 
-TCPServer::TCPServer(const Settings& settings) noexcept
+TCPServer::TCPServer(const ServerConfig& settings) noexcept
     : ServerProtocol(settings),
       NxClass("server::nxboost::TCPServer"),
       m_firstClientConnected(std::make_unique<std::atomic<bool>>(false)),
@@ -350,7 +350,7 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
                     auto clientAddress = socket_wrapper->getRemoteAddress();
 
                     // TODO This is the passwd message
-                    auto handled_message = getMessageHandler().readMessage(clientAddress, data, &getCommand().getSettings());
+                    auto handled_message = getMessageHandler().readMessage(clientAddress, data, &getSettings());
 
                     if (!handled_message)
                     {
@@ -485,7 +485,7 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     continue;
                 }
 
-                auto handledMessage = getMessageHandler().readMessage(client_address, data, &getCommand().getSettings());
+                auto handledMessage = getMessageHandler().readMessage(client_address, data, &getSettings());
 
                 if (!handledMessage)
                 {

@@ -3,7 +3,7 @@
 namespace nexilis::server
 {
 
-ServerProtocol::ServerProtocol(const Settings& settings)
+ServerProtocol::ServerProtocol(const ServerConfig& settings)
     : m_command(settings)
 {
 }

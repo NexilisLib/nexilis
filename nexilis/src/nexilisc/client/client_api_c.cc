@@ -2,12 +2,12 @@
 #include <nexilisc/client/client_session_c.h>
 #include <nexilisc/room_data_c.h>
 
-nexilis_ClientAPI* nexilis_client_api_create(nexilis_ServerData* server_data)
+nexilis_ClientAPI* nexilis_client_api_create(nexilis_ClientConfigC* config)
 {
-    if (server_data && server_data->data)
+    if (config && config->data)
     {
         auto client_api = new nexilis_ClientAPI();
-        auto cpp_client_api = new nexilis::client::ClientAPI(*server_data->data);
+        auto cpp_client_api = new nexilis::client::ClientAPI(*config->data);
         client_api->api = cpp_client_api;
         return client_api;
     }

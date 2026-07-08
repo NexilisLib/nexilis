@@ -31,13 +31,13 @@ public:
     };
 
     // Server-side state (declaration order = init order)
-    server::Settings settings;
+    server::ServerConfig settings;
     TestProtocol protocol;
     server::User user{1, "127.0.0.1"};
     server::Command command{settings};
 
     // Client-side state
-    client::ServerData serverData;
+    client::ClientConfig serverData;
     client::ClientAPI clientApi{serverData};
 
     /// Pack server-side args from raw command bytes.

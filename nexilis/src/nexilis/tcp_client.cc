@@ -4,13 +4,13 @@
 namespace nexilis
 {
 
-nexilis::client::ServerData getServerData(const std::string& ipAddress,
-                                          const std::string& password)
+nexilis::client::ClientConfig getServerData(const std::string& ipAddress,
+                                            const std::string& password)
 {
-    nexilis::client::ServerData serverData;
+    nexilis::client::ClientConfig serverData;
     serverData.setPassword(password);
     serverData.setBoostTCPAddress(ipAddress);
-    serverData.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
+    serverData.setMode(nexilis::server::AuthenticationMode::password_protected);
     return serverData;
 }
 

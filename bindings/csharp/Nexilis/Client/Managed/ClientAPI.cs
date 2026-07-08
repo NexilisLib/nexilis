@@ -10,9 +10,9 @@ namespace Nexilis.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientAPI"/> class.
         /// </summary>
-        public ClientAPI(ServerData serverData)
+        public ClientAPI(ClientConfig config)
         {
-            _clientApiPtr = ClientAPINative.nexilis_client_api_create(serverData.ServerDataPtr);
+            _clientApiPtr = ClientAPINative.nexilis_client_api_create(config.ConfigPtr);
         }
 
         /// <summary>

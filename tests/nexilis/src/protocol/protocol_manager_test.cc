@@ -2,7 +2,7 @@
 
 #include <nexilis/protocol.hh>
 #include <nexilis/protocol_manager.hh>
-#include <nexilis/server/settings.hh>
+#include <nexilis/server/server_config.hh>
 
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
@@ -15,7 +15,7 @@ protected:
 
 TEST_F(ProtocolManagerTest, CreateProtocol_UnixStreamServer)
 {
-    nexilis::server::Settings settings;
+    nexilis::server::ServerConfig settings;
     settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
@@ -30,7 +30,7 @@ TEST_F(ProtocolManagerTest, CreateProtocol_UnixStreamServer)
 
 TEST_F(ProtocolManagerTest, CreateProtocol_BoostTCPServer)
 {
-    nexilis::server::Settings settings;
+    nexilis::server::ServerConfig settings;
     settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");

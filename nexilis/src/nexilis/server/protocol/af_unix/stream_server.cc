@@ -12,7 +12,7 @@
 namespace nexilis::server::af_unix
 {
 
-StreamServer::StreamServer(const Settings& settings, const std::string& socketPath)
+StreamServer::StreamServer(const ServerConfig& settings, const std::string& socketPath)
     : ServerProtocol(settings),
       m_socketPath(socketPath),
       m_buffer(NEXILIS_BUFFER)
@@ -174,11 +174,11 @@ void StreamServer::handleMessages()
         else
         {
             nx_data payload = Util::convertToByteVector(message);
-            auto msg = getMessageHandler().readMessage("127.0.0.1", payload, &getCommand().getSettings());
+            auto msg = getMessageHandler().readMessage("127.0.0.1", payload, &getSettings());
 
             if (msg->getUser())
             {
-                auto handledMessage = getMessageHandler().readMessage(msg->getAddress(), payload, &getCommand().getSettings());
+                auto handledMessage = getMessageHandler().readMessage(msg->getAddress(), payload, &getSettings());
 
                 if (!handledMessage->getUser()->isUnixStreamSet())
                 {

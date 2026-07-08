@@ -4,7 +4,7 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/message/message_handler.hh>
-#include <nexilis/server/settings.hh>
+#include <nexilis/server/server_config.hh>
 
 namespace nexilis::server
 {
@@ -13,7 +13,7 @@ class ServerProtocol
 {
 public:
     // Constructor.
-    explicit ServerProtocol(const Settings& settings);
+    explicit ServerProtocol(const ServerConfig& settings);
 
     /// Move constructor.
     ServerProtocol(ServerProtocol&& other);
@@ -28,9 +28,9 @@ public:
     ServerProtocol& operator=(const ServerProtocol&) = delete;
 
     /// Get the settings for given server protocol.
-    Settings& getSettings()
+    ServerConfig& getSettings()
     {
-        return m_command.getSettings();
+        return m_command.getServerConfig();
     }
 
     /// Check if there are active connections.

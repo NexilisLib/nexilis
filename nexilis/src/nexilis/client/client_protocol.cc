@@ -104,7 +104,7 @@ void ClientProtocol::start(Protocol::Type type)
         return;
     }
 
-    switch (m_api->getAuthenticationMode())
+    switch (m_api->getMode())
     {
         case server::AuthenticationMode::password_protected:
         {
@@ -118,7 +118,7 @@ void ClientProtocol::start(Protocol::Type type)
         case server::AuthenticationMode::admin_access:
         case server::AuthenticationMode::root_access:
         case server::AuthenticationMode::skip:
-            Log::error("Unhandled authentication mode: ", static_cast<int>(m_api->getAuthenticationMode()));
+            Log::error("Unhandled authentication mode: ", static_cast<int>(m_api->getMode()));
             break;
     }
 

@@ -3,7 +3,7 @@
 
 #include <nexilis/movement/movement_2D.hh>
 #include <nexilis/movement/movement_3D.hh>
-#include <nexilis/server/settings.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/user.hh>
 
 #include <thread>
@@ -15,7 +15,7 @@ class Movement
 {
 public:
     static bool isInitialized();
-    static void _initialize(Settings& settings);
+    static void _initialize(ServerConfig& settings);
 
     /// Smooth movement.
     static double easing(double progress, double totalDistance);
@@ -28,7 +28,7 @@ public:
     static std::thread object3D(std::unique_ptr<Movement3D> movement, User& user, Protocol& protocol);
 
 private:
-    static Settings* m_settings;
+    static ServerConfig* m_settings;
 };
 
 } // namespace nexilis::server

@@ -7,10 +7,10 @@
 
 TEST(ProtocolTest_c, CreateProtocol_UnixStreamServer)
 {
-    nexilis_server_SettingsC* settings = nexilis_settings_create();
-    nexilis_settings_set_mode(settings, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
-    nexilis_settings_set_passphrase(settings, "salasana");
-    nexilis_settings_set_root_password(settings, "root");
+    nexilis_server_ConfigC* settings = nexilis_server_config_create();
+    nexilis_server_config_set_mode(settings, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
+    nexilis_server_config_set_passphrase(settings, "salasana");
+    nexilis_server_config_set_root_password(settings, "root");
 
     auto protocol_manager = nexilis_protocol_manager_create();
 
@@ -22,17 +22,17 @@ TEST(ProtocolTest_c, CreateProtocol_UnixStreamServer)
     EXPECT_EQ(protocol_settings.settings->getPassphrase(), "salasana");
     EXPECT_EQ(protocol_settings.settings->getRootPassword(), "root");
 
-    nexilis_settings_destroy(settings);
+    nexilis_server_config_destroy(settings);
     nexilis_protocol_manager_destroy(protocol_manager);
     nexilis_unix_stream_server_destroy(server);
 }
 
 TEST(ProtocolTest_c, CreateProtocol_BoostTCPServer)
 {
-    nexilis_server_SettingsC* settings = nexilis_settings_create();
-    nexilis_settings_set_mode(settings, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
-    nexilis_settings_set_passphrase(settings, "salasana");
-    nexilis_settings_set_root_password(settings, "root");
+    nexilis_server_ConfigC* settings = nexilis_server_config_create();
+    nexilis_server_config_set_mode(settings, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
+    nexilis_server_config_set_passphrase(settings, "salasana");
+    nexilis_server_config_set_root_password(settings, "root");
 
     auto protocol_manager = nexilis_protocol_manager_create();
 
@@ -44,7 +44,7 @@ TEST(ProtocolTest_c, CreateProtocol_BoostTCPServer)
     EXPECT_EQ(protocol_settings.settings->getPassphrase(), "salasana");
     EXPECT_EQ(protocol_settings.settings->getRootPassword(), "root");
 
-    nexilis_settings_destroy(settings);
+    nexilis_server_config_destroy(settings);
     nexilis_protocol_manager_destroy(protocol_manager);
     nexilis_boost_tcp_server_destroy(server);
 }

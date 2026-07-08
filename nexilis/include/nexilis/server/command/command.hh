@@ -7,7 +7,7 @@
 #include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/command/command_result.hh>
-#include <nexilis/server/settings.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/user.hh>
 
 #include <cstddef>
@@ -28,7 +28,7 @@ public:
 
     /// Constructor.
     /// \param settings The settings of the server.
-    explicit Command(const Settings& settings);
+    explicit Command(const ServerConfig& settings);
 
     // Move constructor.
     Command(Command&& other);
@@ -59,12 +59,12 @@ public:
     /// \return Result from reading the command.
     CommandResult read(const char* command_data, size_t length, User& client, Protocol& protocol, uint64_t messageId);
 
-    Settings& getSettings()
+    ServerConfig& getServerConfig()
     {
         return m_settings;
     }
 
-    const Settings& getSettings() const
+    const ServerConfig& getServerConfig() const
     {
         return m_settings;
     }
@@ -96,7 +96,7 @@ private:
 
 private:
     /// The server side configuration.
-    Settings m_settings;
+    ServerConfig m_settings;
 };
 
 } // namespace nexilis::server

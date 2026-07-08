@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <nexilisc/client/client_config_c.h>
 #include <nexilisc/logger/log_c.h>
 #include <nexilisc/nx_data_c.h>
 #include <nexilisc/protocol_manager_c.h>
-#include <nexilisc/server/settings_c.h>
+#include <nexilisc/server/server_config_c.h>
 
 #include <nexilisc/client/protocol/boost_tcp_client_c.h>
 #include <nexilisc/server/protocol/boost_tcp_server_c.h>
@@ -50,12 +51,12 @@ protected:
 
         if (server_settings)
         {
-            nexilis_settings_destroy(server_settings);
+            nexilis_server_config_destroy(server_settings);
         }
 
         if (server_data)
         {
-            nexilis_server_data_destroy(server_data);
+            nexilis_client_config_destroy(server_data);
         }
 
         nexilis_protocol_manager_destroy(protocol_manager);
@@ -63,10 +64,10 @@ protected:
 
     void createSettings()
     {
-        server_settings = nexilis_settings_create();
-        nexilis_settings_set_mode(server_settings, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
-        nexilis_settings_set_passphrase(server_settings, "salasana");
-        nexilis_settings_set_root_password(server_settings, "root");
+        server_settings = nexilis_server_config_create();
+        nexilis_server_config_set_mode(server_settings, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
+        nexilis_server_config_set_passphrase(server_settings, "salasana");
+        nexilis_server_config_set_root_password(server_settings, "root");
     }
 
     void createServer()
@@ -101,9 +102,9 @@ protected:
 
     void createDefaultServerData()
     {
-        server_data = nexilis_server_data_create();
-        nexilis_server_data_set_password(server_data, "salasana");
-        nexilis_server_data_set_authentication_mode(server_data, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
+        server_data = nexilis_client_config_create();
+        nexilis_client_config_set_password(server_data, "salasana");
+        nexilis_client_config_set_mode(server_data, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
     }
 
     void createClientAPI()
@@ -133,7 +134,7 @@ protected:
     }
 
     // Function pointers for polymorphic behavior.
-    Server* (*create_server_func)(nexilis_ProtocolManagerC*, nexilis_server_SettingsC*);
+    Server* (*create_server_func)(nexilis_ProtocolManagerC*, nexilis_server_ConfigC*);
     void (*start_server)(Server*);
     void (*stop_server)(Server*);
     void (*destroy_server)(Server*);
@@ -143,13 +144,13 @@ protected:
     void (*stop_client)(Client*);
     void (*destroy_client)(Client*);
     bool (*is_connected)(Client*);
-    void (*set_address)(nexilis_ServerData*, const char*);
+    void (*set_address)(nexilis_ClientConfigC*, const char*);
     void (*send_message)(Client*, const uint8_t*, size_t);
 
     Server* server = nullptr;
     Client* client = nullptr;
-    nexilis_server_SettingsC* server_settings = nullptr;
-    nexilis_ServerData* server_data = nullptr;
+    nexilis_server_ConfigC* server_settings = nullptr;
+    nexilis_ClientConfigC* server_data = nullptr;
     nexilis_ClientAPI* client_api = nullptr;
 
 private:
@@ -198,7 +199,7 @@ protected:
         this->stop_client = nexilis_boost_tcp_client_stop;
         this->destroy_client = nexilis_boost_tcp_client_destroy;
         this->is_connected = nexilis_boost_tcp_client_is_connected;
-        this->set_address = nexilis_server_data_set_boost_tcp_address;
+        this->set_address = nexilis_client_config_set_boost_tcp_address;
         this->send_message = nexilis_boost_tcp_client_send_message;
     }
 };

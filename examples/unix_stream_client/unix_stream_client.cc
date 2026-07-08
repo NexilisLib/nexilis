@@ -9,13 +9,13 @@
 
 #include <iostream>
 
-nexilis::client::ServerData getServerData(const std::string& address, const std::string& username)
+nexilis::client::ClientConfig getServerData(const std::string& address, const std::string& username)
 {
-    nexilis::client::ServerData serverData;
+    nexilis::client::ClientConfig serverData;
     serverData.setPassword("salasana");
     serverData.setUserName(username);
     serverData.setUnixStreamServerPath(address);
-    serverData.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
+    serverData.setMode(nexilis::server::AuthenticationMode::password_protected);
     return serverData;
 }
 
