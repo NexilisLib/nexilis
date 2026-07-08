@@ -103,6 +103,7 @@ protected:
     {
         server_data = nexilis_server_data_create();
         nexilis_server_data_set_password(server_data, "salasana");
+        nexilis_server_data_set_authentication_mode(server_data, AUTHENTICATION_MODE_PASSWORD_PROTECTED);
     }
 
     void createClientAPI()

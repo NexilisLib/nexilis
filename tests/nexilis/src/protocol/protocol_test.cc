@@ -100,6 +100,7 @@ protected:
     void createDefaultServerData()
     {
         server_data.setPassword("salasana");
+        server_data.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
     }
 
     void createClientAPI()

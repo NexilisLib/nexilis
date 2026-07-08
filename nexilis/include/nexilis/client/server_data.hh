@@ -1,6 +1,8 @@
 #ifndef NEXILIS_CLIENT_SERVER_DATA_HH
 #define NEXILIS_CLIENT_SERVER_DATA_HH
 
+#include <nexilis/server/authentication_mode.hh>
+
 #include <cstdint>
 #include <string>
 
@@ -24,6 +26,16 @@ public:
 
     /// Copy assignment operator.
     ServerData& operator=(const ServerData& other);
+
+    const server::AuthenticationMode& getAuthenticationMode() const
+    {
+        return m_authenticationMode;
+    }
+
+    void setAuthenticationMode(server::AuthenticationMode authentication_mode)
+    {
+        m_authenticationMode = authentication_mode;
+    }
 
     const std::string& getPassword() const
     {
@@ -154,6 +166,9 @@ public:
     }
 
 private:
+    // Authentication mode.
+    server::AuthenticationMode m_authenticationMode;
+
     /// The server password.
     std::string m_password;
 

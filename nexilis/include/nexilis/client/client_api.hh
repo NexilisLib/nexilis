@@ -239,6 +239,11 @@ public:
         return m_clientData.getClientId();
     }
 
+    const server::AuthenticationMode& getAuthenticationMode() const
+    {
+        return m_serverData.getAuthenticationMode();
+    }
+
     std::string getClientPassword() const
     {
         return m_serverData.getPassword();

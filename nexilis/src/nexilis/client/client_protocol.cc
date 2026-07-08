@@ -104,12 +104,23 @@ void ClientProtocol::start(Protocol::Type type)
         return;
     }
 
-    auto password = m_api->getClientPassword();
-    Log::debug(header(), "Trying server password: ", password);
-
-    // TODO We're assuming here that the server is password protected.
-    auto message = Util::convertToByteVector(password.c_str(), password.size());
-    sendMessage(message);
+    switch (m_api->getAuthenticationMode())
+    {
+        case server::AuthenticationMode::password_protected:
+        {
+            auto password = m_api->getClientPassword();
+            Log::debug(header(), "Trying server password: ", password);
+            auto message = Util::convertToByteVector(password.c_str(), password.size());
+            sendMessage(message);
+            break;
+        }
+        case server::AuthenticationMode::empty:
+        case server::AuthenticationMode::admin_access:
+        case server::AuthenticationMode::root_access:
+        case server::AuthenticationMode::skip:
+            Log::error("Unhandled authentication mode: ", static_cast<int>(m_api->getAuthenticationMode()));
+            break;
+    }
 
     Log::debug(header(), "Client protocol type: ", Protocol::typeToString(type));
     switch (type)
@@ -150,7 +161,6 @@ void ClientProtocol::start(Protocol::Type type)
             Log::error(header(), "This function called via unknown protocol");
             return;
     }
-    // sendMessage(nexilis::client::Packet::Set::username(username));
 }
 
 } // namespace nexilis::client

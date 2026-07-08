@@ -167,6 +167,14 @@ void nexilis_server_data_set_unix_stream_server_path(nexilis_ServerData* server_
     }
 }
 
+void nexilis_server_data_set_authentication_mode(nexilis_ServerData* server_data, int mode)
+{
+    if (server_data && server_data->data)
+    {
+        server_data->data->setAuthenticationMode(static_cast<nexilis::server::AuthenticationMode>(mode));
+    }
+}
+
 const char* nexilis_server_data_get_unix_stream_server_path(const nexilis_ServerData* server_data)
 {
     if (server_data && server_data->data)

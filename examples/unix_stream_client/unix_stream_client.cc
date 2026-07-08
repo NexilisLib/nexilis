@@ -15,6 +15,7 @@ nexilis::client::ServerData getServerData(const std::string& address, const std:
     serverData.setPassword("salasana");
     serverData.setUserName(username);
     serverData.setUnixStreamServerPath(address);
+    serverData.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
     return serverData;
 }
 

@@ -36,6 +36,8 @@ const char* nexilis_server_data_get_unix_dgram_server_path(const nexilis_ServerD
 void nexilis_server_data_set_unix_stream_server_path(nexilis_ServerData* server_data, const char* socket_path);
 const char* nexilis_server_data_get_unix_stream_server_path(const nexilis_ServerData* server_data);
 
+void nexilis_server_data_set_authentication_mode(nexilis_ServerData* server_data, int mode);
+
 #ifdef __cplusplus
 }
 #endif

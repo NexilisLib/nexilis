@@ -10,6 +10,7 @@ nexilis::client::ServerData getServerData(const std::string& ipAddress,
     nexilis::client::ServerData serverData;
     serverData.setPassword(password);
     serverData.setBoostTCPAddress(ipAddress);
+    serverData.setAuthenticationMode(nexilis::server::AuthenticationMode::password_protected);
     return serverData;
 }
 

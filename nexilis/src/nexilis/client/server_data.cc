@@ -4,7 +4,8 @@ namespace nexilis::client
 {
 
 ServerData::ServerData(ServerData&& other)
-    : m_password(std::move(other.m_password)),
+    : m_authenticationMode(std::move(other.m_authenticationMode)),
+      m_password(std::move(other.m_password)),
       m_inetUDPServerAddress(std::move(other.m_inetUDPServerAddress)),
       m_inetUDPServerPort(other.m_inetUDPServerPort),
       m_inetTCPServerAddress(std::move(other.m_inetTCPServerAddress)),
@@ -19,7 +20,8 @@ ServerData::ServerData(ServerData&& other)
 }
 
 ServerData::ServerData(const ServerData& other)
-    : m_password(other.m_password),
+    : m_authenticationMode(other.m_authenticationMode),
+      m_password(other.m_password),
       m_inetUDPServerAddress(other.m_inetUDPServerAddress),
       m_inetUDPServerPort(other.m_inetUDPServerPort),
       m_inetTCPServerAddress(other.m_inetTCPServerAddress),
@@ -37,6 +39,7 @@ ServerData& ServerData::operator=(ServerData&& other)
 {
     if (this != &other)
     {
+        m_authenticationMode = std::move(other.m_authenticationMode);
         m_password = std::move(other.m_password);
         m_inetUDPServerAddress = std::move(other.m_inetUDPServerAddress);
         m_inetUDPServerPort = other.m_inetUDPServerPort;
@@ -56,6 +59,7 @@ ServerData& ServerData::operator=(const ServerData& other)
 {
     if (this != &other)
     {
+        m_authenticationMode = other.m_authenticationMode;
         m_password = other.m_password;
         m_inetUDPServerAddress = other.m_inetUDPServerAddress;
         m_inetUDPServerPort = other.m_inetUDPServerPort;
