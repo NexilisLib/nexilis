@@ -20,6 +20,8 @@ public:
 
     static std::vector<User*> getClientsByIpAddress(const std::string& ip_address);
 
+    static bool remove(uint64_t id);
+
     static void clear();
 
 private:

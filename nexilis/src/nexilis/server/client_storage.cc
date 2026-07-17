@@ -65,4 +65,21 @@ void ClientStorage::clear()
     m_clients.clear();
 }
 
+bool ClientStorage::remove(uint64_t id)
+{
+    auto it = std::find_if(m_clients.begin(), m_clients.end(),
+                           [id](const std::unique_ptr<User>& client)
+                           {
+                               return client->getId() == id;
+                           });
+
+    if (it != m_clients.end())
+    {
+        m_clients.erase(it);
+        Log::info("Removed client from storage, total amount = ", m_clients.size());
+        return true;
+    }
+    return false;
+}
+
 } // namespace nexilis::server

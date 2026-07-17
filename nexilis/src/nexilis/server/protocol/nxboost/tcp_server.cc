@@ -1,7 +1,9 @@
 #include <nexilis/boost_tcp/socket.hh>
+#include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
+#include <nexilis/server/room_storage.hh>
 #include <nexilis/util.hh>
 
 #include <boost/asio/buffer.hpp>
@@ -463,6 +465,8 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
             return;
         }
 
+        uint64_t connectedUserId = 0;
+
         try
         {
             while (!m_stopped->load() && socket_wrapper->isOpen())
@@ -491,6 +495,12 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                 {
                     Log::error(header(), "Received invalid message");
                     continue;
+                }
+
+                // Track the user ID for cleanup on disconnect.
+                if (handledMessage->getUser() && connectedUserId == 0)
+                {
+                    connectedUserId = handledMessage->getUser()->getId();
                 }
 
                 // Always update the sending function, implement some caching later.
@@ -534,6 +544,27 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
         catch (const std::exception& e)
         {
             Log::error(header(), "Exception in client thread: ", e.what());
+        }
+
+        // --- Cleanup: remove disconnected user from their room and client storage ---
+        if (connectedUserId != 0)
+        {
+            auto* user = ClientStorage::getClientById(connectedUserId);
+            if (user)
+            {
+                uint64_t roomId = user->getRoomId();
+                if (roomId != 0)
+                {
+                    auto* room = RoomStorage::getRoomById(roomId);
+                    if (room)
+                    {
+                        Log::info(header(), "Cleaning up disconnected user ", connectedUserId, " from room ", roomId);
+                        room->leaveRoom(connectedUserId);
+                    }
+                    user->setRoomId(0);
+                }
+                ClientStorage::remove(connectedUserId);
+            }
         }
 
         if (socket_wrapper->isOpen())
