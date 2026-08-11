@@ -17,6 +17,7 @@ endif()
 message(STATUS "Nexilis paths: ${CMAKE_PREFIX_PATH}")
 
 find_package(Nexilis REQUIRED CONFIG)
+find_package(Boost 1.75 REQUIRED COMPONENTS json)
 include(../ColorizedStatus.cmake)
 print_nexilis_status()
 
@@ -26,6 +27,7 @@ add_executable(nexilis_tests
     src/main.cc
 
     src/command_spec_test.cc
+    src/room_spec_test.cc
 
     src/logging/logger_test.cc
     src/logging/log_test.cc
@@ -38,6 +40,7 @@ add_executable(nexilis_tests
 target_link_libraries(nexilis_tests PRIVATE
     Nexilis::nexilis
     GTest::GTest
+    Boost::json
 )
 
 # Only add include dirs if not using the config file
