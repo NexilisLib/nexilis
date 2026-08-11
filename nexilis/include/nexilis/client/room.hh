@@ -1,6 +1,8 @@
 #ifndef NEXILIS_CLIENT_ROOM_HH
 #define NEXILIS_CLIENT_ROOM_HH
 
+#include <algorithm>
+
 #include <nexilis/base_room.hh>
 #include <nexilis/client/client_session.hh>
 
@@ -93,6 +95,13 @@ public:
 
     void addClient(ClientSession&& client)
     {
+        const auto& clientId = client.getId();
+        const auto duplicate = std::find_if(m_clients.begin(), m_clients.end(),
+                                            [&clientId](const ClientSession& session)
+                                            { return session.getId() == clientId; });
+        if (duplicate != m_clients.end())
+            return;
+
         m_clients.emplace_back(std::move(client));
     }
 
