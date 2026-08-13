@@ -73,7 +73,7 @@ bool Socket::connect(const std::string& host, uint16_t port)
     }
     catch (...)
     {
-        close();
+        closeInternal();
         return false;
     }
 }
@@ -106,54 +106,61 @@ bool Socket::send(const nx_data& data)
     }
     catch (...)
     {
-        close();
+        closeInternal();
         return false;
     }
 }
 
 bool Socket::receive(nx_data& data, size_t timeout_ms)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if (!m_connected)
+    // The socket mutex must NOT be held while waiting for data in select().
+    // The server can call send() on this socket from another client's thread
+    // (e.g. relaying a room command to this client). Holding the mutex for the
+    // whole select() duration starves that thread indefinitely and deadlocks
+    // the server. Check the connection state briefly, then wait for data
+    // without holding the mutex.
+    if (!isOpen())
     {
         return false;
     }
 
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(m_socket->native_handle(), &read_fds);
+
+    timeval timeout;
+    timeout.tv_sec = timeout_ms / 1000;
+    timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+    int result = select(m_socket->native_handle() + 1, &read_fds, nullptr, nullptr,
+                        timeout_ms > 0 ? &timeout : nullptr);
+
+    if (result <= 0)
+    {
+        return false; // Timeout or error
+    }
+
     try
     {
-        // Set non-blocking mode
-        bool original_blocking = m_socket->non_blocking();
-        m_socket->non_blocking(true);
-
-        fd_set read_fds;
-        FD_ZERO(&read_fds);
-        FD_SET(m_socket->native_handle(), &read_fds);
-
-        timeval timeout;
-        timeout.tv_sec = timeout_ms / 1000;
-        timeout.tv_usec = (timeout_ms % 1000) * 1000;
-
-        int result = select(m_socket->native_handle() + 1, &read_fds, nullptr, nullptr,
-                            timeout_ms > 0 ? &timeout : nullptr);
-
-        if (result <= 0)
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (!m_connected)
         {
-            m_socket->non_blocking(original_blocking);
-            return false; // Timeout or error
+            return false;
         }
 
+        // select() reported data available, so these blocking reads complete
+        // promptly and never stall the mutex for long.
         boost::system::error_code ec;
 
         // Read 4-byte length prefix (big-endian uint32_t)
         uint8_t len_buf[4];
-        size_t read_len = boost::asio::read(*m_socket,
-                                            boost::asio::buffer(len_buf),
-                                            boost::asio::transfer_exactly(4), ec);
+        boost::asio::read(*m_socket,
+                          boost::asio::buffer(len_buf),
+                          boost::asio::transfer_exactly(4), ec);
 
-        if (ec || read_len != 4)
+        if (ec)
         {
-            m_socket->non_blocking(original_blocking);
-            close();
+            closeInternal();
             return false;
         }
 
@@ -164,22 +171,18 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
 
         if (payload_size == 0)
         {
-            m_socket->non_blocking(original_blocking);
             data.clear();
             return true;
         }
 
         // Read exactly payload_size bytes
         boost::asio::streambuf buf;
-        read_len = boost::asio::read(*m_socket, buf,
-                                     boost::asio::transfer_exactly(payload_size), ec);
-
-        // Restore blocking mode
-        m_socket->non_blocking(original_blocking);
+        boost::asio::read(*m_socket, buf,
+                          boost::asio::transfer_exactly(payload_size), ec);
 
         if (ec)
         {
-            close();
+            closeInternal();
             return false;
         }
 
@@ -191,7 +194,7 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
     }
     catch (...)
     {
-        close();
+        closeInternal();
         return false;
     }
 }
@@ -199,6 +202,11 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
 void Socket::close()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    closeInternal();
+}
+
+void Socket::closeInternal()
+{
     if (!m_connected)
     {
         return;

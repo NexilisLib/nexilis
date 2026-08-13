@@ -43,6 +43,7 @@ public:
 
 private:
     void setSocketOptions();
+    void closeInternal();
 
 private:
     std::shared_ptr<boost::asio::ip::tcp::socket> m_socket;
