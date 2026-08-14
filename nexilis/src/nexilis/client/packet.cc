@@ -9,28 +9,15 @@
 namespace nexilis::client
 {
 
-ClientAPI* _Packet::m_clientApi = nullptr;
-
-void _Packet::_initialize(ClientAPI& clientAPI)
-{
-    m_clientApi = &clientAPI;
-}
-
 void _Packet::emplace(nx_data& originalData, const nx_data& newData)
 {
     originalData.reserve(originalData.size() + newData.size());
     std::copy(newData.begin(), newData.end(), std::back_inserter(originalData));
 }
 
-nx_data _Packet::clientIdentification()
+nx_data _Packet::clientIdentification(ClientAPI& api)
 {
-    if (!m_clientApi)
-    {
-        Log::error("Packet has not initialized ClientAPI");
-        return {};
-    }
-
-    uint64_t clientId = m_clientApi->getClientId();
+    uint64_t clientId = api.getClientId();
     if (clientId == 0)
     {
         Log::error("Error creating new message id");
@@ -43,7 +30,7 @@ nx_data _Packet::clientIdentification()
     assert(clientIdVector.size() == 8);
     assert(Util::convertToType<uint64_t>(clientIdVector) != 0);
 
-    auto messageIdVector = Util::convertToByteVector(m_clientApi->getNewMessageId());
+    auto messageIdVector = Util::convertToByteVector(api.getNewMessageId());
     assert(messageIdVector.size() == 8);
 
     clientIdVector.reserve(clientIdVector.size() + messageIdVector.size());
@@ -52,9 +39,9 @@ nx_data _Packet::clientIdentification()
     return clientIdVector;
 }
 
-nx_data ClientImpl::set_general_clientId(uint64_t newId)
+nx_data ClientImpl::set_general_clientId(ClientAPI& api, uint64_t newId)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::setting));
     id.emplace_back(0);
     id.emplace_back(0);
@@ -66,9 +53,9 @@ nx_data ClientImpl::set_general_clientId(uint64_t newId)
 }
 
 // Set: General
-nx_data ClientImpl::set_general_username(const std::string& name)
+nx_data ClientImpl::set_general_username(ClientAPI& api, const std::string& name)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::setting));
     id.emplace_back(0);
     id.emplace_back(1);
@@ -79,9 +66,9 @@ nx_data ClientImpl::set_general_username(const std::string& name)
 }
 
 // Set: Protocol::BoostTCP
-nx_data set_protocol_boosttcp_port(uint16_t port)
+nx_data set_protocol_boosttcp_port(ClientAPI& api, uint16_t port)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::setting));
     id.emplace_back(1);
     id.emplace_back(0);
@@ -92,18 +79,18 @@ nx_data set_protocol_boosttcp_port(uint16_t port)
 }
 
 // Get: General
-nx_data ClientImpl::get_general_clientId()
+nx_data ClientImpl::get_general_clientId(ClientAPI& api)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(0);
     id.emplace_back(0);
     return id;
 }
 
-nx_data ClientImpl::get_general_roomId(uint64_t client_id)
+nx_data ClientImpl::get_general_roomId(ClientAPI& api, uint64_t client_id)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(0);
     id.emplace_back(2);
@@ -114,27 +101,27 @@ nx_data ClientImpl::get_general_roomId(uint64_t client_id)
 }
 
 // Get: Info
-nx_data ClientImpl::get_info_general()
+nx_data ClientImpl::get_info_general(ClientAPI& api)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(1);
     id.emplace_back(0);
     return id;
 }
 
-nx_data ClientImpl::get_info_clients()
+nx_data ClientImpl::get_info_clients(ClientAPI& api)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(1);
     id.emplace_back(1);
     return id;
 }
 
-nx_data ClientImpl::get_info_rooms()
+nx_data ClientImpl::get_info_rooms(ClientAPI& api)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::getting));
     id.emplace_back(1);
     id.emplace_back(2);
@@ -148,9 +135,9 @@ static auto emplaceAll = [](nx_data& dest, const auto&... args)
 };
 
 // Room::Management
-nx_data ClientImpl::room_management_join(uint64_t roomId)
+nx_data ClientImpl::room_management_join(ClientAPI& api, uint64_t roomId)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::join));
@@ -158,18 +145,18 @@ nx_data ClientImpl::room_management_join(uint64_t roomId)
     return id;
 }
 
-nx_data ClientImpl::room_management_leave()
+nx_data ClientImpl::room_management_leave(ClientAPI& api)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::leave));
     return id;
 }
 
-nx_data ClientImpl::room_management_create(const std::string& roomName, RoomData::Context ctx)
+nx_data ClientImpl::room_management_create(ClientAPI& api, const std::string& roomName, RoomData::Context ctx)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::create));
@@ -178,9 +165,9 @@ nx_data ClientImpl::room_management_create(const std::string& roomName, RoomData
     return id;
 }
 
-nx_data ClientImpl::room_management_remove(uint64_t roomId)
+nx_data ClientImpl::room_management_remove(ClientAPI& api, uint64_t roomId)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::remove));
@@ -189,9 +176,9 @@ nx_data ClientImpl::room_management_remove(uint64_t roomId)
 }
 
 // Room::Communicate
-nx_data ClientImpl::room_communicate_broadcast(const std::string& message)
+nx_data ClientImpl::room_communicate_broadcast(ClientAPI& api, const std::string& message)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::broadcast));
@@ -199,9 +186,9 @@ nx_data ClientImpl::room_communicate_broadcast(const std::string& message)
     return id;
 }
 
-nx_data ClientImpl::room_communicate_othercast(const std::string& message)
+nx_data ClientImpl::room_communicate_othercast(ClientAPI& api, const std::string& message)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::othercast));
@@ -209,9 +196,9 @@ nx_data ClientImpl::room_communicate_othercast(const std::string& message)
     return id;
 }
 
-nx_data ClientImpl::room_communicate_unicast(uint64_t userId, const std::string& message)
+nx_data ClientImpl::room_communicate_unicast(ClientAPI& api, uint64_t userId, const std::string& message)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::unicast));
@@ -220,9 +207,9 @@ nx_data ClientImpl::room_communicate_unicast(uint64_t userId, const std::string&
 }
 
 // Room::Player2D
-nx_data ClientImpl::room_player2d_position(Vector2f position)
+nx_data ClientImpl::room_player2d_position(ClientAPI& api, Vector2f position)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::position));
@@ -230,9 +217,9 @@ nx_data ClientImpl::room_player2d_position(Vector2f position)
     return id;
 }
 
-nx_data ClientImpl::room_player2d_dimension(Vector2f dimensions)
+nx_data ClientImpl::room_player2d_dimension(ClientAPI& api, Vector2f dimensions)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::dimension));
@@ -240,9 +227,9 @@ nx_data ClientImpl::room_player2d_dimension(Vector2f dimensions)
     return id;
 }
 
-nx_data ClientImpl::room_player2d_movement(Vector2f movement, float deltatime)
+nx_data ClientImpl::room_player2d_movement(ClientAPI& api, Vector2f movement, float deltatime)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::movement));
@@ -251,9 +238,9 @@ nx_data ClientImpl::room_player2d_movement(Vector2f movement, float deltatime)
 }
 
 // Room::Object2D
-nx_data ClientImpl::room_object2d_create(Vector2f position, Vector2f dimensions, const std::string& filePath)
+nx_data ClientImpl::room_object2d_create(ClientAPI& api, Vector2f position, Vector2f dimensions, const std::string& filePath)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create));
@@ -261,9 +248,9 @@ nx_data ClientImpl::room_object2d_create(Vector2f position, Vector2f dimensions,
     return id;
 }
 
-nx_data ClientImpl::room_object2d_destroy(uint64_t objectId)
+nx_data ClientImpl::room_object2d_destroy(ClientAPI& api, uint64_t objectId)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::destroy));
@@ -271,9 +258,9 @@ nx_data ClientImpl::room_object2d_destroy(uint64_t objectId)
     return id;
 }
 
-nx_data ClientImpl::room_object2d_move(uint64_t objectId, Vector2f newPosition)
+nx_data ClientImpl::room_object2d_move(ClientAPI& api, uint64_t objectId, Vector2f newPosition)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::move));
@@ -281,11 +268,11 @@ nx_data ClientImpl::room_object2d_move(uint64_t objectId, Vector2f newPosition)
     return id;
 }
 
-nx_data ClientImpl::room_object2d_createMoving(Vector2f startingPosition, Vector2f dimensions,
+nx_data ClientImpl::room_object2d_createMoving(ClientAPI& api, Vector2f startingPosition, Vector2f dimensions,
                                                Vector2f movement, float deltaTime,
                                                MovementType movementType, const std::string& filepath)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_2D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create_moving));
@@ -294,9 +281,9 @@ nx_data ClientImpl::room_object2d_createMoving(Vector2f startingPosition, Vector
 }
 
 // Room::Player3D
-nx_data ClientImpl::room_player3d_position(Vector3f position)
+nx_data ClientImpl::room_player3d_position(ClientAPI& api, Vector3f position)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::position));
@@ -304,9 +291,9 @@ nx_data ClientImpl::room_player3d_position(Vector3f position)
     return id;
 }
 
-nx_data ClientImpl::room_player3d_dimension(Vector3f dimensions)
+nx_data ClientImpl::room_player3d_dimension(ClientAPI& api, Vector3f dimensions)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::dimension));
@@ -314,9 +301,9 @@ nx_data ClientImpl::room_player3d_dimension(Vector3f dimensions)
     return id;
 }
 
-nx_data ClientImpl::room_player3d_movement(Vector3f movement, float deltatime)
+nx_data ClientImpl::room_player3d_movement(ClientAPI& api, Vector3f movement, float deltatime)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::movement));
@@ -324,9 +311,9 @@ nx_data ClientImpl::room_player3d_movement(Vector3f movement, float deltatime)
     return id;
 }
 
-nx_data ClientImpl::room_object3d_create(Vector3f position, Vector3f dimensions, const std::string& filePath)
+nx_data ClientImpl::room_object3d_create(ClientAPI& api, Vector3f position, Vector3f dimensions, const std::string& filePath)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create));
@@ -334,9 +321,9 @@ nx_data ClientImpl::room_object3d_create(Vector3f position, Vector3f dimensions,
     return id;
 }
 
-nx_data ClientImpl::room_object3d_destroy(uint64_t objectId)
+nx_data ClientImpl::room_object3d_destroy(ClientAPI& api, uint64_t objectId)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::destroy));
@@ -344,9 +331,9 @@ nx_data ClientImpl::room_object3d_destroy(uint64_t objectId)
     return id;
 }
 
-nx_data ClientImpl::room_object3d_move(uint64_t objectId, Vector3f newPosition)
+nx_data ClientImpl::room_object3d_move(ClientAPI& api, uint64_t objectId, Vector3f newPosition)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::move));
@@ -354,11 +341,11 @@ nx_data ClientImpl::room_object3d_move(uint64_t objectId, Vector3f newPosition)
     return id;
 }
 
-nx_data ClientImpl::room_object3d_createmoving(Vector3f startingPosition, Vector3f dimensions,
+nx_data ClientImpl::room_object3d_createmoving(ClientAPI& api, Vector3f startingPosition, Vector3f dimensions,
                                                Vector3f movement, float deltaTime,
                                                MovementType movementType, const std::string& filepath)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::object_3D));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::ObjectType::create_moving));
@@ -367,11 +354,11 @@ nx_data ClientImpl::room_object3d_createmoving(Vector3f startingPosition, Vector
 }
 
 // Room::GameItem
-nx_data ClientImpl::room_gameitem_create(Vector3f position, Vector3f dimensions,
+nx_data ClientImpl::room_gameitem_create(ClientAPI& api, Vector3f position, Vector3f dimensions,
                                          const std::string& type, const std::string& status,
                                          const std::string& filepath)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::game_item));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::GameItemAction::create));
@@ -381,9 +368,9 @@ nx_data ClientImpl::room_gameitem_create(Vector3f position, Vector3f dimensions,
     return id;
 }
 
-nx_data ClientImpl::room_gameitem_update(uint64_t itemId, const std::string& status)
+nx_data ClientImpl::room_gameitem_update(ClientAPI& api, uint64_t itemId, const std::string& status)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::game_item));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::GameItemAction::update));
@@ -391,9 +378,9 @@ nx_data ClientImpl::room_gameitem_update(uint64_t itemId, const std::string& sta
     return id;
 }
 
-nx_data ClientImpl::room_gameitem_destroy(uint64_t itemId)
+nx_data ClientImpl::room_gameitem_destroy(ClientAPI& api, uint64_t itemId)
 {
-    auto id = _Packet::clientIdentification();
+    auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::game_item));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::GameItemAction::destroy));

@@ -157,7 +157,6 @@ ReadResult ClientAPI::readMessage(const nx_data& message)
     {
         readCallback(json["callback"]);
     }
-
     if (result == ReadResult::success)
     {
         return result;

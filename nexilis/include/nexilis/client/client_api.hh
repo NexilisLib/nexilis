@@ -235,7 +235,6 @@ public:
     /// General.
     uint64_t getClientId() const
     {
-        assert(m_clientAPIData.isInitialized());
         return m_clientData.getClientId();
     }
 

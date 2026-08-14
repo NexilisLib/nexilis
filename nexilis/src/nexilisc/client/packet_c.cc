@@ -1,6 +1,7 @@
 #include <nexilis/client/packet.hh>
 #include <nexilis/logger/file_log.hh>
 #include <nexilis/util.hh>
+#include <nexilisc/client/client_api_c.h>
 #include <nexilisc/client/packet_c.h>
 
 static nx_data_c convert_nx_data(const nexilis::nx_data& data)
@@ -17,23 +18,23 @@ static nexilis::Vector3f convert_vector3f(nexilis_Vector3f* vector)
     return nexilis::Vector3f(x, y, z);
 }
 
-nx_data_c nexilis_packet_room_management_join(uint64_t room_id)
+nx_data_c nexilis_packet_room_management_join(nexilis_ClientAPI* client_api, uint64_t room_id)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Management::join(room_id));
+    return convert_nx_data(nexilis::client::Packet::Room::Management::join(*client_api->api, room_id));
 }
 
-nx_data_c nexilis_packet_room_management_leave()
+nx_data_c nexilis_packet_room_management_leave(nexilis_ClientAPI* client_api)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Management::leave());
+    return convert_nx_data(nexilis::client::Packet::Room::Management::leave(*client_api->api));
 }
 
-nx_data_c nexilis_packet_room_management_create(const char* room_name, nexilis_RoomContext ctx)
+nx_data_c nexilis_packet_room_management_create(nexilis_ClientAPI* client_api, const char* room_name, nexilis_RoomContext ctx)
 {
     return convert_nx_data(nexilis::client::Packet::Room::Management::create(
-            std::string(room_name), nexilis::RoomData::Context(ctx)));
+            *client_api->api, std::string(room_name), nexilis::RoomData::Context(ctx)));
 }
 
-nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f* position)
+nx_data_c nexilis_packet_room_player3D_position(nexilis_ClientAPI* client_api, nexilis_Vector3f* position)
 {
     if (!position || !position->vec)
     {
@@ -41,41 +42,41 @@ nx_data_c nexilis_packet_room_player3D_position(nexilis_Vector3f* position)
         return nx_data_c{};
     }
 
-    return convert_nx_data(nexilis::client::Packet::Room::Player3D::position(convert_vector3f(position)));
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::position(*client_api->api, convert_vector3f(position)));
 }
 
-nx_data_c nexilis_packet_room_player3D_position_direct(float x, float y, float z)
+nx_data_c nexilis_packet_room_player3D_position_direct(nexilis_ClientAPI* client_api, float x, float y, float z)
 {
-    auto position = nexilis::client::Packet::Room::Player3D::position(nexilis::Vector3f(x, y, z));
+    auto position = nexilis::client::Packet::Room::Player3D::position(*client_api->api, nexilis::Vector3f(x, y, z));
     return convert_nx_data(position);
 }
 
-nx_data_c nexilis_packet_room_player3D_dimension(nexilis_Vector3f* dimensions)
+nx_data_c nexilis_packet_room_player3D_dimension(nexilis_ClientAPI* client_api, nexilis_Vector3f* dimensions)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimension(convert_vector3f(dimensions)));
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimension(*client_api->api, convert_vector3f(dimensions)));
 }
 
-nx_data_c nexilis_packet_room_player3D_movement(nexilis_Vector3f* movement, float deltaTime)
+nx_data_c nexilis_packet_room_player3D_movement(nexilis_ClientAPI* client_api, nexilis_Vector3f* movement, float deltaTime)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(convert_vector3f(movement), deltaTime));
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(*client_api->api, convert_vector3f(movement), deltaTime));
 }
 
-nx_data_c nexilis_packet_room_player3D_movement_direct(float x, float y, float z, float deltatime)
+nx_data_c nexilis_packet_room_player3D_movement_direct(nexilis_ClientAPI* client_api, float x, float y, float z, float deltatime)
 {
-    return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(nexilis::Vector3f(x, y, z), deltatime));
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(*client_api->api, nexilis::Vector3f(x, y, z), deltatime));
 }
 
-nx_data_c nexilis_packet_get_info_general()
+nx_data_c nexilis_packet_get_info_general(nexilis_ClientAPI* client_api)
 {
-    return convert_nx_data(nexilis::client::Packet::Get::Info::general());
+    return convert_nx_data(nexilis::client::Packet::Get::Info::general(*client_api->api));
 }
 
-nx_data_c nexilis_packet_get_info_clients()
+nx_data_c nexilis_packet_get_info_clients(nexilis_ClientAPI* client_api)
 {
-    return convert_nx_data(nexilis::client::Packet::Get::Info::clients());
+    return convert_nx_data(nexilis::client::Packet::Get::Info::clients(*client_api->api));
 }
 
-nx_data_c nexilis_packet_get_info_rooms()
+nx_data_c nexilis_packet_get_info_rooms(nexilis_ClientAPI* client_api)
 {
-    return convert_nx_data(nexilis::client::Packet::Get::Info::rooms());
+    return convert_nx_data(nexilis::client::Packet::Get::Info::rooms(*client_api->api));
 }

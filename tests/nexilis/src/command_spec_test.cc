@@ -45,7 +45,9 @@ TEST_F(CommandSpecTest, ArgsHelper)
 
 TEST_F(CommandSpecTest, PacketWireFormat)
 {
-    auto bytes = client::Packet::Set::General::username("abc");
+    nexilis::client::ClientConfig config;
+    nexilis::client::ClientAPI api(config);
+    auto bytes = client::Packet::Set::General::username(api, "abc");
 
     ASSERT_GE(bytes.size(), 6);
     EXPECT_EQ(bytes[0], static_cast<uint8_t>(CommandType::setting));
@@ -67,7 +69,9 @@ TEST_F(CommandSpecTest, SetUsernameFromRawBytes)
 
 TEST_F(CommandSpecTest, SetUsernameViaPacketApi)
 {
-    auto bytes = client::Packet::Set::General::username("packet_user");
+    nexilis::client::ClientConfig config;
+    nexilis::client::ClientAPI api(config);
+    auto bytes = client::Packet::Set::General::username(api, "packet_user");
     EXPECT_EQ(spec.read(bytes), server::CommandResult::success);
 }
 

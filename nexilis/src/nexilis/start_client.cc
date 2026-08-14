@@ -15,13 +15,13 @@ std::thread startClient(TCPClient& tcp_client, std::vector<RoomInfo>& rooms, std
     {
         tcp_client.start();
 
-        tcp_client.sendMessage(client::Packet::Get::General::clientId());
+        tcp_client.sendMessage(client::Packet::Get::General::clientId(tcp_client.getClientAPI()));
         while (!tcp_client.getClientAPI().isInitialized())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
-        tcp_client.sendMessage(client::Packet::Get::Info::rooms());
+        tcp_client.sendMessage(client::Packet::Get::Info::rooms(tcp_client.getClientAPI()));
 
         std::promise<void> roomsPromise;
         auto roomsFuture = roomsPromise.get_future();

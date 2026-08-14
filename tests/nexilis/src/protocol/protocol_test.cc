@@ -33,7 +33,7 @@ void waitRoomInfo(std::shared_ptr<Client>& client, std::shared_ptr<Server>& serv
     std::promise<void> promise;
     auto future = promise.get_future();
     client->sendMessage(
-            nexilis::client::Packet::Get::Info::rooms(),
+            nexilis::client::Packet::Get::Info::rooms(*api),
             api->waitUntilRoomsCreated(promise));
 
     auto status = future.wait_for(send_timeout);
@@ -196,7 +196,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPCreateRoom)
 
     EXPECT_EQ(api->getActiveRooms().size(), 0);
 
-    auto create_room = nexilis::client::Packet::Room::Management::create("room_mayn");
+    auto create_room = nexilis::client::Packet::Room::Management::create(*api, "room_mayn");
 
     this->client->sendMessage(create_room);
     waitFor(5, api->getActiveRooms().size() == 1);
@@ -210,7 +210,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
 
     EXPECT_EQ(api->getActiveRooms().size(), 0);
 
-    auto create_room = nexilis::client::Packet::Room::Management::create("room1");
+    auto create_room = nexilis::client::Packet::Room::Management::create(*api, "room1");
 
     this->client->sendMessage(create_room);
     waitFor(5, api->getActiveRooms().size() == 1);
@@ -220,7 +220,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
 
     EXPECT_EQ(room.getClients().size(), 0);
     auto room_id = api->getActiveRooms()[0].getId();
-    auto join_room = nexilis::client::Packet::Room::Management::join(room_id);
+    auto join_room = nexilis::client::Packet::Room::Management::join(*api, room_id);
     this->client->sendMessage(join_room);
 
     waitRoomInfo(this->client, this->server, this->api);
@@ -236,13 +236,13 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPMultipleRoomContexts)
     this->clientStart();
 
     // Create a 2D room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("2D_room", nexilis::RoomData::Context::_2D));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(*api, "2D_room", nexilis::RoomData::Context::_2D));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 1);
 
     // Create a 3D room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("3D_room", nexilis::RoomData::Context::_3D));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(*api, "3D_room", nexilis::RoomData::Context::_3D));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
@@ -305,7 +305,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomCreation)
     waitRoomInfo(this->client, this->server, this->api);
     EXPECT_EQ(api->getActiveRooms().size(), 1);
 
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("test"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(*api, "test"));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
@@ -338,14 +338,14 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPRoomDelete)
     EXPECT_EQ(api->getActiveRooms().size(), 1);
 
     // Create a new room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("test_room"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(*api, "test_room"));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
 
     // Delete the created room
     auto room_id = api->getActiveRooms()[1].getId();
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::remove(room_id));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::remove(*api, room_id));
     waitRoomInfo(this->client, this->server, this->api);
 
     // Should be back to one room
@@ -361,7 +361,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPJoinRoomInvalid)
 
     // Try to join a non-existent room
     auto invalid_room_id = static_cast<uint64_t>(999999);
-    auto join_room = nexilis::client::Packet::Room::Management::join(invalid_room_id);
+    auto join_room = nexilis::client::Packet::Room::Management::join(*api, invalid_room_id);
     this->client->sendMessage(join_room);
 
     // Should not crash, but should fail gracefully
@@ -377,14 +377,14 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPLeaveRoom)
     this->clientStart();
 
     // Create a new room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::create("test_room"));
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::create(*api, "test_room"));
     waitRoomInfo(this->client, this->server, this->api);
 
     EXPECT_EQ(api->getActiveRooms().size(), 2);
 
     // Join the new room
     auto room_id = api->getActiveRooms()[1].getId();
-    auto join_room = nexilis::client::Packet::Room::Management::join(room_id);
+    auto join_room = nexilis::client::Packet::Room::Management::join(*api, room_id);
     this->client->sendMessage(join_room);
     waitRoomInfo(this->client, this->server, this->api);
 
@@ -393,7 +393,7 @@ TEST_F(RoomBoostTCP2DTest, ProtocolTestBoostTCPLeaveRoom)
     EXPECT_EQ(api->clientRoomId(), room_id);
 
     // Leave the room
-    this->client->sendMessage(nexilis::client::Packet::Room::Management::leave());
+    this->client->sendMessage(nexilis::client::Packet::Room::Management::leave(*api));
     waitRoomInfo(this->client, this->server, this->api);
 
     // Should no longer be in a room
