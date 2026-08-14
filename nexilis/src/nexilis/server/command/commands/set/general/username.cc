@@ -23,8 +23,19 @@ CommandResult ServerImpl::set_general_username(const DefaultArgs& args)
         return CommandResult::error;
     }
 
-    auto data = Command::clientMessageData(CommandType::setting, "username", args.getMessageId(), {{"username", boost::json::value(username)}});
-    Command::sendMessageToClient(data, args.getUser(), args.getProtocol());
+    auto data = Command::clientMessageData(CommandType::setting, "username", args.getMessageId(),
+                                           {{"client_id", boost::json::value(args.getUser().getId())},
+                                            {"username", boost::json::value(username)}});
+
+    // Notify the room so peers can display this client's username.
+    if (client->getRoomId() != 0)
+    {
+        Command::sendRoomCommand(data, args.getUser(), args.getProtocol());
+    }
+    else
+    {
+        Command::sendMessageToClient(data, args.getUser(), args.getProtocol());
+    }
 
     return CommandResult::success;
 }

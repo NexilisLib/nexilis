@@ -35,9 +35,8 @@ CommandResult ServerImpl::room_management_join(const DefaultArgs& args)
     assert(RoomStorage::getRoomById(roomId)->contains(user_id));
     assert(args.getUser().getRoomId() == roomId);
 
-    std::map<std::string, boost::json::value> params;
-
-    auto roomCommand = Command::createRoomCommand(roomId, args.getUser(), args.getData(), params, args.getMessageId());
+    auto roomCommand = Command::createRoomCommand(roomId, args.getUser(), args.getData(),
+                                                  {{"username", boost::json::value(args.getUser().getUsername())}}, args.getMessageId());
     Command::sendRoomCommand(roomCommand, args.getUser(), args.getProtocol());
 
     // Send existing players to the joining client
@@ -52,7 +51,7 @@ CommandResult ServerImpl::room_management_join(const DefaultArgs& args)
             continue;
 
         // Send "join" to create a ClientSession on the joining client
-        std::map<std::string, boost::json::value> joinParams;
+        std::map<std::string, boost::json::value> joinParams{{"username", boost::json::value(existingUser->getUsername())}};
         auto joinMsg = Command::createRoomCommand(roomId, *existingUser, args.getData(), joinParams, args.getMessageId());
         Command::sendMessageToClient(joinMsg, user, protocol);
 

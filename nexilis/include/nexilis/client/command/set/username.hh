@@ -9,14 +9,16 @@ namespace nexilis::client
 class SetUsernameCommand : public BaseAPICommand
 {
 public:
-    explicit SetUsernameCommand(std::string& username)
-        : m_username(username)
+    SetUsernameCommand(uint64_t client_id, std::string username)
+        : m_client_id(client_id), m_username(std::move(username))
     {
     }
 
     ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData&) override
     {
-        auto* client = api.getClientFromRoom(api.getClientId());
+        uint64_t id = m_client_id == 0 ? api.getClientId() : m_client_id;
+
+        auto* client = api.getClientFromRoom(id);
         if (!client)
             return ReadResult::command_execution;
 
@@ -25,6 +27,7 @@ public:
     }
 
 private:
+    uint64_t m_client_id;
     std::string m_username;
 };
 

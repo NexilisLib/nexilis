@@ -53,7 +53,12 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseSettingCommand(const boost::
     if (type == "username")
     {
         std::string username = json.at("username").as_string().c_str();
-        return std::make_unique<SetUsernameCommand>(username);
+
+        uint64_t client_id = 0;
+        if (json.contains("client_id"))
+            client_id = Util::toUint64(json.at("client_id"));
+
+        return std::make_unique<SetUsernameCommand>(client_id, username);
     }
     else if (type == "port")
     {
@@ -133,7 +138,11 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         if (json.contains("room_context"))
             room_context = Util::toUint64(json.at("room_context"));
 
-        return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name, room_context);
+        std::string username;
+        if (json.contains("username"))
+            username = json.at("username").as_string().c_str();
+
+        return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name, room_context, username);
     }
     else if (type == "player_2D")
     {
