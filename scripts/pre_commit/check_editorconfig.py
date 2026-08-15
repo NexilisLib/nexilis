@@ -192,7 +192,7 @@ def find_git_root(start):
         return start
 
 
-def check_editorconfig(root, files):
+def check_editorconfig(root, files=None):
     editorconfig_path = os.path.join(root, ".editorconfig")
     if not os.path.isfile(editorconfig_path):
         print(f"Error: no .editorconfig found at {editorconfig_path}")

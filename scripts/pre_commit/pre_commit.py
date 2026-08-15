@@ -45,7 +45,7 @@ def run_minimal_checks():
         print("Cppcheck failed.")
         sys.exit(1)
 
-    editorconfig = check_editorconfig(nexilis_root, "*")
+    editorconfig = check_editorconfig(nexilis_root)
     if editorconfig == 0:
         print("Editorconfig check passed")
     else:
