@@ -31,8 +31,21 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
     Log::debug(header(), "Payload size: ", payload.size());
     Util::debugUint8Vector(payload);
 
-    auto clientId = Util::uint64FromFront(payload);
-    if (clientId == 0)
+    // In password_protected mode the very first message from an unidentified
+    // client is the raw password, which may be shorter than 8 bytes. Only attempt
+    // to read a client id when the payload is large enough; a short payload would
+    // otherwise parse as a zero client id and get rejected before the password
+    // comparison runs, leaking the length of the correct password.
+    uint64_t clientId = 0;
+    if (payload.size() >= sizeof(uint64_t))
+    {
+        clientId = Util::uint64FromFront(payload);
+    }
+
+    // Reject a zero client id in every mode except password_protected: there the
+    // first message from an unidentified client is the password itself, which is
+    // compared below regardless of its length.
+    if (clientId == 0 && authentication->getMode() != AuthenticationMode::password_protected)
     {
         Log::error(header(), "Client id is zero");
         return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::client_id_failure);
@@ -90,9 +103,10 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
             }
             else
             {
-                // Only accept the password as a message from unidentied clients.
-                // Normally string conversion is avoided throughout nexilis, but this one stays for obvious reasons.
-                if (authentication->isPassphrase(Util::convertToString(payload)))
+                // Only accept the password as a message from unidentified clients.
+                // The comparison runs over the stored password length only, so the
+                // response does not reveal the length of the correct password.
+                if (Util::constantTimeEquals(authentication->getPassphrase(), payload))
                 {
                     Log::info(header(), "Correct password by user ", user->getId());
                     user->setCommonAccess(true);

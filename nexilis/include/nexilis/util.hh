@@ -54,6 +54,22 @@ public:
     /// Convert nx_data to string.
     static std::string convertToString(nx_data bytes);
 
+    /// Compare two strings in constant time.
+    /// \param expected The secret value to compare against.
+    /// \param given The attacker-controlled value to check.
+    /// The execution time depends only on the length of the expected value, not on
+    /// the length or contents of the given value. A length mismatch is folded into
+    /// the result without branching, so a wrong-length password cannot reveal the
+    /// length of the correct one.
+    static bool constantTimeEquals(const std::string& expected, const std::string& given);
+
+    /// Compare a secret string against raw bytes in constant time.
+    /// \param expected The secret value to compare against.
+    /// \param given The attacker-controlled byte payload to check.
+    /// Same guarantees as the string overload, without converting the payload to
+    /// a string first (the conversion itself would scale with the input length).
+    static bool constantTimeEquals(const std::string& expected, const nx_data& given);
+
     /// Convert nx_data to number values.
     static std::string convertToNumbers(const nx_data& bytes);
 

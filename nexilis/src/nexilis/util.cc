@@ -27,6 +27,34 @@ std::string Util::convertToString(nx_data bytes)
     return result;
 }
 
+bool Util::constantTimeEquals(const std::string& expected, const std::string& given)
+{
+    uint8_t result = static_cast<uint8_t>(expected.size() != given.size());
+
+    for (size_t i = 0; i < expected.size(); ++i)
+    {
+        uint8_t expectedByte = static_cast<uint8_t>(expected[i]);
+        uint8_t givenByte = i < given.size() ? static_cast<uint8_t>(given[i]) : 0;
+        result |= static_cast<uint8_t>(expectedByte ^ givenByte);
+    }
+
+    return result == 0;
+}
+
+bool Util::constantTimeEquals(const std::string& expected, const nx_data& given)
+{
+    uint8_t result = static_cast<uint8_t>(expected.size() != given.size());
+
+    for (size_t i = 0; i < expected.size(); ++i)
+    {
+        uint8_t expectedByte = static_cast<uint8_t>(expected[i]);
+        uint8_t givenByte = i < given.size() ? static_cast<uint8_t>(given[i]) : 0;
+        result |= static_cast<uint8_t>(expectedByte ^ givenByte);
+    }
+
+    return result == 0;
+}
+
 std::string Util::convertToNumbers(const nx_data& bytes)
 {
     std::stringstream ss;

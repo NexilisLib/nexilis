@@ -28,6 +28,7 @@ add_executable(nexilis_tests
 
     src/command_spec_test.cc
     src/room_spec_test.cc
+    src/auth_spec_test.cc
 
     src/logging/logger_test.cc
     src/logging/log_test.cc

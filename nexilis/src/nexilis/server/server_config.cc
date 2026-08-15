@@ -1,4 +1,5 @@
 #include <nexilis/server/server_config.hh>
+#include <nexilis/util.hh>
 
 namespace nexilis::server
 {
@@ -10,7 +11,7 @@ void ServerConfig::setRootPassword(const std::string& password)
 
 bool ServerConfig::isRootPassword(const std::string& password)
 {
-    return m_rootPassword == password;
+    return Util::constantTimeEquals(m_rootPassword, password);
 }
 
 bool ServerConfig::hasRootPassword()

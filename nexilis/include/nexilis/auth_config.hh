@@ -2,6 +2,7 @@
 #define NEXILIS_AUTH_CONFIG_HH
 
 #include <nexilis/server/authentication_mode.hh>
+#include <nexilis/util.hh>
 
 #include <string>
 
@@ -47,7 +48,7 @@ public:
 
     bool isPassword(const std::string& password) const
     {
-        return password == m_password;
+        return Util::constantTimeEquals(m_password, password);
     }
 
     bool hasPassword() const
