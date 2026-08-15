@@ -30,7 +30,8 @@ namespace Nexilis
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_room_player3D_movement(IntPtr clientApi, IntPtr vector, float deltaTime);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern RawNxData nexilis_packet_room_player3D_movement_direct(IntPtr clientApi, float x, float y, float z, float deltatime);
+        public static extern RawNxData nexilis_packet_room_player3D_movement_direct(IntPtr clientApi,
+                float x, float y, float z, float deltatime);
     }
 
 }
