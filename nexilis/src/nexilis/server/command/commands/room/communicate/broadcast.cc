@@ -1,5 +1,6 @@
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/command/commands.hh>
+#include <nexilis/server/room_storage.hh>
 
 namespace nexilis::server
 {
@@ -15,6 +16,14 @@ CommandResult ServerImpl::room_communicate_broadcast(const DefaultArgs& args)
         Log::error("User not currently in room!");
         return CommandResult::error;
     }
+
+    auto* room = RoomStorage::getRoomById(user.getRoomId());
+    if (!room)
+    {
+        Log::error("Cannot find room for broadcast!");
+        return CommandResult::error;
+    }
+    room->addBroadcast(user.getId(), messageData);
 
     std::map<std::string, boost::json::value> params{
             {"id", boost::json::value(user.getId())},

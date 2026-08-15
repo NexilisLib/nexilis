@@ -14,7 +14,8 @@ Room::Room(const RoomData& data)
 
 Room::Room(Room&& other)
     : BaseRoom(std::move(other)),
-      m_clientIds(std::move(other.m_clientIds))
+      m_clientIds(std::move(other.m_clientIds)),
+      m_broadcasts(std::move(other.m_broadcasts))
 {
 }
 
@@ -23,6 +24,7 @@ Room& Room::operator=(Room&& other)
     if (this != &other)
     {
         m_clientIds = std::move(other.m_clientIds);
+        m_broadcasts = std::move(other.m_broadcasts);
         BaseRoom::operator=(std::move(other));
     }
     return *this;
@@ -55,6 +57,11 @@ void Room::leaveRoom(uint64_t userId)
                                      [&userId](uint64_t id)
                                      { return userId == id; }),
                       m_clientIds.end());
+}
+
+void Room::addBroadcast(uint64_t clientId, const std::string& message)
+{
+    m_broadcasts.emplace_back(Broadcast{clientId, message});
 }
 
 } // namespace nexilis::server

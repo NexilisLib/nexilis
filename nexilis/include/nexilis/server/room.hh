@@ -14,6 +14,15 @@ namespace nexilis::server
 class Room : public BaseRoom
 {
 public:
+    /// A broadcast message that has been sent in the room.
+    struct Broadcast
+    {
+        /// The id of the user that sent the message.
+        uint64_t clientId = 0;
+        /// The payload of the message.
+        std::string message = "";
+    };
+
     /// Constructor.
     explicit Room(const RoomData& roomData);
 
@@ -51,8 +60,20 @@ public:
         return m_clientIds;
     }
 
+    /// Store a broadcast message in the room.
+    /// \param clientId The id of the user that sent the message.
+    /// \param message The payload of the message.
+    void addBroadcast(uint64_t clientId, const std::string& message);
+
+    /// Get all broadcast messages that have been sent in the room.
+    const std::vector<Broadcast>& getBroadcasts() const
+    {
+        return m_broadcasts;
+    }
+
 private:
     std::vector<uint64_t> m_clientIds;
+    std::vector<Broadcast> m_broadcasts;
 };
 
 } // namespace nexilis::server
