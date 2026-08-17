@@ -158,9 +158,10 @@ void UDPServer::receiveFromClients()
             // clang-format off
             if (!handledMessage->getUser()->isBoostUDPSet())
             {
-                handledMessage->getUser()->setBoostUDPSend([this](const nx_data& bytes)
+                auto senderEndpoint = m_remoteEndpoint;
+                handledMessage->getUser()->setBoostUDPSend([this, senderEndpoint](const nx_data& bytes)
                 {
-                    if (m_socket.send_to(boost::asio::buffer(bytes), m_remoteEndpoint) == 0)
+                    if (m_socket.send_to(boost::asio::buffer(bytes), senderEndpoint) == 0)
                     {
                         Log::error("Failed to send message to client");
                     }

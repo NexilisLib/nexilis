@@ -15,6 +15,8 @@ User::User(User&& other) noexcept
       m_username(std::move(other.m_username)),
       m_roomId(std::move(other.m_roomId)),
       m_boostTCPSendToClient(std::move(other.m_boostTCPSendToClient)),
+      m_boostUDPSendToClient(std::move(other.m_boostUDPSendToClient)),
+      m_unixStreamSendToClient(std::move(other.m_unixStreamSendToClient)),
       m_hasRootAccess(std::move(other.m_hasRootAccess)),
       m_hasCommonAccess(std::move(other.m_hasCommonAccess))
 {
@@ -29,6 +31,8 @@ User& User::operator=(User&& other) noexcept
         m_username = std::move(other.m_username);
         m_roomId = std::move(other.m_roomId);
         m_boostTCPSendToClient = std::move(other.m_boostTCPSendToClient);
+        m_boostUDPSendToClient = std::move(other.m_boostUDPSendToClient);
+        m_unixStreamSendToClient = std::move(other.m_unixStreamSendToClient);
         m_hasRootAccess = std::move(other.m_hasRootAccess);
         m_hasCommonAccess = std::move(other.m_hasCommonAccess);
 
