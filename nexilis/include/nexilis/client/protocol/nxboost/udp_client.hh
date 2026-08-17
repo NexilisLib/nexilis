@@ -7,7 +7,11 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 
+#include <future>
+#include <memory>
+#include <mutex>
 #include <thread>
+#include <unordered_map>
 
 namespace nexilis::client::nxboost
 {
@@ -53,10 +57,8 @@ public:
     /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
     void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
-    std::future<void> sendMessageAsync(const nx_data&) override
-    {
-        return std::future<void>();
-    }
+    /// ClientProtocol::sendMessageAsync(const nx_data&) implementation.
+    std::future<void> sendMessageAsync(const nx_data& message) override;
 
 private:
     void receiveLoop();
@@ -71,6 +73,9 @@ private:
     std::vector<char> m_receiveBuffer;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
     boost::asio::ip::udp::endpoint m_sendEndpoint;
+
+    std::unordered_map<uint64_t, std::shared_ptr<std::promise<void>>> m_pendingSends;
+    std::shared_ptr<std::mutex> m_pendingSendsMutex;
 };
 
 } // namespace nexilis::client::nxboost

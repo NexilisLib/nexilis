@@ -16,7 +16,8 @@ UDPClient::UDPClient(ClientAPI& clientApi)
       m_ioContext(std::make_unique<boost::asio::io_context>()),
       m_mutex(std::make_unique<std::mutex>()),
       m_socket(*m_ioContext),
-      m_receiveBuffer(NEXILIS_BUFFER)
+      m_receiveBuffer(NEXILIS_BUFFER),
+      m_pendingSendsMutex(std::make_shared<std::mutex>())
 {
 }
 
@@ -37,7 +38,9 @@ UDPClient::UDPClient(UDPClient&& other)
       m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer)),
       m_remoteEndpoint(std::move(other.m_remoteEndpoint)),
-      m_sendEndpoint(std::move(other.m_sendEndpoint))
+      m_sendEndpoint(std::move(other.m_sendEndpoint)),
+      m_pendingSends(std::move(other.m_pendingSends)),
+      m_pendingSendsMutex(std::move(other.m_pendingSendsMutex))
 {
     other.m_ioContext = nullptr;
     other.m_mutex = nullptr;
@@ -64,6 +67,8 @@ UDPClient& UDPClient::operator=(UDPClient&& other)
         m_receiveBuffer = std::move(other.m_receiveBuffer);
         m_remoteEndpoint = std::move(other.m_remoteEndpoint);
         m_sendEndpoint = std::move(other.m_sendEndpoint);
+        m_pendingSends = std::move(other.m_pendingSends);
+        m_pendingSendsMutex = std::move(other.m_pendingSendsMutex);
 
         other.m_ioContext = nullptr;
         other.m_mutex = nullptr;
@@ -150,6 +155,24 @@ void UDPClient::stop()
         Log::debug("BoostUDPClient receive message thread stopped");
         m_receiveMessageThread.join();
     }
+
+    if (m_pendingSendsMutex)
+    {
+        std::lock_guard<std::mutex> pending_send_lock(*m_pendingSendsMutex);
+        for (auto& pair : m_pendingSends)
+        {
+            try
+            {
+                pair.second->set_exception(
+                        std::make_exception_ptr(std::runtime_error("Connection closed")));
+            }
+            catch (...)
+            {
+            }
+        }
+        m_pendingSends.clear();
+    }
+
     Log::debug("BoostUDPClient stopped");
 }
 
@@ -206,6 +229,81 @@ void UDPClient::sendMessage(const nx_data& payload)
 void UDPClient::sendMessage(const nx_data& payload, const std::function<void()>& callback)
 {
     sendMessageWithCallback(payload, callback);
+}
+
+std::future<void> UDPClient::sendMessageAsync(const nx_data& message)
+{
+    if (m_stopped->load())
+    {
+        std::promise<void> promise;
+        promise.set_exception(
+                std::make_exception_ptr(std::runtime_error("Client is stopped")));
+        return promise.get_future();
+    }
+
+    if (!m_socket.is_open())
+    {
+        std::promise<void> promise;
+        promise.set_exception(
+                std::make_exception_ptr(std::runtime_error("Socket is not open")));
+        return promise.get_future();
+    }
+
+    // Extract message ID (second 8 bytes) for tracking.
+    uint64_t messageId = 0;
+    if (message.size() >= 16)
+    {
+        std::memcpy(&messageId, message.data() + 8, sizeof(uint64_t));
+    }
+
+    auto promise = std::make_shared<std::promise<void>>();
+    auto future = promise->get_future();
+
+    if (messageId != 0)
+    {
+        std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+        m_pendingSends[messageId] = promise;
+    }
+
+    // Capture a copy of the message for the thread.
+    auto messageCopy = std::make_shared<nx_data>(message);
+
+    std::thread([this, messageCopy, messageId]()
+                {
+        try
+        {
+            size_t bytes_sent = m_socket.send_to(
+                    boost::asio::buffer(*messageCopy), m_sendEndpoint);
+            Log::debug("AsyncSent ", bytes_sent, " bytes to server");
+
+            if (messageId != 0)
+            {
+                std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                auto it = m_pendingSends.find(messageId);
+                if (it != m_pendingSends.end())
+                {
+                    it->second->set_value();
+                    m_pendingSends.erase(it);
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            Log::error("Async send failed: ", e.what());
+            if (messageId != 0)
+            {
+                std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                auto it = m_pendingSends.find(messageId);
+                if (it != m_pendingSends.end())
+                {
+                    it->second->set_exception(std::current_exception());
+                    m_pendingSends.erase(it);
+                }
+            }
+        } })
+            .detach();
+
+    return future;
 }
 
 } // namespace nexilis::client::nxboost

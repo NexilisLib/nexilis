@@ -435,13 +435,19 @@ std::future<void> TCPClient::sendMessageAsync(const nx_data& message)
     auto promise = std::make_shared<std::promise<void>>();
     auto future = promise->get_future();
 
+    // Send the message (this will trigger async write)
+    if (!send(message))
+    {
+        Log::error(header(), "Async send failed synchronously");
+        promise->set_exception(
+                std::make_exception_ptr(std::runtime_error("Send failed")));
+        return future;
+    }
+
     {
         std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
         m_pendingSends[messageId] = promise;
     }
-
-    // Send the message (this will trigger async write)
-    send(message);
 
     return future;
 }
