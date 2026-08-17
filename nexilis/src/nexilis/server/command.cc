@@ -476,45 +476,42 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
 
 bool Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
 {
-    auto check = [&protocol](bool v)
+    auto trySend = [&data, &user](Protocol::Type type) -> bool
     {
-        if (!v)
+        switch (type)
         {
-            Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
+            case Protocol::Type::BOOST_TCP_SERVER:
+                return user.boostTCPSend(data);
+            case Protocol::Type::BOOST_UDP_SERVER:
+                return user.boostUDPSend(data);
+            case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
+                return user.unixStreamSend(data);
+            default:
+                return false;
         }
-        return v;
     };
 
-    switch (protocol.getType())
+    if (trySend(protocol.getType()))
     {
-        case Protocol::Type::BOOST_TCP_SERVER:
-        {
-            return check(user.boostTCPSend(data));
-        }
-        case Protocol::Type::BOOST_UDP_SERVER:
-        {
-            return check(user.boostUDPSend(data));
-        }
-        case Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER:
-        {
-            return check(user.unixStreamSend(data));
-        }
-
-        case Protocol::Type::BOOST_TCP_CLIENT:
-        case Protocol::Type::BOOST_UDP_CLIENT:
-        case Protocol::Type::AF_INET_TCP_CLIENT:
-        case Protocol::Type::AF_INET_UDP_CLIENT:
-        case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
-        case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
-            Log::error("This function cannot be called with client protocol");
-            return false;
-
-        default:
-        {
-            Log::error("Cannot send messages using (", protocol.typeToString(protocol.getType()), ")");
-            return false;
-        }
+        return true;
     }
+
+    static const Protocol::Type allServerProtocols[] = {
+            Protocol::Type::BOOST_TCP_SERVER,
+            Protocol::Type::BOOST_UDP_SERVER,
+            Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER,
+    };
+
+    for (auto fallbackType : allServerProtocols)
+    {
+        if (fallbackType == protocol.getType())
+            continue;
+        if (trySend(fallbackType))
+            return true;
+    }
+
+    Log::error("Failed to send message to client via any protocol");
+    return false;
 }
 
 std::string roomActionToString(RoomCommandType::Root root, uint8_t action)

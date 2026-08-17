@@ -70,6 +70,7 @@ private:
     boost::asio::ip::udp::socket m_socket;
     std::vector<char> m_receiveBuffer;
     boost::asio::ip::udp::endpoint m_remoteEndpoint;
+    boost::asio::ip::udp::endpoint m_sendEndpoint;
 };
 
 } // namespace nexilis::client::nxboost

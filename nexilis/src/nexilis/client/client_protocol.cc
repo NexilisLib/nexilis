@@ -100,7 +100,30 @@ void ClientProtocol::start(Protocol::Type type)
 {
     if (m_api->isInitialized())
     {
-        Log::error(header(), "Password already sent using another protocol!");
+        Log::debug(header(), "Password already sent using another protocol, waiting for ready");
+        switch (type)
+        {
+            case Protocol::Type::BOOST_TCP_CLIENT:
+                getClientAPI()->waitUntilBoostTCPReady();
+                break;
+            case Protocol::Type::BOOST_UDP_CLIENT:
+                getClientAPI()->waitUntilBoostUDPReady();
+                break;
+            case Protocol::Type::AF_INET_TCP_CLIENT:
+                getClientAPI()->waitUntilInetTCPReady();
+                break;
+            case Protocol::Type::AF_INET_UDP_CLIENT:
+                getClientAPI()->waitUntilInetUDPReady();
+                break;
+            case Protocol::Type::AF_UNIX_SOCK_STREAM_CLIENT:
+                getClientAPI()->waitUntilUnixStreamReady();
+                break;
+            case Protocol::Type::AF_UNIX_SOCK_DGRAM_CLIENT:
+                getClientAPI()->waitUntilUnixDgramReady();
+                break;
+            default:
+                break;
+        }
         return;
     }
 

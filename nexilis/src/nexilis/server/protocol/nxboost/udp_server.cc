@@ -1,5 +1,6 @@
 #include <nexilis/logger/log.hh>
 #include <nexilis/server/command/command.hh>
+#include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/nxboost/udp_server.hh>
 
 #include <boost/asio/ip/address.hpp>
@@ -40,7 +41,7 @@ UDPServer::UDPServer(UDPServer&& other)
       m_socket(std::move(other.m_socket)),
       m_receiveBuffer(std::move(other.m_receiveBuffer)),
       m_ioContextThread(std::move(other.m_ioContextThread)),
-      m_receiveThread(std::move(other.m_ioContextThread))
+      m_receiveThread(std::move(other.m_receiveThread))
 {
 }
 
@@ -137,8 +138,6 @@ void UDPServer::stop()
 
 void UDPServer::receiveFromClients()
 {
-    std::lock_guard<std::mutex> lock(*m_mutex);
-
     while (m_socket.is_open())
     {
         try
@@ -155,10 +154,16 @@ void UDPServer::receiveFromClients()
 
             auto handledMessage = getMessageHandler().readMessage(address, received_message, &getSettings());
 
-            // clang-format off
+            if (!handledMessage || !handledMessage->getUser())
+            {
+                Log::error(header(), "Received invalid message or null user");
+                continue;
+            }
+
             if (!handledMessage->getUser()->isBoostUDPSet())
             {
                 auto senderEndpoint = m_remoteEndpoint;
+                // clang-format off
                 handledMessage->getUser()->setBoostUDPSend([this, senderEndpoint](const nx_data& bytes)
                 {
                     if (m_socket.send_to(boost::asio::buffer(bytes), senderEndpoint) == 0)
@@ -166,12 +171,20 @@ void UDPServer::receiveFromClients()
                         Log::error("Failed to send message to client");
                     }
                 });
+                // clang-format on
             }
-            // clang-format on
+
             auto msg_type = handledMessage->getType();
 
             if (msg_type == BaseMessage::Type::auth_message)
             {
+                auto auth_ptr = static_cast<AuthMessage*>(handledMessage.get());
+                CommandResult passCommand = getCommand().read(
+                        auth_ptr->getData()[0], *auth_ptr->getUser(), *this, auth_ptr->getMessageId());
+                if (passCommand != CommandResult::success)
+                {
+                    Log::error(header(), "UDP auth failed");
+                }
             }
             else if (msg_type == BaseMessage::Type::message)
             {
