@@ -126,6 +126,8 @@ void UDPClient::stop()
     std::unique_lock<std::mutex> lock(*m_mutex);
     if (m_socket.is_open())
     {
+        m_socket.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
+
         if (m_socket.cancel(ec))
         {
             Log::error("Error cancelling socket: ", ec.message());
@@ -181,6 +183,17 @@ void UDPClient::receiveLoop()
     while (m_socket.is_open())
     {
         std::size_t receivedBytes = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+
+        if (m_stopped->load())
+        {
+            break;
+        }
+
+        if (receivedBytes == 0)
+        {
+            continue;
+        }
+
         Log::info("Received bytes: ", receivedBytes);
 
         auto byteVector = Util::convertToByteVector(m_receiveBuffer.data(), receivedBytes);

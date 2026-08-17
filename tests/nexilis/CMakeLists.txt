@@ -36,6 +36,7 @@ add_executable(nexilis_tests
 
     src/protocol/protocol_manager_test.cc
     src/protocol/boost_tcp_test.cc
+    src/protocol/boost_udp_test.cc
     src/protocol/protocol_test.cc
 )
 

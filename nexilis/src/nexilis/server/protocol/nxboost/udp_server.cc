@@ -112,6 +112,7 @@ void UDPServer::stop()
 
     if (m_socket.is_open())
     {
+        m_socket.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
         if (m_socket.close(ec))
         {
             Log::error("Error closing socket: ", ec.message());
@@ -145,6 +146,16 @@ void UDPServer::receiveFromClients()
             m_receiveBuffer.resize(NEXILIS_BUFFER);
 
             size_t bytes_received = m_socket.receive_from(boost::asio::buffer(m_receiveBuffer), m_remoteEndpoint);
+
+            if (m_stopped->load())
+            {
+                break;
+            }
+
+            if (bytes_received == 0)
+            {
+                continue;
+            }
 
             std::string address = m_remoteEndpoint.address().to_string();
             Log::info("Received from ", address, bytes_received, " bytes.", " Data: ", m_receiveBuffer.data());
