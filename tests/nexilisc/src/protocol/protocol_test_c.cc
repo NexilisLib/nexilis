@@ -9,8 +9,7 @@
 #include <nexilisc/client/protocol/boost_tcp_client_c.h>
 #include <nexilisc/server/protocol/boost_tcp_server_c.h>
 
-// TODO C API
-#include <nexilis/server/room_storage.hh>
+#include <nexilisc/server/room_storage_c.h>
 
 static nexilis_ProtocolManagerC* protocol_manager = nullptr;
 
@@ -212,7 +211,7 @@ TEST_F(BoostTCPC, ProtocolTestBoostTCPClientConnected)
     EXPECT_TRUE(this->is_connected(this->client));
 }
 
-template <typename ProtocolTestType, nexilis::RoomData::Context RoomContext>
+template <typename ProtocolTestType, nexilis_RoomContext RoomContext>
 class ProtocolRoomTestC : public ProtocolTestType
 {
 protected:
@@ -222,16 +221,13 @@ protected:
         this->createSettings();
         this->createServer();
 
-        auto room = nexilis::server::Room(nexilis::RoomData(
-                0,
-                "RoomTestRoom",
-                nexilis::Util::getRandomUint64(),
-                RoomContext));
-
-        auto id = room.getId();
-        nexilis::server::RoomStorage::add(std::move(room));
-        EXPECT_TRUE(nexilis::server::RoomStorage::contains(id));
-        EXPECT_TRUE(nexilis::server::RoomStorage::getRoomById(id) != nullptr);
+        nexilis_RoomData* room_data = nexilis_room_data_create(0, "RoomTestRoom", RoomContext, 10);
+        uint64_t id = nexilis_room_data_get_id(room_data);
+        nexilis_server_room_storage_add(room_data);
+        EXPECT_TRUE(nexilis_server_room_storage_contains(id));
+        auto* room = nexilis_server_room_storage_get_room_by_id(id);
+        EXPECT_TRUE(room != nullptr);
+        delete room;
 
         this->serverStart();
         this->createDefaultServerData();
@@ -241,10 +237,127 @@ protected:
     }
 };
 
-using RoomBoostTCP2DTestC = ProtocolRoomTestC<BoostTCPC, nexilis::RoomData::Context::_2D>;
+using RoomBoostTCP2DTestC = ProtocolRoomTestC<BoostTCPC, ROOM_CONTEXT_2D>;
 
 TEST_F(RoomBoostTCP2DTestC, ProtocolTestBoostTCPClientConnected)
 {
     this->clientStart();
     EXPECT_TRUE(this->is_connected(this->client));
+}
+
+class RoomStorageTestC : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        nexilis_server_room_storage_clear();
+    }
+
+    void TearDown() override
+    {
+        nexilis_server_room_storage_clear();
+    }
+};
+
+TEST_F(RoomStorageTestC, AddRoom)
+{
+    nexilis_RoomData* data = nexilis_room_data_create(0, "TestRoom", ROOM_CONTEXT_2D, 10);
+    uint64_t id = nexilis_room_data_get_id(data);
+
+    nexilis_server_room_storage_add(data);
+    EXPECT_TRUE(nexilis_server_room_storage_contains(id));
+    EXPECT_EQ(nexilis_server_room_storage_get_all_rooms_count(), 1u);
+}
+
+TEST_F(RoomStorageTestC, ContainsReturnsFalseForUnknownId)
+{
+    EXPECT_FALSE(nexilis_server_room_storage_contains(999999));
+}
+
+TEST_F(RoomStorageTestC, GetRoomByIdReturnsNullptrForUnknownId)
+{
+    nexilis_ServerRoom* room = nexilis_server_room_storage_get_room_by_id(999999);
+    EXPECT_EQ(room, nullptr);
+}
+
+TEST_F(RoomStorageTestC, GetRoomByIdReturnsRoom)
+{
+    nexilis_RoomData* data = nexilis_room_data_create(10, "LookupRoom", ROOM_CONTEXT_3D, 10);
+    uint64_t id = nexilis_room_data_get_id(data);
+    nexilis_server_room_storage_add(data);
+
+    nexilis_ServerRoom* room = nexilis_server_room_storage_get_room_by_id(id);
+    ASSERT_NE(room, nullptr);
+    delete room;
+}
+
+TEST_F(RoomStorageTestC, GetAllRoomsCount)
+{
+    EXPECT_EQ(nexilis_server_room_storage_get_all_rooms_count(), 0u);
+
+    nexilis_server_room_storage_add(nexilis_room_data_create(0, "Room1", ROOM_CONTEXT_2D, 10));
+    nexilis_server_room_storage_add(nexilis_room_data_create(0, "Room2", ROOM_CONTEXT_3D, 10));
+    EXPECT_EQ(nexilis_server_room_storage_get_all_rooms_count(), 2u);
+}
+
+TEST_F(RoomStorageTestC, GetRoomAtReturnsRoom)
+{
+    nexilis_server_room_storage_add(nexilis_room_data_create(0, "IndexedRoom", ROOM_CONTEXT_2D, 10));
+
+    nexilis_ServerRoom* room = nexilis_server_room_storage_get_room_at(0);
+    ASSERT_NE(room, nullptr);
+    delete room;
+}
+
+TEST_F(RoomStorageTestC, GetRoomAtReturnsNullptrForOutOfBounds)
+{
+    nexilis_ServerRoom* room = nexilis_server_room_storage_get_room_at(0);
+    EXPECT_EQ(room, nullptr);
+}
+
+TEST_F(RoomStorageTestC, ClearRemovesAllRooms)
+{
+    nexilis_server_room_storage_add(nexilis_room_data_create(0, "Room1", ROOM_CONTEXT_2D, 10));
+    nexilis_server_room_storage_add(nexilis_room_data_create(0, "Room2", ROOM_CONTEXT_3D, 10));
+    EXPECT_EQ(nexilis_server_room_storage_get_all_rooms_count(), 2u);
+
+    nexilis_server_room_storage_clear();
+    EXPECT_EQ(nexilis_server_room_storage_get_all_rooms_count(), 0u);
+}
+
+TEST_F(RoomStorageTestC, JoinAndLeaveRoom)
+{
+    nexilis_RoomData* data = nexilis_room_data_create(0, "JoinRoom", ROOM_CONTEXT_2D, 10);
+    uint64_t id = nexilis_room_data_get_id(data);
+    nexilis_server_room_storage_add(data);
+
+    nexilis_ServerRoom* room = nexilis_server_room_storage_get_room_by_id(id);
+    ASSERT_NE(room, nullptr);
+
+    nexilis_server_room_join(room, 100);
+    EXPECT_TRUE(nexilis_server_room_contains(room, 100));
+    EXPECT_EQ(nexilis_server_room_get_client_count(room), 1u);
+
+    nexilis_server_room_join(room, 200);
+    EXPECT_EQ(nexilis_server_room_get_client_count(room), 2u);
+
+    nexilis_server_room_leave(room, 100);
+    EXPECT_FALSE(nexilis_server_room_contains(room, 100));
+    EXPECT_EQ(nexilis_server_room_get_client_count(room), 1u);
+
+    delete room;
+}
+
+TEST_F(RoomStorageTestC, RoomContainsReturnsFalseForAbsentUser)
+{
+    nexilis_RoomData* data = nexilis_room_data_create(0, "ContainsRoom", ROOM_CONTEXT_2D, 10);
+    uint64_t id = nexilis_room_data_get_id(data);
+    nexilis_server_room_storage_add(data);
+
+    nexilis_ServerRoom* room = nexilis_server_room_storage_get_room_by_id(id);
+    ASSERT_NE(room, nullptr);
+
+    EXPECT_FALSE(nexilis_server_room_contains(room, 999));
+
+    delete room;
 }

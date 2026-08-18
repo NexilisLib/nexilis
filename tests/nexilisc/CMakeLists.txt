@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(nexilis_c_tests)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(POLICY CMP0144)
     cmake_policy(SET CMP0144 NEW)
 endif()
