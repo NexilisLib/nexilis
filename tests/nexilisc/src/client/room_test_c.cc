@@ -1,0 +1,176 @@
+#include <gtest/gtest.h>
+
+#include <nexilisc/client/client_api_c.h>
+#include <nexilisc/client/client_config_c.h>
+#include <nexilisc/client/client_session_c.h>
+#include <nexilisc/client/room_c.h>
+#include <nexilisc/client/rooms_collection.h>
+#include <nexilisc/room_data_c.h>
+
+#include <cstdlib>
+#include <cstring>
+
+class RoomTest_c : public ::testing::Test
+{
+protected:
+    nexilis_ClientConfigC* client_config = nullptr;
+    nexilis_ClientAPI* client_api = nullptr;
+    nexilis_RoomData* room_data = nullptr;
+    nexilis_Room* room = nullptr;
+
+    void SetUp() override
+    {
+        client_config = nexilis_client_config_create();
+        client_api = nexilis_client_api_create(client_config);
+        room_data = nexilis_room_data_create(100, "TestRoom", ROOM_CONTEXT_3D, 10);
+        room = nexilis_room_create(room_data, nullptr);
+    }
+
+    void TearDown() override
+    {
+        if (room)
+            nexilis_room_destroy(room);
+        if (room_data)
+            nexilis_room_data_destroy(room_data);
+        if (client_api)
+            nexilis_client_api_destroy(client_api);
+        if (client_config)
+            nexilis_client_config_destroy(client_config);
+    }
+
+    nexilis_ClientSession* makeSession(uint64_t id)
+    {
+        return nexilis_client_session_create(id, client_api);
+    }
+};
+
+TEST_F(RoomTest_c, CreateAndDestroy)
+{
+    ASSERT_NE(room, nullptr);
+    EXPECT_EQ(nexilis_room_get_client_amount(room), 0u);
+}
+
+TEST_F(RoomTest_c, GetId)
+{
+    uint64_t expected_id = nexilis_room_data_get_id(room_data);
+    EXPECT_EQ(nexilis_room_get_id(room), expected_id);
+}
+
+TEST_F(RoomTest_c, AddClient)
+{
+    nexilis_ClientSession* client = makeSession(10);
+    nexilis_room_add_client(room, client);
+    EXPECT_EQ(nexilis_room_get_client_amount(room), 1u);
+}
+
+TEST_F(RoomTest_c, AddMultipleClients)
+{
+    nexilis_ClientSession* c1 = makeSession(10);
+    nexilis_ClientSession* c2 = makeSession(20);
+    nexilis_room_add_client(room, c1);
+    nexilis_room_add_client(room, c2);
+    EXPECT_EQ(nexilis_room_get_client_amount(room), 2u);
+}
+
+TEST_F(RoomTest_c, RemoveClient)
+{
+    nexilis_ClientSession* c1 = makeSession(10);
+    nexilis_ClientSession* c2 = makeSession(20);
+    nexilis_room_add_client(room, c1);
+    nexilis_room_add_client(room, c2);
+
+    nexilis_room_remove_client(room, 10);
+    EXPECT_EQ(nexilis_room_get_client_amount(room), 1u);
+}
+
+TEST_F(RoomTest_c, GetClients)
+{
+    nexilis_ClientSession* c1 = makeSession(10);
+    nexilis_room_add_client(room, c1);
+
+    size_t num_clients = 0;
+    nexilis_ClientSession** clients = nexilis_room_get_clients(room, &num_clients);
+    ASSERT_NE(clients, nullptr);
+    EXPECT_EQ(num_clients, 1u);
+
+    nexilis_room_free_client_array(clients, num_clients);
+}
+
+TEST_F(RoomTest_c, GetClientsEmpty)
+{
+    size_t num_clients = 99;
+    nexilis_ClientSession** clients = nexilis_room_get_clients(room, &num_clients);
+    EXPECT_EQ(clients, nullptr);
+    EXPECT_EQ(num_clients, 0u);
+}
+
+TEST_F(RoomTest_c, CommunicationCreateAndPayload)
+{
+    nexilis_ClientSession* sender = makeSession(10);
+    nexilis_Communication* comm = nexilis_communication_create("hello world", sender);
+    ASSERT_NE(comm, nullptr);
+
+    const char* payload = nexilis_communication_get_payload(comm);
+    ASSERT_NE(payload, nullptr);
+    EXPECT_STREQ(payload, "hello world");
+    free((void*)payload);
+
+    nexilis_communication_destroy(comm);
+}
+
+TEST_F(RoomTest_c, CommunicationAddMessage)
+{
+    nexilis_ClientSession* sender = makeSession(10);
+    nexilis_Communication* comm = nexilis_communication_create("test message", sender);
+    ASSERT_NE(comm, nullptr);
+
+    nexilis_room_add_message(room, comm);
+    EXPECT_NE(nexilis_communication_get_id(comm), 0u);
+}
+
+TEST_F(RoomTest_c, CommunicationCreateDestroy)
+{
+    nexilis_ClientSession* sender = makeSession(10);
+    nexilis_Communication* comm = nexilis_communication_create("test", sender);
+    ASSERT_NE(comm, nullptr);
+
+    const char* payload = nexilis_communication_get_payload(comm);
+    EXPECT_STREQ(payload, "test");
+    free((void*)payload);
+
+    nexilis_communication_destroy(comm);
+}
+
+TEST_F(RoomTest_c, CommunicationGetClient)
+{
+    nexilis_ClientSession* sender = makeSession(10);
+    nexilis_Communication* comm = nexilis_communication_create("msg", sender);
+
+    const nexilis_ClientSession* retrieved = nexilis_communication_get_client(comm);
+    ASSERT_NE(retrieved, nullptr);
+
+    nexilis_communication_destroy(comm);
+}
+
+TEST_F(RoomTest_c, CommunicationCreateNullSender)
+{
+    nexilis_Communication* comm = nexilis_communication_create("test", nullptr);
+    EXPECT_EQ(comm, nullptr);
+}
+
+TEST_F(RoomTest_c, CommunicationCreateNullPayload)
+{
+    nexilis_ClientSession* sender = makeSession(10);
+    nexilis_Communication* comm = nexilis_communication_create(nullptr, sender);
+    EXPECT_EQ(comm, nullptr);
+}
+
+TEST_F(RoomTest_c, DestroyNullSafe)
+{
+    nexilis_room_destroy(nullptr);
+}
+
+TEST_F(RoomTest_c, CommunicationDestroyNullSafe)
+{
+    nexilis_communication_destroy(nullptr);
+}
