@@ -31,6 +31,15 @@ add_executable(nexilis_tests
     src/room_history_spec_test.cc
     src/auth_spec_test.cc
 
+    src/nx_class_test.cc
+    src/json_test.cc
+    src/room_data_test.cc
+    src/command_type_test.cc
+    src/types_test.cc
+    src/movement_test.cc
+    src/object_test.cc
+    src/util_test.cc
+
     src/logging/logger_test.cc
     src/logging/log_test.cc
 
