@@ -311,6 +311,16 @@ nx_data ClientImpl::room_player3d_movement(ClientAPI& api, Vector3f movement, fl
     return id;
 }
 
+nx_data ClientImpl::room_player3d_shoot(ClientAPI& api, uint64_t targetId, float damage)
+{
+    auto id = _Packet::clientIdentification(api);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::shoot));
+    emplaceAll(id, targetId, damage);
+    return id;
+}
+
 nx_data ClientImpl::room_object3d_create(ClientAPI& api, Vector3f position, Vector3f dimensions, const std::string& filePath)
 {
     auto id = _Packet::clientIdentification(api);

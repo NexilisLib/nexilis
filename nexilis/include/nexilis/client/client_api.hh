@@ -58,6 +58,13 @@ public:
         uint64_t m_roomId = 0;
     };
 
+    struct DamageEvent
+    {
+        uint64_t target_id = 0;
+        float damage = 0.0f;
+        float new_health = 0.0f;
+    };
+
     class ClientAPIData
     {
     public:
@@ -74,6 +81,8 @@ public:
               m_currentlyActiveRooms(std::move(other.m_currentlyActiveRooms)),
               m_messageIds(std::move(other.m_messageIds)),
               m_callbacks(std::move(other.m_callbacks)),
+              m_pendingDamageEvents(std::move(other.m_pendingDamageEvents)),
+              m_damageMutex(std::move(other.m_damageMutex)),
               m_roomsMutex(std::move(other.m_roomsMutex))
         {
             if (!other.m_roomsMutex)
@@ -92,6 +101,8 @@ public:
                 m_currentlyActiveRooms = std::move(other.m_currentlyActiveRooms);
                 m_messageIds = std::move(other.m_messageIds);
                 m_callbacks = std::move(other.m_callbacks);
+                m_pendingDamageEvents = std::move(other.m_pendingDamageEvents);
+                m_damageMutex = std::move(other.m_damageMutex);
                 m_roomsMutex = std::move(other.m_roomsMutex);
 
                 if (!other.m_roomsMutex)
@@ -163,6 +174,18 @@ public:
             return m_roomsMutex;
         }
 
+        void pushDamageEvent(DamageEvent event)
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            m_pendingDamageEvents.push_back(std::move(event));
+        }
+
+        std::vector<DamageEvent> consumeDamageEvents()
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            return std::move(m_pendingDamageEvents);
+        }
+
     private:
         /// Is the server aware of the client, is "Packet" initialized.
         bool m_isInitialized = false;
@@ -178,6 +201,10 @@ public:
 
         /// Currently existing callbacks.
         std::vector<std::pair<uint64_t, std::function<void()>>> m_callbacks;
+
+        /// Pending damage events.
+        std::vector<DamageEvent> m_pendingDamageEvents;
+        std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
         std::unique_ptr<std::mutex> m_roomsMutex;
@@ -305,6 +332,12 @@ public:
     /// \param room_id The room to query.
     /// \param my_id The local client id to exclude from results.
     std::vector<RemotePlayerSnapshot> getRemotePlayersSnapshot(uint64_t room_id, uint64_t my_id);
+
+    /// Consume all pending damage events (thread-safe).
+    std::vector<DamageEvent> consumeDamageEvents()
+    {
+        return m_clientAPIData.consumeDamageEvents();
+    }
 
     /// Let the program wait until nexilis has created all the rooms.
     std::function<void()> waitUntilRoomsCreated(std::promise<void>& future, const uint16_t max_attempts = 50, const uint16_t timeout = 100);

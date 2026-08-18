@@ -15,7 +15,9 @@ Room::Room(const RoomData& data)
 Room::Room(Room&& other)
     : BaseRoom(std::move(other)),
       m_clientIds(std::move(other.m_clientIds)),
-      m_broadcasts(std::move(other.m_broadcasts))
+      m_broadcasts(std::move(other.m_broadcasts)),
+      m_playerHealth(std::move(other.m_playerHealth)),
+      m_defaultHealth(other.m_defaultHealth)
 {
 }
 
@@ -25,6 +27,8 @@ Room& Room::operator=(Room&& other)
     {
         m_clientIds = std::move(other.m_clientIds);
         m_broadcasts = std::move(other.m_broadcasts);
+        m_playerHealth = std::move(other.m_playerHealth);
+        m_defaultHealth = other.m_defaultHealth;
         BaseRoom::operator=(std::move(other));
     }
     return *this;
@@ -62,6 +66,32 @@ void Room::leaveRoom(uint64_t userId)
 void Room::addBroadcast(uint64_t clientId, const std::string& message)
 {
     m_broadcasts.emplace_back(Broadcast{clientId, message});
+}
+
+float Room::getPlayerHealth(uint64_t clientId) const
+{
+    auto it = m_playerHealth.find(clientId);
+    if (it != m_playerHealth.end())
+        return it->second;
+    return m_defaultHealth;
+}
+
+void Room::damagePlayer(uint64_t clientId, float damage)
+{
+    auto it = m_playerHealth.find(clientId);
+    if (it != m_playerHealth.end())
+    {
+        it->second = std::max(0.0f, it->second - damage);
+    }
+    else
+    {
+        m_playerHealth[clientId] = m_defaultHealth - damage;
+    }
+}
+
+void Room::resetPlayerHealth(uint64_t clientId)
+{
+    m_playerHealth[clientId] = m_defaultHealth;
 }
 
 } // namespace nexilis::server

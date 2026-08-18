@@ -44,7 +44,8 @@ public:
     {
         position = 0,
         dimension = 1,
-        movement = 2
+        movement = 2,
+        shoot = 3
     };
 
     enum class ObjectType : uint8_t

@@ -7,6 +7,8 @@
 #include <nexilis/room_data.hh>
 #include <nexilis/server/user.hh>
 
+#include <unordered_map>
+
 namespace nexilis::server
 {
 
@@ -71,9 +73,20 @@ public:
         return m_broadcasts;
     }
 
+    /// Get the health of a player. Returns default health if not yet tracked.
+    float getPlayerHealth(uint64_t clientId) const;
+
+    /// Apply damage to a player. Clamps to 0.
+    void damagePlayer(uint64_t clientId, float damage);
+
+    /// Reset a player's health to default.
+    void resetPlayerHealth(uint64_t clientId);
+
 private:
     std::vector<uint64_t> m_clientIds;
     std::vector<Broadcast> m_broadcasts;
+    std::unordered_map<uint64_t, float> m_playerHealth;
+    float m_defaultHealth = 100.0f;
 };
 
 } // namespace nexilis::server

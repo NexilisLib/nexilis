@@ -56,6 +56,8 @@ std::string RoomCommandType::PlayerTypeToString(RoomCommandType::PlayerType play
             return "dimension";
         case RoomCommandType::PlayerType::movement:
             return "movement";
+        case RoomCommandType::PlayerType::shoot:
+            return "shoot";
         default:
             Log::error("Player2DTypeToString no type found!");
             return "";

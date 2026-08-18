@@ -160,6 +160,9 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     else if (type == "player_3D")
     {
         float x = 0.0f, y = 0.0f, z = 0.0f;
+        uint64_t target_id = 0;
+        float damage = 0.0f, new_health = 0.0f;
+
         if (json.contains("x"))
         {
             x = static_cast<float>(json.at("x").as_double());
@@ -172,7 +175,19 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         {
             z = static_cast<float>(json.at("z").as_double());
         }
-        return std::make_unique<RoomPlayer3DCommand>(action, client_id, x, y, z);
+        if (json.contains("target_id"))
+        {
+            target_id = Util::toUint64(json.at("target_id"));
+        }
+        if (json.contains("damage"))
+        {
+            damage = static_cast<float>(json.at("damage").as_double());
+        }
+        if (json.contains("new_health"))
+        {
+            new_health = static_cast<float>(json.at("new_health").as_double());
+        }
+        return std::make_unique<RoomPlayer3DCommand>(action, client_id, x, y, z, target_id, damage, new_health);
     }
     else if (type == "object_2D")
     {

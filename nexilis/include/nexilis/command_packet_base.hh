@@ -178,6 +178,11 @@ public:
             {
                 return Impl::room_player3d_movement(std::forward<Args>(args)...);
             }
+            template <typename... Args>
+            static auto shoot(Args&&... args)
+            {
+                return Impl::room_player3d_shoot(std::forward<Args>(args)...);
+            }
         };
 
         struct Object3D
