@@ -3,10 +3,27 @@
 
 #include <nexilis/protocol.hh>
 
+#include <type_traits>
 #include <vector>
 
 namespace nexilis
 {
+
+namespace detail
+{
+
+template <typename T, typename = void>
+struct has_get_type : std::false_type
+{
+};
+
+template <typename T>
+struct has_get_type<T, std::void_t<decltype(std::declval<T>().getType())>>
+    : std::is_same<decltype(std::declval<T>().getType()), Protocol::Type>
+{
+};
+
+} // namespace detail
 
 class ProtocolManager
 {
@@ -46,11 +63,15 @@ public:
         size_t m_id;
     };
 
+    /// Create a new protocol and register it.
+    /// The type T must either derive from Protocol or have a getType() method
+    /// that returns Protocol::Type.
     template <typename T, typename... Args>
     T createProtocol(Args&&... args)
     {
-        static_assert(std::is_base_of<Protocol, T>::value,
-                      "Type must be derived class of nexilis::Protocol");
+        static_assert(detail::has_get_type<T>::value,
+                      "Type must derive from nexilis::Protocol or have a "
+                      "getType() method returning Protocol::Type");
 
         // This is little hacky. I'd much rather prefer if this was std::move call.
         // However this would require that the parameters cannot be references.
@@ -62,6 +83,34 @@ public:
         m_items.emplace_back(ProtocolData(protocol.getType()));
 
         return protocol;
+    }
+
+    /// Get the number of registered protocols.
+    size_t getProtocolCount() const
+    {
+        return m_items.size();
+    }
+
+    /// Check if a protocol with the given id exists.
+    bool hasProtocol(size_t id) const;
+
+    /// Check if a protocol with the given type exists.
+    bool hasProtocolType(Protocol::Type type) const;
+
+    /// Find a protocol data by id. Returns nullptr if not found.
+    const ProtocolData* findById(size_t id) const;
+
+    /// Find all protocol data entries matching the given type.
+    std::vector<const ProtocolData*> findByType(Protocol::Type type) const;
+
+    std::vector<ProtocolData>::const_iterator begin() const
+    {
+        return m_items.cbegin();
+    }
+
+    std::vector<ProtocolData>::const_iterator end() const
+    {
+        return m_items.cend();
     }
 
 private:

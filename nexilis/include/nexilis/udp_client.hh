@@ -2,6 +2,7 @@
 #define NEXILIS_UDP_CLIENT_HH
 
 #include <nexilis/client/protocol/nxboost/udp_client.hh>
+#include <nexilis/protocol.hh>
 
 namespace nexilis
 {
@@ -23,6 +24,12 @@ public:
 
     /// Deleted copy assignment operator.
     UDPClient& operator=(const UDPClient&) = delete;
+
+    /// Get the Protocol::Type.
+    Protocol::Type getType() const
+    {
+        return Protocol::Type::BOOST_UDP_CLIENT;
+    }
 
     /// Start running the UDP client.
     void start();

@@ -2,6 +2,7 @@
 #define NEXILIS_TCP_CLIENT_HH
 
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
+#include <nexilis/protocol.hh>
 
 namespace nexilis
 {
@@ -18,10 +19,16 @@ public:
     /// Move assignment operator.
     TCPClient& operator=(TCPClient&& other) noexcept;
 
-    /// Start running nexilis client.
+    /// Get the Protocol::Type.
+    Protocol::Type getType() const
+    {
+        return Protocol::Type::BOOST_TCP_CLIENT;
+    }
+
+    /// Start running nexilis tcp client.
     void start();
 
-    /// Stop running nexilis client.
+    /// Stop running nexilis tcp client.
     void stop();
 
     /// Send nexilis message
