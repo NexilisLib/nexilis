@@ -49,19 +49,19 @@ public:
 
     bool operator<=(const Vector2<T>& rhs) const
     {
-        return x <= rhs.x && y <= rhs.y;
+        return !(rhs < *this);
     }
     bool operator>=(const Vector2<T>& rhs) const
     {
-        return x >= rhs.x && y >= rhs.y;
+        return !(*this < rhs);
     }
     bool operator<(const Vector2<T>& rhs) const
     {
-        return x < rhs.x && y < rhs.y;
+        return x < rhs.x || (x == rhs.x && y < rhs.y);
     }
     bool operator>(const Vector2<T>& rhs) const
     {
-        return x > rhs.x && y > rhs.y;
+        return rhs < *this;
     }
 
     template <typename V>
