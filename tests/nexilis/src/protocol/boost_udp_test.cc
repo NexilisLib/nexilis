@@ -27,7 +27,7 @@ protected:
 
         nexilis::client::ClientConfig server_data;
         server_data.setPassword("salasana");
-        server_data.setBoostUDP("127.0.0.1");
+        server_data.setBoostUDPAddress("127.0.0.1");
         server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
 
         api = std::make_unique<nexilis::client::ClientAPI>(server_data);

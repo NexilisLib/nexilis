@@ -85,7 +85,7 @@ public:
         return m_boostUDPServerAddress;
     }
 
-    void setBoostUDP(const std::string& serverAddress)
+    void setBoostUDPAddress(const std::string& serverAddress)
     {
         m_boostUDPServerAddress = serverAddress;
     }

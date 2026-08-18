@@ -125,7 +125,7 @@ void nexilis_client_config_set_boost_udp_address(nexilis_ClientConfigC* config, 
 {
     if (config && config->data && server_address)
     {
-        config->data->setBoostUDP(server_address);
+        config->data->setBoostUDPAddress(server_address);
     }
 }
 
