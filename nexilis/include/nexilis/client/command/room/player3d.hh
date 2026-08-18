@@ -69,7 +69,7 @@ public:
             }
             return ReadResult::command_execution;
         }
-        else if (m_action == "damage")
+        else if (m_action == "shoot")
         {
             ClientAPI::DamageEvent event;
             event.target_id = m_target_id;
