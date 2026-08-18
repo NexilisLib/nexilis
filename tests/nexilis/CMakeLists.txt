@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 project(nexilis_tests)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(POLICY CMP0144)
     cmake_policy(SET CMP0144 NEW)
+endif()
+
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
 endif()
 
 if (NEXILIS_IS_NIX)
@@ -23,31 +27,9 @@ print_nexilis_status()
 
 find_package(GTest REQUIRED)
 
-add_executable(nexilis_tests
-    src/main.cc
+file(GLOB_RECURSE NEXILIS_TEST_SOURCES CONFIGURE_DEPENDS "src/*.cc")
 
-    src/command_spec_test.cc
-    src/room_spec_test.cc
-    src/room_history_spec_test.cc
-    src/auth_spec_test.cc
-
-    src/nx_class_test.cc
-    src/json_test.cc
-    src/room_data_test.cc
-    src/command_type_test.cc
-    src/types_test.cc
-    src/movement_test.cc
-    src/object_test.cc
-    src/util_test.cc
-
-    src/logging/logger_test.cc
-    src/logging/log_test.cc
-
-    src/protocol/protocol_manager_test.cc
-    src/protocol/boost_tcp_test.cc
-    src/protocol/boost_udp_test.cc
-    src/protocol/protocol_test.cc
-)
+add_executable(nexilis_tests ${NEXILIS_TEST_SOURCES})
 
 target_link_libraries(nexilis_tests PRIVATE
     Nexilis::nexilis

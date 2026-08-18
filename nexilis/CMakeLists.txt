@@ -130,7 +130,7 @@ if (USE_SUBMODULES)
     # Build only the libraries we need
     foreach(lib ${BOOST_LIBS_TO_BUILD})
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost/libs/${lib}/CMakeLists.txt)
-           add_subdirectory(third-party/boost/libs/${lib})
+           add_subdirectory(third-party/boost/libs/${lib} SYSTEM)
         endif()
     endforeach()
 
