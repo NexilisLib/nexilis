@@ -1,9 +1,7 @@
 #ifndef NEXILIS_TCP_CLIENT_HH
 #define NEXILIS_TCP_CLIENT_HH
 
-#include <nexilis/client/client_api.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
-#include <nexilis/protocol_manager.hh>
 
 namespace nexilis
 {
@@ -12,7 +10,7 @@ class TCPClient
 {
 public:
     /// Constructor.
-    TCPClient(ProtocolManager* protocolManager, const std::string& ipAddress, const std::string& userName);
+    explicit TCPClient(client::ClientAPI& client_api);
 
     /// Move constructor.
     TCPClient(TCPClient&& other) noexcept;
@@ -37,15 +35,7 @@ public:
 
     nexilis::client::ProtocolStatus getProtocolStatus();
 
-    /// Get nexilis client API.
-    nexilis::client::ClientAPI& getClientAPI()
-    {
-        return m_clientAPI;
-    }
-
 private:
-    nexilis::ProtocolManager* m_protocolManager;
-    nexilis::client::ClientAPI m_clientAPI;
     nexilis::client::nxboost::TCPClient m_tcpClient;
 };
 

@@ -9,7 +9,7 @@
 namespace nexilis
 {
 
-std::thread startClient(TCPClient& tcp_client, std::vector<RoomInfo>& rooms, std::atomic<bool>& ready, std::mutex& mtx);
+std::thread startClient(client::ClientAPI& client_api, TCPClient& tcp_client, std::vector<RoomInfo>& rooms, std::atomic<bool>& ready, std::mutex& mtx);
 
 }
 

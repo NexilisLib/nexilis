@@ -4,32 +4,13 @@
 namespace nexilis
 {
 
-nexilis::client::ClientConfig getServerData(const std::string& ipAddress,
-                                            const std::string& password)
-{
-    nexilis::client::ClientConfig serverData;
-    serverData.setPassword(password);
-    serverData.setBoostTCPAddress(ipAddress);
-    serverData.setBoostUDP(ipAddress);
-    serverData.setMode(nexilis::server::AuthenticationMode::password_protected);
-    return serverData;
-}
-
-TCPClient::TCPClient(ProtocolManager* protocolManager,
-                     const std::string& ipAddress,
-                     const std::string& userName)
-    : m_protocolManager(protocolManager),
-      m_clientAPI(getServerData(ipAddress, userName)),
-      m_tcpClient(
-              m_protocolManager->createProtocol<nexilis::client::nxboost::TCPClient>(
-                      m_clientAPI))
+TCPClient::TCPClient(client::ClientAPI& client_api)
+    : m_tcpClient(client::nxboost::TCPClient(client_api))
 {
 }
 
 TCPClient::TCPClient(TCPClient&& other) noexcept
-    : m_protocolManager(std::move(other.m_protocolManager)),
-      m_clientAPI(std::move(other.m_clientAPI)),
-      m_tcpClient(std::move(other.m_tcpClient))
+    : m_tcpClient(std::move(other.m_tcpClient))
 {
 }
 
@@ -37,8 +18,6 @@ TCPClient& TCPClient::operator=(TCPClient&& other) noexcept
 {
     if (this != &other)
     {
-        m_clientAPI = std::move(other.m_clientAPI);
-        m_protocolManager = std::move(other.m_protocolManager);
         m_tcpClient = std::move(other.m_tcpClient);
     }
     return *this;
