@@ -48,19 +48,22 @@ ProtocolManager::ProtocolData& ProtocolManager::ProtocolData::operator=(Protocol
 bool ProtocolManager::hasProtocol(size_t id) const
 {
     return std::any_of(m_items.begin(), m_items.end(),
-                        [id](const ProtocolData& item) { return item.getId() == id; });
+                       [id](const ProtocolData& item)
+                       { return item.getId() == id; });
 }
 
 bool ProtocolManager::hasProtocolType(Protocol::Type type) const
 {
     return std::any_of(m_items.begin(), m_items.end(),
-                        [type](const ProtocolData& item) { return item.getType() == type; });
+                       [type](const ProtocolData& item)
+                       { return item.getType() == type; });
 }
 
 const ProtocolManager::ProtocolData* ProtocolManager::findById(size_t id) const
 {
     auto it = std::find_if(m_items.begin(), m_items.end(),
-                           [id](const ProtocolData& item) { return item.getId() == id; });
+                           [id](const ProtocolData& item)
+                           { return item.getId() == id; });
     return it != m_items.end() ? &(*it) : nullptr;
 }
 

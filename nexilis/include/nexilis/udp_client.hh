@@ -26,7 +26,7 @@ public:
     UDPClient& operator=(const UDPClient&) = delete;
 
     /// Get the Protocol::Type.
-    Protocol::Type getType() const
+    static Protocol::Type getType()
     {
         return Protocol::Type::BOOST_UDP_CLIENT;
     }

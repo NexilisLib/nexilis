@@ -3,7 +3,11 @@
 #include <nexilis/protocol.hh>
 #include <nexilis/protocol_manager.hh>
 #include <nexilis/server/server_config.hh>
+#include <nexilis/tcp_client.hh>
+#include <nexilis/udp_client.hh>
 
+#include <nexilis/client/client_api.hh>
+#include <nexilis/client/client_config.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 
@@ -41,4 +45,194 @@ TEST_F(ProtocolManagerTest, CreateProtocol_BoostTCPServer)
     EXPECT_EQ(boost_tcp_server.getSettings().getMode(), nexilis::server::AuthenticationMode::password_protected);
     EXPECT_EQ(boost_tcp_server.getSettings().getPassphrase(), "salasana");
     EXPECT_EQ(boost_tcp_server.getSettings().getRootPassword(), "root");
+}
+
+TEST_F(ProtocolManagerTest, CreateProtocol_RootTCPClient)
+{
+    nexilis::client::ClientConfig config;
+    config.setPassword("salasana");
+    config.setBoostTCPAddress("127.0.0.1");
+    config.setMode(nexilis::server::AuthenticationMode::password_protected);
+
+    nexilis::client::ClientAPI client_api(config);
+    auto tcp_client = manager.createProtocol<nexilis::TCPClient>(client_api);
+
+    EXPECT_EQ(tcp_client.getType(), nexilis::Protocol::Type::BOOST_TCP_CLIENT);
+}
+
+TEST_F(ProtocolManagerTest, CreateProtocol_RootUDPClient)
+{
+    nexilis::client::ClientConfig config;
+    config.setPassword("salasana");
+    config.setBoostUDPAddress("127.0.0.1");
+    config.setMode(nexilis::server::AuthenticationMode::password_protected);
+
+    nexilis::client::ClientAPI client_api(config);
+    auto udp_client = manager.createProtocol<nexilis::UDPClient>(client_api);
+
+    EXPECT_EQ(udp_client.getType(), nexilis::Protocol::Type::BOOST_UDP_CLIENT);
+}
+
+TEST_F(ProtocolManagerTest, GetProtocolCount_Empty)
+{
+    EXPECT_EQ(manager.getProtocolCount(), 0u);
+}
+
+TEST_F(ProtocolManagerTest, GetProtocolCount_AfterCreate)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    EXPECT_EQ(manager.getProtocolCount(), 1u);
+
+    manager.createProtocol<nexilis::server::af_unix::StreamServer>(settings, "/tmp/nexilis/stream");
+    EXPECT_EQ(manager.getProtocolCount(), 2u);
+}
+
+TEST_F(ProtocolManagerTest, HasProtocol_Found)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    ASSERT_EQ(manager.getProtocolCount(), 1u);
+    const auto* data = manager.findById(manager.begin()->getId());
+    ASSERT_NE(data, nullptr);
+    EXPECT_TRUE(manager.hasProtocol(data->getId()));
+}
+
+TEST_F(ProtocolManagerTest, HasProtocol_NotFound)
+{
+    EXPECT_FALSE(manager.hasProtocol(12345u));
+}
+
+TEST_F(ProtocolManagerTest, HasProtocolType_Found)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    EXPECT_TRUE(manager.hasProtocolType(nexilis::Protocol::Type::BOOST_TCP_SERVER));
+}
+
+TEST_F(ProtocolManagerTest, HasProtocolType_NotFound)
+{
+    EXPECT_FALSE(manager.hasProtocolType(nexilis::Protocol::Type::BOOST_UDP_SERVER));
+}
+
+TEST_F(ProtocolManagerTest, FindById_Found)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    auto server = manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    // The ProtocolData is stored with the id from getType() call during creation.
+    // We need to iterate to find the matching one since we don't have the id directly.
+    bool found = false;
+    for (const auto& item : manager)
+    {
+        if (item.getType() == nexilis::Protocol::Type::BOOST_TCP_SERVER)
+        {
+            const auto* data = manager.findById(item.getId());
+            ASSERT_NE(data, nullptr);
+            EXPECT_EQ(data->getType(), nexilis::Protocol::Type::BOOST_TCP_SERVER);
+            found = true;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(ProtocolManagerTest, FindById_NotFound)
+{
+    EXPECT_EQ(manager.findById(99999u), nullptr);
+}
+
+TEST_F(ProtocolManagerTest, FindByType_Found)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    auto results = manager.findByType(nexilis::Protocol::Type::BOOST_TCP_SERVER);
+
+    ASSERT_EQ(results.size(), 1u);
+    EXPECT_EQ(results[0]->getType(), nexilis::Protocol::Type::BOOST_TCP_SERVER);
+}
+
+TEST_F(ProtocolManagerTest, FindByType_NotFound)
+{
+    auto results = manager.findByType(nexilis::Protocol::Type::BOOST_UDP_SERVER);
+    EXPECT_TRUE(results.empty());
+}
+
+TEST_F(ProtocolManagerTest, FindByType_Multiple)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    manager.createProtocol<nexilis::server::af_unix::StreamServer>(settings, "/tmp/nexilis/stream");
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+
+    auto tcp_results = manager.findByType(nexilis::Protocol::Type::BOOST_TCP_SERVER);
+    EXPECT_EQ(tcp_results.size(), 2u);
+
+    auto unix_results = manager.findByType(nexilis::Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER);
+    EXPECT_EQ(unix_results.size(), 1u);
+}
+
+TEST_F(ProtocolManagerTest, Iterator_Empty)
+{
+    EXPECT_EQ(manager.begin(), manager.end());
+}
+
+TEST_F(ProtocolManagerTest, Iterator_NonEmpty)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    manager.createProtocol<nexilis::server::af_unix::StreamServer>(settings, "/tmp/nexilis/stream");
+
+    size_t count = 0;
+    for (const auto& item : manager)
+    {
+        EXPECT_NE(item.getType(), nexilis::Protocol::Type::UNKNOWN);
+        ++count;
+    }
+    EXPECT_EQ(count, 2u);
+}
+
+TEST_F(ProtocolManagerTest, ProtocolData_IdUniqueness)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    manager.createProtocol<nexilis::server::af_unix::StreamServer>(settings, "/tmp/nexilis/stream");
+
+    // Two creates should produce entries with different ids.
+    ASSERT_EQ(manager.getProtocolCount(), 2u);
+    auto it = manager.begin();
+    auto id1 = it->getId();
+    ++it;
+    auto id2 = it->getId();
+    EXPECT_NE(id1, id2);
 }

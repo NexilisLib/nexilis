@@ -20,7 +20,7 @@ public:
     TCPClient& operator=(TCPClient&& other) noexcept;
 
     /// Get the Protocol::Type.
-    Protocol::Type getType() const
+    static Protocol::Type getType()
     {
         return Protocol::Type::BOOST_TCP_CLIENT;
     }
