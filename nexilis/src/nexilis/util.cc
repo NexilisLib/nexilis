@@ -270,11 +270,16 @@ std::string Util::createString(const boost::json::value& ctx, const std::string&
 
 uint64_t Util::createUint64(const boost::json::value& ctx, const std::string& key)
 {
-    // clang-format off
-    return boostJsonValue<uint64_t>(
-            [&ctx, &key]() { return ctx.at(key).if_uint64(); },
-            [&ctx, &key]() { return static_cast<uint64_t>(ctx.at(key).as_uint64()); });
-    // clang-format on
+    const auto& val = ctx.at(key);
+    if (auto* u = val.if_uint64())
+    {
+        return *u;
+    }
+    if (auto* i = val.if_int64())
+    {
+        return static_cast<uint64_t>(*i);
+    }
+    throw std::runtime_error("Key does not exist or the value is of wrong type");
 }
 
 double Util::createDouble(const boost::json::value& ctx, const std::string& key)
