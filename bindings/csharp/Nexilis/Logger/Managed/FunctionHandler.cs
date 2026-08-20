@@ -10,6 +10,9 @@ namespace Nexilis.Logger
 
         // Delegate for the callback function
         private readonly Action<LogLevel, string> _function;
+
+        // Prevent GC of the native callback delegate
+        private readonly FunctionHandlerNative.NativeLogCallback _nativeCallback;
         public static Action<LogLevel, string> EmptyFunction = (level, message) => {};
         public bool isEmpty => _function == EmptyFunction;
 
@@ -20,9 +23,10 @@ namespace Nexilis.Logger
                 throw new ArgumentNullException(nameof(function));
 
             _function = function;
+            _nativeCallback = OnLogMessage;
 
             // Create the native function handler
-            _handlerPtr = FunctionHandlerNative.nexilis_logger_FunctionHandler_create(OnLogMessage);
+            _handlerPtr = FunctionHandlerNative.nexilis_logger_FunctionHandler_create(_nativeCallback);
             if (_handlerPtr == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to create native function handler.");
         }

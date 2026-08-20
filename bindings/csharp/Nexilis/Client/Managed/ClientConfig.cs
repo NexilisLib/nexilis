@@ -54,6 +54,15 @@ namespace Nexilis.Client
         }
 
         /// <summary>
+        /// Sets the authentication mode for the config.
+        /// </summary>
+        /// <param name="mode">The authentication mode (0=empty, 1=skip, 2=password_protected).</param>
+        public void SetMode(int mode)
+        {
+            ClientConfigNative.nexilis_client_config_set_mode(_configPtr, mode);
+        }
+
+        /// <summary>
         /// Sets the password for the config.
         /// </summary>
         /// <param name="password">The password to set.</param>

@@ -30,7 +30,11 @@ CommandResult ServerImpl::room_player3d_movement(const DefaultArgs& args)
                 [&mtx, movement_vector, &user, data, &protocol, &messageId](double progress)
             {
                 auto* room = RoomStorage::getRoomById(user.getRoomId());
-                assert(room);
+                if (!room)
+                {
+                    Log::warning("room_player3d_movement: room not found for user ", user.getRoomId());
+                    return;
+                }
 
                 double eased_x = Movement::easing(progress, movement_vector.x);
                 double eased_y = Movement::easing(progress, movement_vector.y);

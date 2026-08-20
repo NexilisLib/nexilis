@@ -21,6 +21,10 @@ void nexilis_boost_tcp_client_send_message(nexilis_BoostTCPClient* client, const
 void nexilis_boost_tcp_client_send_message_with_callback(nexilis_BoostTCPClient* client, const uint8_t message[], size_t message_size, void (*callback)(const uint8_t*, size_t));
 bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client);
 
+/// Runs the full startClient sequence: start, send clientId, wait for init, send rooms info.
+/// Returns true on success.
+bool nexilis_start_client(nexilis_ClientAPI* client_api, nexilis_BoostTCPClient* tcp_client);
+
 #ifdef __cplusplus
 }
 #endif

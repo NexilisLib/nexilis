@@ -82,6 +82,14 @@ namespace Nexilis.Client
         }
 
         /// <summary>
+        /// Runs the full startClient sequence: start, send clientId, wait for init, send rooms info.
+        /// </summary>
+        public bool StartClient(ClientAPI clientApi)
+        {
+            return BoostTCPClientNative.nexilis_start_client(clientApi.ClientApiPtr, _boostTcpClientPtr);
+        }
+
+        /// <summary>
         /// Stops the Boost TCP client.
         /// </summary>
         public void Stop()

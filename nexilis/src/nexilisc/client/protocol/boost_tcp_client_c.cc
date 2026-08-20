@@ -1,5 +1,9 @@
+#include <nexilis/client/packet.hh>
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilisc/client/protocol/boost_tcp_client_c.h>
+
+#include <chrono>
+#include <thread>
 
 struct nexilis_BoostTCPClient
 {
@@ -97,4 +101,31 @@ bool nexilis_boost_tcp_client_is_connected(nexilis_BoostTCPClient* client)
         return client->client->isConnected();
     }
     return false;
+}
+
+bool nexilis_start_client(nexilis_ClientAPI* client_api, nexilis_BoostTCPClient* tcp_client)
+{
+    if (!client_api || !client_api->api || !tcp_client || !tcp_client->client)
+    {
+        return false;
+    }
+
+    // 1. Start TCP client (connect + authenticate)
+    tcp_client->client->start();
+
+    // 2. Send clientId packet
+    auto clientIdPacket = nexilis::client::Packet::Get::General::clientId(*client_api->api);
+    tcp_client->client->sendMessage(clientIdPacket);
+
+    // 3. Wait for initialization
+    while (!client_api->api->isInitialized())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    // 4. Send rooms info request
+    auto roomsPacket = nexilis::client::Packet::Get::Info::rooms(*client_api->api);
+    tcp_client->client->sendMessage(roomsPacket);
+
+    return true;
 }

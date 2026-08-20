@@ -25,6 +25,10 @@ namespace Nexilis.Client
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_boost_tcp_client_send_message_with_callback(
                 IntPtr client, byte[] message, uint length, IntPtr callback);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool nexilis_start_client(IntPtr clientApi, IntPtr tcpClient);
     }
 }
 
