@@ -6,6 +6,9 @@ namespace Nexilis
     public static class PacketNative
     {
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_get_general_clientId(IntPtr clientApi);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_get_info_general(IntPtr clientApi);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_get_info_clients(IntPtr clientApi);

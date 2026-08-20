@@ -66,6 +66,11 @@ nx_data_c nexilis_packet_room_player3D_movement_direct(nexilis_ClientAPI* client
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(*client_api->api, nexilis::Vector3f(x, y, z), deltatime));
 }
 
+nx_data_c nexilis_packet_get_general_clientId(nexilis_ClientAPI* client_api)
+{
+    return convert_nx_data(nexilis::client::Packet::Get::General::clientId(*client_api->api));
+}
+
 nx_data_c nexilis_packet_get_info_general(nexilis_ClientAPI* client_api)
 {
     return convert_nx_data(nexilis::client::Packet::Get::Info::general(*client_api->api));

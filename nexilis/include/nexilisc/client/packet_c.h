@@ -14,6 +14,7 @@ extern "C"
 #endif
 
     // Info messages
+    nx_data_c nexilis_packet_get_general_clientId(nexilis_ClientAPI* client_api);
     nx_data_c nexilis_packet_get_info_general(nexilis_ClientAPI* client_api);
     nx_data_c nexilis_packet_get_info_clients(nexilis_ClientAPI* client_api);
     nx_data_c nexilis_packet_get_info_rooms(nexilis_ClientAPI* client_api);

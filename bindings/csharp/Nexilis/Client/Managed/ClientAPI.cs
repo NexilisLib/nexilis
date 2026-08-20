@@ -21,6 +21,14 @@ namespace Nexilis.Client
         public IntPtr ClientApiPtr => _clientApiPtr;
 
         /// <summary>
+        /// Is the server aware of the client, is the ClientAPI and Packet ready for use.
+        /// </summary>
+        public bool IsInitialized()
+        {
+            return ClientAPINative.nexilis_client_api_is_initialized(_clientApiPtr);
+        }
+
+        /// <summary>
         /// Get active rooms from the server.
         /// </summary>
         public RoomsCollection GetActiveRooms()

@@ -87,6 +87,15 @@ bool nexilis_client_api_is_unix_stream_ready(const nexilis_ClientAPI* client_api
     return false;
 }
 
+bool nexilis_client_api_is_initialized(const nexilis_ClientAPI* client_api)
+{
+    if (client_api && client_api->api)
+    {
+        return client_api->api->isInitialized();
+    }
+    return false;
+}
+
 void nexilis_client_api_wait_until_inet_udp_ready(nexilis_ClientAPI* client_api)
 {
     if (client_api && client_api->api)

@@ -17,6 +17,9 @@ namespace Nexilis.Client
         public static extern bool nexilis_client_api_is_boost_udp_ready(IntPtr client_api);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool nexilis_client_api_is_initialized(IntPtr client_api);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_client_api_wait_until_boost_tcp_ready(IntPtr client_api);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_client_api_wait_until_boost_udp_ready(IntPtr client_api);

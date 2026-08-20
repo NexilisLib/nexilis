@@ -8,6 +8,19 @@ namespace Nexilis
         static NxLogger _logger = new NxLogger("Packet");
         public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback) => _logger.Setup(logCallback);
 
+        public static NxData GetGeneralClientId(IntPtr clientApi)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_get_general_clientId(clientApi);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get general clientId.");
+                }
+                return NxData.Create(raw);
+            }, "GetGeneralClientId");
+        }
+
         public static NxData InfoRooms(IntPtr clientApi)
         {
             return NativeInterop.ExecuteSafe(() =>

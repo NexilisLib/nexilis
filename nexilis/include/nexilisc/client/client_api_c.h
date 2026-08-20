@@ -24,6 +24,8 @@ bool nexilis_client_api_is_boost_tcp_ready(const nexilis_ClientAPI* client_api);
 bool nexilis_client_api_is_boost_udp_ready(const nexilis_ClientAPI* client_api);
 bool nexilis_client_api_is_unix_dgram_ready(const nexilis_ClientAPI* client_api);
 bool nexilis_client_api_is_unix_stream_ready(const nexilis_ClientAPI* client_api);
+
+bool nexilis_client_api_is_initialized(const nexilis_ClientAPI* client_api);
 void nexilis_client_api_wait_until_inet_udp_ready(nexilis_ClientAPI* client_api);
 void nexilis_client_api_wait_until_inet_tcp_ready(nexilis_ClientAPI* client_api);
 void nexilis_client_api_wait_until_boost_tcp_ready(nexilis_ClientAPI* client_api);
