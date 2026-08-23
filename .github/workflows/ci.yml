@@ -158,3 +158,28 @@ jobs:
           cmake .. -DNEXILIS_IS_CI=1
           cmake --build .
           ./nexilis_c_tests
+
+  premake-tests:
+    name: Run Premake Tests
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt-get install -y \
+          g++
+
+      - name: Install premake5
+        run: |
+          curl -L -o /tmp/premake.tar.gz \
+            https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-linux.tar.gz
+          tar -xzf /tmp/premake.tar.gz -C /tmp
+          sudo install /tmp/premake5 /usr/local/bin/premake5
+          premake5 --version
+
+      - name: Run premake test
+        run: make test-premake
