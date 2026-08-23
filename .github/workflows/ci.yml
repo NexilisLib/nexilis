@@ -203,3 +203,32 @@ jobs:
           pip install ./scripts
           python scripts/pre_commit/env.py
           python scripts/pre_commit/run_examples.py
+
+  csharp-tests:
+    name: Run C# Bindings Tests
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt-get install -y \
+          cmake \
+          g++ \
+          libboost-json-dev \
+
+      - name: Build native libraries
+        run: |
+          cd nexilis
+          rm -rf build
+          cmake -B build
+          cmake --build build -- -j2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Run C# tests
+        run: dotnet test tests/CSharpBindings.Tests
