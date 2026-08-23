@@ -1,0 +1,3 @@
+[run]
+role = "client"
+requires = "unix_stream_server"

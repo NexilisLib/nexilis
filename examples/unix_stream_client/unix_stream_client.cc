@@ -9,19 +9,13 @@
 
 #include <iostream>
 
-nexilis::client::ClientConfig getServerData(const std::string& address, const std::string& username)
+nexilis::client::ClientConfig getServerData(const std::string& address)
 {
     nexilis::client::ClientConfig serverData;
     serverData.setPassword("salasana");
-    serverData.setUserName(username);
     serverData.setUnixStreamServerPath(address);
     serverData.setMode(nexilis::server::AuthenticationMode::password_protected);
     return serverData;
-}
-
-std::string randomClientName()
-{
-    return "client_" + nexilis::Util::getRandomString(5);
 }
 
 int main()
@@ -29,11 +23,15 @@ int main()
     nexilis::Log::startConsoleDebugging();
     nexilis::ProtocolManager protocol_manager;
 
-    auto client_name = randomClientName();
-    auto server_data = getServerData("/tmp/nexilis/stream", client_name);
+    auto server_data = getServerData("/tmp/nexilis/stream");
     auto client_api = nexilis::client::ClientAPI(server_data);
     auto unix_stream_client = protocol_manager.createProtocol<nexilis::client::af_unix::StreamClient>(client_api);
 
     unix_stream_client.start();
     std::cout << "Nexilisclient start called" << std::endl;
+
+    // Wait until the server has authenticated this client.
+    client_api.waitUntilUnixStreamReady();
+
+    unix_stream_client.stop();
 }

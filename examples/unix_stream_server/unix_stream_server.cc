@@ -4,7 +4,11 @@
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/runtime.hh>
 
+#include <chrono>
+#include <filesystem>
+#include <functional>
 #include <iostream>
+#include <thread>
 
 int main()
 {
@@ -17,7 +21,7 @@ int main()
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
 
-    // TODO automatically create /tmp/nexilis/stream
+    std::filesystem::create_directories("/tmp/nexilis");
     auto unix_stream_server = protocol_manager.createProtocol<nexilis::server::af_unix::StreamServer>(settings, "/tmp/nexilis/stream");
 
     unix_stream_server.start();
@@ -29,8 +33,6 @@ int main()
         std::cout << "Updating server" << std::endl;
         return true; });
 
-    auto server_runtime = std::thread([&condition, &f]()
-                                      { nexilis::server::runtime(condition, f, 1); });
-
-    server_runtime.detach();
+    // Block the main thread and keep serving until interrupted.
+    nexilis::server::runtime(condition, f, 1);
 }

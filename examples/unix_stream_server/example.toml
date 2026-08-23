@@ -1,0 +1,3 @@
+[run]
+role = "server"
+wait_for = "/tmp/nexilis/stream"

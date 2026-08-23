@@ -9,11 +9,12 @@ TEST_CPP_DIR   := tests/nexilis
 TEST_C_DIR     := tests/nexilisc
 TEST_CS_DIR    := tests/CSharpBindings.Tests
 PREMAKE_DIR    := tests/premake
+EXAMPLES_DIR   := examples
 PRE_COMMIT_DIR := scripts/pre_commit
 
 CSHARP_OUTPUT ?= $(CURDIR)/dist
 
-.PHONY: all install install-csharp test test-cpp test-c test-csharp test-premake pre-commit pre-commit-all clean clean-tests help
+.PHONY: all install install-csharp test test-cpp test-c test-csharp test-premake test-examples pre-commit pre-commit-all clean clean-tests help
 
 all: install
 
@@ -27,7 +28,7 @@ install-csharp:
 	@echo "Building and installing C# bindings..."
 	python3 scripts/install_csharp.py --input $(CURDIR)/$(LIB_DIR) --output $(CSHARP_OUTPUT)
 
-test: test-cpp test-c test-csharp test-premake
+test: test-cpp test-c test-csharp test-premake test-examples
 
 test-cpp:
 	@echo "Building C++ tests..."
@@ -57,6 +58,10 @@ test-premake:
 	@echo "Running premake test..."
 	$(PREMAKE_DIR)/bin/Debug/premake_test
 
+test-examples:
+	@echo "Building and running examples..."
+	cd $(PRE_COMMIT_DIR) && python3 run_examples.py
+
 pre-commit:
 	cd $(PRE_COMMIT_DIR) && python3 pre_commit.py --minimal
 
@@ -70,6 +75,7 @@ clean-tests:
 	rm -rf $(TEST_CPP_DIR)/build
 	rm -rf $(TEST_C_DIR)/build
 	rm -rf $(PREMAKE_DIR)/bin $(PREMAKE_DIR)/obj
+	rm -rf $(EXAMPLES_DIR)/*/build
 
 help:
 	@echo "Targets:"
@@ -80,7 +86,8 @@ help:
 	@echo "  test-c           Build and run C tests only"
 	@echo "  test-csharp      Build and run C# tests only"
 	@echo "  test-premake     Build with premake5 and run premake test"
+	@echo "  test-examples    Build and run all examples via the checker script"
 	@echo "  pre-commit       Run minimal pre-commit checks (format, best practices, cppcheck)"
 	@echo "  pre-commit-all   Run all pre-commit checks including tests"
 	@echo "  clean            Remove all build artifacts"
-	@echo "  clean-tests      Remove only test build artifacts"
+	@echo "  clean-tests      Remove only test and example build artifacts"

@@ -15,6 +15,7 @@ from test_runner import (
 from best_practises import process_all_files, read_aliases, get_constants_file_path
 from check_editorconfig import check_editorconfig
 from run_premake import build_and_run_premake
+from run_examples import run_examples_check
 
 
 def run_minimal_checks():
@@ -69,6 +70,12 @@ def run_tests():
     print(output)
     if not success:
         print("Premake test failed.")
+        sys.exit(1)
+
+    success, output = run_examples_check()
+    print(output)
+    if not success:
+        print("Examples check failed.")
         sys.exit(1)
 
 
