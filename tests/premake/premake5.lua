@@ -6,16 +6,19 @@ project("premake_test")
 kind("ConsoleApp")
 language("C++")
 files({ "premake_test.cc" })
+targetdir("bin/%{cfg.buildcfg}")
+objdir("obj/%{cfg.buildcfg}")
 linkoptions({
 	"-L../../nexilis/bin/Debug/",
-	"-L../../bindings/lua/bin/Debug/",
 	"-l:libnexilis-premake_d.so",
-	"-l:libnexilis-lua.a",
-	"-llua",
+	-- Find libnexilis-premake_d.so next to the executable.
+	"-Wl,-rpath,'$$ORIGIN'",
 })
+local boost_includes = os.matchdirs("../../nexilis/third-party/boost/libs/*/include")
+table.insert(boost_includes, "../../nexilis/third-party/boost/libs/numeric/conversion/include")
 includedirs({
 	"../../nexilis/include",
-	"/usr/include/lua5.2",
+	boost_includes,
 })
 
 postbuildcommands({

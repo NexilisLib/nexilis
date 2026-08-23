@@ -6,6 +6,7 @@ from run_premake import build_and_run_premake
 import os
 import subprocess
 import argparse
+import sys
 
 
 def install():
@@ -96,7 +97,11 @@ def main():
     if args.all or args.csharp:
         run_csharp_tests()
     if args.all or args.premake5:
-        build_and_run_premake()
+        success, output = build_and_run_premake()
+        print(output)
+        if not success:
+            print("Premake test failed.")
+            sys.exit(1)
 
     print("\nAll tests completed successfully!")
 

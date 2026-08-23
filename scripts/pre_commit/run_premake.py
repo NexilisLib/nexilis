@@ -39,7 +39,7 @@ def build_and_run_premake():
             env={"LD_LIBRARY_PATH": str(test_bin_dir)},
             check=False,
         )
-        if result is False:
+        if result.returncode != 0:
             output.append("=== Test Failed ===")
             output.append(result.stdout)
             output.append(result.stderr)

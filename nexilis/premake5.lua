@@ -21,6 +21,28 @@ linkoptions({
 	"-static-libgcc",
 })
 
+-- All boost submodule headers. Keeps every translation unit on the exact
+-- same boost version, no matter which system boost is installed.
+local boost_includes = os.matchdirs("third-party/boost/libs/*/include")
+-- Modules that live nested inside another module directory.
+table.insert(boost_includes, "third-party/boost/libs/numeric/conversion/include")
+
+-- Boost libraries with compiled sources (mirrors BOOST_LIBS_TO_BUILD
+-- in CMakeLists.txt).
+project("nexilis-boost")
+kind("StaticLib")
+language("C++")
+warnings("Off")
+pic("On")
+targetdir("bin/%{cfg.buildcfg}")
+objdir("obj/nexilis-boost/%{cfg.buildcfg}")
+includedirs(boost_includes)
+files({
+	"third-party/boost/libs/json/src/**.cpp",
+	"third-party/boost/libs/container/src/**.cpp",
+	"third-party/boost/libs/system/src/**.cpp",
+})
+
 project("nexilis-premake")
 kind("SharedLib")
 language("C++")
@@ -29,26 +51,7 @@ objdir("obj/%{cfg.buildcfg}")
 
 includedirs({
 	"include",
-
-	"third-party/boost/libs/static_assert/include",
-	"third-party/boost/libs/intrusive/include",
-	"third-party/boost/libs/endian/include",
-	"third-party/boost/libs/predef/include",
-	"third-party/boost/libs/mp11/include",
-	"third-party/boost/libs/winapi/include",
-	"third-party/boost/libs/core/include",
-	"third-party/boost/libs/move/include",
-	"third-party/boost/libs/container_hash/include",
-	"third-party/boost/libs/describe/include",
-	"third-party/boost/libs/container/include",
-	"third-party/boost/libs/variant/include",
-	"third-party/boost/libs/variant2/include",
-	"third-party/boost/libs/throw_exception/include",
-	"third-party/boost/libs/align/include",
-	"third-party/boost/libs/config/include",
-	"third-party/boost/libs/assert/include",
-	"third-party/boost/libs/system/include",
-	"third-party/boost/libs/json/include",
+	boost_includes,
 })
 
 files({
@@ -66,9 +69,7 @@ removefiles({
 })
 
 links({
-	-- If using system boost
-	"boost_system",
-	"boost_json",
+	"nexilis-boost",
 })
 
 -- Post-build message

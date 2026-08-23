@@ -48,5 +48,6 @@ def run_command(
         shell=shell,
         check=check,
         text=True,
+        errors="replace",
         capture_output=True,
     )

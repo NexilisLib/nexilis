@@ -6,9 +6,15 @@ import argparse
 from env import create_env_file, get_nexilis_root
 from format import format_all_files
 from cppcheck import run_cppcheck, get_nexilis_dirs
-from test_runner import install, run_cpp_tests, run_c_tests, run_csharp_tests
+from test_runner import (
+    install,
+    run_cpp_tests,
+    run_c_tests,
+    run_csharp_tests,
+)
 from best_practises import process_all_files, read_aliases, get_constants_file_path
 from check_editorconfig import check_editorconfig
+from run_premake import build_and_run_premake
 
 
 def run_minimal_checks():
@@ -58,6 +64,12 @@ def run_tests():
     run_cpp_tests()
     run_c_tests()
     run_csharp_tests()
+
+    success, output = build_and_run_premake()
+    print(output)
+    if not success:
+        print("Premake test failed.")
+        sys.exit(1)
 
 
 def main():

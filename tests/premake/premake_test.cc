@@ -1,5 +1,10 @@
+#include <chrono>
+#include <iostream>
+#include <thread>
+
 #include <nexilis/logger/log.hh>
 #include <nexilis/protocol_manager.hh>
+#include <nexilis/server/client_storage.hh>
 
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
@@ -32,5 +37,44 @@ int main()
     auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);
     client.start();
 
+    const auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (!client.isConnected() && std::chrono::steady_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    bool success = true;
+
+    if (protocol_manager.getProtocolCount() != 2)
+    {
+        std::cerr << "premake_test: expected 2 registered protocols, got "
+                  << protocol_manager.getProtocolCount() << std::endl;
+        success = false;
+    }
+
+    if (!client.isConnected())
+    {
+        std::cerr << "premake_test: client failed to connect" << std::endl;
+        success = false;
+    }
+
+    if (!server.hasActiveConnections())
+    {
+        std::cerr << "premake_test: server has no active connections" << std::endl;
+        success = false;
+    }
+
+    client.stop();
     std::this_thread::sleep_for(std::chrono::seconds(1));
+    server.stop();
+    nexilis::server::ClientStorage::clear();
+    nexilis::Log::stopLogging();
+
+    if (!success)
+    {
+        return 1;
+    }
+
+    std::cout << "premake_test: ok" << std::endl;
+    return 0;
 }
