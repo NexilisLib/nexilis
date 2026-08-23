@@ -38,7 +38,7 @@ public:
                 if (room->getId() == m_room_id)
                 {
                     Room::Communication newMessage(m_message, sender);
-                    auto message_id = newMessage.getId();
+                    [[maybe_unused]] auto message_id = newMessage.getId();
                     room->addMessage(std::move(newMessage));
 
                     assert(room->containsCommunication(message_id));
