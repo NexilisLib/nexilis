@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   scripts-linting:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install flake8
         run: pip install flake8
@@ -68,7 +68,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Run best_practices.py
         run: |
@@ -92,7 +92,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Run check_editorconfig.py
         run: python scripts/pre_commit/check_editorconfig.py
@@ -183,3 +183,23 @@ jobs:
 
       - name: Run premake test
         run: make test-premake
+
+  examples-check:
+    name: Build and Run Examples
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt-get install -y \
+          cmake \
+          g++ \
+          libboost-json-dev
+
+      - name: Build and run examples
+        run: |
+          pip install ./scripts
+          python scripts/pre_commit/env.py
+          python scripts/pre_commit/run_examples.py
