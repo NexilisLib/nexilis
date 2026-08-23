@@ -16,7 +16,7 @@ namespace Nexilis
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern void nexilis_waiter_destroy(IntPtr waiter);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.I1)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_waiter_is_valid(IntPtr waiter);
     }
 }

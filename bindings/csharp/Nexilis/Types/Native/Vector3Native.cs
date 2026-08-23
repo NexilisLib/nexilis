@@ -45,6 +45,7 @@ namespace Nexilis
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr nexilis_vector3f_deserialize(byte[] data);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_vector3f_is_valid(IntPtr vector_ptr);
     }
 

@@ -44,15 +44,19 @@ namespace Nexilis.Logger
         public static extern void nexilis_logger_critical(IntPtr logger, string message);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_logger_unset_level(IntPtr logger, int level);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_logger_set_level(IntPtr logger, int level);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_logger_get_level(IntPtr logger, int level);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_logger_set_minimum_level(IntPtr logger, int level);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]

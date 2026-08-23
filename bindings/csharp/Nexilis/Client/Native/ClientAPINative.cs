@@ -12,11 +12,14 @@ namespace Nexilis.Client
         public static extern void nexilis_client_api_destroy(IntPtr client);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_client_api_is_boost_tcp_ready(IntPtr client_api);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_client_api_is_boost_udp_ready(IntPtr client_api);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_client_api_is_initialized(IntPtr client_api);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]

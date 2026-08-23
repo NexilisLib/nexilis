@@ -20,6 +20,7 @@ namespace Nexilis.Client
         public static extern IntPtr nexilis_client_session_get_position_3D(IntPtr client);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_client_session_get_position_3D_values(IntPtr client, out float x, out float y, out float z);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
@@ -29,9 +30,11 @@ namespace Nexilis.Client
         public static extern void nexilis_client_session_move_assing(IntPtr dest, IntPtr src);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_client_session_equal(IntPtr lhs, IntPtr rhs);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool nexilis_client_session_not_equal(IntPtr lhs, IntPtr rhs);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
