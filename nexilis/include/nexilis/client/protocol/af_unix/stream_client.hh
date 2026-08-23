@@ -10,6 +10,8 @@
 
 #include <sys/un.h>
 
+#include <atomic>
+#include <future>
 #include <mutex>
 #include <thread>
 
@@ -57,6 +59,9 @@ public:
     /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
     void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
 
+    /// ClientProtocol::sendMessageAsync(const nx_data&) implementation.
+    std::future<void> sendMessageAsync(const nx_data& message) override;
+
 private:
     // Initialize sockets and stuff.
     void createSocket();
@@ -74,6 +79,7 @@ private:
     sockaddr_un m_serverAddr;
     std::thread m_receiveThread;
     std::unique_ptr<std::mutex> m_mutex;
+    std::unique_ptr<std::atomic<bool>> m_running;
 };
 
 } // namespace nexilis::client::af_unix

@@ -15,7 +15,8 @@ StreamClient::StreamClient(ClientAPI& clientApi)
     : NxClass("client::af_unix::StreamClient"),
       ClientProtocol(&clientApi),
       m_serverSocketPath(clientApi.getUnixStreamPath()),
-      m_mutex(std::make_unique<std::mutex>())
+      m_mutex(std::make_unique<std::mutex>()),
+      m_running(std::make_unique<std::atomic<bool>>(false))
 {
     createSocket();
     connectToServer();
@@ -23,14 +24,17 @@ StreamClient::StreamClient(ClientAPI& clientApi)
 
 StreamClient::~StreamClient()
 {
-    if (m_clientSocket == -1)
-    {
-        close(m_clientSocket);
-    }
+    stop();
 
     if (m_receiveThread.joinable())
     {
         m_receiveThread.join();
+    }
+
+    if (m_clientSocket != -1)
+    {
+        close(m_clientSocket);
+        m_clientSocket = -1;
     }
 }
 
@@ -42,7 +46,8 @@ StreamClient::StreamClient(StreamClient&& other)
       m_clientSocket(std::move(other.m_clientSocket)),
       m_serverAddr(std::move(other.m_serverAddr)),
       m_receiveThread(std::move(other.m_receiveThread)),
-      m_mutex(std::move(other.m_mutex))
+      m_mutex(std::move(other.m_mutex)),
+      m_running(std::move(other.m_running))
 {
 }
 
@@ -59,6 +64,7 @@ StreamClient& StreamClient::operator=(StreamClient&& other)
         m_serverAddr = std::move(other.m_serverAddr);
         m_receiveThread = std::move(other.m_receiveThread);
         m_mutex = std::move(other.m_mutex);
+        m_running = std::move(other.m_running);
     }
     return *this;
 }
@@ -112,13 +118,29 @@ void StreamClient::sendMessage(const nx_data& message, const std::function<void(
     sendMessageWithCallback(message, callback);
 }
 
+std::future<void> StreamClient::sendMessageAsync(const nx_data& message)
+{
+    std::promise<void> promise;
+    promise.set_value();
+    auto future = promise.get_future();
+
+    sendMessage(message);
+
+    return future;
+}
+
 void StreamClient::start()
 {
+    m_running->store(true);
     m_receiveThread = std::thread([this]()
                                   {
-        while (true)
+        while (m_running->load())
         {
             auto data = receiveMessage();
+            if (!m_running->load() || data.empty())
+            {
+                break;
+            }
             ClientProtocol::getClientAPI()->readMessage(data);
         } });
     ClientProtocol::start(getType());
@@ -126,23 +148,48 @@ void StreamClient::start()
 
 void StreamClient::stop()
 {
-    close(m_clientSocket);
+    if (m_running)
+    {
+        m_running->store(false);
+    }
+
+    // Unblock a blocking recv so the receive thread can exit.
+    if (m_clientSocket != -1)
+    {
+        shutdown(m_clientSocket, SHUT_RDWR);
+    }
 }
 
 nx_data StreamClient::receiveMessage()
 {
     std::lock_guard<std::mutex> lock(*m_mutex);
+
+    if (!m_running->load())
+    {
+        return nx_data{};
+    }
+
     // Receive buffer.
     nx_data receivedData(NEXILIS_BUFFER);
 
     // Receive data into buffer.
     ssize_t bytesRead = recv(m_clientSocket, receivedData.data(), receivedData.size(), 0);
 
-    if (bytesRead == -1)
+    if (bytesRead <= 0)
     {
-        perror("recv");
-        close(m_clientSocket);
-        m_clientSocket = -1;
+        if (bytesRead == -1)
+        {
+            perror("recv");
+        }
+
+        if (m_clientSocket != -1)
+        {
+            close(m_clientSocket);
+            m_clientSocket = -1;
+        }
+
+        receivedData.clear();
+        return receivedData;
     }
 
     receivedData.resize(bytesRead);

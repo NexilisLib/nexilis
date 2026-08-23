@@ -2,6 +2,8 @@
 
 #include <nexilis/nexilis_constants.hh>
 #include <nexilis/server/command/command.hh>
+#include <nexilis/server/command/command_result.hh>
+#include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 
 #include <sys/socket.h>
@@ -102,7 +104,7 @@ void StreamServer::bindSocket()
 
 void StreamServer::sendMessage(int clientSocket, const nx_data& message)
 {
-    ssize_t sentBytes = send(clientSocket, message.data(), sizeof(message), 0);
+    ssize_t sentBytes = send(clientSocket, message.data(), message.size(), 0);
 
     if (sentBytes == -1)
     {
@@ -154,13 +156,11 @@ std::string StreamServer::receiveMessage(int socket)
 
 void StreamServer::handleMessages()
 {
-    memset(m_buffer.data(), '\0', m_buffer.size());
-
     int clientSocket = accept(m_serverSocket, nullptr, nullptr);
     if (clientSocket == -1)
     {
         Log::error("Failed to accept connection");
-        close(m_serverSocket);
+        return;
     }
 
     while (true)
@@ -171,40 +171,47 @@ void StreamServer::handleMessages()
         {
             break;
         }
-        else
+
+        nx_data payload = Util::convertToByteVector(message);
+        auto handledMessage = getMessageHandler().readMessage("127.0.0.1", payload, &getSettings());
+
+        if (!handledMessage->getUser())
         {
-            nx_data payload = Util::convertToByteVector(message);
-            auto msg = getMessageHandler().readMessage("127.0.0.1", payload, &getSettings());
+            Log::error("Message from unauthorized client!");
+            break;
+        }
 
-            if (msg->getUser())
+        auto* user = handledMessage->getUser();
+        if (!user->isUnixStreamSet())
+        {
+            user->setUnixStreamSend([this, clientSocket](const nx_data& bytes)
+                                    { sendMessage(clientSocket, bytes); });
+        }
+
+        auto type = handledMessage->getType();
+
+        if (type == BaseMessage::Type::auth_message)
+        {
+            // Reply to the handshake so the client receives its client id.
+            auto msgPtr = static_cast<AuthMessage*>(handledMessage.get());
+            for (auto&& commandData : msgPtr->getData())
             {
-                auto handledMessage = getMessageHandler().readMessage(msg->getAddress(), payload, &getSettings());
-
-                if (!handledMessage->getUser()->isUnixStreamSet())
-                {
-                    handledMessage->getUser()->setUnixStreamSend([this, &clientSocket](const nx_data& bytes)
-                                                                 { sendMessage(clientSocket, bytes); });
-                }
-
-                auto type = handledMessage->getType();
-
-                if (type == BaseMessage::Type::message)
-                {
-                    auto msgPtr = static_cast<Message*>(handledMessage.get());
-                    CommandResult result = getCommand().read(msgPtr->getData(), *msgPtr->getUser(), *this, msgPtr->getMessageId());
-
-                    checkResult(result);
-
-                    if (result == CommandResult::success)
-                    {
-                        Log::info("Passed");
-                    }
-                }
-                // TODO
+                CommandResult result =
+                        getCommand().read(commandData, *user, *this, msgPtr->getMessageId());
+                checkResult(result);
             }
-            else
+        }
+        else if (type == BaseMessage::Type::message)
+        {
+            auto msgPtr = static_cast<Message*>(handledMessage.get());
+            CommandResult result =
+                    getCommand().read(msgPtr->getData(), *user, *this, msgPtr->getMessageId());
+
+            checkResult(result);
+
+            if (result == CommandResult::success)
             {
-                Log::error("Message from unauthorized client!");
+                Log::info("Passed");
             }
         }
     }
