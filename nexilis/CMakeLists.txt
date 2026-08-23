@@ -4,8 +4,8 @@ project(nexilis)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-# VERSION.txt versioning
-file(STRINGS "${CMAKE_SOURCE_DIR}/../VERSION.txt" PROJECT_VERSION_RAW)
+# VERSION.txt versioning (relative to this library so add_subdirectory works too)
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION.txt" PROJECT_VERSION_RAW)
 string(STRIP "${PROJECT_VERSION_RAW}" PROJECT_VERSION_RAW)
 string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[a-zA-Z0-9]+)?" VERSION_PARTS "${PROJECT_VERSION_RAW}")
 

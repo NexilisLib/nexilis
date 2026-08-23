@@ -214,6 +214,16 @@ def group_by_role(examples):
     return groups
 
 
+def _command_output_tail(error):
+    output = (getattr(error, "stdout", "") or "") + (
+        getattr(error, "stderr", "") or ""
+    )
+    lines = output.splitlines()
+    if not lines:
+        return ""
+    return "\n".join(lines[-25:])
+
+
 def verify_examples(examples):
     failures = []
 
@@ -222,8 +232,12 @@ def verify_examples(examples):
             example.build(jobs=os.cpu_count() or 1)
             print(f"[OK] Built {example.name}")
         except subprocess.CalledProcessError as error:
+            message = f"Build failed for '{example.name}': {error}"
+            tail = _command_output_tail(error)
+            if tail:
+                message += "\n" + tail
             print(f"[FAIL] Build failed for '{example.name}'")
-            failures.append(f"Build failed for '{example.name}': {error}")
+            failures.append(message)
         except (RuntimeError, ValueError) as error:
             print(f"[FAIL] Build failed for '{example.name}'")
             failures.append(f"Build failed for '{example.name}': {error}")
