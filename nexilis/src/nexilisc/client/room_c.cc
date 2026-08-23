@@ -135,18 +135,51 @@ void nexilis_room_add_message(nexilis_Room* room, nexilis_Communication* communi
 
 nexilis_Communication** nexilis_room_get_messages(const nexilis_Room* room, size_t* num_messages)
 {
-    if (room && room->room && num_messages)
+    if (!room || !room->room || !num_messages)
     {
-        const auto& messages = room->room->getMessages();
-        *num_messages = messages.size();
-        nexilis_Communication** message_array = (nexilis_Communication**)malloc(sizeof(nexilis_Communication*) * (*num_messages));
-        for (size_t i = 0; i < *num_messages; ++i)
-        {
-            message_array[i]->communication = new nexilis::client::Room::Communication(messages[i]);
-        }
-        return message_array;
+        return nullptr;
     }
-    return nullptr;
+
+    const auto& messages = room->room->getMessages();
+    *num_messages = messages.size();
+
+    if (*num_messages == 0)
+    {
+        return nullptr;
+    }
+
+    // Allocate array of pointers.
+    nexilis_Communication** message_array = static_cast<nexilis_Communication**>(
+            malloc(sizeof(nexilis_Communication*) * (*num_messages)));
+
+    // Copy each message to a new C struct pointer.
+    for (size_t i = 0; i < *num_messages; ++i)
+    {
+        message_array[i] = new nexilis_Communication();
+        message_array[i]->communication = new nexilis::client::Room::Communication(messages[i]);
+    }
+    return message_array;
+}
+
+void nexilis_room_free_message_array(nexilis_Communication** message_array, size_t num_messages)
+{
+    if (!message_array)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < num_messages; ++i)
+    {
+        if (message_array[i])
+        {
+            if (message_array[i]->communication)
+            {
+                delete message_array[i]->communication;
+            }
+            delete message_array[i];
+        }
+    }
+    free(message_array);
 }
 
 bool nexilis_room_contains_communication(const nexilis_Room* room, const nexilis_Communication* communication)

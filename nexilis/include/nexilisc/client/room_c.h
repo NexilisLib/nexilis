@@ -40,6 +40,7 @@ void nexilis_room_free_client_array(nexilis_ClientSession** client_array, size_t
 
 void nexilis_room_add_message(nexilis_Room* room, nexilis_Communication* communication);
 nexilis_Communication** nexilis_room_get_messages(const nexilis_Room* room, size_t* num_messages);
+void nexilis_room_free_message_array(nexilis_Communication** message_array, size_t num_messages);
 bool nexilis_room_contains_communication(const nexilis_Room* room, const nexilis_Communication* communication);
 bool nexilis_room_contains_communication_by_id(const nexilis_Room* room, uint64_t communication_id);
 

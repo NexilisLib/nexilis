@@ -101,5 +101,100 @@ namespace Nexilis.Tests
         {
             Assert.Throws<System.ArgumentNullException>(() => _room.AddClient(null));
         }
+
+        // --- Communication ---
+
+        [Fact]
+        public void CommunicationCreateAndPayload()
+        {
+            var sender = MakeSession(10);
+            using var comm = new Communication("hello world", sender);
+
+            // Ids are generated at construction time.
+            Assert.NotEqual(0ul, comm.GetId());
+            Assert.Equal("hello world", comm.GetPayload());
+        }
+
+        [Fact]
+        public void CommunicationCreateNullSenderThrows()
+        {
+            Assert.Throws<ArgumentNullException>(() => new Communication("test", null));
+        }
+
+        [Fact]
+        public void CommunicationCreateNullPayloadThrows()
+        {
+            var sender = MakeSession(10);
+            Assert.Throws<ArgumentException>(() => new Communication(null, sender));
+        }
+
+        [Fact]
+        public void CommunicationAddMessage()
+        {
+            var sender = MakeSession(10);
+            var comm = new Communication("test message", sender);
+
+            _room.AddMessage(comm);
+
+            Assert.NotEqual(0ul, comm.GetId());
+            Assert.True(_room.ContainsCommunication(comm.GetId()));
+        }
+
+        [Fact]
+        public void ContainsCommunication()
+        {
+            var sender = MakeSession(10);
+            using var comm = new Communication("msg", sender);
+
+            Assert.False(_room.ContainsCommunication(comm.GetId()));
+
+            var added = new Communication("added message", sender);
+            _room.AddMessage(added);
+            // Check by id: object equality is unreliable after the
+            // native move into the room.
+            Assert.True(_room.ContainsCommunication(added.GetId()));
+        }
+
+        [Fact]
+        public void GetMessages()
+        {
+            var sender = MakeSession(10);
+            _room.AddMessage(new Communication("first", sender));
+            _room.AddMessage(new Communication("second", sender));
+
+            var messages = _room.GetMessages();
+
+            Assert.Equal(2, messages.Count);
+
+            // GetMessages returns copies that the caller owns.
+            var payloads = new List<string>();
+            foreach (var message in messages)
+            {
+                using (message)
+                {
+                    payloads.Add(message.GetPayload());
+                }
+            }
+            payloads.Sort();
+            Assert.Equal(new List<string> { "first", "second" }, payloads);
+        }
+
+        [Fact]
+        public void GetMessagesEmpty()
+        {
+            Assert.Empty(_room.GetMessages());
+        }
+
+        [Fact]
+        public void CommunicationDisposeIsIdempotent()
+        {
+            var sender = MakeSession(10);
+            var comm = new Communication("test", sender);
+
+            comm.Dispose();
+            comm.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => comm.GetPayload());
+        }
     }
 }

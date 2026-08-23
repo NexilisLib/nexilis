@@ -21,6 +21,32 @@ namespace Nexilis
             }, "GetGeneralClientId");
         }
 
+        public static NxData InfoGeneral(IntPtr clientApi)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_get_info_general(clientApi);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get packet info general.");
+                }
+                return NxData.Create(raw);
+            }, "InfoGeneral");
+        }
+
+        public static NxData InfoClients(IntPtr clientApi)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_get_info_clients(clientApi);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get packet info clients.");
+                }
+                return NxData.Create(raw);
+            }, "InfoClients");
+        }
+
         public static NxData InfoRooms(IntPtr clientApi)
         {
             return NativeInterop.ExecuteSafe(() =>
@@ -59,12 +85,29 @@ namespace Nexilis
             }, "RoomManagementJoin");
         }
 
-        public static NxData Player3DPosition(IntPtr clientApi, Vector3<float> position)
+        public static NxData RoomManagementLeave(IntPtr clientApi)
         {
-            // TODO fix this
             return NativeInterop.ExecuteSafe(() =>
             {
-                return Packet.Player3DPositionDirect(clientApi, position.X, position.Y, position.Z);
+                var raw = PacketNative.nexilis_packet_room_management_leave(clientApi);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room management leave.");
+                }
+                return NxData.Create(raw);
+            }, "RoomManagementLeave");
+        }
+
+        public static NxData Player3DPosition(IntPtr clientApi, Vector3<float> position)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_room_player3D_position(clientApi, position.getNative().vec);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room player3D position.");
+                }
+                return NxData.Create(raw);
             }, "Player3DPosition");
         }
         public static NxData Player3DPositionDirect(IntPtr clientApi, float x, float y, float z)
@@ -79,9 +122,30 @@ namespace Nexilis
                 return NxData.Create(raw);
             }, "Player3DPositionDirect");
         }
+        public static NxData Player3DDimension(IntPtr clientApi, Vector3<float> dimensions)
+        {
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_room_player3D_dimension(clientApi, dimensions.getNative().vec);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room player3D dimension.");
+                }
+                return NxData.Create(raw);
+            }, "Player3DDimension");
+        }
+
         public static NxData Player3DMovement(IntPtr clientApi, Vector3<float> movement, float deltatime)
         {
-            return Player3DMovementDirect(clientApi, movement.X, movement.Y, movement.Z, deltatime);
+            return NativeInterop.ExecuteSafe(() =>
+            {
+                var raw = PacketNative.nexilis_packet_room_player3D_movement(clientApi, movement.getNative().vec, deltatime);
+                if (raw.data == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to get room player3D movement.");
+                }
+                return NxData.Create(raw);
+            }, "Player3DMovement");
         }
 
         public static NxData Player3DMovementDirect(IntPtr clientApi, float x, float y, float z, float deltatime)

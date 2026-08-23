@@ -165,6 +165,33 @@ TEST_F(RoomTest_c, CommunicationCreateNullPayload)
     EXPECT_EQ(comm, nullptr);
 }
 
+TEST_F(RoomTest_c, CommunicationGetMessages)
+{
+    nexilis_ClientSession* sender = makeSession(10);
+    nexilis_Communication* comm = nexilis_communication_create("hello", sender);
+    nexilis_room_add_message(room, comm);
+
+    size_t num_messages = 0;
+    nexilis_Communication** messages = nexilis_room_get_messages(room, &num_messages);
+    ASSERT_NE(messages, nullptr);
+    EXPECT_EQ(num_messages, 1u);
+
+    const char* payload = nexilis_communication_get_payload(messages[0]);
+    ASSERT_NE(payload, nullptr);
+    EXPECT_STREQ(payload, "hello");
+    free((void*)payload);
+
+    nexilis_room_free_message_array(messages, num_messages);
+}
+
+TEST_F(RoomTest_c, CommunicationGetMessagesEmpty)
+{
+    size_t num_messages = 99;
+    nexilis_Communication** messages = nexilis_room_get_messages(room, &num_messages);
+    EXPECT_EQ(messages, nullptr);
+    EXPECT_EQ(num_messages, 0u);
+}
+
 TEST_F(RoomTest_c, DestroyNullSafe)
 {
     nexilis_room_destroy(nullptr);

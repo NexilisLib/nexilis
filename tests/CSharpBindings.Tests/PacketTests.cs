@@ -42,6 +42,30 @@ namespace Nexilis.Tests
         }
 
         [Fact]
+        public void GetInfoGeneral()
+        {
+            using var packet = Packet.InfoGeneral(_clientApi.ClientApiPtr);
+
+            Assert.True(packet.Size > 0);
+        }
+
+        [Fact]
+        public void GetInfoClients()
+        {
+            using var packet = Packet.InfoClients(_clientApi.ClientApiPtr);
+
+            Assert.True(packet.Size > 0);
+        }
+
+        [Fact]
+        public void RoomManagementLeave()
+        {
+            using var packet = Packet.RoomManagementLeave(_clientApi.ClientApiPtr);
+
+            Assert.True(packet.Size > 0);
+        }
+
+        [Fact]
         public void RoomManagementJoin()
         {
             using var packet = Packet.RoomManagementJoin(_clientApi.ClientApiPtr, 42);
@@ -78,6 +102,15 @@ namespace Nexilis.Tests
         {
             using var position = new Vector3<float>(10.0f, 20.0f, 30.0f);
             using var packet = Packet.Player3DPosition(_clientApi.ClientApiPtr, position);
+
+            Assert.True(packet.Size > 0);
+        }
+
+        [Fact]
+        public void Player3DDimension()
+        {
+            using var dimensions = new Vector3<float>(1.0f, 1.0f, 1.0f);
+            using var packet = Packet.Player3DDimension(_clientApi.ClientApiPtr, dimensions);
 
             Assert.True(packet.Size > 0);
         }
