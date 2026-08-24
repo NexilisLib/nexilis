@@ -2,10 +2,16 @@
 #include <nexilis/protocol_manager.hh>
 
 #include <nexilis/client/protocol/nxboost/tcp_client.hh>
+#include <nexilis/client/protocol/nxboost/udp_client.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
+#include <nexilis/server/protocol/nxboost/udp_server.hh>
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/packet.hh>
+
+#include <chrono>
+#include <iostream>
+#include <thread>
 
 int main()
 {
@@ -13,24 +19,52 @@ int main()
 
     nexilis::ProtocolManager protocol_manager;
 
+    // Servers.
     nexilis::server::ServerConfig settings;
     settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
 
-    auto server = protocol_manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
-    server.start();
+    auto tcp_server = protocol_manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
+    tcp_server.start();
+
+    auto udp_server = protocol_manager.createProtocol<nexilis::server::nxboost::UDPServer>(settings);
+    udp_server.start();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    nexilis::client::ClientConfig server_data;
-    server_data.setPassword("salasana");
-    server_data.setBoostTCPAddress("127.0.0.1");
-    server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
+    // Clients.
+    nexilis::client::ClientConfig tcp_server_data;
+    tcp_server_data.setPassword("salasana");
+    tcp_server_data.setBoostTCPAddress("127.0.0.1");
+    tcp_server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
 
-    nexilis::client::ClientAPI client_api(server_data);
-    auto client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(client_api);
-    client.start();
+    nexilis::client::ClientAPI tcp_client_api(tcp_server_data);
+    auto tcp_client = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(tcp_client_api);
+    tcp_client.start();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    nexilis::client::ClientConfig udp_server_data;
+    udp_server_data.setPassword("salasana");
+    udp_server_data.setBoostUDPAddress("127.0.0.1");
+    udp_server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
+
+    nexilis::client::ClientAPI udp_client_api(udp_server_data);
+    auto udp_client = protocol_manager.createProtocol<nexilis::client::nxboost::UDPClient>(udp_client_api);
+    udp_client.start();
+
+    std::cout << "Boost TCP client connected: " << (tcp_client.isConnected() ? "yes" : "no") << std::endl;
+    std::cout << "Boost UDP client connected: " << (udp_client.isConnected() ? "yes" : "no") << std::endl;
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    udp_client.stop();
+    std::cout << "Nexilis boost UDP client stopped" << std::endl;
+
+    tcp_client.stop();
+    std::cout << "Nexilis boost TCP client stopped" << std::endl;
+
+    udp_server.stop();
+    tcp_server.stop();
 }
