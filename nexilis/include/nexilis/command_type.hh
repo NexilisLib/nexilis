@@ -35,6 +35,8 @@ enum class CommandType : uint8_t
      *  2:0:0   Join room; uint64_t roomId
      *  2:0:1   Leave room; void
      *  2:0:2   Create room; string roomName
+     *  2:0:3   Remove room
+     *  2:0:4   Set overlapping; bool allowed
      *
      *  2:1     Communication.
      *  2:1:0   broadcast; string

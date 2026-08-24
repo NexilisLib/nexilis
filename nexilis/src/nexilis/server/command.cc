@@ -207,6 +207,12 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         {
                             return ServerImpl::room_management_remove(args);
                         }
+
+                        /// Set overlapping (whether clients may share positions).
+                        case 4:
+                        {
+                            return ServerImpl::room_management_setOverlap(args);
+                        }
                     }
                     return CommandResult::not_found;
                 }

@@ -1,3 +1,4 @@
+#include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/command/commands.hh>
 #include <nexilis/server/movement.hh>
@@ -43,7 +44,39 @@ CommandResult ServerImpl::room_player3d_movement(const DefaultArgs& args)
                 auto current_pos = user.getObject3D().getPosition();
                 auto new_pos = Vector3f(eased_x + current_pos.x, eased_y + current_pos.y, eased_z + current_pos.z);
 
-                // TODO validation here.
+                // Overlap validation: when the room forbids clients from sharing
+                // positions, drop this tick if the new position would intersect
+                // another client. The position is not applied nor broadcast.
+                if (!room->isOverlappingAllowed())
+                {
+                    auto dimensions = user.getObject3D().getDimensions();
+                    for (auto clientId : room->getClients())
+                    {
+                        if (clientId == user.getId())
+                        {
+                            continue;
+                        }
+                        auto* other = ClientStorage::getClientById(clientId);
+                        if (!other || other->getRoomId() != room->getId())
+                        {
+                            continue;
+                        }
+                        auto other_pos = other->getObject3D().getPosition();
+                        auto other_dimensions = other->getObject3D().getDimensions();
+
+                        bool intersects =
+                                new_pos.x - dimensions.x / 2 < other_pos.x + other_dimensions.x / 2 &&
+                                new_pos.x + dimensions.x / 2 > other_pos.x - other_dimensions.x / 2 &&
+                                new_pos.y - dimensions.y / 2 < other_pos.y + other_dimensions.y / 2 &&
+                                new_pos.y + dimensions.y / 2 > other_pos.y - other_dimensions.y / 2 &&
+                                new_pos.z - dimensions.z / 2 < other_pos.z + other_dimensions.z / 2 &&
+                                new_pos.z + dimensions.z / 2 > other_pos.z - other_dimensions.z / 2;
+                        if (intersects)
+                        {
+                            return;
+                        }
+                    }
+                }
 
                 {
                     std::lock_guard<std::mutex> lock(*mtx);

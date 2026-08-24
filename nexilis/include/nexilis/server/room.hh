@@ -7,6 +7,7 @@
 #include <nexilis/room_data.hh>
 #include <nexilis/server/user.hh>
 
+#include <atomic>
 #include <unordered_map>
 
 namespace nexilis::server
@@ -82,11 +83,26 @@ public:
     /// Reset a player's health to default.
     void resetPlayerHealth(uint64_t clientId);
 
+    /// Can clients in this room share the same position (overlap each other).
+    bool isOverlappingAllowed() const
+    {
+        return m_overlappingAllowed.load();
+    }
+
+    /// Set whether clients in this room may share the same position.
+    void setOverlappingAllowed(bool allowed)
+    {
+        m_overlappingAllowed.store(allowed);
+    }
+
 private:
     std::vector<uint64_t> m_clientIds;
     std::vector<Broadcast> m_broadcasts;
     std::unordered_map<uint64_t, float> m_playerHealth;
     float m_defaultHealth = 100.0f;
+
+    /// Atomic because movement threads read this while command threads write it.
+    std::atomic<bool> m_overlappingAllowed{true};
 };
 
 } // namespace nexilis::server

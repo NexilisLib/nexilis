@@ -94,6 +94,11 @@ public:
             {
                 return Impl::room_management_remove(std::forward<Args>(args)...);
             }
+            template <typename... Args>
+            static auto setOverlap(Args&&... args)
+            {
+                return Impl::room_management_setOverlap(std::forward<Args>(args)...);
+            }
         };
         struct Communicate
         {

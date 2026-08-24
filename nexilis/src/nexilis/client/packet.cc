@@ -175,6 +175,16 @@ nx_data ClientImpl::room_management_remove(ClientAPI& api, uint64_t roomId)
     return id;
 }
 
+nx_data ClientImpl::room_management_setOverlap(ClientAPI& api, bool allowed)
+{
+    auto id = _Packet::clientIdentification(api);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::management));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Management::set_overlap));
+    id.emplace_back(allowed ? 1 : 0);
+    return id;
+}
+
 // Room::Communicate
 nx_data ClientImpl::room_communicate_broadcast(ClientAPI& api, const std::string& message)
 {

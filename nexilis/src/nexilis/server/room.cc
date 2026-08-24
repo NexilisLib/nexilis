@@ -17,7 +17,8 @@ Room::Room(Room&& other)
       m_clientIds(std::move(other.m_clientIds)),
       m_broadcasts(std::move(other.m_broadcasts)),
       m_playerHealth(std::move(other.m_playerHealth)),
-      m_defaultHealth(other.m_defaultHealth)
+      m_defaultHealth(other.m_defaultHealth),
+      m_overlappingAllowed(other.m_overlappingAllowed.load())
 {
 }
 
@@ -29,6 +30,7 @@ Room& Room::operator=(Room&& other)
         m_broadcasts = std::move(other.m_broadcasts);
         m_playerHealth = std::move(other.m_playerHealth);
         m_defaultHealth = other.m_defaultHealth;
+        m_overlappingAllowed.store(other.m_overlappingAllowed.load());
         BaseRoom::operator=(std::move(other));
     }
     return *this;

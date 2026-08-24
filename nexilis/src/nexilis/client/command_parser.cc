@@ -142,7 +142,12 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
         if (json.contains("username"))
             username = json.at("username").as_string().c_str();
 
-        return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name, room_context, username);
+        bool overlap_allowed = true;
+        if (json.contains("overlap_allowed"))
+            overlap_allowed = json.at("overlap_allowed").as_bool();
+
+        return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name,
+                                                       room_context, username, overlap_allowed);
     }
     else if (type == "player_2D")
     {

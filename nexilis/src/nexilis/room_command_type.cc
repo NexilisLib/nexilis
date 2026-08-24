@@ -40,6 +40,8 @@ std::string RoomCommandType::ManagementTypeToString(RoomCommandType::Management 
             return "create";
         case RoomCommandType::Management::remove:
             return "remove";
+        case RoomCommandType::Management::set_overlap:
+            return "set_overlap";
         default:
             Log::error("ManagementTypeToString no type found!");
             return "";

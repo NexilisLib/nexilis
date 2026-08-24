@@ -30,7 +30,8 @@ public:
         join = 0,
         leave = 1,
         create = 2,
-        remove = 3
+        remove = 3,
+        set_overlap = 4
     };
 
     enum class Communication : uint8_t

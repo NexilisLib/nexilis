@@ -2,9 +2,14 @@
 
 #include <nexilis/client/packet.hh>
 #include <nexilis/command_spec.hh>
+#include <nexilis/room_command_type.hh>
 #include <nexilis/server/client_storage.hh>
+#include <nexilis/server/room_storage.hh>
+#include <nexilis/util.hh>
 
+#include <chrono>
 #include <cstring>
+#include <thread>
 
 using namespace nexilis;
 
@@ -22,6 +27,7 @@ protected:
     void TearDown() override
     {
         server::ClientStorage::clear();
+        server::RoomStorage::clear();
     }
 };
 
@@ -109,4 +115,121 @@ TEST_F(CommandSpecTest, ServerCommandResultEnum)
     EXPECT_TRUE(server::checkResult(server::CommandResult::success));
     EXPECT_FALSE(server::checkResult(server::CommandResult::failure));
     EXPECT_FALSE(server::checkResult(server::CommandResult::error));
+}
+
+namespace
+{
+constexpr uint64_t OVERLAP_ROOM_ID = 4242;
+
+server::Room makeOverlapRoom()
+{
+    RoomData roomData(1, "overlap_room", OVERLAP_ROOM_ID, RoomData::Context::_3D);
+    return server::Room(roomData);
+}
+
+/// Movement command bytes: room, player_3D, movement, Vector3f, delta.
+nx_data player3dMovementBytes(Vector3f movement, float delta)
+{
+    nx_data bytes = {static_cast<uint8_t>(CommandType::room),
+                     static_cast<uint8_t>(RoomCommandType::Root::player_3D),
+                     static_cast<uint8_t>(RoomCommandType::PlayerType::movement)};
+    auto movementBytes = Util::convertToByteVector(movement);
+    bytes.insert(bytes.end(), movementBytes.begin(), movementBytes.end());
+    auto deltaBytes = Util::convertToByteVector(delta);
+    bytes.insert(bytes.end(), deltaBytes.begin(), deltaBytes.end());
+    return bytes;
+}
+} // namespace
+
+TEST_F(CommandSpecTest, RoomOverlapAllowedByDefaultAndSurvivesMove)
+{
+    auto room = makeOverlapRoom();
+    EXPECT_TRUE(room.isOverlappingAllowed());
+
+    room.setOverlappingAllowed(false);
+    server::Room movedRoom(std::move(room));
+    EXPECT_FALSE(movedRoom.isOverlappingAllowed());
+
+    movedRoom.setOverlappingAllowed(true);
+    server::Room assignedRoom(makeOverlapRoom());
+    assignedRoom = std::move(movedRoom);
+    EXPECT_TRUE(assignedRoom.isOverlappingAllowed());
+}
+
+TEST_F(CommandSpecTest, SetOverlapRequiresRoomMembership)
+{
+    nx_data bytes = {0x02, 0x00, 0x04, 0x00};
+    EXPECT_EQ(spec.read(bytes), server::CommandResult::error);
+}
+
+TEST_F(CommandSpecTest, SetOverlapUpdatesRoomViaRawBytes)
+{
+    auto room = makeOverlapRoom();
+    room.joinRoom(spec.user.getId());
+    server::RoomStorage::add(std::move(room));
+    spec.user.setRoomId(OVERLAP_ROOM_ID);
+
+    nx_data allow = {0x02, 0x00, 0x04, 0x01};
+    EXPECT_EQ(spec.read(allow), server::CommandResult::success);
+    EXPECT_TRUE(server::RoomStorage::getRoomById(OVERLAP_ROOM_ID)->isOverlappingAllowed());
+
+    nx_data disallow = {0x02, 0x00, 0x04, 0x00};
+    EXPECT_EQ(spec.read(disallow), server::CommandResult::success);
+    EXPECT_FALSE(server::RoomStorage::getRoomById(OVERLAP_ROOM_ID)->isOverlappingAllowed());
+}
+
+TEST_F(CommandSpecTest, SetOverlapWireFormatFromPacketApi)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(1);
+
+    auto bytes = client::Packet::Room::Management::setOverlap(api, false);
+    ASSERT_EQ(bytes.size(), 16 + 3 + 1); // client+message ids + header + payload
+    EXPECT_EQ(bytes[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(bytes[17], static_cast<uint8_t>(RoomCommandType::Root::management));
+    EXPECT_EQ(bytes[18], static_cast<uint8_t>(RoomCommandType::Management::set_overlap));
+    EXPECT_EQ(bytes[19], 0);
+}
+
+TEST_F(CommandSpecTest, Player3DMovementBlockedWhenOverlappingDisabled)
+{
+    auto room = makeOverlapRoom();
+    room.joinRoom(spec.user.getId());
+
+    auto otherPtr = std::make_unique<server::User>(2, "127.0.0.2");
+    otherPtr->setRoomId(OVERLAP_ROOM_ID);
+    otherPtr->getObject3D().setPosition(Vector3f(0.5f, 0.5f, 0.5f));
+    server::ClientStorage::add(std::move(otherPtr));
+
+    room.joinRoom(2);
+    server::RoomStorage::add(std::move(room));
+    spec.user.setRoomId(OVERLAP_ROOM_ID);
+
+    // Disable overlapping via the management message.
+    nx_data disallow = {0x02, 0x00, 0x04, 0x00};
+    ASSERT_EQ(spec.read(disallow), server::CommandResult::success);
+
+    // Both clients are within each other's bounding boxes, so the whole
+    // movement stays inside the other client: nothing may go through.
+    float delta = 0.05f;
+    ASSERT_EQ(spec.read(player3dMovementBytes(Vector3f(0.4f, 0.f, 0.f), delta)),
+              server::CommandResult::success);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+    auto pos = spec.user.getObject3D().getPosition();
+    EXPECT_FLOAT_EQ(pos.x, 0.0f);
+    EXPECT_FLOAT_EQ(pos.y, 0.0f);
+    EXPECT_FLOAT_EQ(pos.z, 0.0f);
+
+    // Allow overlapping again: the same movement now goes through.
+    nx_data allow = {0x02, 0x00, 0x04, 0x01};
+    ASSERT_EQ(spec.read(allow), server::CommandResult::success);
+
+    ASSERT_EQ(spec.read(player3dMovementBytes(Vector3f(0.4f, 0.f, 0.f), delta)),
+              server::CommandResult::success);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+    pos = spec.user.getObject3D().getPosition();
+    EXPECT_GT(pos.x, 0.0f);
 }
