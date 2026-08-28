@@ -37,6 +37,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS ON)
 
+# Used for the optional transport TLS (TLS-PSK) and the end-to-end message
+# encryption (PBKDF2 + AES-256-GCM).
+find_package(OpenSSL 1.1.1 REQUIRED)
+
 function(configure_build_environment)
     # Nix devshell.
     if(DEFINED ENV{NIX_BUILD_CORES})
@@ -191,9 +195,13 @@ target_link_libraries(nexilis PUBLIC
     $<IF:$<BOOL:${USE_SUBMODULES}>,boost_json,Boost::json>
 )
 
+target_link_libraries(nexilis PUBLIC OpenSSL::SSL)
+
 target_link_libraries(nexilisc PUBLIC
     $<IF:$<BOOL:${USE_SUBMODULES}>,boost_json,Boost::json>
 )
+
+target_link_libraries(nexilisc PUBLIC OpenSSL::SSL)
 
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(nexilis PRIVATE

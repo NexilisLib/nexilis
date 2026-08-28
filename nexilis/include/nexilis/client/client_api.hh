@@ -276,6 +276,33 @@ public:
         return m_serverData.getPassword();
     }
 
+    /// Whether new room messages are encrypted end-to-end.
+    bool isMessageEncryptionEnabled() const
+    {
+        return m_serverData.isMessageEncryptionEnabled();
+    }
+
+    /// Toggle end-to-end encryption of room messages on/off at runtime.
+    /// \note Off by default; encryption only kicks in when enabled.
+    void setMessageEncryption(bool enabled)
+    {
+        m_serverData.setMessageEncryption(enabled);
+    }
+
+    /// Whether the TCP connection is encrypted with TLS-PSK.
+    bool isTlsEnabled() const
+    {
+        return m_serverData.isTlsEnabled();
+    }
+
+    /// Toggle TLS-PSK transport encryption on/off.
+    /// \note Off by default; the transport upgrade applies when the client
+    ///       connects, so set it before start().
+    void setTls(bool enabled)
+    {
+        m_serverData.setTls(enabled);
+    }
+
     std::string getClientUsername(uint64_t client_id)
     {
         auto* client = getClientFromRoom(client_id);

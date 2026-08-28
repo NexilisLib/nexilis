@@ -5,10 +5,21 @@
 #include <nexilis/nx_data.hh>
 
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
+
+#include <memory>
 
 namespace nexilis::boost_tcp
 {
 
+/// Thin wrapper around a boost::asio TCP connection.
+///
+/// When a TLS context is supplied via enableTls() the transport is upgraded
+/// to TLS-PSK, typically derived from the Nexilis authentication passphrase.
+/// Without it the connection stays plaintext. TLS and plaintext are mutually
+/// exclusive per connection: the TLS handshake happens lazily on the first
+/// I/O operation and a mismatch simply fails the connection instead of
+/// silently downgrading.
 class Socket : public NxClass
 {
 public:
@@ -30,6 +41,15 @@ public:
     /// Server-side acceptance.
     void assign(boost::asio::ip::tcp::socket&& socket);
 
+    /// Upgrade the connection to TLS.
+    /// \param context A context from tls::createPskContext(), or nullptr to
+    ///        keep the connection plaintext. Must be set before the first
+    ///        send()/receive(); the handshake runs lazily there.
+    void enableTls(std::shared_ptr<boost::asio::ssl::context> context);
+
+    /// Whether TLS was enabled for this connection.
+    bool tlsEnabled() const;
+
     bool send(const nx_data& data);
     bool receive(nx_data& data, size_t timeout_ms = 100);
     void close();
@@ -42,13 +62,21 @@ public:
     std::string getEndpointId() const;
 
 private:
+    /// Performs the TLS handshake. Must be called while holding m_mutex.
+    bool ensureHandshakeInternal();
     void setSocketOptions();
     void closeInternal();
 
 private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> m_socket;
+    using TlsStream = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
+
+    std::shared_ptr<boost::asio::ssl::context> m_context;
+    std::shared_ptr<TlsStream> m_stream;
     mutable std::mutex m_mutex;
     std::atomic<bool> m_connected{false};
+    std::atomic<bool> m_tls{false};
+    std::atomic<bool> m_tlsHandshaken{false};
+    bool m_tlsServer = true;
     std::string m_endpointId;
 };
 

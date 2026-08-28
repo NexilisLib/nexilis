@@ -63,6 +63,45 @@ namespace Nexilis.Client
         }
 
         /// <summary>
+        /// Enables or disables end-to-end encryption of room messages.
+        /// Off by default so plaintext traffic stays plaintext unless enabled.
+        /// </summary>
+        /// <param name="enabled">True to encrypt room messages end-to-end.</param>
+        public void SetMessageEncryption(bool enabled)
+        {
+            ClientConfigNative.nexilis_client_config_set_message_encryption(_configPtr, enabled ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Gets whether end-to-end encryption of room messages is enabled.
+        /// </summary>
+        /// <returns>True if room messages are encrypted end-to-end.</returns>
+        public bool IsMessageEncryptionEnabled()
+        {
+            return ClientConfigNative.nexilis_client_config_get_message_encryption(_configPtr) != 0;
+        }
+
+        /// <summary>
+        /// Enables or disables TLS-PSK protection of the transport connection
+        /// to the server. Off by default. Both the client and the server must
+        /// enable TLS for a connection to succeed.
+        /// </summary>
+        /// <param name="enabled">True to enable TLS-PSK transport encryption.</param>
+        public void SetTls(bool enabled)
+        {
+            ClientConfigNative.nexilis_client_config_set_tls(_configPtr, enabled ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Gets whether TLS-PSK transport encryption is enabled.
+        /// </summary>
+        /// <returns>True if TLS-PSK transport encryption is enabled.</returns>
+        public bool IsTlsEnabled()
+        {
+            return ClientConfigNative.nexilis_client_config_get_tls(_configPtr) != 0;
+        }
+
+        /// <summary>
         /// Sets the password for the config.
         /// </summary>
         /// <param name="password">The password to set.</param>

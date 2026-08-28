@@ -110,6 +110,8 @@ std::string RoomCommandType::CommunicationTypeToString(RoomCommandType::Communic
             return "othercast";
         case RoomCommandType::Communication::unicast:
             return "unicast";
+        case RoomCommandType::Communication::broadcast_encrypted:
+            return "broadcast_encrypted";
         default:
             Log::error("CommunicationTypeToString no type found!");
             return "";

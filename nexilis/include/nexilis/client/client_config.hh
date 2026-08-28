@@ -134,6 +134,33 @@ public:
             m_inetUDPServerPort = port;
     }
 
+    /// Whether room messages are encrypted end-to-end between the clients.
+    /// \note Off by default so plaintext traffic stays plaintext unless the
+    ///       developer explicitly opts in.
+    bool isMessageEncryptionEnabled() const
+    {
+        return m_messageEncryption;
+    }
+
+    void setMessageEncryption(bool enabled)
+    {
+        m_messageEncryption = enabled;
+    }
+
+    /// Whether the TCP connection to the server is encrypted with TLS-PSK.
+    /// \note The pre-shared key is derived from the password, so the client
+    ///       can only connect to a server that knows the same password. Off
+    ///       by default so plaintext traffic stays plaintext unless enabled.
+    bool isTlsEnabled() const
+    {
+        return m_tls;
+    }
+
+    void setTls(bool enabled)
+    {
+        m_tls = enabled;
+    }
+
 private:
     /// af_inet UDP
     std::string m_inetUDPServerAddress;
@@ -156,6 +183,12 @@ private:
 
     /// af_unix STREAM
     std::string m_unixStreamServerPath;
+
+    /// End-to-end encryption toggle for room messages.
+    bool m_messageEncryption = false;
+
+    /// TLS-PSK transport encryption toggle for TCP connections.
+    bool m_tls = false;
 };
 
 } // namespace nexilis::client

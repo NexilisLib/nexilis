@@ -26,8 +26,9 @@ TCPClient::TCPClient(ClientAPI& api)
       m_strand(std::make_shared<boost::asio::io_context::strand>(*m_ioContext)),
       m_workGuard(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
               boost::asio::make_work_guard(*m_ioContext))),
-      m_mainSocket(std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext)),
-      m_switchedSocket(std::make_shared<boost::asio::ip::tcp::socket>(*m_ioContext)),
+      m_tlsContext(createTlsContext(api)),
+      m_mainSocket(std::make_shared<TlsSocket>(*m_ioContext, *m_tlsContext)),
+      m_switchedSocket(std::make_shared<TlsSocket>(*m_ioContext, *m_tlsContext)),
       m_activeSocket(),
       m_resolver(*m_ioContext),
       m_sendMutex(std::make_shared<std::mutex>()),
@@ -56,6 +57,7 @@ TCPClient::TCPClient(TCPClient&& other)
       m_ioContext(std::move(other.m_ioContext)),
       m_strand(std::move(other.m_strand)),
       m_workGuard(std::move(other.m_workGuard)),
+      m_tlsContext(std::move(other.m_tlsContext)),
       m_mainSocket(std::move(other.m_mainSocket)),
       m_switchedSocket(std::move(other.m_switchedSocket)),
       m_activeSocket(other.m_activeSocket.load()),
@@ -96,6 +98,7 @@ TCPClient& TCPClient::operator=(TCPClient&& other)
         m_ioContext = std::move(other.m_ioContext);
         m_strand = std::move(other.m_strand);
         m_workGuard = std::move(other.m_workGuard);
+        m_tlsContext = std::move(other.m_tlsContext);
         m_mainSocket = std::move(other.m_mainSocket);
         m_switchedSocket = std::move(other.m_switchedSocket);
         m_activeSocket = other.m_activeSocket.load();
@@ -136,12 +139,25 @@ bool TCPClient::connectToMainPort()
                 std::to_string(m_mainPort));
 
         boost::system::error_code ec;
-        boost::asio::connect(*m_mainSocket, endpoints, ec);
+        boost::asio::connect(m_mainSocket->lowest_layer(), endpoints, ec);
 
         if (ec)
         {
             Log::error(header(), "Cannot connec to main port: ", m_mainPort, " - ", ec.message());
             return false;
+        }
+
+        if (getClientAPI()->isTlsEnabled())
+        {
+            boost::system::error_code handshake_ec;
+            m_mainSocket->handshake(boost::asio::ssl::stream_base::client, handshake_ec);
+            if (handshake_ec)
+            {
+                Log::error(header(), "TLS handshake failed on main port: ", m_mainPort, " - ", handshake_ec.message());
+                m_mainSocket->lowest_layer().close();
+                return false;
+            }
+            Log::info(header(), "TLS-PSK established on main port: ", m_mainPort);
         }
         Log::debug(header(), "Successfully connected to main port: ", m_mainPort);
         return true;
@@ -164,12 +180,25 @@ bool TCPClient::connectToSwitchedPort(uint16_t port)
                 std::to_string(port));
 
         boost::system::error_code ec;
-        boost::asio::connect(*m_switchedSocket, endpoints, ec);
+        boost::asio::connect(m_switchedSocket->lowest_layer(), endpoints, ec);
 
         if (ec)
         {
             Log::error(header(), "Cannot connect to switched port: ", port, " - ", ec.message());
             return false;
+        }
+
+        if (getClientAPI()->isTlsEnabled())
+        {
+            boost::system::error_code handshake_ec;
+            m_switchedSocket->handshake(boost::asio::ssl::stream_base::client, handshake_ec);
+            if (handshake_ec)
+            {
+                Log::error(header(), "TLS handshake failed on switched port: ", port, " - ", handshake_ec.message());
+                m_switchedSocket->lowest_layer().close();
+                return false;
+            }
+            Log::info(header(), "TLS-PSK established on switched port: ", port);
         }
 
         m_switchedPort = port;
@@ -183,6 +212,23 @@ bool TCPClient::connectToSwitchedPort(uint16_t port)
     }
 }
 
+std::shared_ptr<boost::asio::ssl::context> TCPClient::createTlsContext(ClientAPI& api)
+{
+    auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tls);
+    if (api.isTlsEnabled())
+    {
+        auto pskCtx = tls::createPskContext(api.getClientPassword(), false);
+        if (!pskCtx)
+        {
+            Log::error("client::nxboost::TCPClient", "TLS-PSK context creation failed (is the password set?), "
+                                                     "connecting without TLS");
+            return ctx;
+        }
+        return pskCtx;
+    }
+    return ctx;
+}
+
 void TCPClient::stop()
 {
     if (m_stopped && m_stopped->exchange(true))
@@ -191,20 +237,20 @@ void TCPClient::stop()
     }
 
     // Close both sockets.
-    if (m_mainSocket && m_mainSocket->is_open())
+    if (m_mainSocket && m_mainSocket->lowest_layer().is_open())
     {
         boost::system::error_code ec;
-        ec = m_mainSocket->close(ec);
+        ec = m_mainSocket->lowest_layer().close(ec);
         if (ec)
         {
             Log::error(header(), "Error closing main socket");
         }
     }
 
-    if (m_switchedSocket && m_switchedSocket->is_open())
+    if (m_switchedSocket && m_switchedSocket->lowest_layer().is_open())
     {
         boost::system::error_code ec;
-        ec = m_switchedSocket->close(ec);
+        ec = m_switchedSocket->lowest_layer().close(ec);
         if (ec)
         {
             Log::error(header(), "Error closing switched socket");
@@ -293,16 +339,16 @@ void TCPClient::initiatePortSwitch(uint16_t port)
             storeSocket(m_switchedSocket);
             m_useSwitchedPort = true;
 
-            if (m_mainSocket->is_open())
+            if (m_mainSocket->lowest_layer().is_open())
             {
                 Log::debug(header(), "Closing main socket");
                 boost::system::error_code ec;
-                ec = m_mainSocket->cancel(ec);
+                ec = m_mainSocket->lowest_layer().cancel(ec);
                 if (ec)
                 {
                     Log::error(header(), "Error cancelling main socket");
                 }
-                ec = m_mainSocket->close(ec);
+                ec = m_mainSocket->lowest_layer().close(ec);
                 if (ec)
                 {
                     Log::error(header(), "Error closing main socket");
@@ -337,8 +383,8 @@ bool TCPClient::send(const nx_data& data)
         return false;
     }
 
-    std::shared_ptr<boost::asio::ip::tcp::socket> current_socket = loadSocket();
-    if (!current_socket || !current_socket->is_open())
+    std::shared_ptr<TlsSocket> current_socket = loadSocket();
+    if (!current_socket || !current_socket->lowest_layer().is_open())
     {
         Log::error(header(), "Socket is invalid or not open");
         return false;
@@ -355,46 +401,60 @@ bool TCPClient::send(const nx_data& data)
     {
         auto framed = std::make_shared<nx_data>(ClientProtocol::frame(data));
 
-        // clang-format off
-        boost::asio::async_write(*current_socket, boost::asio::buffer(*framed),
-            boost::asio::bind_executor(*m_strand,
-                [this, current_socket, messageId, framed](const boost::system::error_code& ec, std::size_t size)
+        const bool tlsOn = getClientAPI()->isTlsEnabled();
+
+        auto completionHandler = [this, current_socket, messageId, framed](const boost::system::error_code& ec,
+                                                                           std::size_t size)
+        {
+            if (!ec)
+            {
+                Log::info(header(), "Message sent: ", size, " bytes, ID: ", messageId);
+
+                // Fulfill the promise when write completes
+                if (messageId != 0)
+                {
+                    std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                    auto it = m_pendingSends.find(messageId);
+                    if (it != m_pendingSends.end())
                     {
-                        if (!ec)
-                        {
-                            Log::info(header(), "Message sent: ", size, " bytes, ID: ", messageId);
+                        it->second->set_value();
+                        m_pendingSends.erase(it);
+                    }
+                }
+            }
+            else
+            {
+                Log::error(header(), "Async write error: ", ec.message());
 
-                            // Fulfill the promise when write completes
-                            if (messageId != 0)
-                            {
-                                std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
-                                auto it = m_pendingSends.find(messageId);
-                                if (it != m_pendingSends.end())
-                                {
-                                    it->second->set_value();
-                                    m_pendingSends.erase(it);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Log::error(header(), "Async write error: ", ec.message());
+                // Fulfill with exception on error
+                if (messageId != 0)
+                {
+                    std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                    auto it = m_pendingSends.find(messageId);
+                    if (it != m_pendingSends.end())
+                    {
+                        it->second->set_exception(
+                                std::make_exception_ptr(
+                                        std::runtime_error("Send failed: " + ec.message())));
+                        m_pendingSends.erase(it);
+                    }
+                }
+            }
+        };
 
-                            // Fulfill with exception on error
-                            if (messageId != 0)
-                            {
-                                std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
-                                auto it = m_pendingSends.find(messageId);
-                                if (it != m_pendingSends.end())
-                                {
-                                    it->second->set_exception(
-                                            std::make_exception_ptr(
-                                                    std::runtime_error("Send failed: " + ec.message())));
-                                    m_pendingSends.erase(it);
-                                }
-                            }
-                        }
-                    }));
+        // clang-format off
+        if (tlsOn)
+        {
+            boost::asio::async_write(*current_socket,
+                boost::asio::buffer(*framed),
+                boost::asio::bind_executor(*m_strand, completionHandler));
+        }
+        else
+        {
+            boost::asio::async_write(current_socket->next_layer(),
+                boost::asio::buffer(*framed),
+                boost::asio::bind_executor(*m_strand, completionHandler));
+        }
         // clang-format on
         return true;
     }
@@ -497,7 +557,7 @@ void TCPClient::startAsyncRead()
 
     auto current_socket = loadSocket();
 
-    if (!current_socket || !current_socket->is_open())
+    if (!current_socket || !current_socket->lowest_layer().is_open())
     {
         Log::warning(header(), "Socket not available for async read");
         return;
@@ -507,74 +567,90 @@ void TCPClient::startAsyncRead()
     doAsyncRead(current_socket, std::make_shared<boost::asio::streambuf>());
 }
 
-void TCPClient::doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> current_socket,
+void TCPClient::doAsyncRead(std::shared_ptr<TlsSocket> current_socket,
                             std::shared_ptr<boost::asio::streambuf> receiveBuffer)
 {
-    // clang-format off
-    boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
-        boost::asio::bind_executor(*m_strand, [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
+    if (m_stopped->load())
+    {
+        return;
+    }
+
+    const bool tlsOn = getClientAPI()->isTlsEnabled();
+    auto readHandler = [this, receiveBuffer, current_socket](const boost::system::error_code& ec, size_t bytes_transferred)
+    {
+        if (ec)
+        {
+            handleAsyncReadError(ec);
+            return;
+        }
+
+        if (m_stopped->load())
+        {
+            Log::debug(header(), "Read completed but client stopped");
+            return;
+        }
+
+        Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
+
+        if (bytes_transferred > 0)
+        {
+            // Read exactly bytes_transferred bytes (one \n-terminated message).
+            // Any data beyond bytes_transferred stays in receiveBuffer for the next call.
+            nx_data buffer(bytes_transferred);
+            std::istream is(receiveBuffer.get());
+            is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
+
+            try
             {
-                if (ec)
+                auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
+                Log::debug(header(), "readMessage result: ", ClientAPI::readResultStr(result));
+                if (result == ReadResult::success)
                 {
-                    handleAsyncReadError(ec);
-                    return;
-                }
+                    Log::info(header(), "Message read successfully");
 
-                if (m_stopped->load())
-                {
-                    Log::debug(header(), "Read completed but client stopped");
-                    return;
-                }
-
-                Log::debug(header(), "Read completed: ", bytes_transferred, " bytes");
-
-                if (bytes_transferred > 0)
-                {
-                    // Read exactly bytes_transferred bytes (one \n-terminated message).
-                    // Any data beyond bytes_transferred stays in receiveBuffer for the next call.
-                    nx_data buffer(bytes_transferred);
-                    std::istream is(receiveBuffer.get());
-                    is.read(reinterpret_cast<char*>(buffer.data()), bytes_transferred);
-
-                    try
+                    if (!m_useSwitchedPort)
                     {
-                        auto result = ClientProtocol::getClientAPI()->readMessage(buffer);
-                        Log::debug(header(), "readMessage result: ", ClientAPI::readResultStr(result));
-                        if (result == ReadResult::success)
+                        uint16_t switchPort = getClientAPI()->getBoostTCPServerPortNumber();
+                        Log::debug(header(), "Port switch check: useSwitched=", m_useSwitchedPort.load(),
+                                   " switchPort=", switchPort, " mainPort=", m_mainPort);
+                        if (switchPort != 0 && switchPort != 0xFF)
                         {
-                            Log::info(header(), "Message read successfully");
-
-                            if (!m_useSwitchedPort)
-                            {
-                                uint16_t switchPort = getClientAPI()->getBoostTCPServerPortNumber();
-                                Log::debug(header(), "Port switch check: useSwitched=", m_useSwitchedPort.load(),
-                                           " switchPort=", switchPort, " mainPort=", m_mainPort);
-                                if (switchPort != 0 && switchPort != 0xFF)
-                                {
-                                    Log::info(header(), "Port switch detected, switching from ", m_mainPort,
-                                              " to ", switchPort);
-                                    initiatePortSwitch(switchPort);
-                                    return;
-                                }
-                                else
-                                {
-                                    Log::debug(header(), "No port switch needed (port=", switchPort, ")");
-                                }
-                            }
+                            Log::info(header(), "Port switch detected, switching from ", m_mainPort,
+                                      " to ", switchPort);
+                            initiatePortSwitch(switchPort);
+                            return;
+                        }
+                        else
+                        {
+                            Log::debug(header(), "No port switch needed (port=", switchPort, ")");
                         }
                     }
-                    catch (const std::exception& e)
-                    {
-                        Log::error(header(), "Error processing message: ", e.what());
-                    }
                 }
+            }
+            catch (const std::exception& e)
+            {
+                Log::error(header(), "Error processing message: ", e.what());
+            }
+        }
 
-                // Continue reading with the same buffer so leftover data is not discarded.
-                if (current_socket->is_open() && !m_stopped->load())
-                {
-                    doAsyncRead(current_socket, receiveBuffer);
-                }
-            }));
+        // Continue reading with the same buffer so leftover data is not discarded.
+        if (current_socket->lowest_layer().is_open() && !m_stopped->load())
+        {
+            doAsyncRead(current_socket, receiveBuffer);
+        }
+    };
+
+    // clang-format off
+    if (tlsOn)
+    {
+        boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
+            boost::asio::bind_executor(*m_strand, readHandler));
+    }
+    else
+    {
+        boost::asio::async_read_until(current_socket->next_layer(), *receiveBuffer, '\n',
+            boost::asio::bind_executor(*m_strand, readHandler));
+    }
     // clang-format on
 }
 
@@ -613,25 +689,25 @@ void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
     }
 }
 
-std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::loadSocket() const
+std::shared_ptr<TCPClient::TlsSocket> TCPClient::loadSocket() const
 {
     auto boost_ptr = m_activeSocket.load();
     if (boost_ptr)
     {
-        return std::shared_ptr<boost::asio::ip::tcp::socket>(boost_ptr.get(),
-                                                             [boost_ptr](auto&&...) mutable
-                                                             {
-                                                                 boost_ptr.reset();
-                                                             });
+        return std::shared_ptr<TlsSocket>(boost_ptr.get(),
+                                          [boost_ptr](auto&&...) mutable
+                                          {
+                                              boost_ptr.reset();
+                                          });
     }
     return nullptr;
 }
 
-void TCPClient::storeSocket(std::shared_ptr<boost::asio::ip::tcp::socket> socket)
+void TCPClient::storeSocket(std::shared_ptr<TlsSocket> socket)
 {
     if (socket)
     {
-        m_activeSocket.store(boost::shared_ptr<boost::asio::ip::tcp::socket>(
+        m_activeSocket.store(boost::shared_ptr<TlsSocket>(
                 socket.get(),
                 [socket](auto&&...) mutable
                 {
@@ -644,13 +720,13 @@ void TCPClient::storeSocket(std::shared_ptr<boost::asio::ip::tcp::socket> socket
     }
 }
 
-std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::exchangeSocket(
-        std::shared_ptr<boost::asio::ip::tcp::socket> new_socket)
+std::shared_ptr<TCPClient::TlsSocket> TCPClient::exchangeSocket(
+        std::shared_ptr<TlsSocket> new_socket)
 {
-    boost::shared_ptr<boost::asio::ip::tcp::socket> new_boost_ptr;
+    boost::shared_ptr<TlsSocket> new_boost_ptr;
     if (new_socket)
     {
-        new_boost_ptr = boost::shared_ptr<boost::asio::ip::tcp::socket>(
+        new_boost_ptr = boost::shared_ptr<TlsSocket>(
                 new_socket.get(),
                 [new_socket](auto&&...) mutable
                 {
@@ -662,7 +738,7 @@ std::shared_ptr<boost::asio::ip::tcp::socket> TCPClient::exchangeSocket(
 
     if (old_boost_ptr)
     {
-        return std::shared_ptr<boost::asio::ip::tcp::socket>(
+        return std::shared_ptr<TlsSocket>(
                 old_boost_ptr.get(),
                 [old_boost_ptr](auto&&...) mutable
                 {

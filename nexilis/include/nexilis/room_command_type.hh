@@ -38,7 +38,10 @@ public:
     {
         broadcast,
         othercast,
-        unicast
+        unicast,
+        /// Like broadcast, but the payload is an opaque base64 ciphertext blob
+        /// that the server relays without being able to read it.
+        broadcast_encrypted
     };
 
     enum class PlayerType : uint8_t

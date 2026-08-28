@@ -39,6 +39,7 @@ TCPServer::TCPServer(TCPServer&& other) noexcept
       m_stopped(std::move(other.m_stopped) ? std::move(other.m_stopped) : std::make_unique<std::atomic<bool>>(false)),
       m_mutex(other.m_mutex ? std::move(other.m_mutex) : std::make_unique<std::mutex>()),
       m_ioContext(std::move(other.m_ioContext)),
+      m_tlsContext(std::move(other.m_tlsContext)),
       m_acceptor(std::move(other.m_acceptor)),
       m_switchedAcceptor(std::move(other.m_switchedAcceptor)),
       m_switchedPort(std::move(other.m_switchedPort) ? std::move(other.m_switchedPort) : std::make_unique<std::atomic<uint16_t>>(0)),
@@ -69,6 +70,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other) noexcept
         }
         m_mutex = other.m_mutex ? std::move(other.m_mutex) : std::make_unique<std::mutex>();
         m_ioContext = std::move(other.m_ioContext);
+        m_tlsContext = std::move(other.m_tlsContext);
         m_acceptor = std::move(other.m_acceptor);
         m_switchedAcceptor = std::move(other.m_switchedAcceptor);
         m_switchedPort = std::move(other.m_switchedPort);
@@ -87,6 +89,19 @@ TCPServer::~TCPServer()
 
 void TCPServer::start()
 {
+    // Build the shared TLS context once. When TLS is enabled but the context
+    // cannot be created (e.g. no passphrase configured), connections are
+    // refused rather than silently served in plaintext.
+    if (getSettings().isTlsEnabled())
+    {
+        m_tlsContext = tls::createPskContext(getSettings().getPassword(), true);
+        if (!m_tlsContext)
+        {
+            Log::critical(header(), "TLS-PSK context creation failed, TLS connections will be refused "
+                                    "(is the passphrase set?)");
+        }
+    }
+
     // clang-format off
     m_ioContextThread = std::thread([this]()
     {
@@ -323,6 +338,15 @@ void TCPServer::handleHandshake(boost::asio::ip::tcp::socket socket, std::functi
     try
     {
         auto socket_wrapper = std::make_shared<nexilis::boost_tcp::Socket>(*m_ioContext);
+        if (getSettings().isTlsEnabled())
+        {
+            if (!m_tlsContext)
+            {
+                Log::error(header(), "TLS requested but no TLS context is available, refusing connection");
+                return;
+            }
+            socket_wrapper->enableTls(m_tlsContext);
+        }
         socket_wrapper->assign(std::move(socket));
 
         // clang-format off
@@ -455,6 +479,15 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
 {
     auto client_address = getClientAddress(socket);
     auto socket_wrapper = std::make_shared<nexilis::boost_tcp::Socket>(*m_ioContext);
+    if (getSettings().isTlsEnabled())
+    {
+        if (!m_tlsContext)
+        {
+            Log::error(header(), "TLS requested but no TLS context is available, refusing connection");
+            return;
+        }
+        socket_wrapper->enableTls(m_tlsContext);
+    }
     socket_wrapper->assign(std::move(socket));
 
     // clang-format off

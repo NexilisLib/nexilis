@@ -1,5 +1,6 @@
 #include <nexilis/client/packet.hh>
 #include <nexilis/command_type.hh>
+#include <nexilis/crypto.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/movement_type.hh>
 #include <nexilis/room_command_type.hh>
@@ -188,11 +189,30 @@ nx_data ClientImpl::room_management_setOverlap(ClientAPI& api, bool allowed)
 // Room::Communicate
 nx_data ClientImpl::room_communicate_broadcast(ClientAPI& api, const std::string& message)
 {
+    const auto useEncryption = api.isMessageEncryptionEnabled() && !api.getClientPassword().empty();
+    const auto subcommand = useEncryption ? RoomCommandType::Communication::broadcast_encrypted
+                                          : RoomCommandType::Communication::broadcast;
+
     auto id = _Packet::clientIdentification(api);
     id.emplace_back(static_cast<uint8_t>(CommandType::room));
     id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::communication));
-    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Communication::broadcast));
-    emplaceAll(id, message);
+    id.emplace_back(static_cast<uint8_t>(subcommand));
+
+    std::string wireMessage = message;
+    if (useEncryption)
+    {
+        const auto key = crypto::deriveMessageKey(api.getClientPassword(), api.clientRoomId());
+        std::string sealed;
+        if (key.empty() || !crypto::encrypt(key, message, sealed))
+        {
+            Log::error("Failed to encrypt message, falling back to plaintext broadcast");
+        }
+        else
+        {
+            wireMessage = crypto::toBase64(sealed);
+        }
+    }
+    emplaceAll(id, wireMessage);
     return id;
 }
 

@@ -60,6 +60,7 @@ int main()
     settings.setMode(nexilis::server::AuthenticationMode::password_protected);
     settings.setPassphrase("salasana");
     settings.setRootPassword("root");
+    settings.setTls(true);
 
     auto server = protocol_manager.createProtocol<nexilis::server::nxboost::TCPServer>(settings);
     server.start();
@@ -71,6 +72,7 @@ int main()
     server_data.setPassword("salasana");
     server_data.setBoostTCPAddress("127.0.0.1");
     server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
+    server_data.setTls(true);
 
     nexilis::client::ClientAPI alice_api(server_data);
     auto alice = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(alice_api);
@@ -102,6 +104,7 @@ int main()
     bob_data.setPassword("salasana");
     bob_data.setBoostTCPAddress("127.0.0.1");
     bob_data.setMode(nexilis::server::AuthenticationMode::password_protected);
+    bob_data.setTls(true);
 
     nexilis::client::ClientAPI bob_api(bob_data);
     auto bob = protocol_manager.createProtocol<nexilis::client::nxboost::TCPClient>(bob_api);
@@ -160,8 +163,27 @@ int main()
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
     }
 
+    // Re-run the same conversation with end-to-end encryption enabled. The
+    // feature is optional: encryption only kicks in when the developer opts in.
+    // The server relays the ciphertext opaquely, so it can no longer read the
+    // messages. Every recipient decrypts them with the connection password.
+    alice_api.setMessageEncryption(true);
+    bob_api.setMessageEncryption(true);
+
+    const std::vector<Turn> secret_conversation = {
+            {alice, alice_api, "Pssst, Bob: the server can't read this one."},
+            {bob, bob_api, "Impressive. Genuinely end-to-end encrypted."},
+            {alice, alice_api, "And it only turned on because we asked for it."}};
+
+    for (const auto& turn : secret_conversation)
+    {
+        turn.sender.sendMessage(
+                nexilis::client::Packet::Room::Communicate::broadcast(turn.api, turn.text));
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    }
+
     // Wait until both clients have received and displayed every message.
-    const auto expected = conversation.size();
+    const auto expected = conversation.size() + secret_conversation.size();
     std::size_t alice_printed = 0;
     std::size_t bob_printed = 0;
 
@@ -176,9 +198,38 @@ int main()
                                               bob_room->getMessages().size() >= expected; },
                                    std::chrono::seconds(15));
 
+    // The encrypted messages must arrive as readable plaintext on both sides,
+    // meaning the ciphertext actually round-tripped through the server.
+    auto encryptedMessagesReadable = [&](nexilis::client::ClientAPI& api, const std::string& listener)
+    {
+        auto* room = api.getRoom(room_id);
+        if (!room)
+        {
+            return false;
+        }
+        const auto& messages = room->getMessages();
+        for (std::size_t index = conversation.size(); index < messages.size(); ++index)
+        {
+            const std::size_t turn = index - conversation.size();
+            if (messages[index].getPayload() != secret_conversation[turn].text)
+            {
+                std::cerr << listener << " received an unreadable encrypted message" << std::endl;
+                return false;
+            }
+        }
+        return true;
+    };
+
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     printNewMessages(alice_api, room_id, "Alice", alice_printed);
     printNewMessages(bob_api, room_id, "Bob", bob_printed);
+
+    const bool encryptedOk = encryptedMessagesReadable(alice_api, "Alice") &&
+                             encryptedMessagesReadable(bob_api, "Bob");
+    if (encryptedOk)
+    {
+        std::cout << "End-to-end encrypted messages decrypted correctly on both clients" << std::endl;
+    }
 
     bob.stop();
     std::cout << "Bob disconnected" << std::endl;
@@ -189,5 +240,5 @@ int main()
     server.stop();
     std::cout << "Server stopped" << std::endl;
 
-    return delivered ? EXIT_SUCCESS : EXIT_FAILURE;
+    return delivered && encryptedOk ? EXIT_SUCCESS : EXIT_FAILURE;
 }

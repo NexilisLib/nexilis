@@ -11,6 +11,10 @@ objdir("obj/%{cfg.buildcfg}")
 linkoptions({
 	"-L../../nexilis/bin/Debug/",
 	"-l:libnexilis-premake_d.so",
+	-- The client headers pull in header-only boost.asio TLS code that
+	-- references OpenSSL symbols.
+	"-lcrypto",
+	"-lssl",
 	-- Find libnexilis-premake_d.so next to the executable.
 	"-Wl,-rpath,'$$ORIGIN'",
 })

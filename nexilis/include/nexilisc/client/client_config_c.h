@@ -20,6 +20,12 @@ const char* nexilis_client_config_get_password(const nexilis_ClientConfigC* conf
 
 void nexilis_client_config_set_mode(nexilis_ClientConfigC* config, int mode);
 
+void nexilis_client_config_set_message_encryption(nexilis_ClientConfigC* config, int enabled);
+int nexilis_client_config_get_message_encryption(const nexilis_ClientConfigC* config);
+
+void nexilis_client_config_set_tls(nexilis_ClientConfigC* config, int enabled);
+int nexilis_client_config_get_tls(const nexilis_ClientConfigC* config);
+
 void nexilis_client_config_set_inet_udp(nexilis_ClientConfigC* config, const char* server_address);
 const char* nexilis_client_config_get_inet_udp_server_address(const nexilis_ClientConfigC* config);
 

@@ -18,6 +18,7 @@
             pkgs.cmake
             pkgs.gcc
             pkgs.boost
+            pkgs.openssl
             pkgs.gtest
             pkgs.expect
             pkgs.cppcheck
@@ -56,7 +57,7 @@
             src = ../nexilis;
 
             nativeBuildInputs = [ pkgs.cmake ];
-            buildInputs = [ pkgs.boost ];
+            buildInputs = [ pkgs.boost pkgs.openssl ];
 
             # Force rebuild without using CMake cache.
             dontUseCmakeBuildDir = true;
@@ -88,6 +89,7 @@
 
             buildInputs = [
               pkgs.boost
+              pkgs.openssl
               pkgs.gtest
               self.packages.${system}.lib
             ];

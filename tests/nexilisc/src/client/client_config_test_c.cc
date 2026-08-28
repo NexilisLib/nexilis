@@ -105,3 +105,18 @@ TEST(ClientConfigTest_c, UnixStreamPath)
 
     nexilis_client_config_destroy(config);
 }
+
+TEST(ClientConfigTest_c, TlsToggle)
+{
+    nexilis_ClientConfigC* config = nexilis_client_config_create();
+
+    EXPECT_EQ(nexilis_client_config_get_tls(config), 0);
+
+    nexilis_client_config_set_tls(config, 1);
+    EXPECT_EQ(nexilis_client_config_get_tls(config), 1);
+
+    nexilis_client_config_set_tls(config, 0);
+    EXPECT_EQ(nexilis_client_config_get_tls(config), 0);
+
+    nexilis_client_config_destroy(config);
+}

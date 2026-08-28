@@ -52,6 +52,40 @@ void nexilis_client_config_set_mode(nexilis_ClientConfigC* config, int mode)
     }
 }
 
+void nexilis_client_config_set_message_encryption(nexilis_ClientConfigC* config, int enabled)
+{
+    if (config && config->data)
+    {
+        config->data->setMessageEncryption(enabled != 0);
+    }
+}
+
+int nexilis_client_config_get_message_encryption(const nexilis_ClientConfigC* config)
+{
+    if (config && config->data)
+    {
+        return config->data->isMessageEncryptionEnabled() ? 1 : 0;
+    }
+    return 0;
+}
+
+void nexilis_client_config_set_tls(nexilis_ClientConfigC* config, int enabled)
+{
+    if (config && config->data)
+    {
+        config->data->setTls(enabled != 0);
+    }
+}
+
+int nexilis_client_config_get_tls(const nexilis_ClientConfigC* config)
+{
+    if (config && config->data)
+    {
+        return config->data->isTlsEnabled() ? 1 : 0;
+    }
+    return 0;
+}
+
 void nexilis_client_config_set_inet_udp(nexilis_ClientConfigC* config, const char* server_address)
 {
     if (config && config->data && server_address)

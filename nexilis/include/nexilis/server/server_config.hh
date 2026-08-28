@@ -50,9 +50,24 @@ public:
         return m_tickrate;
     }
 
+    /// Whether TCP connections are encrypted with TLS-PSK.
+    /// \note The pre-shared key is derived from the passphrase, so a client
+    ///       only connects when it knows the same passphrase. Off by default
+    ///       so plaintext traffic stays plaintext unless explicitly enabled.
+    bool isTlsEnabled() const
+    {
+        return m_tls;
+    }
+
+    void setTls(bool enabled)
+    {
+        m_tls = enabled;
+    }
+
 private:
     std::string m_rootPassword;
     float m_tickrate = 60.f;
+    bool m_tls = false;
 };
 
 } // namespace nexilis::server

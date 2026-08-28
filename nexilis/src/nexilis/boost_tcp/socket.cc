@@ -8,28 +8,38 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/write.hpp>
 
+#include <openssl/ssl.h>
+
 #include <cstdint>
+#include <utility>
 
 namespace nexilis::boost_tcp
 {
 
 Socket::Socket(boost::asio::io_context& io) noexcept
     : NxClass("boost_tcp::Socket-server"),
-      m_socket(std::make_shared<boost::asio::ip::tcp::socket>(io))
+      m_context(std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tls)),
+      m_stream(std::make_shared<TlsStream>(io, *m_context))
 {
 }
 
 Socket::Socket(boost::asio::io_context& io, const std::string& host, uint16_t port) noexcept
     : NxClass("boost_tcp::Socket-client"),
-      m_socket(std::make_shared<boost::asio::ip::tcp::socket>(io)),
+      m_context(std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tls)),
+      m_stream(std::make_shared<TlsStream>(io, *m_context)),
+      m_tlsServer(false),
       m_endpointId("client:" + host + ":" + std::to_string(port))
 {
 }
 
 Socket::Socket(Socket&& other) noexcept
     : NxClass(std::move(other)),
-      m_socket(std::move(other.m_socket)),
+      m_context(std::move(other.m_context)),
+      m_stream(std::move(other.m_stream)),
       m_connected(other.m_connected.load()),
+      m_tls(other.m_tls.load()),
+      m_tlsHandshaken(other.m_tlsHandshaken.load()),
+      m_tlsServer(other.m_tlsServer),
       m_endpointId(std::move(other.m_endpointId))
 {
     other.m_connected.store(false);
@@ -43,8 +53,12 @@ Socket& Socket::operator=(Socket&& other) noexcept
         std::lock_guard<std::mutex> lock(m_mutex);
         std::lock_guard<std::mutex> other_lock(other.m_mutex);
 
-        m_socket = std::move(other.m_socket);
-        m_connected = m_connected.load();
+        m_context = std::move(other.m_context);
+        m_stream = std::move(other.m_stream);
+        m_connected = other.m_connected.load();
+        m_tls = other.m_tls.load();
+        m_tlsHandshaken = other.m_tlsHandshaken.load();
+        m_tlsServer = other.m_tlsServer;
         m_endpointId = std::move(other.m_endpointId);
         other.m_connected.store(false);
     }
@@ -61,10 +75,19 @@ bool Socket::connect(const std::string& host, uint16_t port)
 
     try
     {
-        boost::asio::ip::tcp::resolver resolver(m_socket->get_executor());
+        boost::asio::ip::tcp::resolver resolver(m_stream->lowest_layer().get_executor());
         auto endpoints = resolver.resolve(host, std::to_string(port));
 
-        boost::asio::connect(*m_socket, endpoints);
+        boost::asio::connect(m_stream->lowest_layer(), endpoints);
+
+        // When TLS is enabled the stream must be rebuilt so its SSL context
+        // matches the actual connection. lowest_layer() returns the socket as
+        // its base type, so cast back to tcp::socket before moving.
+        if (m_tls)
+        {
+            auto& concrete = static_cast<boost::asio::ip::tcp::socket&>(m_stream->lowest_layer());
+            m_stream = std::make_shared<TlsStream>(std::move(concrete), *m_context);
+        }
 
         m_endpointId = "client:" + host + ":" + std::to_string(port);
         m_connected = true;
@@ -78,13 +101,63 @@ bool Socket::connect(const std::string& host, uint16_t port)
     }
 }
 
+void Socket::enableTls(std::shared_ptr<boost::asio::ssl::context> context)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (context)
+    {
+        m_context = std::move(context);
+        m_tls = true;
+    }
+    else
+    {
+        m_tls = false;
+    }
+}
+
+bool Socket::tlsEnabled() const
+{
+    return m_tls.load();
+}
+
 void Socket::assign(boost::asio::ip::tcp::socket&& socket)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    *m_socket = std::move(socket);
-    m_endpointId = "server:" + std::to_string(m_socket->local_endpoint().port());
-    m_connected = m_socket->is_open();
+    // Rebuild the stream around the accepted socket so a TLS context set with
+    // enableTls() before assign() is picked up automatically.
+    m_stream = std::make_shared<TlsStream>(std::move(socket), *m_context);
+    m_tlsHandshaken.store(false);
+    m_endpointId = "server:" + std::to_string(m_stream->lowest_layer().local_endpoint().port());
+    m_connected = m_stream->lowest_layer().is_open();
     setSocketOptions();
+}
+
+bool Socket::ensureHandshakeInternal()
+{
+    if (!m_tls || m_tlsHandshaken.load())
+    {
+        return true;
+    }
+
+    if (!m_stream || !m_stream->lowest_layer().is_open())
+    {
+        m_connected = false;
+        return false;
+    }
+
+    boost::system::error_code ec;
+    m_stream->handshake(m_tlsServer ? boost::asio::ssl::stream_base::server
+                                    : boost::asio::ssl::stream_base::client,
+                        ec);
+    if (ec)
+    {
+        Log::error(header(), "TLS handshake failed: ", ec.message());
+        closeInternal();
+        return false;
+    }
+
+    m_tlsHandshaken.store(true);
+    return true;
 }
 
 bool Socket::send(const nx_data& data)
@@ -96,12 +169,26 @@ bool Socket::send(const nx_data& data)
         return false;
     }
 
+    if (m_tls && !ensureHandshakeInternal())
+    {
+        return false;
+    }
+
     try
     {
-        size_t written = boost::asio::write(
-                *m_socket,
-                boost::asio::buffer(data),
-                boost::asio::transfer_all());
+        size_t written;
+        if (m_tls)
+        {
+            written = boost::asio::write(*m_stream,
+                                         boost::asio::buffer(data),
+                                         boost::asio::transfer_all());
+        }
+        else
+        {
+            written = boost::asio::write(m_stream->next_layer(),
+                                         boost::asio::buffer(data),
+                                         boost::asio::transfer_all());
+        }
         return written == data.size();
     }
     catch (...)
@@ -124,20 +211,45 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
         return false;
     }
 
-    fd_set read_fds;
-    FD_ZERO(&read_fds);
-    FD_SET(m_socket->native_handle(), &read_fds);
-
-    timeval timeout;
-    timeout.tv_sec = timeout_ms / 1000;
-    timeout.tv_usec = (timeout_ms % 1000) * 1000;
-
-    int result = select(m_socket->native_handle() + 1, &read_fds, nullptr, nullptr,
-                        timeout_ms > 0 ? &timeout : nullptr);
-
-    if (result <= 0)
+    // With TLS the handshake runs first, blocking on this worker thread. The
+    // peer performs its half of the handshake right after the TCP connect, so
+    // this completes without any application data.
+    if (m_tls)
     {
-        return false; // Timeout or error
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (!ensureHandshakeInternal())
+        {
+            return false;
+        }
+    }
+
+    // Plaintext data buffered inside the TLS record layer must be consumed
+    // even when the kernel socket has nothing further to deliver; otherwise
+    // two messages coalesced into one TLS record would stall until new
+    // network traffic arrived.
+    bool pending = false;
+    if (m_tls)
+    {
+        pending = SSL_pending(m_stream->native_handle()) > 0;
+    }
+
+    if (!pending)
+    {
+        fd_set read_fds;
+        FD_ZERO(&read_fds);
+        FD_SET(m_stream->lowest_layer().native_handle(), &read_fds);
+
+        timeval timeout;
+        timeout.tv_sec = timeout_ms / 1000;
+        timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+        int result = select(m_stream->lowest_layer().native_handle() + 1, &read_fds, nullptr, nullptr,
+                            timeout_ms > 0 ? &timeout : nullptr);
+
+        if (result <= 0)
+        {
+            return false; // Timeout or error
+        }
     }
 
     try
@@ -154,9 +266,16 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
 
         // Read 4-byte length prefix (big-endian uint32_t)
         uint8_t len_buf[4];
-        boost::asio::read(*m_socket,
-                          boost::asio::buffer(len_buf),
-                          boost::asio::transfer_exactly(4), ec);
+        if (m_tls)
+        {
+            boost::asio::read(*m_stream, boost::asio::buffer(len_buf),
+                              boost::asio::transfer_exactly(4), ec);
+        }
+        else
+        {
+            boost::asio::read(m_stream->next_layer(), boost::asio::buffer(len_buf),
+                              boost::asio::transfer_exactly(4), ec);
+        }
 
         if (ec)
         {
@@ -177,8 +296,16 @@ bool Socket::receive(nx_data& data, size_t timeout_ms)
 
         // Read exactly payload_size bytes
         boost::asio::streambuf buf;
-        boost::asio::read(*m_socket, buf,
-                          boost::asio::transfer_exactly(payload_size), ec);
+        if (m_tls)
+        {
+            boost::asio::read(*m_stream, buf,
+                              boost::asio::transfer_exactly(payload_size), ec);
+        }
+        else
+        {
+            boost::asio::read(m_stream->next_layer(), buf,
+                              boost::asio::transfer_exactly(payload_size), ec);
+        }
 
         if (ec)
         {
@@ -207,31 +334,32 @@ void Socket::close()
 
 void Socket::closeInternal()
 {
-    if (!m_connected)
+    if (!m_connected && !(m_stream && m_stream->lowest_layer().is_open()))
     {
         return;
     }
 
     boost::system::error_code ec;
     // Cancel ongoing async operations.
-    ec = m_socket->cancel(ec);
+    ec = m_stream->lowest_layer().cancel(ec);
     if (ec)
     {
         Log::error(header(), "Error cancelling socket operations");
     }
 
-    ec = m_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+    ec = m_stream->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
     if (ec)
     {
         Log::error(header(), "Error shutting down socket");
     }
 
-    ec = m_socket->close(ec);
+    ec = m_stream->lowest_layer().close(ec);
     if (ec)
     {
         Log::error(header(), "Error closing socket");
     }
     m_connected = false;
+    m_tlsHandshaken.store(false);
 }
 
 void Socket::forceClose()
@@ -241,44 +369,47 @@ void Socket::forceClose()
     if (!lock.owns_lock())
     {
         boost::system::error_code ec;
-        if (m_socket && m_socket->is_open())
+        if (m_stream)
         {
-            ec = m_socket->cancel(ec);
-            if (ec)
+            if (m_stream->lowest_layer().is_open())
             {
-                Log::error(header(), "Error cancelling socket");
-            }
+                ec = m_stream->lowest_layer().cancel(ec);
+                if (ec)
+                {
+                    Log::error(header(), "Error cancelling socket");
+                }
 
-            ec = m_socket->close(ec);
-            if (ec)
-            {
-                Log::error(header(), "Error closing socket");
+                ec = m_stream->lowest_layer().close(ec);
+                if (ec)
+                {
+                    Log::error(header(), "Error closing socket");
+                }
             }
-            return;
         }
 
-        if (m_connected && m_socket && m_socket->is_open())
+        if (m_connected && m_stream)
         {
             boost::system::error_code close_ec;
-            close_ec = m_socket->cancel(close_ec);
+            close_ec = m_stream->lowest_layer().cancel(close_ec);
             if (close_ec)
             {
                 Log::error(header(), "Error cancelling socket");
             }
 
-            close_ec = m_socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, close_ec);
+            close_ec = m_stream->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, close_ec);
             if (close_ec)
             {
                 Log::error(header(), "Error shutting down socket");
             }
 
-            close_ec = m_socket->close(close_ec);
+            close_ec = m_stream->lowest_layer().close(close_ec);
             if (close_ec)
             {
                 Log::error(header(), "Error closing socket");
             }
 
             m_connected = false;
+            m_tlsHandshaken.store(false);
         }
     }
 }
@@ -291,20 +422,20 @@ std::string Socket::getEndpointId() const
 bool Socket::isOpen() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_socket && m_socket->is_open();
+    return m_stream && m_stream->lowest_layer().is_open();
 }
 
 std::string Socket::getRemoteAddress() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    if (!m_socket || !m_socket->is_open())
+    if (!m_stream || !m_stream->lowest_layer().is_open())
     {
         return "disconnected";
     }
 
     try
     {
-        return m_socket->remote_endpoint().address().to_string();
+        return m_stream->lowest_layer().remote_endpoint().address().to_string();
     }
     catch (...)
     {
@@ -315,10 +446,10 @@ std::string Socket::getRemoteAddress() const
 void Socket::cancelAllSocketOperations()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    if (m_connected && m_socket && m_socket->is_open())
+    if (m_connected && m_stream && m_stream->lowest_layer().is_open())
     {
         boost::system::error_code ec;
-        ec = m_socket->cancel(ec);
+        ec = m_stream->lowest_layer().cancel(ec);
         if (ec)
         {
             Log::error(header(), "Error cancelling socket operations: ", ec.message());
@@ -334,19 +465,19 @@ void Socket::setSocketOptions()
     }
 
     boost::system::error_code ec;
-    ec = m_socket->set_option(boost::asio::ip::tcp::no_delay(true), ec);
+    ec = m_stream->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true), ec);
     if (ec)
     {
         Log::error(header(), "Error setting option \"no_delay\"");
     }
 
-    ec = m_socket->set_option(boost::asio::socket_base::keep_alive(true), ec);
+    ec = m_stream->lowest_layer().set_option(boost::asio::socket_base::keep_alive(true), ec);
     if (ec)
     {
         Log::error(header(), "Error setting option \"keep_alive\"");
     }
 
-    ec = m_socket->set_option(boost::asio::socket_base::linger(true, 5), ec);
+    ec = m_stream->lowest_layer().set_option(boost::asio::socket_base::linger(true, 5), ec);
     if (ec)
     {
         Log::error(header(), "Error setting option \"linger\"");

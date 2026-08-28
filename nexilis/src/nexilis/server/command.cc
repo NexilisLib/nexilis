@@ -227,6 +227,14 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                             return ServerImpl::room_communicate_broadcast(args);
                         }
 
+                        // broadcast with an end-to-end encrypted payload.
+                        // The ciphertext is relayed verbatim; the server can
+                        // not read it, only forward it to the room.
+                        case 3:
+                        {
+                            return ServerImpl::room_communicate_broadcast(args);
+                        }
+
                         // othercast
                         case 1:
                         {

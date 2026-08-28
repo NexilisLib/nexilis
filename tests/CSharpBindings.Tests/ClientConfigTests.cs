@@ -48,6 +48,36 @@ namespace Nexilis.Tests
         }
 
         [Fact]
+        public void MessageEncryptionToggle()
+        {
+            using var config = new ClientConfig();
+
+            // Optional feature: off by default.
+            Assert.False(config.IsMessageEncryptionEnabled());
+
+            config.SetMessageEncryption(true);
+            Assert.True(config.IsMessageEncryptionEnabled());
+
+            config.SetMessageEncryption(false);
+            Assert.False(config.IsMessageEncryptionEnabled());
+        }
+
+        [Fact]
+        public void TlsToggle()
+        {
+            using var config = new ClientConfig();
+
+            // Optional feature: off by default.
+            Assert.False(config.IsTlsEnabled());
+
+            config.SetTls(true);
+            Assert.True(config.IsTlsEnabled());
+
+            config.SetTls(false);
+            Assert.False(config.IsTlsEnabled());
+        }
+
+        [Fact]
         public void FluentSettersReturnSameInstance()
         {
             using var config = new ClientConfig();

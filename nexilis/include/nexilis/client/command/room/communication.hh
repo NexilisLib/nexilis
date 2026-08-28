@@ -3,6 +3,8 @@
 
 #include <nexilis/client/base_api_command.hh>
 #include <nexilis/client/client_api.hh>
+#include <nexilis/crypto.hh>
+#include <nexilis/logger/log.hh>
 
 namespace nexilis::client
 {
@@ -15,15 +17,33 @@ public:
     {
     }
 
-    ReadResult execute(ClientAPI&, ClientAPI::ClientAPIData& data) override
+    ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
     {
         auto& mtx = data.getRoomsMutex();
         std::lock_guard<std::mutex> lock(*mtx);
 
         auto& rooms = data.getCurrentlyActiveRooms();
 
-        if (m_action == "broadcast")
+        if (m_action == "broadcast" || m_action == "broadcast_encrypted")
         {
+            // End-to-end encrypted messages are relayed by the server as an
+            // opaque base64 ciphertext blob. Only the receiving client can
+            // turn that back into the original message.
+            std::string payload = m_message;
+            if (m_action == "broadcast_encrypted")
+            {
+                const auto key = crypto::deriveMessageKey(api.getClientPassword(), m_room_id);
+                const auto sealed = crypto::fromBase64(m_message);
+                if (!key.empty() && !sealed.empty() && crypto::decrypt(key, sealed, payload))
+                {
+                    // Successfully decrypted into payload.
+                }
+                else
+                {
+                    Log::error("broadcast_encrypted: failed to decrypt message, keeping the raw ciphertext");
+                }
+            }
+
             for (auto&& room = rooms.begin(); room != rooms.end(); room++)
             {
                 ClientSession* sender = nullptr;
@@ -37,7 +57,7 @@ public:
 
                 if (room->getId() == m_room_id)
                 {
-                    Room::Communication newMessage(m_message, sender);
+                    Room::Communication newMessage(payload, sender);
                     [[maybe_unused]] auto message_id = newMessage.getId();
                     room->addMessage(std::move(newMessage));
 

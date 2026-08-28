@@ -70,6 +70,8 @@ removefiles({
 
 links({
 	"nexilis-boost",
+	"crypto",
+	"ssl",
 })
 
 -- Post-build message

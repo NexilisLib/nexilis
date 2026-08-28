@@ -7,6 +7,7 @@
 #include <nexilis/server/message/message_handler.hh>
 #include <nexilis/server/server_config.hh>
 #include <nexilis/server/server_protocol.hh>
+#include <nexilis/tls.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -71,6 +72,7 @@ private:
     std::unique_ptr<std::atomic<bool>> m_stopped;
     std::unique_ptr<std::mutex> m_mutex;
     std::unique_ptr<boost::asio::io_context> m_ioContext;
+    std::shared_ptr<boost::asio::ssl::context> m_tlsContext;
     boost::asio::ip::tcp::acceptor m_acceptor;
     boost::asio::ip::tcp::acceptor m_switchedAcceptor;
     std::unique_ptr<std::atomic<uint16_t>> m_switchedPort;

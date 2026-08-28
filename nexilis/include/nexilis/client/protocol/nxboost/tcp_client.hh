@@ -4,9 +4,11 @@
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
+#include <nexilis/tls.hh>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
@@ -21,6 +23,9 @@ class TCPClient : public virtual NxClass,
                   public ClientProtocol
 {
 public:
+    /// TLS transport used for the TCP connections (TLS-PSK when enabled).
+    using TlsSocket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
+
     /// Constructor.
     explicit TCPClient(ClientAPI& api);
 
@@ -69,16 +74,19 @@ private:
     bool connectToSwitchedPort(uint16_t port);
     bool send(const nx_data& data);
     void startAsyncRead();
-    void doAsyncRead(std::shared_ptr<boost::asio::ip::tcp::socket> socket,
+    void doAsyncRead(std::shared_ptr<TlsSocket> socket,
                      std::shared_ptr<boost::asio::streambuf> buffer);
     void handleAsyncReadError(const boost::system::error_code& ec);
     void initiatePortSwitch(uint16_t port);
 
+    /// Builds the TLS context from the ClientAPI configuration.
+    static std::shared_ptr<boost::asio::ssl::context> createTlsContext(ClientAPI& api);
+
     // Thread-safe socket access
-    std::shared_ptr<boost::asio::ip::tcp::socket> loadSocket() const;
-    void storeSocket(std::shared_ptr<boost::asio::ip::tcp::socket> socket);
-    std::shared_ptr<boost::asio::ip::tcp::socket> exchangeSocket(
-            std::shared_ptr<boost::asio::ip::tcp::socket> socket);
+    std::shared_ptr<TlsSocket> loadSocket() const;
+    void storeSocket(std::shared_ptr<TlsSocket> socket);
+    std::shared_ptr<TlsSocket> exchangeSocket(
+            std::shared_ptr<TlsSocket> socket);
 
 private:
     std::unique_ptr<std::atomic<bool>> m_stopped;
@@ -86,9 +94,10 @@ private:
     std::shared_ptr<boost::asio::io_context::strand> m_strand;
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_workGuard;
 
-    std::shared_ptr<boost::asio::ip::tcp::socket> m_mainSocket;
-    std::shared_ptr<boost::asio::ip::tcp::socket> m_switchedSocket;
-    boost::atomic_shared_ptr<boost::asio::ip::tcp::socket> m_activeSocket;
+    std::shared_ptr<boost::asio::ssl::context> m_tlsContext;
+    std::shared_ptr<TlsSocket> m_mainSocket;
+    std::shared_ptr<TlsSocket> m_switchedSocket;
+    boost::atomic_shared_ptr<TlsSocket> m_activeSocket;
     boost::asio::ip::tcp::resolver m_resolver;
 
     std::shared_ptr<std::mutex> m_sendMutex;

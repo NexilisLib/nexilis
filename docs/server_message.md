@@ -39,3 +39,20 @@ Parameters given to `Packet`, varies in size depending on the command type. Stri
 ## Response format
 
 Server responses are JSON objects terminated by a newline character (`\n`), making them readable with `async_read_until(socket, buffer, '\n')` on the client side.
+
+## TLS-PSK transport protection (optional)
+
+By default all TCP traffic travels in plaintext. Enabling TLS protects the whole connection (including the auentication exchange) from outsiders. No certificates or PKI are needed: the pre-shared key is derived from the existing authentication passphrase.
+
+Both sides must opt in:
+
+- `nexilis::server::ServerConfig::setTls(true)` on the server.
+- `nexilis::client::ClientConfig::setTls(true)` (or `nexilis_client_config_set_tls` / the C# `ClientConfig.SetTls`) on every client.
+
+Configuration details:
+
+- The PSK is derived with PBKDF2-HMAC-SHA256 (100000 iterations) from the passphrase with the domain-separated salt `"nexilis-tls-psk-v1:"`, producing a 32-byte key (`nexilis::tls::derivePsk`).
+- Only PSK cipher suites are negotiated (TLS 1.2 `PSK-AES128-GCM-SHA256` / `PSK-CHACHA20-POLY1305`, TLS 1.3 `TLS_AES_128_GCM_SHA256` / `TLS_CHACHA20_POLY1305_SHA256`), so no certificates are required.
+- A passphrase must be set on both server and client or the handshake fails. If the server has TLS enabled but cannot build a context (no passphrase), it refuses incoming connections.
+- If only one side enables TLS, the handshake fails rather than silently downgrading to plaintext.
+- The handshake happens lazily: the server accepts it before the first message is read or written, and the client performs it right after the TCP connect. TLS is applied to both the initial connection and the random "switched" port the server uses for the authenticated session.
