@@ -20,7 +20,12 @@ public:
 
         auto* client = api.getClientFromRoom(id);
         if (!client)
-            return ReadResult::command_execution;
+        {
+            // The client has not joined a room yet, so there is no local
+            // session to mirror the username onto. The server still stores it
+            // and delivers it with the join response, so this is a success.
+            return ReadResult::success;
+        }
 
         client->setUsername(m_username);
         return ReadResult::success;
