@@ -20,3 +20,4 @@ namespace Nexilis.Util
         public override string ToString() => $"Position({X}, {Y}, {Z})";
     }
 }
+
