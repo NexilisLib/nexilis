@@ -125,6 +125,21 @@ class Example:
 
     def start(self):
         """Start this example as a background server process."""
+        # A wait_for path left behind by a previous run must not satisfy the
+        # readiness check: the new server has not bound it yet, so clients that
+        # start right away would connect before the server is listening. Remove
+        # any stale socket file so readiness can only come from this instance.
+        if self.wait_for:
+            wait_path = Path(self.wait_for)
+            if wait_path.exists():
+                try:
+                    if wait_path.is_socket():
+                        wait_path.unlink()
+                except OSError as error:
+                    print(
+                        f"Warning: could not remove stale wait_for "
+                        f"'{self.wait_for}': {error}"
+                    )
         self.log_file = open(self.build_dir / f"{self.name}_server.log", "w")
         print(f"==> Starting server example: {self.name}")
         self.process = subprocess.Popen(

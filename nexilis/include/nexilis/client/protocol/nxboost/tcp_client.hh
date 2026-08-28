@@ -13,6 +13,8 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
+#include <deque>
+#include <functional>
 #include <thread>
 
 namespace nexilis::client::nxboost
@@ -78,6 +80,7 @@ private:
                      std::shared_ptr<boost::asio::streambuf> buffer);
     void handleAsyncReadError(const boost::system::error_code& ec);
     void initiatePortSwitch(uint16_t port);
+    void serviceWriteQueue();
 
     /// Builds the TLS context from the ClientAPI configuration.
     static std::shared_ptr<boost::asio::ssl::context> createTlsContext(ClientAPI& api);
@@ -107,6 +110,7 @@ private:
     uint16_t m_mainPort;
     uint16_t m_switchedPort;
     std::atomic<bool> m_useSwitchedPort;
+    std::atomic<bool> m_readInProgress = false;
 
     struct PendingSend
     {
@@ -116,6 +120,21 @@ private:
 
     std::unordered_map<uint64_t, std::shared_ptr<std::promise<void>>> m_pendingSends;
     std::shared_ptr<std::mutex> m_pendingSendsMutex;
+
+    /// A single queued message waiting to be flushed to the transport.
+    struct QueuedWrite
+    {
+        std::shared_ptr<TlsSocket> socket = nullptr;
+        bool tlsOn = false;
+        std::shared_ptr<nx_data> framed = nullptr;
+        uint64_t messageId = 0;
+        std::function<void(const boost::system::error_code&, std::size_t)> handler = nullptr;
+    };
+
+    /// Messages waiting to be written. Only touched from the strand.
+    std::deque<QueuedWrite> m_writeQueue;
+    /// True while one async_write is in flight. Only touched from the strand.
+    bool m_writeInFlight = false;
 };
 
 } // namespace nexilis::client::nxboost

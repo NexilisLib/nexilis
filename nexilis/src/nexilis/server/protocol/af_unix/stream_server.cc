@@ -30,7 +30,14 @@ StreamServer::~StreamServer()
         m_receiveThread.join();
     }
 
-    close(m_serverSocket);
+    if (m_serverSocket != -1)
+    {
+        close(m_serverSocket);
+    }
+
+    // Remove the filesystem socket entry so no stale file convinces a client
+    // (or a readiness check) that the server is still listening.
+    unlink(m_socketPath.c_str());
 }
 
 StreamServer::StreamServer(StreamServer&& other)

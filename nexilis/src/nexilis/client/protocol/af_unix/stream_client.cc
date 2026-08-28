@@ -89,9 +89,10 @@ void StreamClient::connectToServer()
     auto address = reinterpret_cast<sockaddr*>(&m_serverAddr);
     if (connect(m_clientSocket, address, sizeof(m_serverAddr)) == -1)
     {
-        perror("connect");
+        Log::error("Failed to connect to: ", m_serverSocketPath, " - ", strerror(errno));
         close(m_clientSocket);
         m_clientSocket = -1;
+        updateProtocolStatus(ProtocolStatus::error);
     }
 }
 
@@ -132,6 +133,15 @@ std::future<void> StreamClient::sendMessageAsync(const nx_data& message)
 void StreamClient::start()
 {
     m_running->store(true);
+
+    if (m_clientSocket == -1)
+    {
+        Log::error(header(), "Cannot start: no active connection to: ", m_serverSocketPath);
+        updateProtocolStatus(ProtocolStatus::error);
+        m_running->store(false);
+        return;
+    }
+
     m_receiveThread = std::thread([this]()
                                   {
         while (m_running->load())
@@ -166,6 +176,13 @@ nx_data StreamClient::receiveMessage()
 
     if (!m_running->load())
     {
+        return nx_data{};
+    }
+
+    if (m_clientSocket == -1)
+    {
+        // Connection is gone; let the receive thread exit instead of spinning
+        // on recv(-1).
         return nx_data{};
     }
 

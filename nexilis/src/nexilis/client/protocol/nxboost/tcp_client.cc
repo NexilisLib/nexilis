@@ -6,6 +6,7 @@
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/asio/connect.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/streambuf.hpp>
@@ -287,6 +288,26 @@ void TCPClient::stop()
         }
         m_pendingSends.clear();
     }
+
+    // Drain any queued (not yet initiated) writes. The io context has been
+    // joined by now so the strand can no longer be running; reject their
+    // promises so no future hangs.
+    while (!m_writeQueue.empty())
+    {
+        QueuedWrite w(std::move(m_writeQueue.front()));
+        m_writeQueue.pop_front();
+        if (w.handler)
+        {
+            try
+            {
+                w.handler(boost::asio::error::operation_aborted, 0);
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+    m_writeInFlight = false;
 }
 
 void TCPClient::sendMessage(const nx_data& message)
@@ -442,20 +463,18 @@ bool TCPClient::send(const nx_data& data)
             }
         };
 
-        // clang-format off
-        if (tlsOn)
-        {
-            boost::asio::async_write(*current_socket,
-                boost::asio::buffer(*framed),
-                boost::asio::bind_executor(*m_strand, completionHandler));
-        }
-        else
-        {
-            boost::asio::async_write(current_socket->next_layer(),
-                boost::asio::buffer(*framed),
-                boost::asio::bind_executor(*m_strand, completionHandler));
-        }
-        // clang-format on
+        // Queue the write on the strand so all ssl::stream write operations are
+        // strictly serialized: only one async_write is ever in flight, and a
+        // new one only starts after the previous TLS record was fully
+        // flushed. Issuing overlapping async_writes on an ssl::stream lets
+        // OpenSSL report "bytes written" for a record that was never queued.
+        boost::asio::dispatch(*m_strand,
+                              [this, tlsOn, current_socket, framed, messageId, completionHandler]()
+                              {
+                                  m_writeQueue.push_back(
+                                          QueuedWrite{current_socket, tlsOn, framed, messageId, completionHandler});
+                                  serviceWriteQueue();
+                              });
         return true;
     }
     catch (const std::exception& e)
@@ -474,6 +493,67 @@ bool TCPClient::send(const nx_data& data)
             }
         }
         return false;
+    }
+}
+
+void TCPClient::serviceWriteQueue()
+{
+    // Runs only on the strand thread. Drains exactly one pending write at a
+    // time so overlapping async_write operations on the ssl::stream can never
+    // occur.
+    while (!m_writeInFlight && !m_writeQueue.empty())
+    {
+        QueuedWrite w(std::move(m_writeQueue.front()));
+        m_writeQueue.pop_front();
+
+        if (m_stopped->load() || !w.socket || !w.socket->lowest_layer().is_open())
+        {
+            Log::warning(header(), "Socket closed before queued write could start");
+            if (w.messageId != 0)
+            {
+                std::lock_guard<std::mutex> lock(*m_pendingSendsMutex);
+                auto it = m_pendingSends.find(w.messageId);
+                if (it != m_pendingSends.end())
+                {
+                    it->second->set_exception(
+                            std::make_exception_ptr(
+                                    std::runtime_error("Send failed: socket closed")));
+                    m_pendingSends.erase(it);
+                }
+            }
+            continue;
+        }
+
+        Log::debug(header(), "Initiating queued write: bytes=", w.framed->size(), " id=", w.messageId);
+
+        m_writeInFlight = true;
+
+        auto wrapped = [this, w](const boost::system::error_code& ec, std::size_t size)
+        {
+            if (w.handler)
+            {
+                w.handler(ec, size);
+            }
+            m_writeInFlight = false;
+            serviceWriteQueue();
+        };
+
+        // clang-format off
+        if (w.tlsOn)
+        {
+            boost::asio::async_write(*w.socket,
+                boost::asio::buffer(*w.framed),
+                boost::asio::bind_executor(*m_strand, wrapped));
+        }
+        else
+        {
+            boost::asio::async_write(w.socket->next_layer(),
+                boost::asio::buffer(*w.framed),
+                boost::asio::bind_executor(*m_strand, wrapped));
+        }
+        // clang-format on
+
+        return;
     }
 }
 
@@ -552,14 +632,24 @@ void TCPClient::start()
 
 void TCPClient::startAsyncRead()
 {
-    if (m_stopped->load())
+    if (m_readInProgress.exchange(true))
+    {
+        Log::debug(header(), "Async read already in progress, skipping");
         return;
+    }
+
+    if (m_stopped->load())
+    {
+        m_readInProgress = false;
+        return;
+    }
 
     auto current_socket = loadSocket();
 
     if (!current_socket || !current_socket->lowest_layer().is_open())
     {
         Log::warning(header(), "Socket not available for async read");
+        m_readInProgress = false;
         return;
     }
 
@@ -572,6 +662,7 @@ void TCPClient::doAsyncRead(std::shared_ptr<TlsSocket> current_socket,
 {
     if (m_stopped->load())
     {
+        m_readInProgress = false;
         return;
     }
 
@@ -580,6 +671,7 @@ void TCPClient::doAsyncRead(std::shared_ptr<TlsSocket> current_socket,
     {
         if (ec)
         {
+            m_readInProgress = false;
             handleAsyncReadError(ec);
             return;
         }
@@ -587,6 +679,7 @@ void TCPClient::doAsyncRead(std::shared_ptr<TlsSocket> current_socket,
         if (m_stopped->load())
         {
             Log::debug(header(), "Read completed but client stopped");
+            m_readInProgress = false;
             return;
         }
 
@@ -617,6 +710,7 @@ void TCPClient::doAsyncRead(std::shared_ptr<TlsSocket> current_socket,
                         {
                             Log::info(header(), "Port switch detected, switching from ", m_mainPort,
                                       " to ", switchPort);
+                            m_readInProgress = false;
                             initiatePortSwitch(switchPort);
                             return;
                         }
@@ -636,22 +730,35 @@ void TCPClient::doAsyncRead(std::shared_ptr<TlsSocket> current_socket,
         // Continue reading with the same buffer so leftover data is not discarded.
         if (current_socket->lowest_layer().is_open() && !m_stopped->load())
         {
+            m_readInProgress = false;
             doAsyncRead(current_socket, receiveBuffer);
         }
     };
 
-    // clang-format off
-    if (tlsOn)
-    {
-        boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
-            boost::asio::bind_executor(*m_strand, readHandler));
-    }
-    else
-    {
-        boost::asio::async_read_until(current_socket->next_layer(), *receiveBuffer, '\n',
-            boost::asio::bind_executor(*m_strand, readHandler));
-    }
-    // clang-format on
+    // Initiate the async read from within the strand so SSL layer operations are
+    // serialized with writes and never overlap.
+    boost::asio::dispatch(*m_strand,
+                          [this, tlsOn, current_socket, receiveBuffer, readHandler]()
+                          {
+                              if (m_stopped->load() || !current_socket->lowest_layer().is_open())
+                              {
+                                  m_readInProgress = false;
+                                  return;
+                              }
+
+                              // clang-format off
+        if (tlsOn)
+        {
+            boost::asio::async_read_until(*current_socket, *receiveBuffer, '\n',
+                boost::asio::bind_executor(*m_strand, readHandler));
+        }
+        else
+        {
+            boost::asio::async_read_until(current_socket->next_layer(), *receiveBuffer, '\n',
+                boost::asio::bind_executor(*m_strand, readHandler));
+        }
+                              // clang-format on
+                          });
 }
 
 void TCPClient::handleAsyncReadError(const boost::system::error_code& ec)
