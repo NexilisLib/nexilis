@@ -42,10 +42,11 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
         clientId = Util::uint64FromFront(payload);
     }
 
-    // Reject a zero client id in every mode except password_protected: there the
-    // first message from an unidentified client is the password itself, which is
-    // compared below regardless of its length.
-    if (clientId == 0 && authentication->getMode() != AuthenticationMode::password_protected)
+    // Reject a zero client id in every mode except password_protected and skip:
+    // in password_protected the first message from an unidentified client is the
+    // password itself, and in skip mode the client has not been assigned an id
+    // yet and sends a "getting client_id" handshake to learn it.
+    if (clientId == 0 && authentication->getMode() != AuthenticationMode::password_protected && authentication->getMode() != AuthenticationMode::skip)
     {
         Log::error(header(), "Client id is zero");
         return std::make_unique<ErrorMessage>(address, ErrorMessage::Type::client_id_failure);
@@ -77,7 +78,41 @@ std::unique_ptr<BaseMessage> MessageHandler::readMessage(std::string address, co
         }
         case AuthenticationMode::skip:
         {
-            return std::make_unique<Message>(handlePayload(payload, user, address));
+            if (!newUser)
+            {
+                // Registered client: process the payload as a normal command.
+                return std::make_unique<Message>(handlePayload(payload, user, address));
+            }
+
+            // Brand new client. Register it so its client id stays stable and
+            // hand its id back through the same AuthMessage handshake used by
+            // password_protected mode (no credentials are verified here).
+            if (newUserPtr)
+            {
+                ClientStorage::add(std::move(newUserPtr));
+            }
+
+            uint64_t newClientId = user->getId();
+            auto realNewClient = ClientStorage::getClientById(newClientId);
+
+            // Checking successfull client creation.
+            assert(realNewClient);
+            assert(user->getId() == realNewClient->getId());
+
+            // This message is equal to Packet::getId (without client id):
+            // a "getting" / "client_id" command that delivers the assigned id.
+            // TODO add other data such as port number.
+            nx_data message{1, 0, 0};
+            auto idBytes = Util::convertToByteVector(user->getId());
+            for (auto&& byte : idBytes)
+            {
+                message.emplace_back(byte);
+            }
+            std::vector<nx_data> test{message};
+
+            auto new_message_id = Util::getRandomUint64();
+            BaseMessage::Data base_data(new_message_id, address, realNewClient);
+            return std::make_unique<AuthMessage>(std::move(base_data), test);
         }
         case AuthenticationMode::admin_access:
         case AuthenticationMode::root_access:

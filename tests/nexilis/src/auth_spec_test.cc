@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <nexilis/auth_config.hh>
+#include <nexilis/command_type.hh>
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/message/base_message.hh>
@@ -129,6 +130,77 @@ TEST_F(MessageHandlerPasswordProtectedTest, EmptyPasswordReturnsAuthError)
     auto result = sendPassword("");
     ASSERT_NE(result, nullptr);
     EXPECT_EQ(result->getType(), server::BaseMessage::Type::error_message);
+}
+
+class MessageHandlerSkipTest : public ::testing::Test
+{
+protected:
+    server::ServerConfig config{AuthenticationMode::skip, ""};
+    server::MessageHandler handler;
+
+    void TearDown() override
+    {
+        server::ClientStorage::clear();
+    }
+
+    // Build a framed command payload exactly as the skip-mode client sends it:
+    // 8 byte client id (0 for a brand new client) + 8 byte message id +
+    // the "getting" / "client_id" command bytes.
+    std::unique_ptr<server::BaseMessage> sendHandshake()
+    {
+        nx_data payload;
+        auto clientIdBytes = Util::convertToByteVector(static_cast<uint64_t>(0));
+        auto messageIdBytes = Util::convertToByteVector(static_cast<uint64_t>(100));
+        payload.insert(payload.end(), clientIdBytes.begin(), clientIdBytes.end());
+        payload.insert(payload.end(), messageIdBytes.begin(), messageIdBytes.end());
+        payload.emplace_back(static_cast<uint8_t>(CommandType::getting));
+        payload.emplace_back(0);
+        payload.emplace_back(0);
+        return handler.readMessage("test_address", payload, &config);
+    }
+};
+
+TEST_F(MessageHandlerSkipTest, NewClientReceivesAuthMessageWithId)
+{
+    auto result = sendHandshake();
+    ASSERT_NE(result, nullptr);
+    EXPECT_EQ(result->getType(), server::BaseMessage::Type::auth_message);
+
+    // The user must now be registered so its client id stays stable.
+    auto stored = server::ClientStorage::getClientsByIpAddress("test_address");
+    ASSERT_FALSE(stored.empty());
+    EXPECT_NE(stored[0]->getId(), 0);
+}
+
+TEST_F(MessageHandlerSkipTest, SecondMessageFromSameClientIsHandledAsCommand)
+{
+    auto first = sendHandshake();
+    ASSERT_NE(first, nullptr);
+    ASSERT_EQ(first->getType(), server::BaseMessage::Type::auth_message);
+
+    auto stored = server::ClientStorage::getClientsByIpAddress("test_address");
+    ASSERT_FALSE(stored.empty());
+    auto clientId = stored[0]->getId();
+
+    // Send a "getting" / "client_id" command from the now-registered client
+    // using its assigned id. This must be processed as a normal command.
+    nx_data payload;
+    auto clientIdBytes = Util::convertToByteVector(clientId);
+    auto messageIdBytes = Util::convertToByteVector(static_cast<uint64_t>(200));
+    payload.insert(payload.end(), clientIdBytes.begin(), clientIdBytes.end());
+    payload.insert(payload.end(), messageIdBytes.begin(), messageIdBytes.end());
+    payload.emplace_back(static_cast<uint8_t>(CommandType::getting));
+    payload.emplace_back(0);
+    payload.emplace_back(0);
+
+    auto second = handler.readMessage("test_address", payload, &config);
+    ASSERT_NE(second, nullptr);
+    EXPECT_EQ(second->getType(), server::BaseMessage::Type::message);
+
+    // The user id must not have changed between messages.
+    auto again = server::ClientStorage::getClientsByIpAddress("test_address");
+    ASSERT_FALSE(again.empty());
+    EXPECT_EQ(again[0]->getId(), clientId);
 }
 
 } // namespace

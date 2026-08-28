@@ -129,6 +129,21 @@ TEST_F(RoomSpecTest, InfoRoomsCreatesSessions)
     EXPECT_EQ(sessionCount(CLIENT_A), 1);
 }
 
+TEST_F(RoomSpecTest, SetUsernameBeforeJoiningRoomSucceeds)
+{
+    // A client sets its username before joining any room. There is no local
+    // session to mirror onto yet, but the command must still be acknowledged
+    // as a success (the server stores it and delivers it with the join reply).
+    boost::json::object json;
+    json["command"] = "setting";
+    json["type"] = "username";
+    json["callback"] = 0;
+    json["client_id"] = static_cast<uint64_t>(CLIENT_B);
+    json["username"] = "Bob";
+
+    EXPECT_EQ(readMessage(json), client::ReadResult::success);
+}
+
 TEST_F(RoomSpecTest, JoinAfterInfoRoomsDoesNotDuplicateSession)
 {
     // The second client starts after the first is already in the room:

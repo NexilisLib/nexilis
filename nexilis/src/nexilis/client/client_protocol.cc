@@ -1,5 +1,6 @@
 #include <nexilis/client/client_protocol.hh>
 #include <nexilis/client/packet.hh>
+#include <nexilis/command_type.hh>
 #include <nexilis/logger/log.hh>
 #include <nexilis/util.hh>
 
@@ -137,12 +138,26 @@ void ClientProtocol::start(Protocol::Type type)
             sendMessage(message);
             break;
         }
-        case server::AuthenticationMode::empty:
-        case server::AuthenticationMode::admin_access:
-        case server::AuthenticationMode::root_access:
         case server::AuthenticationMode::skip:
+        {
+            // The client does not know its id yet, so perform a "getting
+            // client_id" handshake with a zero client id prefix. The server
+            // replies with the assigned client id which initializes the client.
+            Log::debug(header(), "Authenticating by skipping authentication");
+            nx_data message;
+            _Packet::emplaceAll(message, static_cast<uint64_t>(0));          // client id
+            _Packet::emplaceAll(message, getClientAPI()->getNewMessageId()); // message id
+            message.emplace_back(static_cast<uint8_t>(CommandType::getting));
+            message.emplace_back(0);
+            message.emplace_back(0);
+            sendMessage(message);
+            break;
+        }
+        default:
+        {
             Log::error("Unhandled authentication mode: ", static_cast<int>(m_api->getMode()));
             break;
+        }
     }
 
     Log::debug(header(), "Client protocol type: ", Protocol::typeToString(type));
