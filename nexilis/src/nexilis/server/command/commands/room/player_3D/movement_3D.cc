@@ -27,70 +27,74 @@ CommandResult ServerImpl::room_player3d_movement(const DefaultArgs& args)
     {
         try
         {
-        Command::runWithTickrate(60.0f, delta,
-                [&mtx, movement_vector, &user, data, &protocol, &messageId](double progress)
+            auto* room = RoomStorage::getRoomById(user.getRoomId());
+            if (!room)
             {
-                auto* room = RoomStorage::getRoomById(user.getRoomId());
-                if (!room)
+                Log::warning("room_player3d_movement: room not found for user ", user.getRoomId());
+                return;
+            }
+
+            // The client sends a movement vector (velocity) together with the
+            // frame duration. Displacement for this packet is velocity * delta.
+            // Applying it exactly once (instead of via a tick-rate easing loop)
+            // guarantees the movement is applied even when delta is shorter than
+            // a single server tick.
+            if (delta <= 0.0f)
+            {
+                return;
+            }
+
+            auto current_pos = user.getObject3D().getPosition();
+            auto new_pos = Vector3f(current_pos.x + movement_vector.x * delta,
+                                    current_pos.y + movement_vector.y * delta,
+                                    current_pos.z + movement_vector.z * delta);
+
+            // Overlap validation: when the room forbids clients from sharing
+            // positions, drop this move if the new position would intersect
+            // another client. The position is not applied nor broadcast.
+            if (!room->isOverlappingAllowed())
+            {
+                auto dimensions = user.getObject3D().getDimensions();
+                for (auto clientId : room->getClients())
                 {
-                    Log::warning("room_player3d_movement: room not found for user ", user.getRoomId());
-                    return;
-                }
-
-                double eased_x = Movement::easing(progress, movement_vector.x);
-                double eased_y = Movement::easing(progress, movement_vector.y);
-                double eased_z = Movement::easing(progress, movement_vector.z);
-
-                auto current_pos = user.getObject3D().getPosition();
-                auto new_pos = Vector3f(eased_x + current_pos.x, eased_y + current_pos.y, eased_z + current_pos.z);
-
-                // Overlap validation: when the room forbids clients from sharing
-                // positions, drop this tick if the new position would intersect
-                // another client. The position is not applied nor broadcast.
-                if (!room->isOverlappingAllowed())
-                {
-                    auto dimensions = user.getObject3D().getDimensions();
-                    for (auto clientId : room->getClients())
+                    if (clientId == user.getId())
                     {
-                        if (clientId == user.getId())
-                        {
-                            continue;
-                        }
-                        auto* other = ClientStorage::getClientById(clientId);
-                        if (!other || other->getRoomId() != room->getId())
-                        {
-                            continue;
-                        }
-                        auto other_pos = other->getObject3D().getPosition();
-                        auto other_dimensions = other->getObject3D().getDimensions();
+                        continue;
+                    }
+                    auto* other = ClientStorage::getClientById(clientId);
+                    if (!other || other->getRoomId() != room->getId())
+                    {
+                        continue;
+                    }
+                    auto other_pos = other->getObject3D().getPosition();
+                    auto other_dimensions = other->getObject3D().getDimensions();
 
-                        bool intersects =
-                                new_pos.x - dimensions.x / 2 < other_pos.x + other_dimensions.x / 2 &&
-                                new_pos.x + dimensions.x / 2 > other_pos.x - other_dimensions.x / 2 &&
-                                new_pos.y - dimensions.y / 2 < other_pos.y + other_dimensions.y / 2 &&
-                                new_pos.y + dimensions.y / 2 > other_pos.y - other_dimensions.y / 2 &&
-                                new_pos.z - dimensions.z / 2 < other_pos.z + other_dimensions.z / 2 &&
-                                new_pos.z + dimensions.z / 2 > other_pos.z - other_dimensions.z / 2;
-                        if (intersects)
-                        {
-                            return;
-                        }
+                    bool intersects =
+                            new_pos.x - dimensions.x / 2 < other_pos.x + other_dimensions.x / 2 &&
+                            new_pos.x + dimensions.x / 2 > other_pos.x - other_dimensions.x / 2 &&
+                            new_pos.y - dimensions.y / 2 < other_pos.y + other_dimensions.y / 2 &&
+                            new_pos.y + dimensions.y / 2 > other_pos.y - other_dimensions.y / 2 &&
+                            new_pos.z - dimensions.z / 2 < other_pos.z + other_dimensions.z / 2 &&
+                            new_pos.z + dimensions.z / 2 > other_pos.z - other_dimensions.z / 2;
+                    if (intersects)
+                    {
+                        return;
                     }
                 }
+            }
 
+            {
+                std::lock_guard<std::mutex> lock(*mtx);
+                user.getObject3D().setPosition(new_pos);
+                std::map<std::string, boost::json::value> params
                 {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    user.getObject3D().setPosition(new_pos);
-                    std::map<std::string, boost::json::value> params
-                    {
-                        {"x", boost::json::value(new_pos.x)},
-                        {"y", boost::json::value(new_pos.y)},
-                        {"z", boost::json::value(new_pos.z)},
-                    };
-                    auto room_command = Command::createRoomCommand(user.getRoomId(), user, data, params, messageId);
-                    Command::sendRoomCommand(room_command, user, protocol);
-                }
-            });
+                    {"x", boost::json::value(new_pos.x)},
+                    {"y", boost::json::value(new_pos.y)},
+                    {"z", boost::json::value(new_pos.z)},
+                };
+                auto room_command = Command::createRoomCommand(user.getRoomId(), user, data, params, messageId);
+                Command::sendRoomCommand(room_command, user, protocol);
+            }
         }
         catch (const std::exception& e)
         {
