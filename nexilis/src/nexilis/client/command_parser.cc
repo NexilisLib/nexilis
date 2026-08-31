@@ -21,6 +21,21 @@ std::unique_ptr<ErrorCommand<Args...>> makeError(ReadResult result, Args&&... ar
     return std::make_unique<ErrorCommand<Args...>>(result, std::forward<Args>(args)...);
 }
 
+uint64_t getUint64(const boost::json::object& json, std::string_view key)
+{
+    return json.contains(key) ? Util::toUint64(json.at(key)) : 0;
+}
+
+float getFloat(const boost::json::object& json, std::string_view key)
+{
+    return json.contains(key) ? static_cast<float>(json.at(key).as_double()) : 0.0f;
+}
+
+std::string getString(const boost::json::object& json, std::string_view key)
+{
+    return json.contains(key) ? json.at(key).as_string().c_str() : "";
+}
+
 std::unique_ptr<BaseAPICommand> CommandParser::parse(const boost::json::object& json)
 {
     if (!json.contains("command") || !json.contains("type"))
@@ -115,215 +130,63 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     std::string action = json.at("action").as_string().c_str();
 
     // Common fields for all room commands
-    uint64_t room_id = 0;
-    uint64_t client_id = 0;
-
-    if (json.contains("room_id"))
-    {
-        room_id = Util::toUint64(json.at("room_id"));
-    }
-
-    if (json.contains("client_id"))
-    {
-        client_id = Util::toUint64(json.at("client_id"));
-    }
+    uint64_t room_id = getUint64(json, "room_id");
+    uint64_t client_id = getUint64(json, "client_id");
 
     if (type == "management")
     {
-        std::string room_name;
-        if (json.contains("room_name"))
-            room_name = json.at("room_name").as_string().c_str();
-
-        uint64_t room_context = 0;
-        if (json.contains("room_context"))
-            room_context = Util::toUint64(json.at("room_context"));
-
-        std::string username;
-        if (json.contains("username"))
-            username = json.at("username").as_string().c_str();
-
-        bool overlap_allowed = true;
-        if (json.contains("overlap_allowed"))
-            overlap_allowed = json.at("overlap_allowed").as_bool();
-
-        return std::make_unique<RoomManagementCommand>(action, room_id, client_id, room_name,
-                                                       room_context, username, overlap_allowed);
+        return std::make_unique<RoomManagementCommand>(
+                action, room_id, client_id,
+                getString(json, "room_name"),
+                getUint64(json, "room_context"),
+                getString(json, "username"),
+                json.contains("overlap_allowed") ? json.at("overlap_allowed").as_bool() : true);
     }
     else if (type == "player_2D")
     {
-        float x = 0.0f, y = 0.0f;
-        if (json.contains("x"))
-        {
-            x = static_cast<float>(json.at("x").as_double());
-        }
-        if (json.contains("y"))
-        {
-            y = static_cast<float>(json.at("y").as_double());
-        }
-        return std::make_unique<RoomPlayer2DCommand>(action, client_id, x, y);
+        return std::make_unique<RoomPlayer2DCommand>(action, client_id,
+                                                     getFloat(json, "x"), getFloat(json, "y"));
     }
     else if (type == "player_3D")
     {
-        float x = 0.0f, y = 0.0f, z = 0.0f;
-        uint64_t target_id = 0;
-        float damage = 0.0f, new_health = 0.0f;
-
-        if (json.contains("x"))
-        {
-            x = static_cast<float>(json.at("x").as_double());
-        }
-        if (json.contains("y"))
-        {
-            y = static_cast<float>(json.at("y").as_double());
-        }
-        if (json.contains("z"))
-        {
-            z = static_cast<float>(json.at("z").as_double());
-        }
-        if (json.contains("target_id"))
-        {
-            target_id = Util::toUint64(json.at("target_id"));
-        }
-        if (json.contains("damage"))
-        {
-            damage = static_cast<float>(json.at("damage").as_double());
-        }
-        if (json.contains("new_health"))
-        {
-            new_health = static_cast<float>(json.at("new_health").as_double());
-        }
-        return std::make_unique<RoomPlayer3DCommand>(action, client_id, x, y, z, target_id, damage, new_health);
+        return std::make_unique<RoomPlayer3DCommand>(
+                action, client_id,
+                getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"),
+                getUint64(json, "target_id"),
+                getFloat(json, "damage"), getFloat(json, "new_health"));
     }
     else if (type == "object_2D")
     {
-        uint64_t object_id = 0;
-        float x = 0.0f, y = 0.0f, w = 0.0f, h = 0.0f;
-        std::string filepath = "";
-
-        if (json.contains("id"))
-        {
-            object_id = Util::toUint64(json.at("id"));
-        }
-        if (json.contains("x"))
-        {
-            x = static_cast<float>(json.at("x").as_double());
-        }
-        if (json.contains("y"))
-        {
-            y = static_cast<float>(json.at("y").as_double());
-        }
-        if (json.contains("width"))
-        {
-            w = static_cast<float>(json.at("width").as_double());
-        }
-        if (json.contains("height"))
-        {
-            h = static_cast<float>(json.at("height").as_double());
-        }
-        if (json.contains("filepath"))
-        {
-            filepath = json.at("filepath").as_string().c_str();
-        }
-        return std::make_unique<RoomObject2DCommand>(action, room_id, object_id, x, y, w, h, filepath);
+        return std::make_unique<RoomObject2DCommand>(
+                action, room_id,
+                getUint64(json, "id"),
+                getFloat(json, "x"), getFloat(json, "y"),
+                getFloat(json, "width"), getFloat(json, "height"),
+                getString(json, "filepath"));
     }
     else if (type == "object_3D")
     {
-        uint64_t object_id = 0;
-        float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f, h = 0.0f, d = 0.0f;
-        std::string filepath = "";
-
-        if (json.contains("id"))
-        {
-            object_id = Util::toUint64(json.at("id"));
-        }
-        if (json.contains("x"))
-        {
-            x = static_cast<float>(json.at("x").as_double());
-        }
-        if (json.contains("y"))
-        {
-            y = static_cast<float>(json.at("y").as_double());
-        }
-        if (json.contains("z"))
-        {
-            z = static_cast<float>(json.at("z").as_double());
-        }
-        if (json.contains("w"))
-        {
-            w = static_cast<float>(json.at("w").as_double());
-        }
-        if (json.contains("h"))
-        {
-            h = static_cast<float>(json.at("h").as_double());
-        }
-        if (json.contains("d"))
-        {
-            d = static_cast<float>(json.at("d").as_double());
-        }
-        if (json.contains("filepath"))
-        {
-            filepath = json.at("filepath").as_string().c_str();
-        }
-        return std::make_unique<RoomObject3DCommand>(action, room_id, object_id, x, y, z, w, h, d, filepath);
+        return std::make_unique<RoomObject3DCommand>(
+                action, room_id,
+                getUint64(json, "id"),
+                getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"),
+                getFloat(json, "w"), getFloat(json, "h"), getFloat(json, "d"),
+                getString(json, "filepath"));
     }
     else if (type == "game_item")
     {
-        uint64_t item_id = 0;
-        float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f, h = 0.0f, d = 0.0f;
-        std::string item_type = "";
-        std::string status = "";
-        std::string filepath = "";
-
-        if (json.contains("id"))
-        {
-            item_id = Util::toUint64(json.at("id"));
-        }
-        if (json.contains("x"))
-        {
-            x = static_cast<float>(json.at("x").as_double());
-        }
-        if (json.contains("y"))
-        {
-            y = static_cast<float>(json.at("y").as_double());
-        }
-        if (json.contains("z"))
-        {
-            z = static_cast<float>(json.at("z").as_double());
-        }
-        if (json.contains("w"))
-        {
-            w = static_cast<float>(json.at("w").as_double());
-        }
-        if (json.contains("h"))
-        {
-            h = static_cast<float>(json.at("h").as_double());
-        }
-        if (json.contains("d"))
-        {
-            d = static_cast<float>(json.at("d").as_double());
-        }
-        if (json.contains("item_type"))
-        {
-            item_type = json.at("item_type").as_string().c_str();
-        }
-        if (json.contains("status"))
-        {
-            status = json.at("status").as_string().c_str();
-        }
-        if (json.contains("filepath"))
-        {
-            filepath = json.at("filepath").as_string().c_str();
-        }
-        return std::make_unique<RoomGameItemCommand>(action, room_id, item_id, x, y, z, w, h, d, item_type, status, filepath);
+        return std::make_unique<RoomGameItemCommand>(
+                action, room_id,
+                getUint64(json, "id"),
+                getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"),
+                getFloat(json, "w"), getFloat(json, "h"), getFloat(json, "d"),
+                getString(json, "item_type"), getString(json, "status"),
+                getString(json, "filepath"));
     }
     else if (type == "communication")
     {
-        std::string message = "";
-        if (json.contains("message"))
-        {
-            message = json.at("message").as_string().c_str();
-        }
-        return std::make_unique<RoomCommunicationCommand>(action, room_id, client_id, message);
+        return std::make_unique<RoomCommunicationCommand>(action, room_id, client_id,
+                                                          getString(json, "message"));
     }
 
     return makeError(ReadResult::parsing_failed, "cannot find room command type");
