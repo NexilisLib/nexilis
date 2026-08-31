@@ -1,6 +1,8 @@
 #include <nexilis/boost_tcp/socket.hh>
+#include <nexilis/room_command_type.hh>
 #include <nexilis/server/client_storage.hh>
 #include <nexilis/server/command/command.hh>
+#include <nexilis/server/command/commands.hh>
 #include <nexilis/server/message/auth_message.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 #include <nexilis/server/room_storage.hh>
@@ -592,9 +594,16 @@ void TCPServer::handleClient(boost::asio::ip::tcp::socket socket)
                     if (room)
                     {
                         Log::info(header(), "Cleaning up disconnected user ", connectedUserId, " from room ", roomId);
-                        room->leaveRoom(connectedUserId);
+
+                        // Broadcast the standard leave command to the remaining clients
+                        // so they remove the disconnected user's object from their scene.
+                        nx_data leaveData = {
+                                static_cast<uint8_t>(CommandType::room),
+                                static_cast<uint8_t>(RoomCommandType::Root::management),
+                                static_cast<uint8_t>(RoomCommandType::Management::leave)};
+                        DefaultArgs args(*user, *this, leaveData, 0);
+                        ServerImpl::room_management_leave(args);
                     }
-                    user->setRoomId(0);
                 }
                 ClientStorage::remove(connectedUserId);
             }
