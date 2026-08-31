@@ -49,7 +49,8 @@ public:
         position = 0,
         dimension = 1,
         movement = 2,
-        shoot = 3
+        shoot = 3,
+        respawn = 4
     };
 
     enum class ObjectType : uint8_t

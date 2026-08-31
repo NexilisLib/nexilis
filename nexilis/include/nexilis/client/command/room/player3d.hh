@@ -78,6 +78,13 @@ public:
             data.pushDamageEvent(std::move(event));
             return ReadResult::success;
         }
+        else if (m_action == "respawn")
+        {
+            ClientAPI::RespawnEvent event;
+            event.target_id = m_target_id;
+            data.pushRespawnEvent(std::move(event));
+            return ReadResult::success;
+        }
         return ReadResult::not_found;
     }
 

@@ -1,6 +1,8 @@
 #include <algorithm>
 
+#include <nexilis/command_type.hh>
 #include <nexilis/logger/log.hh>
+#include <nexilis/room_command_type.hh>
 #include <nexilis/server/command/command.hh>
 #include <nexilis/server/command/commands.hh>
 #include <nexilis/server/room_storage.hh>
@@ -56,12 +58,33 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
             {"damage", boost::json::value(static_cast<double>(damage))},
             {"new_health", boost::json::value(static_cast<double>(newHealth))}};
 
-    auto roomCommand = Command::createRoomCommand(
-            user.getRoomId(), user, args.getData(), params, args.getMessageId());
-    if (Command::sendRoomCommand(roomCommand, user, args.getProtocol()))
-        return CommandResult::success;
-    else
+    if (Command::sendRoomCommand(
+                Command::createRoomCommand(
+                        user.getRoomId(), user, args.getData(), params, args.getMessageId()),
+                user, args.getProtocol()) == false)
         return CommandResult::failed_room_send;
+
+    if (newHealth <= 0.0f)
+    {
+        room->resetPlayerHealth(targetId);
+
+        std::map<std::string, boost::json::value> respawnParams{
+                {"target_id", boost::json::value(targetId)}};
+
+        nx_data respawnData;
+        respawnData.emplace_back(static_cast<uint8_t>(nexilis::CommandType::room));
+        respawnData.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
+        respawnData.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::respawn));
+
+        if (!Command::sendRoomCommand(
+                    Command::createRoomCommand(
+                            user.getRoomId(), user, respawnData, respawnParams,
+                            args.getMessageId()),
+                    user, args.getProtocol()))
+            return CommandResult::failed_room_send;
+    }
+
+    return CommandResult::success;
 }
 
 } // namespace nexilis::server

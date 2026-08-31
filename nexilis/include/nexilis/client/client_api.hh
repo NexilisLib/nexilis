@@ -65,6 +65,11 @@ public:
         float new_health = 0.0f;
     };
 
+    struct RespawnEvent
+    {
+        uint64_t target_id = 0;
+    };
+
     class ClientAPIData
     {
     public:
@@ -83,6 +88,7 @@ public:
               m_messageIds(std::move(other.m_messageIds)),
               m_callbacks(std::move(other.m_callbacks)),
               m_pendingDamageEvents(std::move(other.m_pendingDamageEvents)),
+              m_pendingRespawnEvents(std::move(other.m_pendingRespawnEvents)),
               m_damageMutex(std::move(other.m_damageMutex)),
               m_roomsMutex(std::move(other.m_roomsMutex))
         {
@@ -103,6 +109,7 @@ public:
                 m_messageIds = std::move(other.m_messageIds);
                 m_callbacks = std::move(other.m_callbacks);
                 m_pendingDamageEvents = std::move(other.m_pendingDamageEvents);
+                m_pendingRespawnEvents = std::move(other.m_pendingRespawnEvents);
                 m_damageMutex = std::move(other.m_damageMutex);
                 m_roomsMutex = std::move(other.m_roomsMutex);
 
@@ -187,6 +194,18 @@ public:
             return std::move(m_pendingDamageEvents);
         }
 
+        void pushRespawnEvent(RespawnEvent event)
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            m_pendingRespawnEvents.push_back(std::move(event));
+        }
+
+        std::vector<RespawnEvent> consumeRespawnEvents()
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            return std::move(m_pendingRespawnEvents);
+        }
+
     private:
         /// Is the server aware of the client, is "Packet" initialized.
         bool m_isInitialized = false;
@@ -205,6 +224,8 @@ public:
 
         /// Pending damage events.
         std::vector<DamageEvent> m_pendingDamageEvents;
+        /// Pending respawn events.
+        std::vector<RespawnEvent> m_pendingRespawnEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
@@ -365,6 +386,12 @@ public:
     std::vector<DamageEvent> consumeDamageEvents()
     {
         return m_clientAPIData.consumeDamageEvents();
+    }
+
+    /// Consume all pending respawn events (thread-safe).
+    std::vector<RespawnEvent> consumeRespawnEvents()
+    {
+        return m_clientAPIData.consumeRespawnEvents();
     }
 
     /// Let the program wait until nexilis has created all the rooms.
