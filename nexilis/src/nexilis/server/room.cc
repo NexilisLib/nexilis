@@ -1,4 +1,5 @@
 #include <nexilis/logger/log.hh>
+#include <nexilis/server/client_storage.hh>
 #include <nexilis/server/room.hh>
 #include <nexilis/util.hh>
 
@@ -18,6 +19,7 @@ Room::Room(Room&& other)
       m_broadcasts(std::move(other.m_broadcasts)),
       m_playerHealth(std::move(other.m_playerHealth)),
       m_defaultHealth(other.m_defaultHealth),
+      m_deathHandler(std::move(other.m_deathHandler)),
       m_overlappingAllowed(other.m_overlappingAllowed.load())
 {
 }
@@ -30,6 +32,7 @@ Room& Room::operator=(Room&& other)
         m_broadcasts = std::move(other.m_broadcasts);
         m_playerHealth = std::move(other.m_playerHealth);
         m_defaultHealth = other.m_defaultHealth;
+        m_deathHandler = std::move(other.m_deathHandler);
         m_overlappingAllowed.store(other.m_overlappingAllowed.load());
         BaseRoom::operator=(std::move(other));
     }
@@ -94,6 +97,51 @@ void Room::damagePlayer(uint64_t clientId, float damage)
 void Room::resetPlayerHealth(uint64_t clientId)
 {
     m_playerHealth[clientId] = m_defaultHealth;
+}
+
+void Room::setDeathHandler(DeathHandler handler)
+{
+    m_deathHandler = std::move(handler);
+}
+
+void Room::onPlayerDied(uint64_t killerId, uint64_t victimId)
+{
+    if (m_deathHandler)
+    {
+        m_deathHandler(*this, killerId, victimId);
+    }
+}
+
+bool Room::broadcastToAll(const nx_data& data)
+{
+    bool all_success = true;
+    for (auto clientId : m_clientIds)
+    {
+        auto* client = ClientStorage::getClientById(clientId);
+        if (!client)
+            continue;
+
+        if (client->isBoostTCPSet())
+        {
+            if (!client->boostTCPSend(data))
+                all_success = false;
+        }
+        else if (client->isBoostUDPSet())
+        {
+            if (!client->boostUDPSend(data))
+                all_success = false;
+        }
+        else if (client->isUnixStreamSet())
+        {
+            if (!client->unixStreamSend(data))
+                all_success = false;
+        }
+        else
+        {
+            all_success = false;
+        }
+    }
+    return all_success;
 }
 
 } // namespace nexilis::server

@@ -8,6 +8,7 @@
 #include <nexilis/server/user.hh>
 
 #include <atomic>
+#include <functional>
 #include <unordered_map>
 
 namespace nexilis::server
@@ -17,6 +18,13 @@ namespace nexilis::server
 class Room : public BaseRoom
 {
 public:
+    /// Callback invoked when a player dies. The application decides what happens next
+    /// (respawn, spectate, round end, etc.).
+    /// \param room The room where the death occurred.
+    /// \param killerId The id of the player that caused the death.
+    /// \param victimId The id of the player that died.
+    using DeathHandler = std::function<void(Room& room, uint64_t killerId, uint64_t victimId)>;
+
     /// A broadcast message that has been sent in the room.
     struct Broadcast
     {
@@ -83,6 +91,20 @@ public:
     /// Reset a player's health to default.
     void resetPlayerHealth(uint64_t clientId);
 
+    /// Set the callback invoked when a player's health reaches zero.
+    /// If no handler is set, nothing happens on death.
+    void setDeathHandler(DeathHandler handler);
+
+    /// Notify the room that a player died. Invokes the registered DeathHandler if set.
+    /// \param killerId The id of the player that caused the death.
+    /// \param victimId The id of the player that died.
+    void onPlayerDied(uint64_t killerId, uint64_t victimId);
+
+    /// Send raw data to all clients in this room.
+    /// \param data The bytes to send.
+    /// \return True if all clients received the data.
+    bool broadcastToAll(const nx_data& data);
+
     /// Can clients in this room share the same position (overlap each other).
     bool isOverlappingAllowed() const
     {
@@ -100,6 +122,7 @@ private:
     std::vector<Broadcast> m_broadcasts;
     std::unordered_map<uint64_t, float> m_playerHealth;
     float m_defaultHealth = 100.0f;
+    DeathHandler m_deathHandler;
 
     /// Atomic because movement threads read this while command threads write it.
     std::atomic<bool> m_overlappingAllowed{true};

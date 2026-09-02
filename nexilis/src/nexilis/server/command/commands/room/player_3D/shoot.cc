@@ -66,22 +66,7 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
 
     if (newHealth <= 0.0f)
     {
-        room->resetPlayerHealth(targetId);
-
-        std::map<std::string, boost::json::value> respawnParams{
-                {"target_id", boost::json::value(targetId)}};
-
-        nx_data respawnData;
-        respawnData.emplace_back(static_cast<uint8_t>(nexilis::CommandType::room));
-        respawnData.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
-        respawnData.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::respawn));
-
-        if (!Command::sendRoomCommand(
-                    Command::createRoomCommand(
-                            user.getRoomId(), user, respawnData, respawnParams,
-                            args.getMessageId()),
-                    user, args.getProtocol()))
-            return CommandResult::failed_room_send;
+        room->onPlayerDied(user.getId(), targetId);
     }
 
     return CommandResult::success;
