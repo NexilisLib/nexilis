@@ -86,8 +86,40 @@ CmdLineOptions::CmdLineOptions(int argc, char** argv)
     for (int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
-        if (arg[0] == '-')
+        if (arg.size() >= 2 && arg[0] == '-' && arg[1] == '-')
         {
+            // Long option: --name
+            std::string name = arg.substr(1); // store as "-name" for uniform lookup
+            std::vector<std::shared_ptr<IValue>> values;
+
+            // Collect all following non-option arguments as values
+            while (i + 1 < argc && argv[i + 1][0] != '-')
+            {
+                std::string val = argv[++i];
+
+                // Try to parse as different types
+                if (int intValue; tryParse(val, intValue))
+                {
+                    values.emplace_back(std::make_shared<Value<int>>(intValue));
+                }
+                else if (double doubleValue; tryParse(val, doubleValue))
+                {
+                    values.emplace_back(std::make_shared<Value<double>>(doubleValue));
+                }
+                else if (std::string stringValue; tryParse(val, stringValue))
+                {
+                    values.emplace_back(std::make_shared<Value<std::string>>(val));
+                }
+                else
+                {
+                    Log::error("Undefined value as command line option!");
+                }
+            }
+            m_arguments.emplace_back(name, values);
+        }
+        else if (arg[0] == '-')
+        {
+            // Short option: -name
             std::string name = arg;
             std::vector<std::shared_ptr<IValue>> values;
 
