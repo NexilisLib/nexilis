@@ -12,7 +12,7 @@ BaseClient::BaseClient(uint64_t id)
 {
 }
 
-BaseClient::BaseClient(BaseClient&& other)
+BaseClient::BaseClient(BaseClient&& other) noexcept
     : m_id(std::move(other.m_id)),
       m_username(std::move(other.m_username)),
       m_object2D(std::move(other.m_object2D)),
@@ -20,7 +20,7 @@ BaseClient::BaseClient(BaseClient&& other)
 {
 }
 
-BaseClient& BaseClient::operator=(BaseClient&& other)
+BaseClient& BaseClient::operator=(BaseClient&& other) noexcept
 {
     if (this != &other)
     {

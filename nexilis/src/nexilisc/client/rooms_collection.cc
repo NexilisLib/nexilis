@@ -26,6 +26,7 @@ void nexilis_rooms_collection_free(nexilis_RoomsCollection* collection)
 {
     if (collection)
     {
+        delete collection->rooms;
         delete collection;
     }
 }

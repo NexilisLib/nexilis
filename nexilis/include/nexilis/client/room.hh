@@ -72,17 +72,17 @@ public:
     /// Constructor.
     explicit Room(const RoomData& roomData, std::vector<ClientSession>&& clients);
 
-    /// Deleted copy constructor.
-    Room(const Room& other) = delete;
+    /// Copy constructor.
+    Room(const Room& other);
 
     /// Move constructor.
-    Room(Room&& other);
+    Room(Room&& other) noexcept;
 
-    /// Deleted copy assignment operator.
+    /// Copy assignment operator.
     Room& operator=(const Room& other) = delete;
 
     /// Move assignment operator.
-    Room& operator=(Room&& other);
+    Room& operator=(Room&& other) noexcept;
 
     /// Comparison operator overload.
     friend bool operator==(const Room& lhs, const Room& rhs);

@@ -21,14 +21,35 @@ public:
     {
     }
 
-    /// Deleted copy constructor.
-    Object(const Object&) = delete;
+    /// Copy constructor.
+    Object(const Object& other)
+        : m_id(other.m_id),
+          m_position(other.m_position),
+          m_dimensions(other.m_dimensions),
+          m_filepath(other.m_filepath),
+          m_mutex(std::make_unique<std::mutex>())
+    {
+    }
 
-    /// Deleted copy assignment operator.
-    Object& operator=(const Object&) = delete;
+    /// Copy assignment operator.
+    Object& operator=(const Object& other)
+    {
+        if (this != &other)
+        {
+            m_id = other.m_id;
+            m_position = other.m_position;
+            m_dimensions = other.m_dimensions;
+            m_filepath = other.m_filepath;
+            if (!m_mutex)
+            {
+                m_mutex = std::make_unique<std::mutex>();
+            }
+        }
+        return *this;
+    }
 
     /// Move constructor.
-    Object(Object&& other)
+    Object(Object&& other) noexcept
         : m_id(std::move(other.m_id)),
           m_position(std::move(other.m_position)),
           m_dimensions(std::move(other.m_dimensions)),

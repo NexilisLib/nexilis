@@ -18,8 +18,34 @@ public:
              const Vector3f& dimensions, const std::string& status,
              const std::string& filepath = "");
 
-    GameItem(const GameItem&) = delete;
-    GameItem& operator=(const GameItem&) = delete;
+    GameItem(const GameItem& other)
+        : m_id(other.m_id),
+          m_type(other.m_type),
+          m_position(other.m_position),
+          m_dimensions(other.m_dimensions),
+          m_status(other.m_status),
+          m_filepath(other.m_filepath),
+          m_mutex(std::make_unique<std::mutex>())
+    {
+    }
+
+    GameItem& operator=(const GameItem& other)
+    {
+        if (this != &other)
+        {
+            m_id = other.m_id;
+            m_type = other.m_type;
+            m_position = other.m_position;
+            m_dimensions = other.m_dimensions;
+            m_status = other.m_status;
+            m_filepath = other.m_filepath;
+            if (!m_mutex)
+            {
+                m_mutex = std::make_unique<std::mutex>();
+            }
+        }
+        return *this;
+    }
 
     GameItem(GameItem&& other) noexcept;
     GameItem& operator=(GameItem&& other) noexcept;

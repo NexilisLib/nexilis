@@ -16,16 +16,13 @@ public:
     explicit BaseRoom(const RoomData& roomData);
 
     /// Move constructor.
-    BaseRoom(BaseRoom&& other);
+    BaseRoom(BaseRoom&& other) noexcept;
 
     /// Move assignment operator.
-    BaseRoom& operator=(BaseRoom&& other);
+    BaseRoom& operator=(BaseRoom&& other) noexcept;
 
-    /// Deleted copy constructor.
-    BaseRoom(const BaseRoom&) = delete;
-
-    /// Deleted copy assignment operator.
-    BaseRoom& operator=(const BaseRoom&) = delete;
+    /// Copy constructor.
+    BaseRoom(const BaseRoom& other);
 
     /// Get given name for the room.
     std::string getName() const

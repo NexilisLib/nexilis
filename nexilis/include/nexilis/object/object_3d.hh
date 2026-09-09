@@ -16,11 +16,21 @@ public:
     {
     }
 
-    /// Deleted copy constructor.
-    Object3D(const Object3D& other) = delete;
+    /// Copy constructor.
+    Object3D(const Object3D& other)
+        : Object(other)
+    {
+    }
 
-    /// Deleted copy assignment operator.
-    Object3D& operator=(const Object3D& other) = delete;
+    /// Copy assignment operator.
+    Object3D& operator=(const Object3D& other)
+    {
+        if (this != &other)
+        {
+            Object::operator=(other);
+        }
+        return *this;
+    }
 
     /// Move constructor.
     Object3D(Object3D&& other) noexcept;

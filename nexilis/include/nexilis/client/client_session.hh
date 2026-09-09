@@ -19,17 +19,18 @@ public:
     /// Virtual destructor.
     virtual ~ClientSession() = default;
 
+    /// Copy constructor.
+    ClientSession(const ClientSession& other)
+        : BaseClient(other),
+          m_clientAPI(other.m_clientAPI)
+    {
+    }
+
     /// Move constructor.
-    ClientSession(ClientSession&& other);
+    ClientSession(ClientSession&& other) noexcept;
 
     /// Move assignment operator.
-    ClientSession& operator=(ClientSession&& other);
-
-    /// Deleted copy constructor.
-    ClientSession(const ClientSession& other) = delete;
-
-    /// Deleted copy assignment operator.
-    ClientSession& operator=(const ClientSession& other) = delete;
+    ClientSession& operator=(ClientSession&& other) noexcept;
 
     /// Comparison operator overload.
     friend bool operator==(const ClientSession& lhs, const ClientSession& rhs);

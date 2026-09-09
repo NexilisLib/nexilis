@@ -16,11 +16,21 @@ public:
     {
     }
 
-    /// Deleted copy constructor.
-    Object2D(const Object&) = delete;
+    /// Copy constructor.
+    Object2D(const Object2D& other)
+        : Object(other)
+    {
+    }
 
-    /// Deleted copy assignment operator.
-    Object2D& operator=(const Object2D&) = delete;
+    /// Copy assignment operator.
+    Object2D& operator=(const Object2D& other)
+    {
+        if (this != &other)
+        {
+            Object::operator=(other);
+        }
+        return *this;
+    }
 
     /// Move constructor.
     Object2D(Object2D&& other) noexcept;

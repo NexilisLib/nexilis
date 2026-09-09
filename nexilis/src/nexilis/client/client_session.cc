@@ -10,13 +10,13 @@ ClientSession::ClientSession(uint64_t id, ClientAPI* clientAPI)
 {
 }
 
-ClientSession::ClientSession(ClientSession&& other)
+ClientSession::ClientSession(ClientSession&& other) noexcept
     : BaseClient(std::move(other)),
       m_clientAPI(std::move(other.m_clientAPI))
 {
 }
 
-ClientSession& ClientSession::operator=(ClientSession&& other)
+ClientSession& ClientSession::operator=(ClientSession&& other) noexcept
 {
     if (this != &other)
     {

@@ -204,6 +204,11 @@ public:
             return m_roomsMutex;
         }
 
+        const std::unique_ptr<std::mutex>& getRoomsMutex() const
+        {
+            return m_roomsMutex;
+        }
+
         void pushDamageEvent(DamageEvent event)
         {
             std::lock_guard<std::mutex> lock(*m_damageMutex);
@@ -352,13 +357,13 @@ public:
         return client ? client->getUsername() : "";
     }
 
-    /// Return a reference of the currently active rooms.
-    const std::vector<client::Room>& getActiveRooms() const
+    /// Return a snapshot copy of the currently active rooms (thread-safe).
+    /// The copy is taken under the room mutex so that reads never race with
+    /// the network thread's room updates. Mutating the returned copy has no
+    /// effect on the API's internal state.
+    std::vector<client::Room> getActiveRooms() const
     {
-        return m_clientAPIData.getCurrentlyActiveRooms();
-    }
-    std::vector<client::Room>& getActiveRooms()
-    {
+        std::lock_guard<std::mutex> lock(*m_clientAPIData.getRoomsMutex());
         return m_clientAPIData.getCurrentlyActiveRooms();
     }
 

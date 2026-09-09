@@ -54,14 +54,21 @@ bool operator==(const Room::Communication& lhs, const Room::Communication& rhs)
            lhs.getId() == rhs.getId();
 }
 
-Room::Room(Room&& other)
+Room::Room(const Room& other)
+    : BaseRoom(other),
+      m_clients(other.m_clients),
+      m_roomMessages(other.m_roomMessages)
+{
+}
+
+Room::Room(Room&& other) noexcept
     : BaseRoom(std::move(other)),
       m_clients(std::move(other.m_clients)),
       m_roomMessages(std::move(other.m_roomMessages))
 {
 }
 
-Room& Room::operator=(Room&& other)
+Room& Room::operator=(Room&& other) noexcept
 {
     if (this != &other)
     {

@@ -216,7 +216,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPJoinRoom)
     waitFor(5, api->getActiveRooms().size() == 1);
 
     EXPECT_EQ(api->getActiveRooms().size(), 1);
-    auto& room = api->getActiveRooms()[0];
+    auto room = api->getActiveRooms()[0];
 
     EXPECT_EQ(room.getClients().size(), 0);
     auto room_id = api->getActiveRooms()[0].getId();
@@ -248,7 +248,7 @@ TEST_F(BasicBoostTCPTest, ProtocolTestBoostTCPMultipleRoomContexts)
     EXPECT_EQ(api->getActiveRooms().size(), 2);
 
     // Verify room contexts
-    auto& rooms = api->getActiveRooms();
+    auto rooms = api->getActiveRooms();
     EXPECT_EQ(rooms[0].getContext(), nexilis::RoomData::Context::_2D);
     EXPECT_EQ(rooms[1].getContext(), nexilis::RoomData::Context::_3D);
 }

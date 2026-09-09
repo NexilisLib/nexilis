@@ -9,7 +9,15 @@ BaseRoom::BaseRoom(const RoomData& roomData)
 {
 }
 
-BaseRoom::BaseRoom(BaseRoom&& other)
+BaseRoom::BaseRoom(const BaseRoom& other)
+    : m_roomData(other.m_roomData),
+      m_objects2D(other.m_objects2D),
+      m_objects3D(other.m_objects3D),
+      m_gameItems(other.m_gameItems)
+{
+}
+
+BaseRoom::BaseRoom(BaseRoom&& other) noexcept
     : m_roomData(std::move(other.m_roomData)),
       m_objects2D(std::move(other.m_objects2D)),
       m_objects3D(std::move(other.m_objects3D)),
@@ -17,7 +25,7 @@ BaseRoom::BaseRoom(BaseRoom&& other)
 {
 }
 
-BaseRoom& BaseRoom::operator=(BaseRoom&& other)
+BaseRoom& BaseRoom::operator=(BaseRoom&& other) noexcept
 {
     if (this != &other)
     {

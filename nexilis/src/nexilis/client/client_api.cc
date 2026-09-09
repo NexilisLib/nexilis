@@ -45,7 +45,7 @@ bool ClientAPI::clientInRoom()
     auto& mtx = m_clientAPIData.getRoomsMutex();
     std::lock_guard<std::mutex> lock(*mtx);
 
-    auto& rooms = getActiveRooms();
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
     for (auto r = rooms.begin(); r != rooms.end(); r++)
     {
         auto& clients = r->getClients();
@@ -65,7 +65,7 @@ uint64_t ClientAPI::clientRoomId()
     auto& mtx = m_clientAPIData.getRoomsMutex();
     std::lock_guard<std::mutex> lock(*mtx);
 
-    auto& rooms = getActiveRooms();
+    auto& rooms = m_clientAPIData.getCurrentlyActiveRooms();
     for (auto r = rooms.begin(); r != rooms.end(); r++)
     {
         auto& clients = r->getClients();
@@ -216,7 +216,7 @@ std::function<void()> ClientAPI::waitUntilRoomsCreated(std::promise<void>& promi
                     }
 
                     std::lock_guard<std::mutex> lock(*m_clientAPIData.getRoomsMutex());
-                    if (!getActiveRooms().empty())
+                    if (!m_clientAPIData.getCurrentlyActiveRooms().empty())
                     {
                         promise_ptr->set_value();
                         return;

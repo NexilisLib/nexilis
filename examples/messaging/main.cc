@@ -31,20 +31,37 @@ bool waitFor(Predicate&& predicate,
 void printNewMessages(nexilis::client::ClientAPI& api, uint64_t room_id,
                       const std::string& listener, std::size_t& printed)
 {
-    auto* room = api.getRoom(room_id);
-    if (!room)
+    for (const auto& room : api.getActiveRooms())
     {
+        if (room.getId() != room_id)
+        {
+            continue;
+        }
+
+        const auto& messages = room.getMessages();
+        const auto count = messages.size();
+        for (; printed < count; ++printed)
+        {
+            const auto& message = messages[printed];
+            const auto* sender = message.getClient();
+            const auto& name = sender ? sender->getUsername() : std::string("unknown");
+            std::cout << "[" << listener << " heard " << name << "] " << message.getPayload() << std::endl;
+        }
         return;
     }
+}
 
-    const auto count = room->getMessages().size();
-    for (; printed < count; ++printed)
+/// Check whether a client's room snapshot already contains every expected message.
+bool hasAllMessages(nexilis::client::ClientAPI& api, uint64_t room_id, std::size_t expected)
+{
+    for (const auto& room : api.getActiveRooms())
     {
-        const auto& message = room->getMessages()[printed];
-        const auto* sender = message.getClient();
-        const auto& name = sender ? sender->getUsername() : std::string("unknown");
-        std::cout << "[" << listener << " heard " << name << "] " << message.getPayload() << std::endl;
+        if (room.getId() == room_id)
+        {
+            return room.getMessages().size() >= expected;
+        }
     }
+    return false;
 }
 
 } // namespace
@@ -131,8 +148,14 @@ int main()
 
     if (!waitFor([&]()
                  {
-                     auto* room = alice_api.getRoom(room_id);
-                     return room && room->getClients().size() == 2; }))
+                 for (const auto& room : alice_api.getActiveRooms())
+                 {
+                     if (room.getId() == room_id && room.getClients().size() == 2)
+                     {
+                         return true;
+                     }
+                 }
+                 return false; }))
     {
         std::cerr << "Alice never saw Bob join the chat room" << std::endl;
         return EXIT_FAILURE;
@@ -191,33 +214,33 @@ int main()
                                    {
                                        printNewMessages(alice_api, room_id, "Alice", alice_printed);
                                        printNewMessages(bob_api, room_id, "Bob", bob_printed);
-                                       auto* alice_room = alice_api.getRoom(room_id);
-                                       auto* bob_room = bob_api.getRoom(room_id);
-                                       return alice_room && bob_room &&
-                                              alice_room->getMessages().size() >= expected &&
-                                              bob_room->getMessages().size() >= expected; },
+                                       return hasAllMessages(alice_api, room_id, expected) &&
+                                              hasAllMessages(bob_api, room_id, expected); },
                                    std::chrono::seconds(15));
 
     // The encrypted messages must arrive as readable plaintext on both sides,
     // meaning the ciphertext actually round-tripped through the server.
     auto encryptedMessagesReadable = [&](nexilis::client::ClientAPI& api, const std::string& listener)
     {
-        auto* room = api.getRoom(room_id);
-        if (!room)
+        for (const auto& room : api.getActiveRooms())
         {
-            return false;
-        }
-        const auto& messages = room->getMessages();
-        for (std::size_t index = conversation.size(); index < messages.size(); ++index)
-        {
-            const std::size_t turn = index - conversation.size();
-            if (messages[index].getPayload() != secret_conversation[turn].text)
+            if (room.getId() != room_id)
             {
-                std::cerr << listener << " received an unreadable encrypted message" << std::endl;
-                return false;
+                continue;
             }
+            const auto& messages = room.getMessages();
+            for (std::size_t index = conversation.size(); index < messages.size(); ++index)
+            {
+                const std::size_t turn = index - conversation.size();
+                if (messages[index].getPayload() != secret_conversation[turn].text)
+                {
+                    std::cerr << listener << " received an unreadable encrypted message" << std::endl;
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
+        return false;
     };
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));

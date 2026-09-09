@@ -19,16 +19,32 @@ public:
     explicit BaseClient(uint64_t id);
 
     /// Move constructor.
-    BaseClient(BaseClient&& other);
+    BaseClient(BaseClient&& other) noexcept;
 
     /// Move assignment operator.
-    BaseClient& operator=(BaseClient&& other);
+    BaseClient& operator=(BaseClient&& other) noexcept;
 
-    /// Deleted copy constructor.
-    BaseClient(const BaseClient& other) = delete;
+    /// Copy constructor.
+    BaseClient(const BaseClient& other)
+        : m_id(other.m_id),
+          m_username(other.m_username),
+          m_object2D(other.m_object2D),
+          m_object3D(other.m_object3D)
+    {
+    }
 
-    /// Deleted copy assignment operator.
-    BaseClient& operator=(const BaseClient& other) = delete;
+    /// Copy assignment operator.
+    BaseClient& operator=(const BaseClient& other)
+    {
+        if (this != &other)
+        {
+            m_id = other.m_id;
+            m_username = other.m_username;
+            m_object2D = other.m_object2D;
+            m_object3D = other.m_object3D;
+        }
+        return *this;
+    }
 
     uint64_t getId() const
     {

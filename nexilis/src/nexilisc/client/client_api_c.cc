@@ -255,7 +255,7 @@ nexilis_RoomsCollection* nexilis_client_api_get_active_rooms(const nexilis_Clien
         return nullptr;
     }
     auto* collection = new nexilis_RoomsCollection;
-    collection->rooms = &client_api->api->getActiveRooms();
+    collection->rooms = new std::vector<nexilis::client::Room>(client_api->api->getActiveRooms());
     return collection;
 }
 
