@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <stdexcept>
+#include <type_traits>
 
 namespace nexilis
 {
@@ -116,12 +117,20 @@ public:
         std::memcpy(&yBytes, data.data() + 1 * sizeof(uint32_t), sizeof(uint32_t));
         std::memcpy(&zBytes, data.data() + 2 * sizeof(uint32_t), sizeof(uint32_t));
 
-        float _x, _y, _z;
-        std::memcpy(&_x, &xBytes, sizeof(float));
-        std::memcpy(&_y, &yBytes, sizeof(float));
-        std::memcpy(&_z, &zBytes, sizeof(float));
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            float _x, _y, _z;
+            std::memcpy(&_x, &xBytes, sizeof(float));
+            std::memcpy(&_y, &yBytes, sizeof(float));
+            std::memcpy(&_z, &zBytes, sizeof(float));
 
-        return Vector3(_x, _y, _z);
+            return Vector3(_x, _y, _z);
+        }
+        else
+        {
+            // Integer components are stored as their 32-bit representation.
+            return Vector3(static_cast<T>(xBytes), static_cast<T>(yBytes), static_cast<T>(zBytes));
+        }
     }
 };
 

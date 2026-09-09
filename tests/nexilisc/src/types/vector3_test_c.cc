@@ -3,120 +3,371 @@
 #include <nexilisc/nx_data_c.h>
 #include <nexilisc/types/vector3_c.h>
 
+#include <cstdint>
 #include <cstring>
+#include <limits>
+#include <type_traits>
 #include <vector>
 
-TEST(Vector3fTest_c, CreateDefault)
+namespace
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
-    ASSERT_NE(v, nullptr);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_x(v), 0.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_y(v), 0.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_z(v), 0.0f);
-    nexilis_vector3f_destroy(v);
+
+template <typename T, typename U>
+void expect_components_equal(T actual, U expected)
+{
+    if constexpr (std::is_floating_point_v<T>)
+    {
+        EXPECT_FLOAT_EQ(actual, expected);
+    }
+    else
+    {
+        EXPECT_EQ(actual, expected);
+    }
 }
 
-TEST(Vector3fTest_c, CreateWithValues)
+struct Vector3fAdapter
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(1.0f, 2.0f, 3.0f);
-    ASSERT_NE(v, nullptr);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_x(v), 1.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_y(v), 2.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_z(v), 3.0f);
-    nexilis_vector3f_destroy(v);
+    using component_type = float;
+    using vector_type = nexilis_Vector3f;
+
+    static constexpr component_type x = 1.5f;
+    static constexpr component_type y = -2.5f;
+    static constexpr component_type z = 3.0f;
+    static constexpr component_type new_x = 5.5f;
+    static constexpr component_type new_y = -3.0f;
+    static constexpr component_type new_z = 100.0f;
+
+    static vector_type* create(component_type x, component_type y, component_type z)
+    {
+        return nexilis_vector3f_create(x, y, z);
+    }
+    static vector_type* create_default()
+    {
+        return nexilis_vector3f_create_default();
+    }
+    static void destroy(vector_type* vec)
+    {
+        nexilis_vector3f_destroy(vec);
+    }
+    static component_type get_x(const vector_type* vec)
+    {
+        return nexilis_vector3f_get_x(vec);
+    }
+    static component_type get_y(const vector_type* vec)
+    {
+        return nexilis_vector3f_get_y(vec);
+    }
+    static component_type get_z(const vector_type* vec)
+    {
+        return nexilis_vector3f_get_z(vec);
+    }
+    static void set_x(vector_type* vec, component_type x)
+    {
+        nexilis_vector3f_set_x(vec, x);
+    }
+    static void set_y(vector_type* vec, component_type y)
+    {
+        nexilis_vector3f_set_y(vec, y);
+    }
+    static void set_z(vector_type* vec, component_type z)
+    {
+        nexilis_vector3f_set_z(vec, z);
+    }
+    static void serialize(const vector_type* vec, uint8_t* out_data)
+    {
+        nexilis_vector3f_serialize(vec, out_data);
+    }
+    static vector_type* deserialize(const uint8_t* data)
+    {
+        return nexilis_vector3f_deserialize(data);
+    }
+    static bool is_valid(void* vector_ptr)
+    {
+        return nexilis_vector3f_is_valid(vector_ptr);
+    }
+};
+
+struct Vector3iAdapter
+{
+    using component_type = int;
+    using vector_type = nexilis_Vector3i;
+
+    static constexpr component_type x = 1;
+    static constexpr component_type y = -2;
+    static constexpr component_type z = 3;
+    static constexpr component_type new_x = 42;
+    static constexpr component_type new_y = -7;
+    static constexpr component_type new_z = 1000;
+
+    static vector_type* create(component_type x, component_type y, component_type z)
+    {
+        return nexilis_vector3i_create(x, y, z);
+    }
+    static vector_type* create_default()
+    {
+        return nexilis_vector3i_create_default();
+    }
+    static void destroy(vector_type* vec)
+    {
+        nexilis_vector3i_destroy(vec);
+    }
+    static component_type get_x(const vector_type* vec)
+    {
+        return nexilis_vector3i_get_x(vec);
+    }
+    static component_type get_y(const vector_type* vec)
+    {
+        return nexilis_vector3i_get_y(vec);
+    }
+    static component_type get_z(const vector_type* vec)
+    {
+        return nexilis_vector3i_get_z(vec);
+    }
+    static void set_x(vector_type* vec, component_type x)
+    {
+        nexilis_vector3i_set_x(vec, x);
+    }
+    static void set_y(vector_type* vec, component_type y)
+    {
+        nexilis_vector3i_set_y(vec, y);
+    }
+    static void set_z(vector_type* vec, component_type z)
+    {
+        nexilis_vector3i_set_z(vec, z);
+    }
+    static void serialize(const vector_type* vec, uint8_t* out_data)
+    {
+        nexilis_vector3i_serialize(vec, out_data);
+    }
+    static vector_type* deserialize(const uint8_t* data)
+    {
+        return nexilis_vector3i_deserialize(data);
+    }
+    static bool is_valid(void* vector_ptr)
+    {
+        return nexilis_vector3i_is_valid(vector_ptr);
+    }
+};
+
+struct Vector3uAdapter
+{
+    using component_type = uint64_t;
+    using vector_type = nexilis_Vector3u;
+
+    static constexpr component_type x = 1;
+    static constexpr component_type y = 2;
+    static constexpr component_type z = 3;
+    static constexpr component_type new_x = 42;
+    static constexpr component_type new_y = 7;
+    static constexpr component_type new_z = 1000;
+
+    static vector_type* create(component_type x, component_type y, component_type z)
+    {
+        return nexilis_vector3u_create(x, y, z);
+    }
+    static vector_type* create_default()
+    {
+        return nexilis_vector3u_create_default();
+    }
+    static void destroy(vector_type* vec)
+    {
+        nexilis_vector3u_destroy(vec);
+    }
+    static component_type get_x(const vector_type* vec)
+    {
+        return nexilis_vector3u_get_x(vec);
+    }
+    static component_type get_y(const vector_type* vec)
+    {
+        return nexilis_vector3u_get_y(vec);
+    }
+    static component_type get_z(const vector_type* vec)
+    {
+        return nexilis_vector3u_get_z(vec);
+    }
+    static void set_x(vector_type* vec, component_type x)
+    {
+        nexilis_vector3u_set_x(vec, x);
+    }
+    static void set_y(vector_type* vec, component_type y)
+    {
+        nexilis_vector3u_set_y(vec, y);
+    }
+    static void set_z(vector_type* vec, component_type z)
+    {
+        nexilis_vector3u_set_z(vec, z);
+    }
+    static void serialize(const vector_type* vec, uint8_t* out_data)
+    {
+        nexilis_vector3u_serialize(vec, out_data);
+    }
+    static vector_type* deserialize(const uint8_t* data)
+    {
+        return nexilis_vector3u_deserialize(data);
+    }
+    static bool is_valid(void* vector_ptr)
+    {
+        return nexilis_vector3u_is_valid(vector_ptr);
+    }
+};
+
+} // namespace
+
+template <typename T>
+class Vector3Test_c : public testing::Test
+{
+};
+
+using Vector3CVectorTypes = testing::Types<Vector3fAdapter, Vector3iAdapter, Vector3uAdapter>;
+TYPED_TEST_SUITE(Vector3Test_c, Vector3CVectorTypes);
+
+TYPED_TEST(Vector3Test_c, CreateDefault)
+{
+    auto* vec = TypeParam::create(0, 0, 0);
+    ASSERT_NE(vec, nullptr);
+    expect_components_equal(TypeParam::get_x(vec), 0);
+    expect_components_equal(TypeParam::get_y(vec), 0);
+    expect_components_equal(TypeParam::get_z(vec), 0);
+    TypeParam::destroy(vec);
 }
 
-TEST(Vector3fTest_c, SetX)
+TYPED_TEST(Vector3Test_c, CreateDefaultFactory)
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
-    nexilis_vector3f_set_x(v, 5.5f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_x(v), 5.5f);
-    nexilis_vector3f_destroy(v);
+    using component_type = typename TypeParam::component_type;
+
+    auto* vec = TypeParam::create_default();
+    ASSERT_NE(vec, nullptr);
+    expect_components_equal(TypeParam::get_x(vec), component_type{0});
+    expect_components_equal(TypeParam::get_y(vec), component_type{0});
+    expect_components_equal(TypeParam::get_z(vec), component_type{0});
+    TypeParam::destroy(vec);
 }
 
-TEST(Vector3fTest_c, SetY)
+TYPED_TEST(Vector3Test_c, CreateWithValues)
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
-    nexilis_vector3f_set_y(v, -3.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_y(v), -3.0f);
-    nexilis_vector3f_destroy(v);
+    auto* vec = TypeParam::create(TypeParam::x, TypeParam::y, TypeParam::z);
+    ASSERT_NE(vec, nullptr);
+    expect_components_equal(TypeParam::get_x(vec), TypeParam::x);
+    expect_components_equal(TypeParam::get_y(vec), TypeParam::y);
+    expect_components_equal(TypeParam::get_z(vec), TypeParam::z);
+    TypeParam::destroy(vec);
 }
 
-TEST(Vector3fTest_c, SetZ)
+TYPED_TEST(Vector3Test_c, SetX)
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
-    nexilis_vector3f_set_z(v, 100.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_z(v), 100.0f);
-    nexilis_vector3f_destroy(v);
+    auto* vec = TypeParam::create(0, 0, 0);
+    TypeParam::set_x(vec, TypeParam::new_x);
+    expect_components_equal(TypeParam::get_x(vec), TypeParam::new_x);
+    expect_components_equal(TypeParam::get_y(vec), 0);
+    expect_components_equal(TypeParam::get_z(vec), 0);
+    TypeParam::destroy(vec);
 }
 
-TEST(Vector3fTest_c, SerializeDeserialize)
+TYPED_TEST(Vector3Test_c, SetY)
 {
-    nexilis_Vector3f* original = nexilis_vector3f_create(1.5f, -2.5f, 3.0f);
+    auto* vec = TypeParam::create(0, 0, 0);
+    TypeParam::set_y(vec, TypeParam::new_y);
+    expect_components_equal(TypeParam::get_x(vec), 0);
+    expect_components_equal(TypeParam::get_y(vec), TypeParam::new_y);
+    expect_components_equal(TypeParam::get_z(vec), 0);
+    TypeParam::destroy(vec);
+}
+
+TYPED_TEST(Vector3Test_c, SetZ)
+{
+    auto* vec = TypeParam::create(0, 0, 0);
+    TypeParam::set_z(vec, TypeParam::new_z);
+    expect_components_equal(TypeParam::get_x(vec), 0);
+    expect_components_equal(TypeParam::get_y(vec), 0);
+    expect_components_equal(TypeParam::get_z(vec), TypeParam::new_z);
+    TypeParam::destroy(vec);
+}
+
+TYPED_TEST(Vector3Test_c, SerializeDeserialize)
+{
+    auto* original = TypeParam::create(TypeParam::x, TypeParam::y, TypeParam::z);
     ASSERT_NE(original, nullptr);
 
-    const size_t expected_size = sizeof(float) * 3;
+    const size_t expected_size = sizeof(uint32_t) * 3;
     std::vector<uint8_t> buffer(expected_size);
-    nexilis_vector3f_serialize(original, buffer.data());
+    TypeParam::serialize(original, buffer.data());
 
-    nexilis_Vector3f* deserialized = nexilis_vector3f_deserialize(buffer.data());
+    auto* deserialized = TypeParam::deserialize(buffer.data());
     ASSERT_NE(deserialized, nullptr);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_x(deserialized), 1.5f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_y(deserialized), -2.5f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_z(deserialized), 3.0f);
+    expect_components_equal(TypeParam::get_x(deserialized), TypeParam::x);
+    expect_components_equal(TypeParam::get_y(deserialized), TypeParam::y);
+    expect_components_equal(TypeParam::get_z(deserialized), TypeParam::z);
 
-    nexilis_vector3f_destroy(original);
-    nexilis_vector3f_destroy(deserialized);
+    TypeParam::destroy(original);
+    TypeParam::destroy(deserialized);
 }
 
-TEST(Vector3fTest_c, SerializeDeserializeZero)
+TYPED_TEST(Vector3Test_c, SerializeDeserializeZero)
 {
-    nexilis_Vector3f* original = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
+    auto* original = TypeParam::create(0, 0, 0);
+    ASSERT_NE(original, nullptr);
 
-    const size_t expected_size = sizeof(float) * 3;
+    const size_t expected_size = sizeof(uint32_t) * 3;
     std::vector<uint8_t> buffer(expected_size);
-    nexilis_vector3f_serialize(original, buffer.data());
+    TypeParam::serialize(original, buffer.data());
 
-    nexilis_Vector3f* deserialized = nexilis_vector3f_deserialize(buffer.data());
+    auto* deserialized = TypeParam::deserialize(buffer.data());
     ASSERT_NE(deserialized, nullptr);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_x(deserialized), 0.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_y(deserialized), 0.0f);
-    EXPECT_FLOAT_EQ(nexilis_vector3f_get_z(deserialized), 0.0f);
+    expect_components_equal(TypeParam::get_x(deserialized), 0);
+    expect_components_equal(TypeParam::get_y(deserialized), 0);
+    expect_components_equal(TypeParam::get_z(deserialized), 0);
 
-    nexilis_vector3f_destroy(original);
-    nexilis_vector3f_destroy(deserialized);
+    TypeParam::destroy(original);
+    TypeParam::destroy(deserialized);
 }
 
-TEST(Vector3fTest_c, DeserializeNullReturnsNull)
+TYPED_TEST(Vector3Test_c, DeserializeNullReturnsNull)
 {
-    nexilis_Vector3f* result = nexilis_vector3f_deserialize(nullptr);
-    EXPECT_EQ(result, nullptr);
+    EXPECT_EQ(TypeParam::deserialize(nullptr), nullptr);
 }
 
-TEST(Vector3fTest_c, IsValidWithValidVector)
+TYPED_TEST(Vector3Test_c, IsValidWithValidVector)
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(1.0f, 2.0f, 3.0f);
-    EXPECT_TRUE(nexilis_vector3f_is_valid(v));
-    nexilis_vector3f_destroy(v);
+    auto* vec = TypeParam::create(TypeParam::x, TypeParam::y, TypeParam::z);
+    EXPECT_TRUE(TypeParam::is_valid(vec));
+    TypeParam::destroy(vec);
 }
 
-TEST(Vector3fTest_c, IsValidWithNull)
+TYPED_TEST(Vector3Test_c, IsValidWithNull)
 {
-    EXPECT_FALSE(nexilis_vector3f_is_valid(nullptr));
+    EXPECT_FALSE(TypeParam::is_valid(nullptr));
 }
 
-TEST(Vector3fTest_c, IsValidWithNaN)
+TYPED_TEST(Vector3Test_c, IsValidWithNaN)
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
-    nexilis_vector3f_set_x(v, std::numeric_limits<float>::quiet_NaN());
-    EXPECT_FALSE(nexilis_vector3f_is_valid(v));
-    nexilis_vector3f_destroy(v);
+    using component_type = typename TypeParam::component_type;
+
+    if constexpr (std::is_floating_point_v<component_type>)
+    {
+        auto* vec = TypeParam::create(0, 0, 0);
+        TypeParam::set_x(vec, std::numeric_limits<component_type>::quiet_NaN());
+        EXPECT_FALSE(TypeParam::is_valid(vec));
+        TypeParam::destroy(vec);
+    }
+    else
+    {
+        GTEST_SKIP() << "NaN validity check only applies to floating-point vectors";
+    }
 }
 
-TEST(Vector3fTest_c, IsValidWithInfinity)
+TYPED_TEST(Vector3Test_c, IsValidWithInfinity)
 {
-    nexilis_Vector3f* v = nexilis_vector3f_create(0.0f, 0.0f, 0.0f);
-    nexilis_vector3f_set_y(v, std::numeric_limits<float>::infinity());
-    EXPECT_FALSE(nexilis_vector3f_is_valid(v));
-    nexilis_vector3f_destroy(v);
+    using component_type = typename TypeParam::component_type;
+
+    if constexpr (std::is_floating_point_v<component_type>)
+    {
+        auto* vec = TypeParam::create(0, 0, 0);
+        TypeParam::set_y(vec, std::numeric_limits<component_type>::infinity());
+        EXPECT_FALSE(TypeParam::is_valid(vec));
+        TypeParam::destroy(vec);
+    }
+    else
+    {
+        GTEST_SKIP() << "Infinity validity check only applies to floating-point vectors";
+    }
 }
