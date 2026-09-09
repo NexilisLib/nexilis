@@ -3,6 +3,8 @@
 
 #include <nexilis/server/user.hh>
 
+#include <mutex>
+
 namespace nexilis::server
 {
 
@@ -26,6 +28,7 @@ public:
 
 private:
     static std::vector<std::unique_ptr<User>> m_clients;
+    static std::mutex m_mutex;
 };
 
 } // namespace nexilis::server

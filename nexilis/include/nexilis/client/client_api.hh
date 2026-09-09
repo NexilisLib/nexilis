@@ -19,6 +19,7 @@
 
 #include <boost/json/object.hpp>
 
+#include <atomic>
 #include <cassert>
 #include <cstdint>
 #include <future>
@@ -33,29 +34,50 @@ public:
     class ClientData
     {
     public:
+        ClientData() = default;
+
+        ClientData(ClientData&& other) noexcept
+            : m_clientId(other.m_clientId.load()),
+              m_roomId(other.m_roomId.load())
+        {
+        }
+
+        ClientData& operator=(ClientData&& other) noexcept
+        {
+            if (this != &other)
+            {
+                m_clientId.store(other.m_clientId.load());
+                m_roomId.store(other.m_roomId.load());
+            }
+            return *this;
+        }
+
+        ClientData(const ClientData&) = delete;
+        ClientData& operator=(const ClientData&) = delete;
+
         uint64_t getClientId() const
         {
-            return m_clientId;
+            return m_clientId.load();
         };
 
         uint64_t getRoomId() const
         {
-            return m_roomId;
+            return m_roomId.load();
         }
 
         void setClientId(uint64_t id)
         {
-            m_clientId = id;
+            m_clientId.store(id);
         }
 
         void setRoomId(uint64_t id)
         {
-            m_roomId = id;
+            m_roomId.store(id);
         }
 
     private:
-        uint64_t m_clientId = 0;
-        uint64_t m_roomId = 0;
+        std::atomic<uint64_t> m_clientId = 0;
+        std::atomic<uint64_t> m_roomId = 0;
     };
 
     struct DamageEvent

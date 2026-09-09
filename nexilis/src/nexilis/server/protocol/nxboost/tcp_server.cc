@@ -135,32 +135,6 @@ void TCPServer::stop()
         m_ioContext->stop();
     }
 
-    boost::system::error_code ec;
-
-    // Cancel acceptors.
-    ec = m_acceptor.cancel(ec);
-    if (ec)
-    {
-        Log::error(header(), "Error cancelling m_acceptor: ", ec.message());
-    }
-    ec = m_switchedAcceptor.cancel(ec);
-    if (ec)
-    {
-        Log::error(header(), "Error cancelling m_switchedAcceptor: ", ec.message());
-    }
-
-    // Close sockets.
-    ec = m_acceptor.close(ec);
-    if (ec)
-    {
-        Log::error(header(), "Error closing m_acceptor: ", ec.message());
-    }
-    ec = m_switchedAcceptor.close(ec);
-    if (ec)
-    {
-        Log::error(header(), "Error closing m_switchedAcceptor: ", ec.message());
-    }
-
     {
         std::lock_guard<std::mutex> lock(*m_mutex);
         for (auto& thread : m_clientThreads)
@@ -183,9 +157,27 @@ void TCPServer::stop()
         }
     };
 
+    // The accept loops poll m_stopped with a short select() timeout and exit
+    // on their own. Join them before touching the acceptors: closing an
+    // acceptor from this thread while the accept thread is blocked on it is a
+    // data race that can crash on shutdown.
     tryJoinThread(m_switchedAcceptThread, "switchAcceptThread");
     tryJoinThread(m_listenThread, "listenThread");
     tryJoinThread(m_ioContextThread, "ioContextThread");
+
+    // Close sockets. Only the accept thread was using the acceptors, and it
+    // has been joined by now.
+    boost::system::error_code ec;
+    ec = m_acceptor.close(ec);
+    if (ec)
+    {
+        Log::error(header(), "Error closing m_acceptor: ", ec.message());
+    }
+    ec = m_switchedAcceptor.close(ec);
+    if (ec)
+    {
+        Log::error(header(), "Error closing m_switchedAcceptor: ", ec.message());
+    }
 
     Log::debug(header(), "stop complete.");
 }

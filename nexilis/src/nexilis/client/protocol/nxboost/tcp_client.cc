@@ -7,6 +7,7 @@
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/streambuf.hpp>
@@ -237,34 +238,38 @@ void TCPClient::stop()
         return;
     }
 
-    // Close both sockets.
-    if (m_mainSocket && m_mainSocket->lowest_layer().is_open())
+    // Close the sockets from the strand. The io_context thread is the only
+    // thread allowed to touch the ssl::stream objects; closing them from this
+    // thread while an async SSL operation is in flight is a data race that
+    // crashes sporadically during shutdown (intermittent SIGSEGV). Closing on
+    // the strand cancels the pending async reads/writes cleanly from the io
+    // thread itself.
+    if (m_strand && m_ioContext)
     {
-        boost::system::error_code ec;
-        ec = m_mainSocket->lowest_layer().close(ec);
-        if (ec)
+        try
         {
-            Log::error(header(), "Error closing main socket");
+            boost::asio::post(*m_strand,
+                              [this]()
+                              {
+                                  boost::system::error_code ec;
+                                  for (auto* socket : {m_mainSocket.get(), m_switchedSocket.get()})
+                                  {
+                                      if (socket && socket->lowest_layer().is_open())
+                                      {
+                                          socket->lowest_layer().close(ec);
+                                      }
+                                  }
+                              });
+        }
+        catch (...)
+        {
         }
     }
 
-    if (m_switchedSocket && m_switchedSocket->lowest_layer().is_open())
-    {
-        boost::system::error_code ec;
-        ec = m_switchedSocket->lowest_layer().close(ec);
-        if (ec)
-        {
-            Log::error(header(), "Error closing switched socket");
-        }
-    }
-
+    // Let the io thread observe the close, run its remaining handlers and exit
+    // on its own. The posted close unblocks the pending read/write, so run()
+    // returns once both the handlers and the work guard are gone.
     m_workGuard.reset();
-
-    if (m_ioContext)
-    {
-        m_ioContext->stop();
-        Log::debug(header(), "io_context stopped");
-    }
 
     if (m_ioContextThread.joinable())
     {
