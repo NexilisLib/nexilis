@@ -22,6 +22,8 @@ namespace Nexilis.Tests
 
             Action<Logger.LogLevel, string> noop = (_, _) => { };
             Vector3<float>.InitializeLogger(noop);
+            Vector3<int>.InitializeLogger(noop);
+            Vector3<ulong>.InitializeLogger(noop);
             NxData.InitializeLogger(noop);
             Packet.InitializeLogger(noop);
         }

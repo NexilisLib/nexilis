@@ -23,6 +23,8 @@ bool nexilis_vector3_is_valid(void* vector_ptr)
             return false;
         }
 
+        using ComponentType = std::remove_reference_t<decltype(vec->vec->x)>;
+
         volatile auto x = vec->vec->x;
         volatile auto y = vec->vec->y;
         volatile auto z = vec->vec->z;
@@ -30,9 +32,16 @@ bool nexilis_vector3_is_valid(void* vector_ptr)
         (void)y;
         (void)z;
 
-        return std::isfinite(x) &&
-               std::isfinite(y) &&
-               std::isfinite(z);
+        if constexpr (std::is_floating_point_v<ComponentType>)
+        {
+            return std::isfinite(x) &&
+                   std::isfinite(y) &&
+                   std::isfinite(z);
+        }
+        else
+        {
+            return true;
+        }
     }
     catch (...)
     {
@@ -67,7 +76,26 @@ nexilis_Vector3f* nexilis_vector3f_create(float x, float y, float z)
 
 nexilis_Vector3f* nexilis_vector3f_create_default()
 {
-    return new nexilis_Vector3f;
+    try
+    {
+        auto* vector = new (std::nothrow) nexilis_Vector3f;
+        if (!vector)
+        {
+            return nullptr;
+        }
+        vector->vec = new (std::nothrow) nexilis::Vector3f();
+        if (!vector->vec)
+        {
+            delete vector;
+            return nullptr;
+        }
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Vector3f default creation failed");
+        return nullptr;
+    }
 }
 
 void nexilis_vector3f_destroy(nexilis_Vector3f* vec)
@@ -142,111 +170,247 @@ bool nexilis_vector3f_is_valid(void* vector_ptr)
 {
     return nexilis_vector3_is_valid<nexilis_Vector3f>(vector_ptr);
 }
-/*
 
 // nexilis_Vector3u implementation
 nexilis_Vector3u* nexilis_vector3u_create(uint64_t x, uint64_t y, uint64_t z)
 {
-    return new nexilis_Vector3u(x, y, z);
-}
-
-nexilis_Vector3u* nexilis_vector3u_create_default() {
-    return new nexilis_Vector3u();
-}
-
-void nexilis_vector3u_destroy(nexilis_Vector3u* vec) {
-    delete vec;
-}
-
-uint64_t nexilis_vector3u_get_x(const nexilis_Vector3u* vec) {
-    return vec->x;
-}
-
-uint64_t nexilis_vector3u_get_y(const nexilis_Vector3u* vec) {
-    return vec->y;
-}
-
-uint64_t nexilis_vector3u_get_z(const nexilis_Vector3u* vec) {
-    return vec->z;
-}
-
-void nexilis_vector3u_set_x(nexilis_Vector3u* vec, uint64_t x) {
-    vec->x = x;
-}
-
-void nexilis_vector3u_set_y(nexilis_Vector3u* vec, uint64_t y) {
-    vec->y = y;
-}
-
-void nexilis_vector3u_set_z(nexilis_Vector3u* vec, uint64_t z) {
-    vec->z = z;
-}
-
-void nexilis_vector3u_serialize(const nexilis_Vector3u* vec, uint8_t* out_data) {
-    auto data = vec->serialize();
-    std::memcpy(out_data, data.data(), data.size());
-}
-
-nexilis_Vector3u* nexilis_vector3u_deserialize(const uint8_t* data) {
-    nx_data serialized(data, data + sizeof(uint32_t) * 3);
-    try {
-        auto vec = new nexilis_Vector3u(Vector3u::deserialize(serialized));
-        return vec;
-    } catch (...) {
+    try
+    {
+        auto* vector = new (std::nothrow) nexilis_Vector3u;
+        if (!vector)
+        {
+            return nullptr;
+        }
+        vector->vec = new nexilis::Vector3u(x, y, z);
+        if (!vector->vec)
+        {
+            delete vector;
+            return nullptr;
+        }
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Vector3u creation failed");
         return nullptr;
     }
+}
+
+nexilis_Vector3u* nexilis_vector3u_create_default()
+{
+    try
+    {
+        auto* vector = new (std::nothrow) nexilis_Vector3u;
+        if (!vector)
+        {
+            return nullptr;
+        }
+        vector->vec = new (std::nothrow) nexilis::Vector3u();
+        if (!vector->vec)
+        {
+            delete vector;
+            return nullptr;
+        }
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Vector3u default creation failed");
+        return nullptr;
+    }
+}
+
+void nexilis_vector3u_destroy(nexilis_Vector3u* vec)
+{
+    if (vec)
+    {
+        if (vec->vec)
+        {
+            delete vec->vec;
+        }
+        delete vec;
+    }
+}
+
+uint64_t nexilis_vector3u_get_x(const nexilis_Vector3u* vec)
+{
+    return vec->vec->x;
+}
+
+uint64_t nexilis_vector3u_get_y(const nexilis_Vector3u* vec)
+{
+    return vec->vec->y;
+}
+
+uint64_t nexilis_vector3u_get_z(const nexilis_Vector3u* vec)
+{
+    return vec->vec->z;
+}
+
+void nexilis_vector3u_set_x(nexilis_Vector3u* vec, uint64_t x)
+{
+    vec->vec->x = x;
+}
+
+void nexilis_vector3u_set_y(nexilis_Vector3u* vec, uint64_t y)
+{
+    vec->vec->y = y;
+}
+
+void nexilis_vector3u_set_z(nexilis_Vector3u* vec, uint64_t z)
+{
+    vec->vec->z = z;
+}
+
+void nexilis_vector3u_serialize(const nexilis_Vector3u* vec, uint8_t* out_data)
+{
+    auto data = vec->vec->serialize();
+    memcpy(out_data, data.data(), data.size());
+}
+
+nexilis_Vector3u* nexilis_vector3u_deserialize(const uint8_t* data)
+{
+    const size_t expected_size = sizeof(uint32_t) * 3;
+    if (!data)
+        return nullptr;
+
+    nexilis::nx_data converted_data(data, data + expected_size);
+    try
+    {
+        auto* deserialized = new nexilis::Vector3u(nexilis::Vector3<uint64_t>::deserialize(converted_data));
+        auto* new_vector = new nexilis_Vector3u;
+        new_vector->vec = deserialized;
+        return new_vector;
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
+bool nexilis_vector3u_is_valid(void* vector_ptr)
+{
+    return nexilis_vector3_is_valid<nexilis_Vector3u>(vector_ptr);
 }
 
 // nexilis_Vector3i implementation
-nexilis_Vector3i* nexilis_vector3i_create(int x, int y, int z) {
-    return new nexilis_Vector3i(x, y, z);
-}
-
-nexilis_Vector3i* nexilis_vector3i_create_default() {
-    return new nexilis_Vector3i();
-}
-
-void nexilis_vector3i_destroy(nexilis_Vector3i* vec) {
-    delete vec;
-}
-
-int nexilis_vector3i_get_x(const nexilis_Vector3i* vec) {
-    return vec->x;
-}
-
-int nexilis_vector3i_get_y(const nexilis_Vector3i* vec) {
-    return vec->y;
-}
-
-int nexilis_vector3i_get_z(const nexilis_Vector3i* vec) {
-    return vec->z;
-}
-
-void nexilis_vector3i_set_x(nexilis_Vector3i* vec, int x) {
-    vec->x = x;
-}
-
-void nexilis_vector3i_set_y(nexilis_Vector3i* vec, int y) {
-    vec->y = y;
-}
-
-void nexilis_vector3i_set_z(nexilis_Vector3i* vec, int z) {
-    vec->z = z;
-}
-
-void nexilis_vector3i_serialize(const nexilis_Vector3i* vec, uint8_t* out_data) {
-    auto data = vec->serialize();
-    std::memcpy(out_data, data.data(), data.size());
-}
-
-nexilis_Vector3i* nexilis_vector3i_deserialize(const uint8_t* data) {
-    nx_data serialized(data, data + sizeof(uint32_t) * 3);
-    try {
-        auto vec = new nexilis_Vector3i(Vector3i::deserialize(serialized));
-        return vec;
-    } catch (...) {
+nexilis_Vector3i* nexilis_vector3i_create(int x, int y, int z)
+{
+    try
+    {
+        auto* vector = new (std::nothrow) nexilis_Vector3i;
+        if (!vector)
+        {
+            return nullptr;
+        }
+        vector->vec = new nexilis::Vector3i(x, y, z);
+        if (!vector->vec)
+        {
+            delete vector;
+            return nullptr;
+        }
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Vector3i creation failed");
         return nullptr;
     }
 }
 
-*/
+nexilis_Vector3i* nexilis_vector3i_create_default()
+{
+    try
+    {
+        auto* vector = new (std::nothrow) nexilis_Vector3i;
+        if (!vector)
+        {
+            return nullptr;
+        }
+        vector->vec = new (std::nothrow) nexilis::Vector3i();
+        if (!vector->vec)
+        {
+            delete vector;
+            return nullptr;
+        }
+        return vector;
+    }
+    catch (...)
+    {
+        nexilis::FileLog::critical("Vector3i default creation failed");
+        return nullptr;
+    }
+}
+
+void nexilis_vector3i_destroy(nexilis_Vector3i* vec)
+{
+    if (vec)
+    {
+        if (vec->vec)
+        {
+            delete vec->vec;
+        }
+        delete vec;
+    }
+}
+
+int nexilis_vector3i_get_x(const nexilis_Vector3i* vec)
+{
+    return vec->vec->x;
+}
+
+int nexilis_vector3i_get_y(const nexilis_Vector3i* vec)
+{
+    return vec->vec->y;
+}
+
+int nexilis_vector3i_get_z(const nexilis_Vector3i* vec)
+{
+    return vec->vec->z;
+}
+
+void nexilis_vector3i_set_x(nexilis_Vector3i* vec, int x)
+{
+    vec->vec->x = x;
+}
+
+void nexilis_vector3i_set_y(nexilis_Vector3i* vec, int y)
+{
+    vec->vec->y = y;
+}
+
+void nexilis_vector3i_set_z(nexilis_Vector3i* vec, int z)
+{
+    vec->vec->z = z;
+}
+
+void nexilis_vector3i_serialize(const nexilis_Vector3i* vec, uint8_t* out_data)
+{
+    auto data = vec->vec->serialize();
+    memcpy(out_data, data.data(), data.size());
+}
+
+nexilis_Vector3i* nexilis_vector3i_deserialize(const uint8_t* data)
+{
+    const size_t expected_size = sizeof(uint32_t) * 3;
+    if (!data)
+        return nullptr;
+
+    nexilis::nx_data converted_data(data, data + expected_size);
+    try
+    {
+        auto* deserialized = new nexilis::Vector3i(nexilis::Vector3<int>::deserialize(converted_data));
+        auto* new_vector = new nexilis_Vector3i;
+        new_vector->vec = deserialized;
+        return new_vector;
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
+bool nexilis_vector3i_is_valid(void* vector_ptr)
+{
+    return nexilis_vector3_is_valid<nexilis_Vector3i>(vector_ptr);
+}
