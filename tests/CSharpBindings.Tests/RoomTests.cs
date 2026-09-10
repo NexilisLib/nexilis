@@ -99,7 +99,7 @@ namespace Nexilis.Tests
         [Fact]
         public void AddNullClientThrows()
         {
-            Assert.Throws<System.ArgumentNullException>(() => _room.AddClient(null));
+            Assert.Throws<System.ArgumentNullException>(() => _room.AddClient(null!));
         }
 
         // --- Communication ---
@@ -118,14 +118,14 @@ namespace Nexilis.Tests
         [Fact]
         public void CommunicationCreateNullSenderThrows()
         {
-            Assert.Throws<ArgumentNullException>(() => new Communication("test", null));
+            Assert.Throws<ArgumentNullException>(() => new Communication("test", null!));
         }
 
         [Fact]
         public void CommunicationCreateNullPayloadThrows()
         {
             var sender = MakeSession(10);
-            Assert.Throws<ArgumentException>(() => new Communication(null, sender));
+            Assert.Throws<ArgumentException>(() => new Communication(null!, sender));
         }
 
         [Fact]

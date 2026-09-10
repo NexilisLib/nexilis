@@ -30,11 +30,11 @@ namespace Nexilis.Tests
         [Fact]
         public void CreateDefault()
         {
-            using var v = new Vector3<T>(default(T), default(T), default(T));
+            using var v = new Vector3<T>(default(T)!, default(T)!, default(T)!);
 
-            Assert.Equal(default(T), v.X);
-            Assert.Equal(default(T), v.Y);
-            Assert.Equal(default(T), v.Z);
+            Assert.Equal(default(T)!, v.X);
+            Assert.Equal(default(T)!, v.Y);
+            Assert.Equal(default(T)!, v.Z);
         }
 
         [Fact]
@@ -50,34 +50,34 @@ namespace Nexilis.Tests
         [Fact]
         public void SetX()
         {
-            using var v = new Vector3<T>(default(T), default(T), default(T));
+            using var v = new Vector3<T>(default(T)!, default(T)!, default(T)!);
             v.X = NewX;
 
             Assert.Equal(NewX, v.X);
-            Assert.Equal(default(T), v.Y);
-            Assert.Equal(default(T), v.Z);
+            Assert.Equal(default(T)!, v.Y);
+            Assert.Equal(default(T)!, v.Z);
         }
 
         [Fact]
         public void SetY()
         {
-            using var v = new Vector3<T>(default(T), default(T), default(T));
+            using var v = new Vector3<T>(default(T)!, default(T)!, default(T)!);
             v.Y = NewY;
 
             Assert.Equal(NewY, v.Y);
-            Assert.Equal(default(T), v.X);
-            Assert.Equal(default(T), v.Z);
+            Assert.Equal(default(T)!, v.X);
+            Assert.Equal(default(T)!, v.Z);
         }
 
         [Fact]
         public void SetZ()
         {
-            using var v = new Vector3<T>(default(T), default(T), default(T));
+            using var v = new Vector3<T>(default(T)!, default(T)!, default(T)!);
             v.Z = NewZ;
 
             Assert.Equal(NewZ, v.Z);
-            Assert.Equal(default(T), v.X);
-            Assert.Equal(default(T), v.Y);
+            Assert.Equal(default(T)!, v.X);
+            Assert.Equal(default(T)!, v.Y);
         }
 
         [Fact]
@@ -112,13 +112,13 @@ namespace Nexilis.Tests
         [Fact]
         public void SerializeDeserializeZero()
         {
-            using var original = new Vector3<T>(default(T), default(T), default(T));
+            using var original = new Vector3<T>(default(T)!, default(T)!, default(T)!);
             byte[] buffer = original.Serialize();
 
             using var deserialized = Vector3<T>.Deserialize(buffer);
-            Assert.Equal(default(T), deserialized.X);
-            Assert.Equal(default(T), deserialized.Y);
-            Assert.Equal(default(T), deserialized.Z);
+            Assert.Equal(default(T)!, deserialized.X);
+            Assert.Equal(default(T)!, deserialized.Y);
+            Assert.Equal(default(T)!, deserialized.Z);
         }
 
         [Fact]
