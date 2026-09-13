@@ -336,6 +336,18 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         {
                             return ServerImpl::room_player3d_shoot(args);
                         }
+
+                        // Set team
+                        case 5:
+                        {
+                            return ServerImpl::room_player3d_set_team(args);
+                        }
+
+                        // Request leaderboard
+                        case 6:
+                        {
+                            return ServerImpl::room_player3d_request_leaderboard(args);
+                        }
                     }
                     return CommandResult::not_found;
                 }

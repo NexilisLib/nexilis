@@ -18,6 +18,9 @@ Room::Room(Room&& other)
       m_clientIds(std::move(other.m_clientIds)),
       m_broadcasts(std::move(other.m_broadcasts)),
       m_playerHealth(std::move(other.m_playerHealth)),
+      m_playerKills(std::move(other.m_playerKills)),
+      m_playerDeaths(std::move(other.m_playerDeaths)),
+      m_playerTeams(std::move(other.m_playerTeams)),
       m_defaultHealth(other.m_defaultHealth),
       m_deathHandler(std::move(other.m_deathHandler)),
       m_overlappingAllowed(other.m_overlappingAllowed.load())
@@ -31,6 +34,9 @@ Room& Room::operator=(Room&& other)
         m_clientIds = std::move(other.m_clientIds);
         m_broadcasts = std::move(other.m_broadcasts);
         m_playerHealth = std::move(other.m_playerHealth);
+        m_playerKills = std::move(other.m_playerKills);
+        m_playerDeaths = std::move(other.m_playerDeaths);
+        m_playerTeams = std::move(other.m_playerTeams);
         m_defaultHealth = other.m_defaultHealth;
         m_deathHandler = std::move(other.m_deathHandler);
         m_overlappingAllowed.store(other.m_overlappingAllowed.load());
@@ -110,6 +116,35 @@ void Room::onPlayerDied(uint64_t killerId, uint64_t victimId)
     {
         m_deathHandler(*this, killerId, victimId);
     }
+}
+
+void Room::recordKill(uint64_t killerId, uint64_t victimId)
+{
+    m_playerKills[killerId]++;
+    m_playerDeaths[victimId]++;
+}
+
+uint64_t Room::getPlayerKills(uint64_t clientId) const
+{
+    auto it = m_playerKills.find(clientId);
+    return it != m_playerKills.end() ? it->second : 0;
+}
+
+uint64_t Room::getPlayerDeaths(uint64_t clientId) const
+{
+    auto it = m_playerDeaths.find(clientId);
+    return it != m_playerDeaths.end() ? it->second : 0;
+}
+
+void Room::setPlayerTeam(uint64_t clientId, const std::string& team)
+{
+    m_playerTeams[clientId] = team;
+}
+
+std::string Room::getPlayerTeam(uint64_t clientId) const
+{
+    auto it = m_playerTeams.find(clientId);
+    return it != m_playerTeams.end() ? it->second : "";
 }
 
 bool Room::broadcastToAll(const nx_data& data)

@@ -62,6 +62,12 @@ std::string RoomCommandType::PlayerTypeToString(RoomCommandType::PlayerType play
             return "shoot";
         case RoomCommandType::PlayerType::respawn:
             return "respawn";
+        case RoomCommandType::PlayerType::set_team:
+            return "set_team";
+        case RoomCommandType::PlayerType::request_leaderboard:
+            return "request_leaderboard";
+        case RoomCommandType::PlayerType::leaderboard:
+            return "leaderboard";
         default:
             Log::error("Player2DTypeToString no type found!");
             return "";

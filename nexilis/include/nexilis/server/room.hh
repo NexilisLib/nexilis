@@ -100,6 +100,28 @@ public:
     /// \param victimId The id of the player that died.
     void onPlayerDied(uint64_t killerId, uint64_t victimId);
 
+    /// Record a kill: increments the killer's kill count and the victim's death count.
+    /// \param killerId The id of the player that caused the death.
+    /// \param victimId The id of the player that died.
+    void recordKill(uint64_t killerId, uint64_t victimId);
+
+    /// Get the number of kills a player has. Returns 0 if not yet tracked.
+    /// \param clientId The id of the player.
+    uint64_t getPlayerKills(uint64_t clientId) const;
+
+    /// Get the number of deaths a player has. Returns 0 if not yet tracked.
+    /// \param clientId The id of the player.
+    uint64_t getPlayerDeaths(uint64_t clientId) const;
+
+    /// Set the team a player has chosen (e.g. "Terrorist"/"Counter Terrorist").
+    /// \param clientId The id of the player.
+    /// \param team The team name.
+    void setPlayerTeam(uint64_t clientId, const std::string& team);
+
+    /// Get the team a player has chosen. Returns empty string if unknown.
+    /// \param clientId The id of the player.
+    std::string getPlayerTeam(uint64_t clientId) const;
+
     /// Send raw data to all clients in this room.
     /// \param data The bytes to send.
     /// \return True if all clients received the data.
@@ -121,6 +143,9 @@ private:
     std::vector<uint64_t> m_clientIds;
     std::vector<Broadcast> m_broadcasts;
     std::unordered_map<uint64_t, float> m_playerHealth;
+    std::unordered_map<uint64_t, uint64_t> m_playerKills;
+    std::unordered_map<uint64_t, uint64_t> m_playerDeaths;
+    std::unordered_map<uint64_t, std::string> m_playerTeams;
     float m_defaultHealth = 100.0f;
     DeathHandler m_deathHandler;
 

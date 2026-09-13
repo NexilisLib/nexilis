@@ -92,6 +92,20 @@ public:
         uint64_t target_id = 0;
     };
 
+    struct LeaderboardEntry
+    {
+        uint64_t id = 0;
+        std::string username;
+        std::string team;
+        uint64_t kills = 0;
+        uint64_t deaths = 0;
+    };
+
+    struct LeaderboardEvent
+    {
+        std::vector<LeaderboardEntry> entries;
+    };
+
     class ClientAPIData
     {
     public:
@@ -111,6 +125,7 @@ public:
               m_callbacks(std::move(other.m_callbacks)),
               m_pendingDamageEvents(std::move(other.m_pendingDamageEvents)),
               m_pendingRespawnEvents(std::move(other.m_pendingRespawnEvents)),
+              m_pendingLeaderboardEvents(std::move(other.m_pendingLeaderboardEvents)),
               m_damageMutex(std::move(other.m_damageMutex)),
               m_roomsMutex(std::move(other.m_roomsMutex))
         {
@@ -132,6 +147,7 @@ public:
                 m_callbacks = std::move(other.m_callbacks);
                 m_pendingDamageEvents = std::move(other.m_pendingDamageEvents);
                 m_pendingRespawnEvents = std::move(other.m_pendingRespawnEvents);
+                m_pendingLeaderboardEvents = std::move(other.m_pendingLeaderboardEvents);
                 m_damageMutex = std::move(other.m_damageMutex);
                 m_roomsMutex = std::move(other.m_roomsMutex);
 
@@ -233,6 +249,18 @@ public:
             return std::move(m_pendingRespawnEvents);
         }
 
+        void pushLeaderboardEvent(LeaderboardEvent event)
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            m_pendingLeaderboardEvents.push_back(std::move(event));
+        }
+
+        std::vector<LeaderboardEvent> consumeLeaderboardEvents()
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            return std::move(m_pendingLeaderboardEvents);
+        }
+
     private:
         /// Is the server aware of the client, is "Packet" initialized.
         bool m_isInitialized = false;
@@ -253,6 +281,8 @@ public:
         std::vector<DamageEvent> m_pendingDamageEvents;
         /// Pending respawn events.
         std::vector<RespawnEvent> m_pendingRespawnEvents;
+        /// Pending leaderboard snapshots.
+        std::vector<LeaderboardEvent> m_pendingLeaderboardEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
@@ -419,6 +449,12 @@ public:
     std::vector<RespawnEvent> consumeRespawnEvents()
     {
         return m_clientAPIData.consumeRespawnEvents();
+    }
+
+    /// Consume all pending leaderboard events (thread-safe).
+    std::vector<LeaderboardEvent> consumeLeaderboardEvents()
+    {
+        return m_clientAPIData.consumeLeaderboardEvents();
     }
 
     /// Let the program wait until nexilis has created all the rooms.

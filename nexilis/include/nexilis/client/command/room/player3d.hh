@@ -11,9 +11,11 @@ class RoomPlayer3DCommand : public BaseAPICommand
 {
 public:
     RoomPlayer3DCommand(std::string action, uint64_t client_id, float x, float y, float z,
-                        uint64_t target_id = 0, float damage = 0.0f, float new_health = 0.0f)
+                        uint64_t target_id = 0, float damage = 0.0f, float new_health = 0.0f,
+                        std::vector<ClientAPI::LeaderboardEntry> leaderboard = {})
         : m_action(action), m_client_id(client_id), m_x(x), m_y(y), m_z(z),
-          m_target_id(target_id), m_damage(damage), m_new_health(new_health)
+          m_target_id(target_id), m_damage(damage), m_new_health(new_health),
+          m_leaderboard(std::move(leaderboard))
     {
     }
 
@@ -85,6 +87,13 @@ public:
             data.pushRespawnEvent(std::move(event));
             return ReadResult::success;
         }
+        else if (m_action == "leaderboard")
+        {
+            ClientAPI::LeaderboardEvent event;
+            event.entries = m_leaderboard;
+            data.pushLeaderboardEvent(std::move(event));
+            return ReadResult::success;
+        }
         return ReadResult::not_found;
     }
 
@@ -97,6 +106,7 @@ private:
     uint64_t m_target_id;
     float m_damage;
     float m_new_health;
+    std::vector<ClientAPI::LeaderboardEntry> m_leaderboard;
 };
 
 } // namespace nexilis::client
