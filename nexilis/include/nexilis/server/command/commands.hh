@@ -99,8 +99,7 @@ struct ServerImpl
     static CommandResult room_player3d_dimension(const DefaultArgs& args);
     static CommandResult room_player3d_movement(const DefaultArgs& args);
     static CommandResult room_player3d_shoot(const DefaultArgs& args);
-    static CommandResult room_player3d_set_team(const DefaultArgs& args);
-    static CommandResult room_player3d_request_leaderboard(const DefaultArgs& args);
+    static CommandResult room_player3d_setTeam(const DefaultArgs& args);
 
     // Room::Object3D
     static CommandResult room_object3d_create(const DefaultArgs& args);

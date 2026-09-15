@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <unordered_map>
 
 namespace nexilis::server
@@ -85,11 +86,31 @@ public:
     /// Get the health of a player. Returns default health if not yet tracked.
     float getPlayerHealth(uint64_t clientId) const;
 
-    /// Apply damage to a player. Clamps to 0.
-    void damagePlayer(uint64_t clientId, float damage);
+    /// Apply damage to a player. The player's health is clamped to 0.
+    /// \return True if this call brought the player down to 0 health (i.e. the
+    /// player was alive before this hit). Damaging an already-dead player is a
+    /// no-op that returns false, so a single kill/death is never recorded twice.
+    bool damagePlayer(uint64_t clientId, float damage);
 
     /// Reset a player's health to default.
     void resetPlayerHealth(uint64_t clientId);
+
+    /// Record a kill for the killer and a death for the victim.
+    /// \param killerId The id of the player that got the kill.
+    /// \param victimId The id of the player that died.
+    void recordKill(uint64_t killerId, uint64_t victimId);
+
+    /// Get the number of kills a player has made.
+    uint64_t getPlayerKills(uint64_t clientId) const;
+
+    /// Get the number of times a player has died.
+    uint64_t getPlayerDeaths(uint64_t clientId) const;
+
+    /// Set the team a player is playing on (e.g. "Terrorist").
+    void setPlayerTeam(uint64_t clientId, const std::string& team);
+
+    /// Get the team a player is playing on. Empty string if not set.
+    std::string getPlayerTeam(uint64_t clientId) const;
 
     /// Set the callback invoked when a player's health reaches zero.
     /// If no handler is set, nothing happens on death.
@@ -99,28 +120,6 @@ public:
     /// \param killerId The id of the player that caused the death.
     /// \param victimId The id of the player that died.
     void onPlayerDied(uint64_t killerId, uint64_t victimId);
-
-    /// Record a kill: increments the killer's kill count and the victim's death count.
-    /// \param killerId The id of the player that caused the death.
-    /// \param victimId The id of the player that died.
-    void recordKill(uint64_t killerId, uint64_t victimId);
-
-    /// Get the number of kills a player has. Returns 0 if not yet tracked.
-    /// \param clientId The id of the player.
-    uint64_t getPlayerKills(uint64_t clientId) const;
-
-    /// Get the number of deaths a player has. Returns 0 if not yet tracked.
-    /// \param clientId The id of the player.
-    uint64_t getPlayerDeaths(uint64_t clientId) const;
-
-    /// Set the team a player has chosen (e.g. "Terrorist"/"Counter Terrorist").
-    /// \param clientId The id of the player.
-    /// \param team The team name.
-    void setPlayerTeam(uint64_t clientId, const std::string& team);
-
-    /// Get the team a player has chosen. Returns empty string if unknown.
-    /// \param clientId The id of the player.
-    std::string getPlayerTeam(uint64_t clientId) const;
 
     /// Send raw data to all clients in this room.
     /// \param data The bytes to send.
@@ -148,6 +147,11 @@ private:
     std::unordered_map<uint64_t, std::string> m_playerTeams;
     float m_defaultHealth = 100.0f;
     DeathHandler m_deathHandler;
+
+    /// Guards per-player game state (health, kills, deaths, teams). The server
+    /// runs one command thread per client, so these shared maps must be
+    /// synchronized to avoid races and double-counted kills.
+    mutable std::mutex m_stateMutex;
 
     /// Atomic because movement threads read this while command threads write it.
     std::atomic<bool> m_overlappingAllowed{true};

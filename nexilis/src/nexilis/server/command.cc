@@ -340,13 +340,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Set team
                         case 5:
                         {
-                            return ServerImpl::room_player3d_set_team(args);
-                        }
-
-                        // Request leaderboard
-                        case 6:
-                        {
-                            return ServerImpl::room_player3d_request_leaderboard(args);
+                            return ServerImpl::room_player3d_setTeam(args);
                         }
                     }
                     return CommandResult::not_found;
@@ -612,6 +606,40 @@ nx_data Command::createRoomCommand(uint64_t roomId, User& user, const nx_data& m
     all_params.insert(params.begin(), params.end());
 
     return clientMessageData(CommandType::room, room_command_type, messageId, all_params);
+}
+
+boost::json::array Command::playerStatsEntries(const Room& room, const std::vector<uint64_t>& clientIds)
+{
+    boost::json::array entries;
+    for (auto clientId : clientIds)
+    {
+        auto* client = ClientStorage::getClientById(clientId);
+        if (!client)
+            continue;
+
+        boost::json::object entry;
+        entry["id"] = boost::json::value(clientId);
+        entry["username"] = boost::json::value(client->getUsername());
+        entry["team"] = boost::json::value(room.getPlayerTeam(clientId));
+        entry["kills"] = boost::json::value(room.getPlayerKills(clientId));
+        entry["deaths"] = boost::json::value(room.getPlayerDeaths(clientId));
+        entries.emplace_back(std::move(entry));
+    }
+    return entries;
+}
+
+nx_data Command::createRoomLeaderboardCommand(uint64_t roomId, User& user,
+                                              boost::json::array entries, uint64_t messageId)
+{
+    std::map<std::string, boost::json::value> leaderboardParams{
+            {"entries", boost::json::value(std::move(entries))}};
+
+    nx_data leaderboardData;
+    leaderboardData.emplace_back(static_cast<uint8_t>(CommandType::room));
+    leaderboardData.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
+    leaderboardData.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::leaderboard));
+
+    return Command::createRoomCommand(roomId, user, leaderboardData, leaderboardParams, messageId);
 }
 
 bool Command::sendRoomCommand(const nx_data& data, User& user, Protocol& protocol)

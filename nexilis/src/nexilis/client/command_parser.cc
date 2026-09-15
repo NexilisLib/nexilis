@@ -3,6 +3,7 @@
 #include <nexilis/client/command/get/room_id.hh>
 #include <nexilis/client/command/room/communication.hh>
 #include <nexilis/client/command/room/gameitem.hh>
+#include <nexilis/client/command/room/leaderboard.hh>
 #include <nexilis/client/command/room/management.hh>
 #include <nexilis/client/command/room/object2d.hh>
 #include <nexilis/client/command/room/object3d.hh>
@@ -11,6 +12,13 @@
 #include <nexilis/client/command/set/port.hh>
 #include <nexilis/client/command/set/username.hh>
 #include <nexilis/client/command_parser.hh>
+
+#include <boost/json/array.hpp>
+#include <boost/json/value.hpp>
+
+#include <memory>
+#include <string_view>
+#include <utility>
 
 namespace nexilis::client
 {
@@ -149,6 +157,14 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     }
     else if (type == "player_3D")
     {
+        if (action == "leaderboard")
+        {
+            boost::json::array entries;
+            if (json.contains("entries") && json.at("entries").is_array())
+                entries = json.at("entries").as_array();
+            return std::make_unique<RoomLeaderboardCommand>(entries);
+        }
+
         return std::make_unique<RoomPlayer3DCommand>(
                 action, client_id,
                 getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"),

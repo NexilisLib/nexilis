@@ -92,6 +92,7 @@ public:
         uint64_t target_id = 0;
     };
 
+    /// One row of the kill/death leaderboard.
     struct LeaderboardEntry
     {
         uint64_t id = 0;
@@ -101,6 +102,9 @@ public:
         uint64_t deaths = 0;
     };
 
+    /// A player stats update pushed to the client by the server (on kill and
+    /// on team join). The client merges these entries into its local
+    /// kill/death table; it does not request stats on demand.
     struct LeaderboardEvent
     {
         std::vector<LeaderboardEntry> entries;
@@ -281,7 +285,7 @@ public:
         std::vector<DamageEvent> m_pendingDamageEvents;
         /// Pending respawn events.
         std::vector<RespawnEvent> m_pendingRespawnEvents;
-        /// Pending leaderboard snapshots.
+        /// Pending leaderboard stats updates.
         std::vector<LeaderboardEvent> m_pendingLeaderboardEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
@@ -451,7 +455,7 @@ public:
         return m_clientAPIData.consumeRespawnEvents();
     }
 
-    /// Consume all pending leaderboard events (thread-safe).
+    /// Consume all pending leaderboard stats updates (thread-safe).
     std::vector<LeaderboardEvent> consumeLeaderboardEvents()
     {
         return m_clientAPIData.consumeLeaderboardEvents();

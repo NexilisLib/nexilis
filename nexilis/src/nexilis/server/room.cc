@@ -81,28 +81,83 @@ void Room::addBroadcast(uint64_t clientId, const std::string& message)
 
 float Room::getPlayerHealth(uint64_t clientId) const
 {
+    std::lock_guard<std::mutex> lock(m_stateMutex);
     auto it = m_playerHealth.find(clientId);
     if (it != m_playerHealth.end())
         return it->second;
     return m_defaultHealth;
 }
 
-void Room::damagePlayer(uint64_t clientId, float damage)
+bool Room::damagePlayer(uint64_t clientId, float damage)
 {
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+
     auto it = m_playerHealth.find(clientId);
+    float health;
     if (it != m_playerHealth.end())
     {
-        it->second = std::max(0.0f, it->second - damage);
+        // Ignore damage to players who are already dead. This is what prevents
+        // a single kill from being recorded twice: near-simultaneous shots from
+        // multiple clients all see health <= 0 and only the first one reports
+        // a death.
+        if (it->second <= 0.0f)
+            return false;
+        health = std::max(0.0f, it->second - damage);
+        it->second = health;
     }
     else
     {
-        m_playerHealth[clientId] = m_defaultHealth - damage;
+        health = std::max(0.0f, m_defaultHealth - damage);
+        m_playerHealth[clientId] = health;
     }
+
+    return health <= 0.0f;
 }
 
 void Room::resetPlayerHealth(uint64_t clientId)
 {
+    std::lock_guard<std::mutex> lock(m_stateMutex);
     m_playerHealth[clientId] = m_defaultHealth;
+}
+
+void Room::recordKill(uint64_t killerId, uint64_t victimId)
+{
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+    m_playerKills[killerId] += 1;
+    m_playerDeaths[victimId] += 1;
+}
+
+uint64_t Room::getPlayerKills(uint64_t clientId) const
+{
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+    auto it = m_playerKills.find(clientId);
+    if (it != m_playerKills.end())
+        return it->second;
+    return 0;
+}
+
+uint64_t Room::getPlayerDeaths(uint64_t clientId) const
+{
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+    auto it = m_playerDeaths.find(clientId);
+    if (it != m_playerDeaths.end())
+        return it->second;
+    return 0;
+}
+
+void Room::setPlayerTeam(uint64_t clientId, const std::string& team)
+{
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+    m_playerTeams[clientId] = team;
+}
+
+std::string Room::getPlayerTeam(uint64_t clientId) const
+{
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+    auto it = m_playerTeams.find(clientId);
+    if (it != m_playerTeams.end())
+        return it->second;
+    return "";
 }
 
 void Room::setDeathHandler(DeathHandler handler)
@@ -116,35 +171,6 @@ void Room::onPlayerDied(uint64_t killerId, uint64_t victimId)
     {
         m_deathHandler(*this, killerId, victimId);
     }
-}
-
-void Room::recordKill(uint64_t killerId, uint64_t victimId)
-{
-    m_playerKills[killerId]++;
-    m_playerDeaths[victimId]++;
-}
-
-uint64_t Room::getPlayerKills(uint64_t clientId) const
-{
-    auto it = m_playerKills.find(clientId);
-    return it != m_playerKills.end() ? it->second : 0;
-}
-
-uint64_t Room::getPlayerDeaths(uint64_t clientId) const
-{
-    auto it = m_playerDeaths.find(clientId);
-    return it != m_playerDeaths.end() ? it->second : 0;
-}
-
-void Room::setPlayerTeam(uint64_t clientId, const std::string& team)
-{
-    m_playerTeams[clientId] = team;
-}
-
-std::string Room::getPlayerTeam(uint64_t clientId) const
-{
-    auto it = m_playerTeams.find(clientId);
-    return it != m_playerTeams.end() ? it->second : "";
 }
 
 bool Room::broadcastToAll(const nx_data& data)

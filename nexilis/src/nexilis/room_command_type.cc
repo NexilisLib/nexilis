@@ -64,8 +64,6 @@ std::string RoomCommandType::PlayerTypeToString(RoomCommandType::PlayerType play
             return "respawn";
         case RoomCommandType::PlayerType::set_team:
             return "set_team";
-        case RoomCommandType::PlayerType::request_leaderboard:
-            return "request_leaderboard";
         case RoomCommandType::PlayerType::leaderboard:
             return "leaderboard";
         default:

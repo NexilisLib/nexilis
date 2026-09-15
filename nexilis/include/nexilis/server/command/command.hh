@@ -7,13 +7,17 @@
 #include <nexilis/nx_class.hh>
 #include <nexilis/protocol.hh>
 #include <nexilis/server/command/command_result.hh>
+#include <nexilis/server/room.hh>
 #include <nexilis/server/server_config.hh>
 #include <nexilis/server/user.hh>
+
+#include <boost/json/array.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
+#include <vector>
 
 namespace nexilis::server
 {
@@ -76,6 +80,19 @@ public:
     static bool sendMessageToClient(nx_data data, User& user, Protocol& protocol);
     static bool sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
     static nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
+
+    /// Build the "entries" array of a player stats payload: one object per
+    /// requested client id with that player's current username, team, kills and
+    /// deaths as tracked by the room. Clients merge these into their local
+    /// kill/death table rather than asking for it.
+    static boost::json::array playerStatsEntries(const Room& room, const std::vector<uint64_t>& clientIds);
+
+    /// Wrap player stats entries into a room "player_3D" leaderboard command
+    /// that clients parse as a stats update to merge into their local table.
+    /// Callers decide whether to broadcast (e.g. on kill) or unicast (e.g. to
+    /// seed a fresh joiner) the returned packet.
+    static nx_data createRoomLeaderboardCommand(uint64_t roomId, User& user,
+                                                boost::json::array entries, uint64_t messageId);
 
     /// Send multiple messages with specified tickrate.
     static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);

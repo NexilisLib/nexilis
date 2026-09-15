@@ -51,12 +51,11 @@ public:
         movement = 2,
         shoot = 3,
         respawn = 4,
-        /// Client reports which team it has joined (payload: team name).
+        /// Set the team a player is playing on (client -> server).
         set_team = 5,
-        /// Client asks the server for the current leaderboard snapshot.
-        request_leaderboard = 6,
-        /// Server broadcasts the full leaderboard (kills/deaths/teams).
-        leaderboard = 7
+        /// Either a request for the current kill/death leaderboard
+        /// (client -> server) or the leaderboard payload itself (server -> client).
+        leaderboard = 6
     };
 
     enum class ObjectType : uint8_t

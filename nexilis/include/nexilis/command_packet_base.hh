@@ -188,6 +188,11 @@ public:
             {
                 return Impl::room_player3d_shoot(std::forward<Args>(args)...);
             }
+            template <typename... Args>
+            static auto setTeam(Args&&... args)
+            {
+                return Impl::room_player3d_set_team(std::forward<Args>(args)...);
+            }
         };
 
         struct Object3D

@@ -62,6 +62,8 @@ struct ClientImpl
 
     static nx_data room_player3d_shoot(ClientAPI& api, uint64_t targetId, float damage);
 
+    static nx_data room_player3d_set_team(ClientAPI& api, const std::string& team);
+
     // Room::Object3D
     static nx_data room_object3d_create(ClientAPI& api, Vector3f position, Vector3f dimensions, const std::string& filePath);
 

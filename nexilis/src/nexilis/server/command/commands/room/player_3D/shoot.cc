@@ -47,7 +47,10 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
         return CommandResult::failure;
     }
 
-    room->damagePlayer(targetId, damage);
+    // Only triggers a death when this hit actually brought the target from
+    // alive to dead. Shots that land on an already-dead (not yet respawned)
+    // player are no-ops, so a kill/death is never recorded twice.
+    bool causedDeath = room->damagePlayer(targetId, damage);
     float newHealth = room->getPlayerHealth(targetId);
 
     Log::info("Player ", user.getId(), " shot player ", targetId,
@@ -64,7 +67,7 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
                 user, args.getProtocol()) == false)
         return CommandResult::failed_room_send;
 
-    if (newHealth <= 0.0f)
+    if (causedDeath)
     {
         room->onPlayerDied(user.getId(), targetId);
     }
