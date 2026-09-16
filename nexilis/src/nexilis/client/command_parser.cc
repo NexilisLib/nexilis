@@ -165,6 +165,13 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
             return std::make_unique<RoomLeaderboardCommand>(entries);
         }
 
+        if (action == "audio_event")
+        {
+            return std::make_unique<RoomAudioEventCommand>(
+                    client_id, static_cast<uint8_t>(getUint64(json, "sound")),
+                    getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"));
+        }
+
         return std::make_unique<RoomPlayer3DCommand>(
                 action, client_id,
                 getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"),

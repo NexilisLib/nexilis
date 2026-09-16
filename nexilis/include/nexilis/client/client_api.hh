@@ -110,6 +110,17 @@ public:
         std::vector<LeaderboardEntry> entries;
     };
 
+    /// A positional sound event relayed by the server so clients can
+    /// spatialize sounds other players made (e.g. footsteps or gunshots).
+    /// `client_id` is the player that triggered the sound.
+    struct AudioEvent
+    {
+        uint64_t client_id = 0;
+        /// Sound identifier (client-defined, e.g. footstep or shoot).
+        uint8_t sound = 0;
+        float x = 0.0f, y = 0.0f, z = 0.0f;
+    };
+
     class ClientAPIData
     {
     public:
@@ -130,6 +141,7 @@ public:
               m_pendingDamageEvents(std::move(other.m_pendingDamageEvents)),
               m_pendingRespawnEvents(std::move(other.m_pendingRespawnEvents)),
               m_pendingLeaderboardEvents(std::move(other.m_pendingLeaderboardEvents)),
+              m_pendingAudioEvents(std::move(other.m_pendingAudioEvents)),
               m_damageMutex(std::move(other.m_damageMutex)),
               m_roomsMutex(std::move(other.m_roomsMutex))
         {
@@ -152,6 +164,7 @@ public:
                 m_pendingDamageEvents = std::move(other.m_pendingDamageEvents);
                 m_pendingRespawnEvents = std::move(other.m_pendingRespawnEvents);
                 m_pendingLeaderboardEvents = std::move(other.m_pendingLeaderboardEvents);
+                m_pendingAudioEvents = std::move(other.m_pendingAudioEvents);
                 m_damageMutex = std::move(other.m_damageMutex);
                 m_roomsMutex = std::move(other.m_roomsMutex);
 
@@ -265,6 +278,18 @@ public:
             return std::move(m_pendingLeaderboardEvents);
         }
 
+        void pushAudioEvent(AudioEvent event)
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            m_pendingAudioEvents.push_back(std::move(event));
+        }
+
+        std::vector<AudioEvent> consumeAudioEvents()
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            return std::move(m_pendingAudioEvents);
+        }
+
     private:
         /// Is the server aware of the client, is "Packet" initialized.
         bool m_isInitialized = false;
@@ -287,6 +312,8 @@ public:
         std::vector<RespawnEvent> m_pendingRespawnEvents;
         /// Pending leaderboard stats updates.
         std::vector<LeaderboardEvent> m_pendingLeaderboardEvents;
+        /// Pending positional audio events.
+        std::vector<AudioEvent> m_pendingAudioEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
@@ -459,6 +486,12 @@ public:
     std::vector<LeaderboardEvent> consumeLeaderboardEvents()
     {
         return m_clientAPIData.consumeLeaderboardEvents();
+    }
+
+    /// Consume all pending positional audio events (thread-safe).
+    std::vector<AudioEvent> consumeAudioEvents()
+    {
+        return m_clientAPIData.consumeAudioEvents();
     }
 
     /// Let the program wait until nexilis has created all the rooms.

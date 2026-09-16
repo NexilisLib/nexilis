@@ -55,7 +55,10 @@ public:
         set_team = 5,
         /// Either a request for the current kill/death leaderboard
         /// (client -> server) or the leaderboard payload itself (server -> client).
-        leaderboard = 6
+        leaderboard = 6,
+        /// A positional sound event (e.g. a footstep or a gunshot) so other
+        /// clients can spatialize where the sound happened.
+        audio_event = 7
     };
 
     enum class ObjectType : uint8_t

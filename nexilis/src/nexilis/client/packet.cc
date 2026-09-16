@@ -361,6 +361,16 @@ nx_data ClientImpl::room_player3d_set_team(ClientAPI& api, const std::string& te
     return id;
 }
 
+nx_data ClientImpl::room_player3d_audio_event(ClientAPI& api, uint8_t soundType, Vector3f position)
+{
+    auto id = _Packet::clientIdentification(api);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_3D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::audio_event));
+    emplaceAll(id, soundType, position);
+    return id;
+}
+
 nx_data ClientImpl::room_object3d_create(ClientAPI& api, Vector3f position, Vector3f dimensions, const std::string& filePath)
 {
     auto id = _Packet::clientIdentification(api);

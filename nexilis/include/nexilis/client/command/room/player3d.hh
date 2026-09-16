@@ -99,6 +99,37 @@ private:
     float m_new_health;
 };
 
+/// Handles server-relayed positional audio events. The server acts as a relay:
+/// it forwards a player's sound event (sound type + world position) to every
+/// other client in the room, and each client spatializes the sound itself.
+class RoomAudioEventCommand : public BaseAPICommand
+{
+public:
+    RoomAudioEventCommand(uint64_t client_id, uint8_t sound, float x, float y, float z)
+        : m_client_id(client_id), m_sound(sound), m_x(x), m_y(y), m_z(z)
+    {
+    }
+
+    ReadResult execute(ClientAPI&, ClientAPI::ClientAPIData& data) override
+    {
+        ClientAPI::AudioEvent event;
+        event.client_id = m_client_id;
+        event.sound = m_sound;
+        event.x = m_x;
+        event.y = m_y;
+        event.z = m_z;
+        data.pushAudioEvent(std::move(event));
+        return ReadResult::success;
+    }
+
+private:
+    uint64_t m_client_id;
+    uint8_t m_sound;
+    float m_x;
+    float m_y;
+    float m_z;
+};
+
 } // namespace nexilis::client
 
 #endif
