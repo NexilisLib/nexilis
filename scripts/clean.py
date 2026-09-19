@@ -14,7 +14,6 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with this file.  If not, see <https://gnu.org>.
 
-#!/usr/bin/env python3
 from pre_commit.env import get_nexilis_root
 
 import os

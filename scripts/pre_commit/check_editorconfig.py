@@ -14,7 +14,6 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with this file.  If not, see <https://gnu.org>.
 
-#!/usr/bin/env python3
 """Check files against the project's .editorconfig rules."""
 
 import os
@@ -33,7 +32,7 @@ def expand_braces(pattern):
     options = match.group(1).split(",")
     result = []
     for opt in options:
-        new_pat = pattern[: match.start()] + opt.strip() + pattern[match.end():]
+        new_pat = pattern[:match.start()] + opt.strip() + pattern[match.end():]
         result.extend(expand_braces(new_pat))
     return result
 

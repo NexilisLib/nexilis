@@ -14,7 +14,6 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with this file.  If not, see <https://gnu.org>.
 
-#!/usr/bin/env python3
 """Build every example and verify that it builds and runs correctly.
 
 Each subdirectory of ``examples/`` that contains a ``CMakeLists.txt`` is
@@ -90,8 +89,7 @@ def load_manifest(example_dir):
     if tomllib is not None:
         return tomllib.loads(text)
     print(
-        f"Warning: tomllib unavailable, using fallback parser for "
-        f"{manifest_path}"
+        f"Warning: tomllib unavailable, using fallback parser for " f"{manifest_path}"
     )
     return _parse_simple_toml(text)
 
@@ -246,9 +244,7 @@ def group_by_role(examples):
 
 
 def _command_output_tail(error):
-    output = (getattr(error, "stdout", "") or "") + (
-        getattr(error, "stderr", "") or ""
-    )
+    output = (getattr(error, "stdout", "") or "") + (getattr(error, "stderr", "") or "")
     lines = output.splitlines()
     if not lines:
         return ""
