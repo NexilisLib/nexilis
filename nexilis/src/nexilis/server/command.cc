@@ -82,10 +82,11 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
     // DefaultArgs from Commands.
     DefaultArgs args(user, protocol, command, messageId);
 
-    if (!Movement::isInitialized())
-    {
-        Movement::_initialize(m_settings);
-    }
+    // Keep the movement system bound to the live server settings: the static
+    // pointer must be refreshed on every dispatch so a fresh Command (e.g. a
+    // recreated server or a test fixture) does not leave detached movement
+    // threads reading a destroyed configuration's tickrate.
+    Movement::_initialize(m_settings);
 
     Log::debug(header(), commandTypeAsString(arg));
     switch (arg)

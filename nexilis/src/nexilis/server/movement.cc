@@ -48,7 +48,7 @@ double Movement::linear(double progress, double totalDistance)
 std::thread Movement::object2D(std::unique_ptr<Movement2D> movement, User& user, Protocol& protocol)
 {
     // clang-format off
-    return std::thread([&movement, &user, &protocol]()
+    return std::thread([movement = std::move(movement), &user, &protocol]()
     {
         try
         {
@@ -93,7 +93,7 @@ std::thread Movement::object2D(std::unique_ptr<Movement2D> movement, User& user,
 std::thread Movement::object3D(std::unique_ptr<Movement3D> movement, User& user, Protocol& protocol)
 {
     // clang-format off
-    return std::thread([&movement, &user, &protocol]()
+    return std::thread([movement = std::move(movement), &user, &protocol]()
     {
         try
         {
