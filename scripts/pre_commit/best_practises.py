@@ -21,6 +21,8 @@ from env import get_nexilis_root
 
 import re
 import os
+import sys
+import argparse
 
 
 def get_constants_file_path(nexilis_root) -> str:
@@ -108,7 +110,12 @@ def process_files(target_path, alias_map) -> tuple[int, list[tuple[str, str, int
     return total_replacements, all_changes
 
 
-def process_all_files(alias_map) -> int:
+def process_all_files(alias_map, apply=False) -> int:
+    """Analyze the C++ sources for incorrect type alias usage.
+
+    Returns 0 when the sources are clean or the replacements were applied,
+    and a non-zero value when unused type aliases were found but not applied.
+    """
     # Analyze the C++ file and get potential replacements.
     path = get_nexilis_root() + "/nexilis"
     total_replacements, changes = process_files(path, alias_map)
@@ -123,36 +130,51 @@ def process_all_files(alias_map) -> int:
         msg += f" Alias: '{alias}', Occurrences: {count}"
         print(msg)
 
-    # Ask the user if they want to write the changes
-    print(f"Total replacements: {total_replacements}")
-    response = input("Do you want to write changes? (y/n):").strip().lower()
+    # If asked, apply the replacements without prompting.
+    if apply:
+        for file_path, _, __, ___ in changes:
+            apply_replacements(file_path, alias_map)
+        print("Replacements applied.")
+        return 0
 
+    # Never prompt when running non-interactively (e.g. in CI).
+    if not sys.stdin.isatty():
+        print("Unused type aliases found, no changes made.")
+        return 1
+
+    # Ask the user if they want to write the changes
+    response = input(
+        f"Apply {total_replacements} replacement(s)? (y/n):"
+    ).strip().lower()
     if response == "y":
         for file_path, _, __, ___ in changes:
             apply_replacements(file_path, alias_map)
-        return 2
+        print("Replacements applied.")
+        return 0
     else:
         print("No changes made.")
-
-    return -1
+        return 1
 
 
 def main():
-    changes = process_all_files(
-        read_aliases(get_constants_file_path(get_nexilis_root()))
+    parser = argparse.ArgumentParser(
+        description="Check correct type alias usage in the Nexilis C++ sources."
     )
-    if changes == 0:
-        print("Everything OK")
-        return 0
-    elif changes == 1:
-        print("Unused type aliases found. No changes made.")
-        return 1
-    elif changes == 2:
-        print("Unused type aliases replaced with type aliases.")
-        return 0
-    elif changes == -1:
-        print("Error.")
-        return 1
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Apply the type alias replacements without prompting.",
+    )
+    args = parser.parse_args()
+
+    result = process_all_files(
+        read_aliases(get_constants_file_path(get_nexilis_root())),
+        apply=args.apply,
+    )
+    if result != 0:
+        print("Unused type aliases found. Run with --apply to replace them.")
+        sys.exit(1)
+    print("Everything OK")
 
 
 if __name__ == "__main__":

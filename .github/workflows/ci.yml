@@ -72,17 +72,11 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Run best_practices.py
+      - name: Run best_practises.py
         run: |
           pip install ./scripts
           python scripts/pre_commit/env.py
           python scripts/pre_commit/best_practises.py
-          exit_code=$?
-          if [ "$exit_code" -eq 0 ]; then
-            echo "Best practices successful."
-          else
-            exit 1
-          fi
 
   editorconfig-check:
     name: EditorConfig Check
