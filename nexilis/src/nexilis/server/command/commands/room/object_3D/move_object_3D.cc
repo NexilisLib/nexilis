@@ -49,7 +49,7 @@ CommandResult ServerImpl::room_object3d_move(const DefaultArgs& args)
     auto newPosition = oldPosition + position;
 
     std::map<std::string, boost::json::value> params{
-            {"objectId", boost::json::value(objectId)},
+            {"id", boost::json::value(objectId)},
             {"x", boost::json::value(newPosition.x)},
             {"y", boost::json::value(newPosition.y)},
             {"z", boost::json::value(newPosition.z)}};

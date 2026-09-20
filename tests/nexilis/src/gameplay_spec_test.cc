@@ -100,6 +100,154 @@ nx_data createMoving2DBytes(Vector2f startingPosition, Vector2f dimensions, Vect
     return bytes;
 }
 
+/// Room command bytes: room / player_3D / position / position vector.
+nx_data player3DPositionBytes(const Vector3f& position)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::player_3D),
+                  static_cast<uint8_t>(RoomCommandType::PlayerType::position)};
+    auto vectorBytes = Util::convertToByteVector(position);
+    bytes.insert(bytes.end(), vectorBytes.begin(), vectorBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / player_3D / dimension / dimensions vector.
+nx_data player3DDimensionBytes(const Vector3f& dimensions)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::player_3D),
+                  static_cast<uint8_t>(RoomCommandType::PlayerType::dimension)};
+    auto vectorBytes = Util::convertToByteVector(dimensions);
+    bytes.insert(bytes.end(), vectorBytes.begin(), vectorBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / player_2D / position / position vector.
+nx_data player2DPositionBytes(const Vector2f& position)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::player_2D),
+                  static_cast<uint8_t>(RoomCommandType::PlayerType::position)};
+    auto vectorBytes = Util::convertToByteVector(position);
+    bytes.insert(bytes.end(), vectorBytes.begin(), vectorBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / player_2D / dimension / dimensions vector.
+nx_data player2DDimensionBytes(const Vector2f& dimensions)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::player_2D),
+                  static_cast<uint8_t>(RoomCommandType::PlayerType::dimension)};
+    auto vectorBytes = Util::convertToByteVector(dimensions);
+    bytes.insert(bytes.end(), vectorBytes.begin(), vectorBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / player_2D / movement / movement / deltaTime.
+nx_data player2DMovementBytes(const Vector2f& movement, float deltaTime)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::player_2D),
+                  static_cast<uint8_t>(RoomCommandType::PlayerType::movement)};
+    auto moveBytes = Util::convertToByteVector(movement);
+    bytes.insert(bytes.end(), moveBytes.begin(), moveBytes.end());
+    auto deltaBytes = Util::convertToByteVector(deltaTime);
+    bytes.insert(bytes.end(), deltaBytes.begin(), deltaBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / player_3D / movement / movement / deltaTime.
+nx_data player3DMovementBytes(const Vector3f& movement, float deltaTime)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::player_3D),
+                  static_cast<uint8_t>(RoomCommandType::PlayerType::movement)};
+    auto moveBytes = Util::convertToByteVector(movement);
+    bytes.insert(bytes.end(), moveBytes.begin(), moveBytes.end());
+    auto deltaBytes = Util::convertToByteVector(deltaTime);
+    bytes.insert(bytes.end(), deltaBytes.begin(), deltaBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / object_2D / create / position / dimensions / filepath.
+nx_data createObject2DBytes(const Vector2f& position, const Vector2f& dimensions, const std::string& filepath)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::object_2D),
+                  static_cast<uint8_t>(RoomCommandType::ObjectType::create)};
+    auto posBytes = Util::convertToByteVector(position);
+    bytes.insert(bytes.end(), posBytes.begin(), posBytes.end());
+    auto dimsBytes = Util::convertToByteVector(dimensions);
+    bytes.insert(bytes.end(), dimsBytes.begin(), dimsBytes.end());
+    auto fileBytes = Util::convertToByteVector(filepath);
+    bytes.insert(bytes.end(), fileBytes.begin(), fileBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / object_2D / destroy / objectId.
+nx_data destroyObject2DBytes(uint64_t objectId)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::object_2D),
+                  static_cast<uint8_t>(RoomCommandType::ObjectType::destroy)};
+    auto idBytes = Util::convertToByteVector(objectId);
+    bytes.insert(bytes.end(), idBytes.begin(), idBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / object_2D / move / objectId / move offset.
+nx_data moveObject2DBytes(uint64_t objectId, const Vector2f& offset)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::object_2D),
+                  static_cast<uint8_t>(RoomCommandType::ObjectType::move)};
+    auto idBytes = Util::convertToByteVector(objectId);
+    bytes.insert(bytes.end(), idBytes.begin(), idBytes.end());
+    auto offsetBytes = Util::convertToByteVector(offset);
+    bytes.insert(bytes.end(), offsetBytes.begin(), offsetBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / object_3D / create / position / dimensions / filepath.
+nx_data createObject3DBytes(const Vector3f& position, const Vector3f& dimensions, const std::string& filepath)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::object_3D),
+                  static_cast<uint8_t>(RoomCommandType::ObjectType::create)};
+    auto posBytes = Util::convertToByteVector(position);
+    bytes.insert(bytes.end(), posBytes.begin(), posBytes.end());
+    auto dimsBytes = Util::convertToByteVector(dimensions);
+    bytes.insert(bytes.end(), dimsBytes.begin(), dimsBytes.end());
+    auto fileBytes = Util::convertToByteVector(filepath);
+    bytes.insert(bytes.end(), fileBytes.begin(), fileBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / object_3D / destroy / objectId.
+nx_data destroyObject3DBytes(uint64_t objectId)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::object_3D),
+                  static_cast<uint8_t>(RoomCommandType::ObjectType::destroy)};
+    auto idBytes = Util::convertToByteVector(objectId);
+    bytes.insert(bytes.end(), idBytes.begin(), idBytes.end());
+    return bytes;
+}
+
+/// Room command bytes: room / object_3D / move / objectId / move offset.
+nx_data moveObject3DBytes(uint64_t objectId, const Vector3f& offset)
+{
+    nx_data bytes{static_cast<uint8_t>(CommandType::room),
+                  static_cast<uint8_t>(RoomCommandType::Root::object_3D),
+                  static_cast<uint8_t>(RoomCommandType::ObjectType::move)};
+    auto idBytes = Util::convertToByteVector(objectId);
+    bytes.insert(bytes.end(), idBytes.begin(), idBytes.end());
+    auto offsetBytes = Util::convertToByteVector(offset);
+    bytes.insert(bytes.end(), offsetBytes.begin(), offsetBytes.end());
+    return bytes;
+}
+
 /// Room command bytes: room / object_3D / create_moving / startingPosition /
 /// dimensions / movement / deltaTime / movementType / filepath.
 nx_data createMoving3DBytes(Vector3f startingPosition, Vector3f dimensions, Vector3f movement,
@@ -131,6 +279,41 @@ boost::json::object infoRoomsMessage()
     roomObj["room_id"] = ROOM_ID;
     roomObj["creator_id"] = SENDER_ID;
     roomObj["context"] = static_cast<uint64_t>(RoomData::Context::_3D);
+
+    boost::json::object json;
+    json["command"] = "getting";
+    json["type"] = "info_rooms";
+    json["callback"] = 0;
+    json["rooms"] = boost::json::array{std::move(roomObj)};
+    return json;
+}
+
+/// A "getting"/"info_rooms" JSON message with a single room whose client list
+/// contains one session per entry in `clients` (the shape the server uses when
+/// polling existing members).
+boost::json::object infoRoomsWithClientsMessage(const std::vector<uint64_t>& clients)
+{
+    boost::json::array clientArray;
+    for (auto id : clients)
+    {
+        boost::json::object clientObj;
+        clientObj["id"] = id;
+        clientObj["name"] = "player_" + std::to_string(id);
+        clientObj["x"] = 0.0;
+        clientObj["y"] = 0.0;
+        clientObj["width"] = 1.0;
+        clientObj["height"] = 1.0;
+        clientArray.emplace_back(std::move(clientObj));
+    }
+
+    boost::json::object roomObj;
+    roomObj["name"] = "gameplay_room";
+    roomObj["max_size"] = 10;
+    roomObj["room_id"] = ROOM_ID;
+    roomObj["creator_id"] = SENDER_ID;
+    roomObj["context"] = static_cast<uint64_t>(RoomData::Context::_3D);
+    if (!clientArray.empty())
+        roomObj["clients"] = std::move(clientArray);
 
     boost::json::object json;
     json["command"] = "getting";
@@ -479,6 +662,100 @@ TEST_F(GameplaySpecTest, CreateRoomLeaderboardCommandWrapsEntries)
 }
 
 // ---------------------------------------------------------------------------
+// Kill -> respawn / leaderboard flows
+// ---------------------------------------------------------------------------
+
+TEST_F(GameplaySpecTest, RespawnFlowAllowsTargetToBeDamagedAgain)
+{
+    setUpRoom();
+
+    // Application respawn policy: a killed player is revived at full health
+    // (the shoot command itself only raises the death event).
+    server::RoomStorage::getRoomById(ROOM_ID)->setDeathHandler(
+            [](server::Room& room, uint64_t killerId, uint64_t victimId)
+            {
+                room.recordKill(killerId, victimId);
+                room.resetPlayerHealth(victimId);
+            });
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, DEFAULT_HEALTH), *m_sender), server::CommandResult::success);
+
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    // The handler respawned the victim immediately, so health is back to full.
+    EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), DEFAULT_HEALTH);
+    EXPECT_EQ(room->getPlayerKills(SENDER_ID), 1);
+    EXPECT_EQ(room->getPlayerDeaths(TARGET_ID), 1);
+
+    // A follow-up shot now wounds the respawned target normally.
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 30.0f), *m_sender), server::CommandResult::success);
+    EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), DEFAULT_HEALTH - 30.0f);
+    EXPECT_EQ(room->getPlayerKills(SENDER_ID), 1);
+    EXPECT_EQ(room->getPlayerDeaths(TARGET_ID), 1);
+}
+
+TEST_F(GameplaySpecTest, KillBroadcastsLeaderboardDeltaAndRespawnAction)
+{
+    setUpRoom();
+    m_sender->setUsername("shooters");
+    m_target->setUsername("victims");
+
+    auto senderMessages = receivedMessages(*m_sender);
+    auto targetMessages = receivedMessages(*m_target);
+
+    // The application death handler records the kill, announces the killer +
+    // victim leaderboard delta to the room, and tells everyone where the victim
+    // respawns (exercising the leaderboard helpers end to end).
+    server::RoomStorage::getRoomById(ROOM_ID)->setDeathHandler(
+            [this](server::Room& room, uint64_t killerId, uint64_t victimId)
+            {
+                room.recordKill(killerId, victimId);
+
+                auto entries = server::Command::playerStatsEntries(room, {killerId, victimId});
+                auto leaderboard = server::Command::createRoomLeaderboardCommand(
+                        room.getId(), *m_sender, std::move(entries), 0);
+                room.broadcastToAll(leaderboard);
+
+                nx_data respawnData{static_cast<uint8_t>(CommandType::room),
+                                    static_cast<uint8_t>(RoomCommandType::Root::player_3D),
+                                    static_cast<uint8_t>(RoomCommandType::PlayerType::respawn)};
+                std::map<std::string, boost::json::value> respawnParams{
+                        {"target_id", boost::json::value(victimId)},
+                        {"x", boost::json::value(0.0)},
+                        {"y", boost::json::value(0.0)},
+                        {"z", boost::json::value(0.0)}};
+                room.broadcastToAll(server::Command::createRoomCommand(
+                        room.getId(), *m_sender, respawnData, respawnParams, 0));
+            });
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, DEFAULT_HEALTH), *m_sender), server::CommandResult::success);
+
+    // Every room member receives the hit broadcast, the leaderboard delta and
+    // the respawn announcement.
+    auto checkMessages = [](const std::vector<boost::json::object>& messages)
+    {
+        ASSERT_EQ(messages.size(), 3);
+        EXPECT_EQ(messages[0].at("action").as_string(), "shoot");
+
+        const auto& board = messages[1];
+        EXPECT_EQ(board.at("action").as_string(), "leaderboard");
+        const auto& boardEntries = board.at("entries").as_array();
+        ASSERT_EQ(boardEntries.size(), 2);
+        EXPECT_EQ(Util::toUint64(boardEntries[0].at("id")), SENDER_ID);
+        EXPECT_EQ(Util::toUint64(boardEntries[0].at("kills")), 1);
+        EXPECT_EQ(Util::toUint64(boardEntries[0].at("deaths")), 0);
+        EXPECT_EQ(Util::toUint64(boardEntries[1].at("id")), TARGET_ID);
+        EXPECT_EQ(Util::toUint64(boardEntries[1].at("kills")), 0);
+        EXPECT_EQ(Util::toUint64(boardEntries[1].at("deaths")), 1);
+
+        const auto& respawn = messages[2];
+        EXPECT_EQ(respawn.at("action").as_string(), "respawn");
+        EXPECT_EQ(Util::toUint64(respawn.at("target_id")), TARGET_ID);
+    };
+    checkMessages(senderMessages);
+    checkMessages(targetMessages);
+}
+
+// ---------------------------------------------------------------------------
 // Room state primitives
 // ---------------------------------------------------------------------------
 
@@ -658,12 +935,332 @@ TEST_F(GameplaySpecTest, CreateMovingLinearObjectMovesOverTime)
         if (msg.at("createMovingType").as_string() == "update")
         {
             foundUpdate = true;
-            EXPECT_TRUE(msg.contains("objectId"));
+            EXPECT_TRUE(msg.contains("id"));
             EXPECT_GT(msg.at("x").as_double(), 0.0);
             break;
         }
     }
     EXPECT_TRUE(foundUpdate);
+}
+
+// ---------------------------------------------------------------------------
+// Player & object commands (server side)
+// ---------------------------------------------------------------------------
+
+TEST_F(GameplaySpecTest, Player3DPositionNotInRoomFails)
+{
+    // The player has not joined any room (room id stays 0).
+    EXPECT_EQ(read(player3DPositionBytes({1.0f, 2.0f, 3.0f}), *m_sender), server::CommandResult::error);
+}
+
+TEST_F(GameplaySpecTest, Player3DPositionUpdatesServerAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    const Vector3f position(10.0f, 20.0f, 30.0f);
+    ASSERT_EQ(read(player3DPositionBytes(position), *m_sender), server::CommandResult::success);
+
+    auto serverPosition = m_sender->getObject3D().getPosition();
+    EXPECT_FLOAT_EQ(serverPosition.x, position.x);
+    EXPECT_FLOAT_EQ(serverPosition.y, position.y);
+    EXPECT_FLOAT_EQ(serverPosition.z, position.z);
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "position");
+    EXPECT_EQ(Util::toUint64(msg.at("room_id")), ROOM_ID);
+    EXPECT_EQ(Util::toUint64(msg.at("client_id")), SENDER_ID);
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), position.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), position.y);
+    EXPECT_DOUBLE_EQ(msg.at("z").as_double(), position.z);
+}
+
+TEST_F(GameplaySpecTest, Player3DDimensionUpdatesServerAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    const Vector3f dimensions(2.0f, 4.0f, 6.0f);
+    ASSERT_EQ(read(player3DDimensionBytes(dimensions), *m_sender), server::CommandResult::success);
+
+    auto serverDimensions = m_sender->getObject3D().getDimensions();
+    EXPECT_FLOAT_EQ(serverDimensions.x, dimensions.x);
+    EXPECT_FLOAT_EQ(serverDimensions.y, dimensions.y);
+    EXPECT_FLOAT_EQ(serverDimensions.z, dimensions.z);
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "dimension");
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), dimensions.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), dimensions.y);
+    EXPECT_DOUBLE_EQ(msg.at("z").as_double(), dimensions.z);
+}
+
+TEST_F(GameplaySpecTest, Player3DMovementAppliesDisplacementAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    // The movement command displaces the player once: position + velocity * delta.
+    const Vector3f velocity(10.0f, 0.0f, 0.0f);
+    ASSERT_EQ(read(player3DMovementBytes(velocity, 0.1f), *m_sender), server::CommandResult::success);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto serverPosition = m_sender->getObject3D().getPosition();
+    EXPECT_NEAR(serverPosition.x, 10.0f * 0.1f, 0.01f);
+    EXPECT_FLOAT_EQ(serverPosition.y, 0.0f);
+    EXPECT_FLOAT_EQ(serverPosition.z, 0.0f);
+
+    ASSERT_GE(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "movement");
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_NEAR(msg.at("x").as_double(), 10.0f * 0.1f, 0.01);
+}
+
+TEST_F(GameplaySpecTest, Player2DPositionNotInRoomFails)
+{
+    EXPECT_EQ(read(player2DPositionBytes({1.0f, 2.0f}), *m_sender), server::CommandResult::error);
+}
+
+TEST_F(GameplaySpecTest, Player2DPositionUpdatesServerAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    const Vector2f position(15.0f, 25.0f);
+    ASSERT_EQ(read(player2DPositionBytes(position), *m_sender), server::CommandResult::success);
+
+    auto serverPosition = m_sender->getObject2D().getPosition();
+    EXPECT_FLOAT_EQ(serverPosition.x, position.x);
+    EXPECT_FLOAT_EQ(serverPosition.y, position.y);
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "position");
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), position.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), position.y);
+}
+
+TEST_F(GameplaySpecTest, Player2DDimensionUpdatesServerAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    const Vector2f dimensions(3.0f, 5.0f);
+    ASSERT_EQ(read(player2DDimensionBytes(dimensions), *m_sender), server::CommandResult::success);
+
+    auto serverDimensions = m_sender->getObject2D().getDimensions();
+    EXPECT_FLOAT_EQ(serverDimensions.x, dimensions.x);
+    EXPECT_FLOAT_EQ(serverDimensions.y, dimensions.y);
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "dimension");
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), dimensions.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), dimensions.y);
+}
+
+TEST_F(GameplaySpecTest, Player2DMovementStreamsPositionUpdates)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    // A 50 ms movement span produces a few tick updates at 60 Hz.
+    const Vector2f velocity(2.0f, 0.0f);
+    ASSERT_EQ(read(player2DMovementBytes(velocity, 0.05f), *m_sender), server::CommandResult::success);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+    // The final server position matches the target displacement.
+    auto serverPosition = m_sender->getObject2D().getPosition();
+    EXPECT_NEAR(serverPosition.x, 2.0f * 1.0f, 0.01f);
+    EXPECT_FLOAT_EQ(serverPosition.y, 0.0f);
+
+    // And the streamed broadcasts carry the updated positions.
+    bool foundUpdate = false;
+    for (const auto& msg : targetMessages)
+    {
+        if (msg.at("action").as_string() == "movement")
+        {
+            foundUpdate = true;
+            EXPECT_GT(msg.at("x").as_double(), 0.0);
+            break;
+        }
+    }
+    EXPECT_TRUE(foundUpdate);
+}
+
+TEST_F(GameplaySpecTest, CreateObject2DAddsStaticObjectAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    const Vector2f position(7.0f, 8.0f);
+    const Vector2f dimensions(2.0f, 3.0f);
+    ASSERT_EQ(read(createObject2DBytes(position, dimensions, "sprites/tree.png"), *m_sender),
+              server::CommandResult::success);
+
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    ASSERT_EQ(room->getObjects2D().size(), 1);
+    const auto& object = room->getObjects2D()[0];
+    EXPECT_FLOAT_EQ(object.getPosition().x, position.x);
+    EXPECT_FLOAT_EQ(object.getPosition().y, position.y);
+    EXPECT_FLOAT_EQ(object.getDimensions().x, dimensions.x);
+    EXPECT_FLOAT_EQ(object.getDimensions().y, dimensions.y);
+    EXPECT_EQ(object.getFilepath(), "sprites/tree.png");
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("type").as_string(), "object_2D");
+    EXPECT_EQ(msg.at("action").as_string(), "create");
+    EXPECT_EQ(Util::toUint64(msg.at("id")), object.getId());
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), position.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), position.y);
+    EXPECT_DOUBLE_EQ(msg.at("width").as_double(), dimensions.x);
+    EXPECT_DOUBLE_EQ(msg.at("height").as_double(), dimensions.y);
+    EXPECT_EQ(msg.at("filepath").as_string(), "sprites/tree.png");
+}
+
+TEST_F(GameplaySpecTest, DestroyObject2DRemovesObjectAndBroadcasts)
+{
+    setUpRoom();
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    room->addObject(Object2D(OBJECT_ID, Vector2f(1.0f, 2.0f), Vector2f(3.0f, 4.0f)));
+
+    auto targetMessages = receivedMessages(*m_target);
+    ASSERT_EQ(read(destroyObject2DBytes(OBJECT_ID), *m_sender), server::CommandResult::success);
+
+    EXPECT_TRUE(room->getObjects2D().empty());
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("type").as_string(), "object_2D");
+    EXPECT_EQ(msg.at("action").as_string(), "destroy");
+    EXPECT_EQ(Util::toUint64(msg.at("id")), OBJECT_ID);
+}
+
+TEST_F(GameplaySpecTest, MoveObject2DOffsetsPositionAndBroadcasts)
+{
+    setUpRoom();
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    room->addObject(Object2D(OBJECT_ID, Vector2f(1.0f, 2.0f), Vector2f(3.0f, 4.0f)));
+
+    auto targetMessages = receivedMessages(*m_target);
+    const Vector2f offset(5.0f, -2.0f);
+    ASSERT_EQ(read(moveObject2DBytes(OBJECT_ID, offset), *m_sender), server::CommandResult::success);
+
+    const auto& object = room->getObjects2D()[0];
+    EXPECT_FLOAT_EQ(object.getPosition().x, 1.0f + offset.x);
+    EXPECT_FLOAT_EQ(object.getPosition().y, 2.0f + offset.y);
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "move");
+    EXPECT_EQ(Util::toUint64(msg.at("id")), OBJECT_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), 1.0f + offset.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), 2.0f + offset.y);
+}
+
+TEST_F(GameplaySpecTest, MoveObject2DUnknownObjectFails)
+{
+    setUpRoom();
+
+    EXPECT_EQ(read(moveObject2DBytes(OBJECT_ID, Vector2f(1.0f, 1.0f)), *m_sender),
+              server::CommandResult::failure);
+}
+
+TEST_F(GameplaySpecTest, CreateObject3DAddsStaticObjectAndBroadcasts)
+{
+    setUpRoom();
+    auto targetMessages = receivedMessages(*m_target);
+
+    const Vector3f position(1.0f, 2.0f, 3.0f);
+    const Vector3f dimensions(4.0f, 5.0f, 6.0f);
+    ASSERT_EQ(read(createObject3DBytes(position, dimensions, "models/house.obj"), *m_sender),
+              server::CommandResult::success);
+
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    ASSERT_EQ(room->getObjects3D().size(), 1);
+    const auto& object = room->getObjects3D()[0];
+    EXPECT_FLOAT_EQ(object.getPosition().x, position.x);
+    EXPECT_FLOAT_EQ(object.getPosition().y, position.y);
+    EXPECT_FLOAT_EQ(object.getPosition().z, position.z);
+    EXPECT_FLOAT_EQ(object.getDimensions().x, dimensions.x);
+    EXPECT_FLOAT_EQ(object.getDimensions().y, dimensions.y);
+    EXPECT_FLOAT_EQ(object.getDimensions().z, dimensions.z);
+    EXPECT_EQ(object.getFilepath(), "models/house.obj");
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("type").as_string(), "object_3D");
+    EXPECT_EQ(msg.at("action").as_string(), "create");
+    EXPECT_EQ(Util::toUint64(msg.at("id")), object.getId());
+    EXPECT_EQ(Util::toUint64(msg.at("callback")), MESSAGE_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), position.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), position.y);
+    EXPECT_DOUBLE_EQ(msg.at("z").as_double(), position.z);
+    EXPECT_DOUBLE_EQ(msg.at("w").as_double(), dimensions.x);
+    EXPECT_DOUBLE_EQ(msg.at("h").as_double(), dimensions.y);
+    EXPECT_DOUBLE_EQ(msg.at("d").as_double(), dimensions.z);
+    EXPECT_EQ(msg.at("filepath").as_string(), "models/house.obj");
+}
+
+TEST_F(GameplaySpecTest, DestroyObject3DRemovesObjectAndBroadcasts)
+{
+    setUpRoom();
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    room->addObject(Object3D(OBJECT_ID, Vector3f(1.0f, 2.0f, 3.0f), Vector3f(4.0f, 5.0f, 6.0f)));
+
+    auto targetMessages = receivedMessages(*m_target);
+    ASSERT_EQ(read(destroyObject3DBytes(OBJECT_ID), *m_sender), server::CommandResult::success);
+
+    EXPECT_TRUE(room->getObjects3D().empty());
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("type").as_string(), "object_3D");
+    EXPECT_EQ(msg.at("action").as_string(), "destroy");
+    EXPECT_EQ(Util::toUint64(msg.at("id")), OBJECT_ID);
+}
+
+TEST_F(GameplaySpecTest, MoveObject3DOffsetsPositionAndBroadcasts)
+{
+    setUpRoom();
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    room->addObject(Object3D(OBJECT_ID, Vector3f(1.0f, 2.0f, 3.0f), Vector3f(4.0f, 5.0f, 6.0f)));
+
+    auto targetMessages = receivedMessages(*m_target);
+    const Vector3f offset(5.0f, -2.0f, 1.0f);
+    ASSERT_EQ(read(moveObject3DBytes(OBJECT_ID, offset), *m_sender), server::CommandResult::success);
+
+    const auto& object = room->getObjects3D()[0];
+    EXPECT_FLOAT_EQ(object.getPosition().x, 1.0f + offset.x);
+    EXPECT_FLOAT_EQ(object.getPosition().y, 2.0f + offset.y);
+    EXPECT_FLOAT_EQ(object.getPosition().z, 3.0f + offset.z);
+
+    ASSERT_EQ(targetMessages.size(), 1);
+    const auto& msg = targetMessages[0];
+    EXPECT_EQ(msg.at("action").as_string(), "move");
+    EXPECT_EQ(Util::toUint64(msg.at("id")), OBJECT_ID);
+    EXPECT_DOUBLE_EQ(msg.at("x").as_double(), 1.0f + offset.x);
+    EXPECT_DOUBLE_EQ(msg.at("y").as_double(), 2.0f + offset.y);
+    EXPECT_DOUBLE_EQ(msg.at("z").as_double(), 3.0f + offset.z);
+}
+
+TEST_F(GameplaySpecTest, MoveObject3DUnknownObjectFails)
+{
+    setUpRoom();
+
+    EXPECT_EQ(read(moveObject3DBytes(OBJECT_ID, Vector3f(1.0f, 1.0f, 1.0f)), *m_sender),
+              server::CommandResult::failure);
 }
 
 // ---------------------------------------------------------------------------
@@ -863,6 +1460,299 @@ TEST(ClientGameplayParseTest, ParsesCreateMovingObject3D)
     EXPECT_FLOAT_EQ(snapshots[0].d, 6.0f);
 }
 
+TEST(ClientGameplayParseTest, ParsesCreateMovingObject2DUpdate)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(SENDER_ID);
+
+    ASSERT_EQ(readClientMessage(api, infoRoomsMessage()), client::ReadResult::success);
+
+    // Seed a moving object with the server's create broadcast.
+    boost::json::object create;
+    create["command"] = "room";
+    create["type"] = "object_2D";
+    create["callback"] = 0;
+    create["action"] = "create_moving";
+    create["room_id"] = ROOM_ID;
+    create["createMovingType"] = "create";
+    create["id"] = OBJECT_ID;
+    create["x"] = 0.0;
+    create["y"] = 0.0;
+    create["width"] = 2.0;
+    create["height"] = 3.0;
+    create["filepath"] = "sprites/ball.png";
+    ASSERT_EQ(readClientMessage(api, create), client::ReadResult::success);
+
+    auto* room = api.getRoom(ROOM_ID);
+    ASSERT_NE(room, nullptr);
+    ASSERT_EQ(room->getObjects2D().size(), 1);
+
+    // A movement update reuses the same id/x/y keys; it must move the existing
+    // object instead of creating a new one.
+    boost::json::object update;
+    update["command"] = "room";
+    update["type"] = "object_2D";
+    update["callback"] = 0;
+    update["action"] = "create_moving";
+    update["room_id"] = ROOM_ID;
+    update["createMovingType"] = "update";
+    update["id"] = OBJECT_ID;
+    update["x"] = 7.0;
+    update["y"] = 8.0;
+    ASSERT_EQ(readClientMessage(api, update), client::ReadResult::success);
+
+    ASSERT_EQ(room->getObjects2D().size(), 1);
+    const auto& object = room->getObjects2D()[0];
+    EXPECT_EQ(object.getId(), OBJECT_ID);
+    EXPECT_FLOAT_EQ(object.getPosition().x, 7.0f);
+    EXPECT_FLOAT_EQ(object.getPosition().y, 8.0f);
+    // An update must not clobber the object's dimensions or filepath.
+    EXPECT_FLOAT_EQ(object.getDimensions().x, 2.0f);
+    EXPECT_FLOAT_EQ(object.getDimensions().y, 3.0f);
+    EXPECT_EQ(object.getFilepath(), "sprites/ball.png");
+}
+
+TEST(ClientGameplayParseTest, ParsesCreateMovingObject3DUpdate)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(SENDER_ID);
+
+    ASSERT_EQ(readClientMessage(api, infoRoomsMessage()), client::ReadResult::success);
+
+    boost::json::object create;
+    create["command"] = "room";
+    create["type"] = "object_3D";
+    create["callback"] = 0;
+    create["action"] = "create_moving";
+    create["room_id"] = ROOM_ID;
+    create["createMovingType"] = "create";
+    create["id"] = OBJECT_ID;
+    create["x"] = 0.0;
+    create["y"] = 0.0;
+    create["z"] = 0.0;
+    create["w"] = 4.0;
+    create["h"] = 5.0;
+    create["d"] = 6.0;
+    create["filepath"] = "models/crate.obj";
+    ASSERT_EQ(readClientMessage(api, create), client::ReadResult::success);
+
+    boost::json::object update;
+    update["command"] = "room";
+    update["type"] = "object_3D";
+    update["callback"] = 0;
+    update["action"] = "create_moving";
+    update["room_id"] = ROOM_ID;
+    update["createMovingType"] = "update";
+    update["id"] = OBJECT_ID;
+    update["x"] = 9.0;
+    update["y"] = 10.0;
+    update["z"] = 11.0;
+    ASSERT_EQ(readClientMessage(api, update), client::ReadResult::success);
+
+    auto snapshots = api.getRemoteObjects3DSnapshot(ROOM_ID);
+    ASSERT_EQ(snapshots.size(), 1);
+    EXPECT_EQ(snapshots[0].id, OBJECT_ID);
+    EXPECT_FLOAT_EQ(snapshots[0].x, 9.0f);
+    EXPECT_FLOAT_EQ(snapshots[0].y, 10.0f);
+    EXPECT_FLOAT_EQ(snapshots[0].z, 11.0f);
+    // An update must not clobber the object's dimensions.
+    EXPECT_FLOAT_EQ(snapshots[0].w, 4.0f);
+    EXPECT_FLOAT_EQ(snapshots[0].h, 5.0f);
+    EXPECT_FLOAT_EQ(snapshots[0].d, 6.0f);
+}
+
+TEST(ClientGameplayParseTest, ParsesObject2DCreateDestroyMove)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(SENDER_ID);
+
+    ASSERT_EQ(readClientMessage(api, infoRoomsMessage()), client::ReadResult::success);
+
+    // Creating a static object adds it to the local room.
+    boost::json::object create;
+    create["command"] = "room";
+    create["type"] = "object_2D";
+    create["callback"] = 0;
+    create["action"] = "create";
+    create["room_id"] = ROOM_ID;
+    create["id"] = OBJECT_ID;
+    create["x"] = 1.0;
+    create["y"] = 2.0;
+    create["width"] = 3.0;
+    create["height"] = 4.0;
+    create["filepath"] = "sprites/tree.png";
+
+    ASSERT_EQ(readClientMessage(api, create), client::ReadResult::success);
+
+    auto* room = api.getRoom(ROOM_ID);
+    ASSERT_NE(room, nullptr);
+    ASSERT_EQ(room->getObjects2D().size(), 1);
+    EXPECT_EQ(room->getObjects2D()[0].getId(), OBJECT_ID);
+    EXPECT_EQ(room->getObjects2D()[0].getFilepath(), "sprites/tree.png");
+
+    // A move action updates the object position.
+    boost::json::object move;
+    move["command"] = "room";
+    move["type"] = "object_2D";
+    move["callback"] = 0;
+    move["action"] = "move";
+    move["room_id"] = ROOM_ID;
+    move["id"] = OBJECT_ID;
+    move["x"] = 10.0;
+    move["y"] = 20.0;
+
+    ASSERT_EQ(readClientMessage(api, move), client::ReadResult::success);
+    EXPECT_FLOAT_EQ(room->getObjects2D()[0].getPosition().x, 10.0f);
+    EXPECT_FLOAT_EQ(room->getObjects2D()[0].getPosition().y, 20.0f);
+
+    // A destroy action removes the object again.
+    boost::json::object destroy;
+    destroy["command"] = "room";
+    destroy["type"] = "object_2D";
+    destroy["callback"] = 0;
+    destroy["action"] = "destroy";
+    destroy["room_id"] = ROOM_ID;
+    destroy["id"] = OBJECT_ID;
+
+    ASSERT_EQ(readClientMessage(api, destroy), client::ReadResult::success);
+    EXPECT_TRUE(room->getObjects2D().empty());
+}
+
+TEST(ClientGameplayParseTest, ParsesObject3DCreateDestroyMove)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(SENDER_ID);
+
+    ASSERT_EQ(readClientMessage(api, infoRoomsMessage()), client::ReadResult::success);
+
+    boost::json::object create;
+    create["command"] = "room";
+    create["type"] = "object_3D";
+    create["callback"] = 0;
+    create["action"] = "create";
+    create["room_id"] = ROOM_ID;
+    create["id"] = OBJECT_ID;
+    create["x"] = 1.0;
+    create["y"] = 2.0;
+    create["z"] = 3.0;
+    create["w"] = 4.0;
+    create["h"] = 5.0;
+    create["d"] = 6.0;
+    create["filepath"] = "models/house.obj";
+
+    ASSERT_EQ(readClientMessage(api, create), client::ReadResult::success);
+
+    auto snapshots = api.getRemoteObjects3DSnapshot(ROOM_ID);
+    ASSERT_EQ(snapshots.size(), 1);
+    EXPECT_EQ(snapshots[0].id, OBJECT_ID);
+
+    boost::json::object move;
+    move["command"] = "room";
+    move["type"] = "object_3D";
+    move["callback"] = 0;
+    move["action"] = "move";
+    move["room_id"] = ROOM_ID;
+    move["id"] = OBJECT_ID;
+    move["x"] = 10.0;
+    move["y"] = 20.0;
+    move["z"] = 30.0;
+
+    ASSERT_EQ(readClientMessage(api, move), client::ReadResult::success);
+    auto moved = api.getRemoteObjects3DSnapshot(ROOM_ID);
+    ASSERT_EQ(moved.size(), 1);
+    EXPECT_FLOAT_EQ(moved[0].x, 10.0f);
+    EXPECT_FLOAT_EQ(moved[0].y, 20.0f);
+    EXPECT_FLOAT_EQ(moved[0].z, 30.0f);
+
+    boost::json::object destroy;
+    destroy["command"] = "room";
+    destroy["type"] = "object_3D";
+    destroy["callback"] = 0;
+    destroy["action"] = "destroy";
+    destroy["room_id"] = ROOM_ID;
+    destroy["id"] = OBJECT_ID;
+
+    ASSERT_EQ(readClientMessage(api, destroy), client::ReadResult::success);
+    EXPECT_TRUE(api.getRemoteObjects3DSnapshot(ROOM_ID).empty());
+}
+
+TEST(ClientGameplayParseTest, ParsesPlayer3DDimensions)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(SENDER_ID);
+
+    // The room already reports the remote player as a member.
+    ASSERT_EQ(readClientMessage(api, infoRoomsWithClientsMessage({TARGET_ID})), client::ReadResult::success);
+
+    boost::json::object json;
+    json["command"] = "room";
+    json["type"] = "player_3D";
+    json["callback"] = 0;
+    json["action"] = "dimensions";
+    json["room_id"] = ROOM_ID;
+    json["client_id"] = TARGET_ID;
+    json["x"] = 2.0;
+    json["y"] = 4.0;
+    json["z"] = 6.0;
+
+    ASSERT_EQ(readClientMessage(api, json), client::ReadResult::success);
+
+    auto players = api.getRemotePlayersSnapshot(ROOM_ID, SENDER_ID);
+    ASSERT_EQ(players.size(), 1);
+    EXPECT_EQ(players[0].id, TARGET_ID);
+    EXPECT_FLOAT_EQ(players[0].w, 2.0f);
+    EXPECT_FLOAT_EQ(players[0].h, 4.0f);
+    EXPECT_FLOAT_EQ(players[0].d, 6.0f);
+}
+
+TEST(ClientGameplayParseTest, ParsesPlayer2DPositionAndDimension)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(SENDER_ID);
+
+    ASSERT_EQ(readClientMessage(api, infoRoomsWithClientsMessage({TARGET_ID})), client::ReadResult::success);
+
+    boost::json::object position;
+    position["command"] = "room";
+    position["type"] = "player_2D";
+    position["callback"] = 0;
+    position["action"] = "position";
+    position["room_id"] = ROOM_ID;
+    position["client_id"] = TARGET_ID;
+    position["x"] = 15.0;
+    position["y"] = 25.0;
+
+    ASSERT_EQ(readClientMessage(api, position), client::ReadResult::success);
+
+    auto* room = api.getRoom(ROOM_ID);
+    ASSERT_NE(room, nullptr);
+    auto& clients = room->getClients();
+    ASSERT_EQ(clients.size(), 1);
+    EXPECT_EQ(clients[0].getId(), TARGET_ID);
+    EXPECT_FLOAT_EQ(clients[0].getObject2D().getPosition().x, 15.0f);
+    EXPECT_FLOAT_EQ(clients[0].getObject2D().getPosition().y, 25.0f);
+
+    boost::json::object dimension;
+    dimension["command"] = "room";
+    dimension["type"] = "player_2D";
+    dimension["callback"] = 0;
+    dimension["action"] = "dimension";
+    dimension["room_id"] = ROOM_ID;
+    dimension["client_id"] = TARGET_ID;
+    dimension["x"] = 3.0;
+    dimension["y"] = 5.0;
+
+    ASSERT_EQ(readClientMessage(api, dimension), client::ReadResult::success);
+    EXPECT_FLOAT_EQ(clients[0].getObject2D().getDimensions().x, 3.0f);
+    EXPECT_FLOAT_EQ(clients[0].getObject2D().getDimensions().y, 5.0f);
+}
+
 // ---------------------------------------------------------------------------
 // Packet wire formats
 // ---------------------------------------------------------------------------
@@ -973,6 +1863,146 @@ TEST(GameplayPacketWireFormatTest, CreateMoving3D)
     EXPECT_FLOAT_EQ(movePos.z, movement.z);
     EXPECT_FLOAT_EQ(delta, 0.033f);
     EXPECT_EQ(payload[4], static_cast<uint8_t>(MovementType::linear));
+}
+
+TEST(GameplayPacketWireFormatTest, Player3DPositionAndDimension)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(1);
+
+    const Vector3f vector(1.0f, 2.0f, 3.0f);
+
+    auto position = client::Packet::Room::Player3D::position(api, vector);
+    ASSERT_EQ(position.size(), 16 + 3 + 12);
+    EXPECT_EQ(position[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(position[17], static_cast<uint8_t>(RoomCommandType::Root::player_3D));
+    EXPECT_EQ(position[18], static_cast<uint8_t>(RoomCommandType::PlayerType::position));
+    nx_data cmdBytes(position.begin() + 16, position.end());
+    auto payload = Util::removeAmountOfBytesFromVector(cmdBytes, 3);
+    auto parsed = Util::vector3fFromFront(payload);
+    EXPECT_FLOAT_EQ(parsed.x, vector.x);
+    EXPECT_FLOAT_EQ(parsed.y, vector.y);
+    EXPECT_FLOAT_EQ(parsed.z, vector.z);
+
+    auto dimension = client::Packet::Room::Player3D::dimension(api, vector);
+    ASSERT_EQ(dimension.size(), 16 + 3 + 12);
+    EXPECT_EQ(dimension[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(dimension[17], static_cast<uint8_t>(RoomCommandType::Root::player_3D));
+    EXPECT_EQ(dimension[18], static_cast<uint8_t>(RoomCommandType::PlayerType::dimension));
+}
+
+TEST(GameplayPacketWireFormatTest, Player2DPositionAndDimension)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(1);
+
+    const Vector2f vector(1.0f, 2.0f);
+
+    auto position = client::Packet::Room::Player2D::position(api, vector);
+    ASSERT_EQ(position.size(), 16 + 3 + 8);
+    EXPECT_EQ(position[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(position[17], static_cast<uint8_t>(RoomCommandType::Root::player_2D));
+    EXPECT_EQ(position[18], static_cast<uint8_t>(RoomCommandType::PlayerType::position));
+    nx_data cmdBytes(position.begin() + 16, position.end());
+    auto payload = Util::removeAmountOfBytesFromVector(cmdBytes, 3);
+    auto parsed = Util::vector2fFromFront(payload);
+    EXPECT_FLOAT_EQ(parsed.x, vector.x);
+    EXPECT_FLOAT_EQ(parsed.y, vector.y);
+
+    auto dimension = client::Packet::Room::Player2D::dimension(api, vector);
+    ASSERT_EQ(dimension.size(), 16 + 3 + 8);
+    EXPECT_EQ(dimension[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(dimension[17], static_cast<uint8_t>(RoomCommandType::Root::player_2D));
+    EXPECT_EQ(dimension[18], static_cast<uint8_t>(RoomCommandType::PlayerType::dimension));
+}
+
+TEST(GameplayPacketWireFormatTest, Object2DCreateDestroyMove)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(1);
+
+    const Vector2f position(1.0f, 2.0f);
+    const Vector2f dimensions(3.0f, 4.0f);
+
+    auto create = client::Packet::Room::Object2D::create(api, position, dimensions, "a.png");
+    ASSERT_EQ(create.size(), 16 + 3 + 8 + 8 + 5);
+    EXPECT_EQ(create[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(create[17], static_cast<uint8_t>(RoomCommandType::Root::object_2D));
+    EXPECT_EQ(create[18], static_cast<uint8_t>(RoomCommandType::ObjectType::create));
+    nx_data cmdBytes(create.begin() + 16, create.end());
+    auto payload = Util::removeAmountOfBytesFromVector(cmdBytes, 3);
+    auto parsedPos = Util::vector2fFromFront(payload);
+    payload = Util::removeAmountOfBytesFromVector(payload, 8);
+    auto parsedDims = Util::vector2fFromFront(payload);
+    EXPECT_FLOAT_EQ(parsedPos.x, position.x);
+    EXPECT_FLOAT_EQ(parsedPos.y, position.y);
+    EXPECT_FLOAT_EQ(parsedDims.x, dimensions.x);
+    EXPECT_FLOAT_EQ(parsedDims.y, dimensions.y);
+
+    auto destroy = client::Packet::Room::Object2D::destroy(api, OBJECT_ID);
+    ASSERT_EQ(destroy.size(), 16 + 3 + 8);
+    EXPECT_EQ(destroy[18], static_cast<uint8_t>(RoomCommandType::ObjectType::destroy));
+    nx_data destroyCmd(destroy.begin() + 16, destroy.end());
+    auto destroyPayload = Util::removeAmountOfBytesFromVector(destroyCmd, 3);
+    EXPECT_EQ(Util::uint64FromFront(destroyPayload), OBJECT_ID);
+
+    auto move = client::Packet::Room::Object2D::move(api, OBJECT_ID, Vector2f(5.0f, 6.0f));
+    ASSERT_EQ(move.size(), 16 + 3 + 8 + 8);
+    EXPECT_EQ(move[18], static_cast<uint8_t>(RoomCommandType::ObjectType::move));
+    nx_data moveCmd(move.begin() + 16, move.end());
+    auto movePayload = Util::removeAmountOfBytesFromVector(moveCmd, 3);
+    EXPECT_EQ(Util::uint64FromFront(movePayload), OBJECT_ID);
+    auto parsedMove = Util::vector2fFromFront(Util::removeAmountOfBytesFromVector(movePayload, 8));
+    EXPECT_FLOAT_EQ(parsedMove.x, 5.0f);
+    EXPECT_FLOAT_EQ(parsedMove.y, 6.0f);
+}
+
+TEST(GameplayPacketWireFormatTest, Object3DCreateDestroyMove)
+{
+    client::ClientConfig config;
+    client::ClientAPI api(config);
+    api.setClientId(1);
+
+    const Vector3f position(1.0f, 2.0f, 3.0f);
+    const Vector3f dimensions(4.0f, 5.0f, 6.0f);
+
+    auto create = client::Packet::Room::Object3D::create(api, position, dimensions, "c.obj");
+    ASSERT_EQ(create.size(), 16 + 3 + 12 + 12 + 5);
+    EXPECT_EQ(create[16], static_cast<uint8_t>(CommandType::room));
+    EXPECT_EQ(create[17], static_cast<uint8_t>(RoomCommandType::Root::object_3D));
+    EXPECT_EQ(create[18], static_cast<uint8_t>(RoomCommandType::ObjectType::create));
+    nx_data cmdBytes(create.begin() + 16, create.end());
+    auto payload = Util::removeAmountOfBytesFromVector(cmdBytes, 3);
+    auto parsedPos = Util::vector3fFromFront(payload);
+    payload = Util::removeAmountOfBytesFromVector(payload, 12);
+    auto parsedDims = Util::vector3fFromFront(payload);
+    EXPECT_FLOAT_EQ(parsedPos.x, position.x);
+    EXPECT_FLOAT_EQ(parsedPos.y, position.y);
+    EXPECT_FLOAT_EQ(parsedPos.z, position.z);
+    EXPECT_FLOAT_EQ(parsedDims.x, dimensions.x);
+    EXPECT_FLOAT_EQ(parsedDims.y, dimensions.y);
+    EXPECT_FLOAT_EQ(parsedDims.z, dimensions.z);
+
+    auto destroy = client::Packet::Room::Object3D::destroy(api, OBJECT_ID);
+    ASSERT_EQ(destroy.size(), 16 + 3 + 8);
+    EXPECT_EQ(destroy[18], static_cast<uint8_t>(RoomCommandType::ObjectType::destroy));
+    nx_data destroyCmd(destroy.begin() + 16, destroy.end());
+    auto destroyPayload = Util::removeAmountOfBytesFromVector(destroyCmd, 3);
+    EXPECT_EQ(Util::uint64FromFront(destroyPayload), OBJECT_ID);
+
+    auto move = client::Packet::Room::Object3D::move(api, OBJECT_ID, Vector3f(5.0f, 6.0f, 7.0f));
+    ASSERT_EQ(move.size(), 16 + 3 + 8 + 12);
+    EXPECT_EQ(move[18], static_cast<uint8_t>(RoomCommandType::ObjectType::move));
+    nx_data moveCmd(move.begin() + 16, move.end());
+    auto movePayload = Util::removeAmountOfBytesFromVector(moveCmd, 3);
+    EXPECT_EQ(Util::uint64FromFront(movePayload), OBJECT_ID);
+    auto parsedMove = Util::vector3fFromFront(Util::removeAmountOfBytesFromVector(movePayload, 8));
+    EXPECT_FLOAT_EQ(parsedMove.x, 5.0f);
+    EXPECT_FLOAT_EQ(parsedMove.y, 6.0f);
+    EXPECT_FLOAT_EQ(parsedMove.z, 7.0f);
 }
 
 } // namespace

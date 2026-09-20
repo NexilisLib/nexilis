@@ -73,7 +73,7 @@ std::thread Movement::object2D(std::unique_ptr<Movement2D> movement, User& user,
                 std::map<std::string, boost::json::value> messageParams
                 {
                     {"createMovingType", boost::json::value("update")},
-                    {"objectId", boost::json::value(serverObject->getId())},
+                    {"id", boost::json::value(serverObject->getId())},
                     {"x", boost::json::value(newPosition.x)},
                     {"y", boost::json::value(newPosition.y)}
                 };
@@ -119,7 +119,7 @@ std::thread Movement::object3D(std::unique_ptr<Movement3D> movement, User& user,
                 std::map<std::string, boost::json::value> messageParams
                 {
                     {"createMovingType", boost::json::value("update")},
-                    {"objectId", boost::json::value(serverObject->getId())},
+                    {"id", boost::json::value(serverObject->getId())},
                     {"x", boost::json::value(newPosition.x)},
                     {"y", boost::json::value(newPosition.y)},
                     {"z", boost::json::value(newPosition.z)}

@@ -26,8 +26,8 @@ namespace nexilis::client
 class RoomObject3DCommand : public BaseAPICommand
 {
 public:
-    RoomObject3DCommand(std::string action, uint64_t room_id, uint64_t object_id, float x, float y, float z, float w, float h, float d, const std::string& filepath = "")
-        : m_action(action), m_room_id(room_id), m_object_id(object_id), m_x(x), m_y(y), m_z(z), m_w(w), m_h(h), m_d(d), m_filepath(filepath)
+    RoomObject3DCommand(std::string action, uint64_t room_id, uint64_t object_id, float x, float y, float z, float w, float h, float d, const std::string& filepath = "", std::string create_moving_type = "")
+        : m_action(action), m_room_id(room_id), m_object_id(object_id), m_x(x), m_y(y), m_z(z), m_w(w), m_h(h), m_d(d), m_filepath(filepath), m_create_moving_type(std::move(create_moving_type))
     {
     }
 
@@ -85,6 +85,20 @@ public:
             {
                 if (room.getId() == m_room_id)
                 {
+                    // Movement updates only carry the object id and its new
+                    // position; the server reuses the "id"/x/y/z keys of the
+                    // create broadcast.
+                    if (m_create_moving_type == "update")
+                    {
+                        auto object = room.getObject3DById(m_object_id);
+                        if (object)
+                        {
+                            object->setPosition({m_x, m_y, m_z});
+                            return ReadResult::success;
+                        }
+                        return ReadResult::failure;
+                    }
+
                     auto object = Object3D(m_object_id, {m_x, m_y, m_z}, {m_w, m_h, m_d});
                     object.setFilepath(m_filepath);
                     room.addObject(std::move(object));
@@ -107,6 +121,7 @@ private:
     float m_h;
     float m_d;
     std::string m_filepath;
+    std::string m_create_moving_type;
 };
 
 } // namespace nexilis::client

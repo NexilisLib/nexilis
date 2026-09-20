@@ -39,7 +39,7 @@ CommandResult ServerImpl::room_player3d_movement(const DefaultArgs& args)
     auto mtx = std::make_shared<std::mutex>();
 
     // clang-format off
-    std::thread([mtx, movement_vector, &user, data, &protocol, &messageId, delta]()
+    std::thread([mtx, movement_vector, &user, data, &protocol, messageId, delta]()
     {
         try
         {

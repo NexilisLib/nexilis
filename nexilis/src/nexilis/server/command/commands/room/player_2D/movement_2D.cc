@@ -45,11 +45,11 @@ CommandResult ServerImpl::room_player2d_movement(const DefaultArgs& args)
     Vector2f startPosition = user.getObject2D().getPosition();
 
     // clang-format off
-    std::thread([mtx, movementVector, startPosition, &user, data, &protocol, &messageId, delta]()
+    std::thread([mtx, movementVector, startPosition, &user, data, &protocol, messageId, delta]()
     {
         try
         {
-            Command::runWithTickrate(60.0f, delta, [&mtx, movementVector, startPosition, &user, data, &protocol, &messageId](double progress)
+            Command::runWithTickrate(60.0f, delta, [&mtx, movementVector, startPosition, &user, data, &protocol, messageId](double progress)
             {
                 auto* clientRoom = RoomStorage::getRoomById(user.getRoomId());
                 assert(clientRoom);

@@ -201,7 +201,8 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
                 getUint64(json, "id"),
                 getFloat(json, "x"), getFloat(json, "y"),
                 getFloat(json, "width"), getFloat(json, "height"),
-                getString(json, "filepath"));
+                getString(json, "filepath"),
+                getString(json, "createMovingType"));
     }
     else if (type == "object_3D")
     {
@@ -210,7 +211,8 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
                 getUint64(json, "id"),
                 getFloat(json, "x"), getFloat(json, "y"), getFloat(json, "z"),
                 getFloat(json, "w"), getFloat(json, "h"), getFloat(json, "d"),
-                getString(json, "filepath"));
+                getString(json, "filepath"),
+                getString(json, "createMovingType"));
     }
     else if (type == "game_item")
     {
