@@ -14,7 +14,7 @@ PRE_COMMIT_DIR := scripts/pre_commit
 
 CSHARP_OUTPUT ?= $(CURDIR)/dist
 
-.PHONY: all install install-csharp test test-cpp test-c test-csharp test-premake test-examples pre-commit pre-commit-all clean clean-tests help
+.PHONY: all install install-csharp test unit-test test-cpp test-c test-csharp test-premake test-examples lint-python format cppcheck best_practises check_editorconfig pre-commit pre-commit-all clean clean-tests help
 
 all: install
 
@@ -29,6 +29,8 @@ install-csharp:
 	python3 scripts/install_csharp.py --input $(CURDIR)/$(LIB_DIR) --output $(CSHARP_OUTPUT)
 
 test: test-cpp test-c test-csharp test-premake test-examples
+
+unit-test: test-cpp test-c test-csharp
 
 test-cpp:
 	@echo "Building C++ tests..."
@@ -68,6 +70,21 @@ pre-commit:
 pre-commit-all:
 	cd $(PRE_COMMIT_DIR) && python3 pre_commit.py --all
 
+lint-python:
+	cd $(PRE_COMMIT_DIR) && python3 flake8_check.py
+
+format:
+	cd $(PRE_COMMIT_DIR) && python3 format.py
+
+cppcheck:
+	cd $(PRE_COMMIT_DIR) && python3 cppcheck.py
+
+best_practises:
+	cd $(PRE_COMMIT_DIR) && python3 best_practises.py
+
+check_editorconfig:
+	cd $(PRE_COMMIT_DIR) && python3 check_editorconfig.py
+
 clean: clean-tests
 	rm -rf $(LIB_BUILD)
 
@@ -82,12 +99,18 @@ help:
 	@echo "  install          Build and install the library (default)"
 	@echo "  install-csharp   Build and deploy C# bindings (CSHARP_OUTPUT=./dist)"
 	@echo "  test             Build and run all tests"
+	@echo "  unit-test        Build and run C++/C/C# unit tests only"
 	@echo "  test-cpp         Build and run C++ tests only"
 	@echo "  test-c           Build and run C tests only"
 	@echo "  test-csharp      Build and run C# tests only"
 	@echo "  test-premake     Build with premake5 and run premake test"
 	@echo "  test-examples    Build and run all examples via the checker script"
-	@echo "  pre-commit       Run minimal pre-commit checks (format, best practices, cppcheck)"
-	@echo "  pre-commit-all   Run all pre-commit checks including tests"
+	@echo "  lint-python      Run flake8 over the Python scripts"
+	@echo "  format           Run clang-format check on C++/C sources"
+	@echo "  cppcheck         Run cppcheck on C++/C sources"
+	@echo "  best_practises   Check correct type alias usage"
+	@echo "  check_editorconfig Check files against .editorconfig rules"
+	@echo "  pre-commit       Run minimal pre-commit checks (format, best practices, cppcheck, flake8)"
+	@echo "  pre-commit-all   Run all pre-commit checks including tests and Python linting"
 	@echo "  clean            Remove all build artifacts"
 	@echo "  clean-tests      Remove only test and example build artifacts"

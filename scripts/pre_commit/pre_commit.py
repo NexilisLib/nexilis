@@ -29,6 +29,7 @@ from test_runner import (
 )
 from best_practises import process_all_files, read_aliases, get_constants_file_path
 from check_editorconfig import check_editorconfig
+from flake8_check import run_flake8
 from run_premake import build_and_run_premake
 from run_examples import run_examples_check
 
@@ -72,6 +73,13 @@ def run_minimal_checks():
         print("Editorconfig check passed")
     else:
         print("Editorconfig check failed")
+        sys.exit(1)
+
+    flake8 = run_flake8(nexilis_root)
+    if flake8:
+        print("Flake8 check passed.")
+    else:
+        print("Flake8 check failed.")
         sys.exit(1)
 
 
