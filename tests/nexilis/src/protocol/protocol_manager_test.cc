@@ -24,6 +24,7 @@
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/client_config.hh>
+#include <nexilis/server/protocol/af_unix/dgram_server.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
 
@@ -46,6 +47,21 @@ TEST_F(ProtocolManagerTest, CreateProtocol_UnixStreamServer)
     EXPECT_EQ(unix_stream_server.getSettings().getMode(), nexilis::server::AuthenticationMode::password_protected);
     EXPECT_EQ(unix_stream_server.getSettings().getPassphrase(), "salasana");
     EXPECT_EQ(unix_stream_server.getSettings().getRootPassword(), "root");
+}
+
+TEST_F(ProtocolManagerTest, CreateProtocol_UnixDgramServer)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    auto unix_dgram_server = manager.createProtocol<nexilis::server::af_unix::DgramServer>(settings, "/tmp/nexilis/dgram");
+
+    EXPECT_EQ(unix_dgram_server.getType(), nexilis::Protocol::Type::AF_UNIX_SOCK_DGRAM_SERVER);
+    EXPECT_EQ(unix_dgram_server.getSettings().getMode(), nexilis::server::AuthenticationMode::password_protected);
+    EXPECT_EQ(unix_dgram_server.getSettings().getPassphrase(), "salasana");
+    EXPECT_EQ(unix_dgram_server.getSettings().getRootPassword(), "root");
 }
 
 TEST_F(ProtocolManagerTest, CreateProtocol_BoostTCPServer)

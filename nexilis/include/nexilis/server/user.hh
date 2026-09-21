@@ -161,6 +161,26 @@ public:
     /// \ingroup UserUnixStream
     bool unixStreamSend(const nx_data& data);
 
+    /// \defgroup UserUnixDgram Send data using unix dgram sockets.
+
+    /// Is the user unix dgram send function set?
+    /// \ingroup UserUnixDgram
+    bool isUnixDgramSet() const
+    {
+        return m_unixDgramSendToClient != nullptr;
+    }
+
+    /// Set the unix dgram send function.
+    /// \ingroup UserUnixDgram
+    void setUnixDgramSend(const std::function<void(const nx_data&)>& sendFunction)
+    {
+        m_unixDgramSendToClient = sendFunction;
+    }
+
+    /// Send data using unix dgram.
+    /// \ingroup UserUnixDgram
+    bool unixDgramSend(const nx_data& data);
+
 private:
     // General
     std::string m_ip_address;
@@ -171,6 +191,7 @@ private:
     std::function<void(nx_data)> m_boostTCPSendToClient = nullptr;
     std::function<void(nx_data)> m_boostUDPSendToClient = nullptr;
     std::function<void(nx_data)> m_unixStreamSendToClient = nullptr;
+    std::function<void(nx_data)> m_unixDgramSendToClient = nullptr;
 
 private:
     /// Access area.

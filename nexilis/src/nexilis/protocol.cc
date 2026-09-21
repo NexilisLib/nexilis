@@ -67,9 +67,9 @@ std::string Protocol::typeToString(Type type)
             return "boost::TCPClient";
 
         case Type::AF_UNIX_SOCK_DGRAM_CLIENT:
-            return "af_unix::sock_dgram::Client";
+            return "af_unix::DgramClient";
         case Type::AF_UNIX_SOCK_DGRAM_SERVER:
-            return "af_unix::sock_dgram::Server";
+            return "af_unix::DgramServer";
         case Type::AF_UNIX_SOCK_STREAM_CLIENT:
             return "af_unix::sock_stream::Client";
         case Type::AF_UNIX_SOCK_STREAM_SERVER:

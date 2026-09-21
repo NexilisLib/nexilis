@@ -1,0 +1,166 @@
+/* Copyright (C) 2026 Valtteri Viirret
+   This file is part of the Nexilis Project.
+
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   This file is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with this file.  If not, see <https://gnu.org>. */
+
+#include <gtest/gtest.h>
+
+#include <nexilis/client/packet.hh>
+#include <nexilis/logger/log.hh>
+#include <nexilis/protocol_manager.hh>
+#include <nexilis/server/client_storage.hh>
+
+#include <nexilis/client/protocol/af_unix/dgram_client.hh>
+#include <nexilis/server/protocol/af_unix/dgram_server.hh>
+
+#include <filesystem>
+
+class AFUnixDgramTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        nexilis::Log::startConsoleDebugging();
+
+        std::filesystem::create_directories("/tmp/nexilis");
+
+        settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+        settings.setPassphrase("salasana");
+        settings.setRootPassword("root");
+
+        server = std::make_shared<nexilis::server::af_unix::DgramServer>(
+                protocol_manager.createProtocol<nexilis::server::af_unix::DgramServer>(
+                        settings, "/tmp/nexilis/dgram"));
+        server->start();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        nexilis::client::ClientConfig server_data;
+        server_data.setPassword("salasana");
+        server_data.setUnixDgramServerPath("/tmp/nexilis/dgram");
+        server_data.setMode(nexilis::server::AuthenticationMode::password_protected);
+
+        api = std::make_unique<nexilis::client::ClientAPI>(server_data);
+        client = std::make_shared<nexilis::client::af_unix::DgramClient>(
+                protocol_manager.createProtocol<nexilis::client::af_unix::DgramClient>(*api));
+    }
+
+    void TearDown() override
+    {
+        if (client)
+        {
+            client->stop();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if (server)
+        {
+            server->stop();
+        }
+        nexilis::Log::stopLogging();
+        nexilis::server::ClientStorage::clear();
+    }
+
+    nexilis::ProtocolManager protocol_manager;
+    nexilis::server::ServerConfig settings;
+
+    std::unique_ptr<nexilis::client::ClientAPI> api;
+
+    std::shared_ptr<nexilis::server::af_unix::DgramServer> server;
+    std::shared_ptr<nexilis::client::af_unix::DgramClient> client;
+};
+
+TEST_F(AFUnixDgramTest, SendMessageAsyncReturnsReadyFuture)
+{
+    client->start();
+
+    const auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!client->isConnected() && std::chrono::steady_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    ASSERT_TRUE(client->isConnected());
+
+    auto payload = nexilis::client::Packet::Room::Management::create(*api, "async_room");
+    auto future = client->sendMessageAsync(payload);
+
+    auto status = future.wait_for(std::chrono::seconds(5));
+    EXPECT_EQ(status, std::future_status::ready);
+
+    EXPECT_NO_THROW(future.get());
+}
+
+TEST_F(AFUnixDgramTest, SendMessageAsyncReturnsReadyFutureOnStoppedClient)
+{
+    // Don't start the client.
+    auto payload = nexilis::client::Packet::Room::Management::create(*api, "test");
+    auto future = client->sendMessageAsync(payload);
+
+    auto status = future.wait_for(std::chrono::seconds(5));
+    EXPECT_EQ(status, std::future_status::ready);
+
+    // Should throw since the client is stopped.
+    EXPECT_THROW(future.get(), std::runtime_error);
+}
+
+TEST_F(AFUnixDgramTest, SendMessageAsyncReturnsReadyFutureOnClosedSocket)
+{
+    client->start();
+
+    const auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!client->isConnected() && std::chrono::steady_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    ASSERT_TRUE(client->isConnected());
+
+    client->stop();
+
+    auto payload = nexilis::client::Packet::Room::Management::create(*api, "test");
+    auto future = client->sendMessageAsync(payload);
+
+    auto status = future.wait_for(std::chrono::seconds(5));
+    EXPECT_EQ(status, std::future_status::ready);
+
+    EXPECT_THROW(future.get(), std::runtime_error);
+}
+
+TEST_F(AFUnixDgramTest, SendMessageAsyncDeliversMessage)
+{
+    client->start();
+
+    const auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!client->isConnected() && std::chrono::steady_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    ASSERT_TRUE(client->isConnected());
+
+    EXPECT_EQ(api->getActiveRooms().size(), 0);
+    auto payload = nexilis::client::Packet::Room::Management::create(*api, "async_room");
+    auto future = client->sendMessageAsync(payload);
+
+    auto status = future.wait_for(std::chrono::seconds(5));
+    ASSERT_EQ(status, std::future_status::ready);
+    EXPECT_NO_THROW(future.get());
+
+    const auto room_timeout = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (api->getActiveRooms().size() == 0 && std::chrono::steady_clock::now() < room_timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    EXPECT_EQ(api->getActiveRooms().size(), 1);
+}
