@@ -89,12 +89,17 @@ public:
         return m_settings;
     }
 
-    // TODO create own interface for these static functions.
+    /// Convert ClientMsgType to nx_data (and add a '\n') as a last character.
     static nx_data clientMessageData(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
     /// Send message to every protocol that is avainable for a client.
     static bool sendMessageToClient(nx_data data, User& user, Protocol& protocol);
+
+    /// Send message in room context.
     static bool sendRoomCommand(const nx_data& data, User& user, Protocol& protocol);
+
+    /// Create a serverside package for commands happening inside a room.
+    /// This function is expected to be called by ServerImpl room functions.
     static nx_data createRoomCommand(uint64_t roomId, User& user, const nx_data& messageData, const ClientMsgType& params, uint64_t messageId);
 
     /// Build the "entries" array of a player stats payload: one object per
@@ -114,17 +119,7 @@ public:
     static void runWithTickrate(double tickrate, double durationSeconds, const std::function<void(double)>& tickFunction);
 
 private:
-    /*
-    struct MovementParams
-    {
-        MovementData movement_data;
-        User* user;
-        Protocol& protocol;
-        float tickrate;
-        float delta_time;
-    };
-    */
-
+    /// Add fields "command", "type" and "callback" to existing ClientMsgType.
     static ClientMsgType clientMessageMap(CommandType cmd, const std::string& type, uint64_t message_id, const ClientMsgType& params);
 
 private:
