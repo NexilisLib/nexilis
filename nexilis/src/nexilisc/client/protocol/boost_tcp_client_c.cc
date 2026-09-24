@@ -126,16 +126,33 @@ bool nexilis_start_client(nexilis_ClientAPI* client_api, nexilis_BoostTCPClient*
         return false;
     }
 
-    // 1. Start TCP client (connect + authenticate)
+    // 1. Start TCP client (connect + authenticate). start() is void and only
+    //    logs on failure, so check the connection status explicitly: without
+    //    this, a failed connection would fall through to the init wait below
+    //    and block forever.
     tcp_client->client->start();
+
+    if (tcp_client->client->getProtocolStatus() != nexilis::client::ProtocolStatus::connected)
+    {
+        return false;
+    }
 
     // 2. Send clientId packet
     auto clientIdPacket = nexilis::client::Packet::Get::General::clientId(*client_api->api);
     tcp_client->client->sendMessage(clientIdPacket);
 
-    // 3. Wait for initialization
+    // 3. Wait for initialization, bounded so a dead connection cannot hang
+    //    the caller indefinitely. Also bail out early if the connection drops
+    //    while we wait.
+    constexpr auto initTimeout = std::chrono::seconds(5);
+    const auto deadline = std::chrono::steady_clock::now() + initTimeout;
     while (!client_api->api->isInitialized())
     {
+        if (tcp_client->client->getProtocolStatus() == nexilis::client::ProtocolStatus::error ||
+            std::chrono::steady_clock::now() >= deadline)
+        {
+            return false;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
