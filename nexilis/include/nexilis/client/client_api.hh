@@ -575,6 +575,12 @@ public:
         return m_serverData.getInetTCPServerAddress();
     }
 
+    /// Get the af_inet TCP server port number.
+    uint16_t getInetTCPServerPortNumber() const
+    {
+        return m_serverData.getInetTCPServerPort();
+    }
+
     /// boost TCP
     std::string getBoostTCPServerAddress() const
     {

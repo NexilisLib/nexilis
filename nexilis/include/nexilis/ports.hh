@@ -28,8 +28,11 @@ class Ports
 public:
     static uint16_t getBoostTCPPort();
 
+    static uint16_t getInetTCPPort();
+
 private:
     static uint16_t m_boostTCPPort;
+    static uint16_t m_inetTCPPort;
 };
 
 } // namespace nexilis

@@ -26,4 +26,11 @@ uint16_t Ports::getBoostTCPPort()
     return m_boostTCPPort;
 }
 
+uint16_t Ports::m_inetTCPPort = 54300;
+
+uint16_t Ports::getInetTCPPort()
+{
+    return m_inetTCPPort;
+}
+
 } // namespace nexilis

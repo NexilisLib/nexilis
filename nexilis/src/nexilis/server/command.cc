@@ -537,6 +537,8 @@ bool Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
                 return user.unixStreamSend(data);
             case Protocol::Type::AF_UNIX_SOCK_DGRAM_SERVER:
                 return user.unixDgramSend(data);
+            case Protocol::Type::AF_INET_TCP_SERVER:
+                return user.inetTCPSend(data);
             default:
                 return false;
         }
@@ -552,6 +554,7 @@ bool Command::sendMessageToClient(nx_data data, User& user, Protocol& protocol)
             Protocol::Type::BOOST_UDP_SERVER,
             Protocol::Type::AF_UNIX_SOCK_STREAM_SERVER,
             Protocol::Type::AF_UNIX_SOCK_DGRAM_SERVER,
+            Protocol::Type::AF_INET_TCP_SERVER,
     };
 
     for (auto fallbackType : allServerProtocols)

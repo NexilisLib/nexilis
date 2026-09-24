@@ -18,21 +18,25 @@
 #define NEXILIS_AF_INET_TCP_CLIENT_HH
 
 #include <nexilis/client/client_api.hh>
-#include <nexilis/client_protocol.hh>
+#include <nexilis/client/client_protocol.hh>
+#include <nexilis/nexilis_constants.hh>
 #include <nexilis/protocol.hh>
 
 #include <netinet/in.h>
 
+#include <future>
 #include <thread>
 
-namespace nexilis::af_inet
+namespace nexilis::client::af_inet
 {
 
-class TCPClient : public Protocol, public ClientProtocol
+/// AF_INET TCP client protocol using raw sockets.
+class TCPClient : public Protocol,
+                  public ClientProtocol
 {
 public:
     /// Constructor.
-    TCPClient(ClientAPI& api);
+    explicit TCPClient(ClientAPI& clientApi);
 
     /// Destructor.
     ~TCPClient();
@@ -46,41 +50,42 @@ public:
     /// Deleted copy constructor.
     TCPClient(const TCPClient& other) = delete;
 
-    /// Deleted copy assigment operator.
+    /// Deleted copy assignment operator.
     TCPClient& operator=(const TCPClient& other) = delete;
 
     /// Protocol::start() implementation.
     void start() override;
 
     /// Protocol::stop() implementation.
-    void stop() override
-    {
-    }
+    void stop() override;
 
     /// Protocol::getType() implementation.
-    Type getType() override
+    Protocol::Type getType() override
     {
-        return Type::AF_INET_TCP_CLIENT;
+        return Protocol::Type::AF_INET_TCP_CLIENT;
     }
 
-    /// ClientProtocol::sendMessage(const std::string&) implementation.
-    void sendMessage(const std::string& message);
-
     /// ClientProtocol::sendMessage(const nx_data&) implementation.
-    void sendMessage(const nx_data& message);
+    void sendMessage(const nx_data& message) override;
+
+    /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
+    void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
+
+    /// ClientProtocol::sendMessageAsync(const nx_data&) implementation.
+    std::future<void> sendMessageAsync(const nx_data& message) override;
 
 private:
     bool connectToServer();
-    bool send(const char* data, size_t dataSize);
-    bool receive(char* buffer, size_t bufferSize);
+    bool sendFrame(const char* data, size_t dataSize);
+    ssize_t receive(char* buffer, size_t bufferSize);
     void receiveLoop();
 
 private:
-    int m_clientSocket;
+    int m_clientSocket = -1;
     sockaddr_in m_serverAddr;
-    std::thread m_listenThread;
+    std::thread m_receiveThread;
 };
 
-} // namespace nexilis::af_inet
+} // namespace nexilis::client::af_inet
 
 #endif
