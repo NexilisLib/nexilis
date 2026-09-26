@@ -65,6 +65,69 @@ namespace Nexilis.Tests
         }
 
         [Fact]
+        public void GetName()
+        {
+            Assert.Equal("TestRoom", _room.GetName());
+        }
+
+        [Fact]
+        public void GetContext()
+        {
+            Assert.Equal(RoomContext.ROOM_CONTEXT_3D, _room.GetContext());
+        }
+
+        [Fact]
+        public void GetMaxSize()
+        {
+            Assert.Equal(10u, _room.GetMaxSize());
+        }
+
+        [Fact]
+        public void GetCreatorId()
+        {
+            Assert.Equal(100ul, _room.GetCreatorId());
+        }
+
+        [Fact]
+        public void MetadataMatchesRoomData()
+        {
+            // The room mirrors the RoomData it was created from.
+            Assert.Equal(_roomData.Name, _room.GetName());
+            Assert.Equal(_roomData.Context, _room.GetContext());
+            Assert.Equal(_roomData.MaxSize, _room.GetMaxSize());
+            Assert.Equal(_roomData.CreatorId, _room.GetCreatorId());
+        }
+
+        [Fact]
+        public void MetadataAccessAfterDisposeThrows()
+        {
+            var room = new Room(_roomData);
+            room.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => room.GetName());
+            Assert.Throws<ObjectDisposedException>(() => room.GetContext());
+            Assert.Throws<ObjectDisposedException>(() => room.GetMaxSize());
+            Assert.Throws<ObjectDisposedException>(() => room.GetCreatorId());
+            Assert.Throws<ObjectDisposedException>(() => room.GetId());
+            Assert.Throws<ObjectDisposedException>(() => room.GetClientAmount());
+        }
+
+        [Fact]
+        public void NonOwningRoomDoesNotFreeTheNativeRoom()
+        {
+            // A second, non-owning wrapper around the same handle (what a
+            // RoomsCollection hands out) must not destroy the native room when
+            // it is disposed, so the owning wrapper keeps working.
+            using var roomData = new RoomData(1, "Owned", RoomContext.ROOM_CONTEXT_3D, 4);
+            using var owner = new Room(roomData);
+
+            var observer = new Room(owner.GetNativePointer(), ownsNativeInstance: false);
+            observer.Dispose();
+
+            Assert.Equal("Owned", owner.GetName());
+        }
+
+        [Fact]
         public void AddClient()
         {
             var client = MakeSession(10);

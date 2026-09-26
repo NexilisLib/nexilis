@@ -301,6 +301,12 @@ nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, u
     }
 
     auto room = client_api->api->getRoom(room_id);
+    if (!room)
+    {
+        // The client does not know a room with this id.
+        return nullptr;
+    }
+
     auto const_room = new nexilis_Room;
     const_room->room = room;
     const_room->owned = false;
@@ -315,6 +321,12 @@ nexilis_ClientSession* nexilis_client_api_get_client_from_room(const nexilis_Cli
     }
 
     auto client = client_api->api->getClientFromRoom(client_id);
+    if (!client)
+    {
+        // The client is not in any of the rooms the client knows about.
+        return nullptr;
+    }
+
     auto client_session = new nexilis_ClientSession;
     client_session->client = client;
     return client_session;

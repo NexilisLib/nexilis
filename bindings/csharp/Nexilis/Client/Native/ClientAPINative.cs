@@ -51,8 +51,10 @@ namespace Nexilis.Client
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong nexilis_client_api_get_client_id(IntPtr client_api);
 
+        // Returns a malloc'd string that the caller has to free, so the
+        // pointer is returned instead of a managed string.
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
-        public static extern string nexilis_client_api_get_client_username(IntPtr client_api);
+        public static extern IntPtr nexilis_client_api_get_client_username(IntPtr client_api, ulong client_id);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern string nexilis_client_api_get_client_password(IntPtr client_api);
 

@@ -56,6 +56,32 @@ namespace Nexilis
                 }
             }
         }
+
+        /// <summary>
+        /// Runs a native call that does not return a value. Serialized with
+        /// the other interop calls so a native API is never entered
+        /// concurrently from two managed threads.
+        /// </summary>
+        public static void ExecuteSafe(Action nativeCall, string operationName)
+        {
+            if (!_mainThreadId.HasValue)
+            {
+                throw new InvalidOperationException("NativeInterop not initialized");
+            }
+
+            lock (_syncRoot)
+            {
+                try
+                {
+                    nativeCall();
+                }
+                catch (Exception ex)
+                {
+                    throw new NativeInteropException(
+                        $"Failed to execute native operation '{operationName}'", ex);
+                }
+            }
+        }
     }
 
     public class NativeInteropException : Exception

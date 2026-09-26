@@ -18,6 +18,9 @@
 #include <nexilisc/client/client_api_c.h>
 #include <nexilisc/client/room_c.h>
 
+#include <cstdlib>
+#include <cstring>
+
 struct nexilis_ClientSession
 {
     nexilis::client::ClientSession* session;
@@ -76,6 +79,48 @@ uint64_t nexilis_room_get_id(nexilis_Room* room)
     if (room && room->room)
     {
         return room->room->getId();
+    }
+    return 0;
+}
+
+const char* nexilis_room_get_name(const nexilis_Room* room)
+{
+    if (room && room->room)
+    {
+        std::string name = room->room->getName();
+        char* cstr = (char*)malloc(name.size() + 1);
+        if (cstr)
+        {
+            std::strcpy(cstr, name.c_str());
+        }
+        return cstr;
+    }
+    return nullptr;
+}
+
+nexilis_RoomContext nexilis_room_get_context(const nexilis_Room* room)
+{
+    if (room && room->room)
+    {
+        return static_cast<nexilis_RoomContext>(room->room->getContext());
+    }
+    return ROOM_CONTEXT_UNDEFINED;
+}
+
+uint32_t nexilis_room_get_max_size(const nexilis_Room* room)
+{
+    if (room && room->room)
+    {
+        return room->room->getMaxSize();
+    }
+    return 0;
+}
+
+uint64_t nexilis_room_get_creator_id(const nexilis_Room* room)
+{
+    if (room && room->room)
+    {
+        return room->room->getCreatorId();
     }
     return 0;
 }

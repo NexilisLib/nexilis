@@ -20,6 +20,8 @@
 #include <nexilisc/client/client_config_c.h>
 #include <nexilisc/client/client_session_c.h>
 
+#include <cstdlib>
+
 class ClientSessionTest_c : public ::testing::Test
 {
 protected:
@@ -155,4 +157,24 @@ TEST_F(ClientSessionTest_c, MoveAssignSession)
 
     nexilis_client_session_destroy(dest);
     nexilis_client_session_destroy(src);
+}
+
+TEST_F(ClientSessionTest_c, GetClientFromRoomUnknownClientIsNull)
+{
+    // A fresh client API knows no rooms, so the lookup has to report the
+    // miss with a null pointer instead of a handle wrapping a null session.
+    EXPECT_EQ(nexilis_client_api_get_client_from_room(client_api, 42), nullptr);
+}
+
+TEST_F(ClientSessionTest_c, GetRoomUnknownRoomIsNull)
+{
+    EXPECT_EQ(nexilis_client_api_get_room(client_api, 42), nullptr);
+}
+
+TEST_F(ClientSessionTest_c, GetClientUsernameOfUnknownClientIsEmpty)
+{
+    const char* username = nexilis_client_api_get_client_username(client_api, 42);
+    ASSERT_NE(username, nullptr);
+    EXPECT_STREQ(username, "");
+    free((void*)username);
 }

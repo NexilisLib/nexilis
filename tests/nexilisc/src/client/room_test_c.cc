@@ -72,6 +72,37 @@ TEST_F(RoomTest_c, GetId)
     EXPECT_EQ(nexilis_room_get_id(room), expected_id);
 }
 
+TEST_F(RoomTest_c, GetName)
+{
+    const char* name = nexilis_room_get_name(room);
+    ASSERT_NE(name, nullptr);
+    EXPECT_STREQ(name, "TestRoom");
+    free((void*)name);
+}
+
+TEST_F(RoomTest_c, GetMaxSize)
+{
+    EXPECT_EQ(nexilis_room_get_max_size(room), 10u);
+}
+
+TEST_F(RoomTest_c, GetContext)
+{
+    EXPECT_EQ(nexilis_room_get_context(room), ROOM_CONTEXT_3D);
+}
+
+TEST_F(RoomTest_c, GetCreatorId)
+{
+    EXPECT_EQ(nexilis_room_get_creator_id(room), 100u);
+}
+
+TEST_F(RoomTest_c, MetadataNullSafe)
+{
+    EXPECT_EQ(nexilis_room_get_name(nullptr), nullptr);
+    EXPECT_EQ(nexilis_room_get_context(nullptr), ROOM_CONTEXT_UNDEFINED);
+    EXPECT_EQ(nexilis_room_get_max_size(nullptr), 0u);
+    EXPECT_EQ(nexilis_room_get_creator_id(nullptr), 0u);
+}
+
 TEST_F(RoomTest_c, AddClient)
 {
     nexilis_ClientSession* client = makeSession(10);

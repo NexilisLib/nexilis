@@ -23,6 +23,7 @@ namespace Nexilis.Client
     {
         IntPtr _nativePtr;
         bool _disposed = false;
+        bool _ownsNativeInstance;
 
         public Room(RoomData roomData)
         {
@@ -31,15 +32,24 @@ namespace Nexilis.Client
                 throw new ArgumentNullException(nameof(roomData));
             }
             _nativePtr = RoomNative.nexilis_room_create(roomData.NativePointer, IntPtr.Zero);
+            _ownsNativeInstance = true;
         }
 
-        public Room(IntPtr nativePointer)
+        /// <summary>
+        /// Wraps a room that already exists natively. The wrapper only frees
+        /// the native handle when <paramref name="ownsNativeInstance"/> is set;
+        /// pass false for rooms that are owned by somebody else, e.g. a
+        /// <see cref="RoomsCollection"/> whose pointers are reused between
+        /// calls.
+        /// </summary>
+        public Room(IntPtr nativePointer, bool ownsNativeInstance)
         {
             if (nativePointer == IntPtr.Zero)
             {
                 throw new ArgumentNullException(nameof(nativePointer));
             }
             _nativePtr = nativePointer;
+            _ownsNativeInstance = ownsNativeInstance;
         }
 
         public IReadOnlyList<ClientSession> GetClients()
@@ -83,12 +93,74 @@ namespace Nexilis.Client
 
         public ulong GetClientAmount()
         {
+            ThrowIfDisposed();
             return RoomNative.nexilis_room_get_client_amount(_nativePtr);
         }
 
         public ulong GetId()
         {
+            ThrowIfDisposed();
             return RoomNative.nexilis_room_get_id(_nativePtr);
+        }
+
+        /// <summary>
+        /// Gets the name of the room.
+        /// </summary>
+        public string GetName()
+        {
+            ThrowIfDisposed();
+
+            var namePtr = RoomNative.nexilis_room_get_name(_nativePtr);
+            if (namePtr == IntPtr.Zero)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                return Marshal.PtrToStringAnsi(namePtr) ?? string.Empty;
+            }
+            finally
+            {
+                // The native side allocates the string with malloc.
+                Marshal.FreeHGlobal(namePtr);
+            }
+        }
+
+        /// <summary>
+        /// Gets the 2D/3D context of the room.
+        /// </summary>
+        public RoomContext GetContext()
+        {
+            ThrowIfDisposed();
+            return RoomNative.nexilis_room_get_context(_nativePtr);
+        }
+
+        /// <summary>
+        /// Gets the maximum amount of clients the room accepts.
+        /// </summary>
+        public uint GetMaxSize()
+        {
+            ThrowIfDisposed();
+            return RoomNative.nexilis_room_get_max_size(_nativePtr);
+        }
+
+        /// <summary>
+        /// Gets the id of the client that created the room.
+        /// </summary>
+        public ulong GetCreatorId()
+        {
+            ThrowIfDisposed();
+            return RoomNative.nexilis_room_get_creator_id(_nativePtr);
+        }
+
+        /// <summary>
+        /// Gets the native pointer to the room.
+        /// </summary>
+        public IntPtr GetNativePointer()
+        {
+            ThrowIfDisposed();
+            return _nativePtr;
         }
 
         public void AddClient(ClientSession client)
@@ -195,11 +267,11 @@ namespace Nexilis.Client
         {
             if (!_disposed)
             {
-                if (_nativePtr != IntPtr.Zero)
+                if (_ownsNativeInstance && _nativePtr != IntPtr.Zero)
                 {
                     RoomNative.nexilis_room_destroy(_nativePtr);
-                    _nativePtr = IntPtr.Zero;
                 }
+                _nativePtr = IntPtr.Zero;
                 _disposed = true;
             }
         }

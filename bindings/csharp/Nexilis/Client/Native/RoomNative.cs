@@ -39,6 +39,18 @@ namespace Nexilis.Client
         public static extern ulong nexilis_room_get_client_amount(IntPtr room);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr nexilis_room_get_name(IntPtr room);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RoomContext nexilis_room_get_context(IntPtr room);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint nexilis_room_get_max_size(IntPtr room);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong nexilis_room_get_creator_id(IntPtr room);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr nexilis_room_get_clients(IntPtr room, out ulong num_clients);
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]

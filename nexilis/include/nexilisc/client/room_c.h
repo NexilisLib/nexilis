@@ -48,6 +48,14 @@ void nexilis_room_destroy(nexilis_Room* room);
 uint64_t nexilis_room_get_id(nexilis_Room* room);
 uint64_t nexilis_room_get_client_amount(nexilis_Room* room);
 
+// Room metadata, mirrored from nexilis_room_data_get_* so that a client can
+// build a room list from an existing room without a separate RoomData handle.
+// nexilis_room_get_name returns a malloc'd string that the caller must free.
+const char* nexilis_room_get_name(const nexilis_Room* room);
+nexilis_RoomContext nexilis_room_get_context(const nexilis_Room* room);
+uint32_t nexilis_room_get_max_size(const nexilis_Room* room);
+uint64_t nexilis_room_get_creator_id(const nexilis_Room* room);
+
 void nexilis_room_add_client(nexilis_Room* room, nexilis_ClientSession* client);
 void nexilis_room_remove_client(nexilis_Room* room, uint64_t client_id);
 
