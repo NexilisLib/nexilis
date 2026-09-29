@@ -18,23 +18,33 @@
 #define NEXILIS_AF_INET_UDP_CLIENT_HH
 
 #include <nexilis/client/client_api.hh>
-#include <nexilis/client_protocol.hh>
+#include <nexilis/client/client_protocol.hh>
+#include <nexilis/nexilis_constants.hh>
 #include <nexilis/protocol.hh>
 
 #include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 
+#include <atomic>
+#include <future>
+#include <memory>
+#include <mutex>
 #include <thread>
 
-namespace nexilis::af_inet
+namespace nexilis::client::af_inet
 {
 
-class UDPClient : public Protocol, public ClientProtocol
+/// AF_INET UDP client protocol using raw sockets.
+/// Works similarly to the boost UDP client but over a plain UDP socket.
+class UDPClient : public virtual NxClass,
+                  public Protocol,
+                  public ClientProtocol
 {
 public:
     /// Constructor.
-    UDPClient(ClientAPI& api);
+    explicit UDPClient(ClientAPI& clientApi);
+
+    /// Destructor.
+    ~UDPClient();
 
     /// Move constructor.
     UDPClient(UDPClient&& other);
@@ -55,30 +65,33 @@ public:
     void stop() override;
 
     /// Protocol::getType() implementation.
-    Type getType() override
+    Protocol::Type getType() override
     {
-        return Type::AF_INET_UDP_CLIENT;
+        return Protocol::Type::AF_INET_UDP_CLIENT;
     }
 
     /// ClientProtocol::sendMessage(const nx_data&) implementation.
     void sendMessage(const nx_data& message) override;
 
+    /// ClientProtocol::sendMessage(const nx_data&, const std::function<void()>&) implementation.
+    void sendMessage(const nx_data& message, const std::function<void()>& callback) override;
+
+    /// ClientProtocol::sendMessageAsync(const nx_data&) implementation.
+    std::future<void> sendMessageAsync(const nx_data& message) override;
+
 private:
-    int createSocket();
+    void createSocket();
     void receiveLoop();
-
-    /// Internal function for sending data.
-    void sendData(const char* data, size_t dataSize);
-
-    /// Internal function for receiving data (recvfrom).
-    nx_data receiveData(sockaddr* srcAddr, socklen_t* srcAddrLen);
+    bool sendData(const char* data, size_t dataSize);
 
 private:
-    int m_clientSocket;
+    int m_clientSocket = -1;
     sockaddr_in m_serverAddr;
-    std::thread m_receiverThread;
+    std::thread m_receiveThread;
+    std::unique_ptr<std::mutex> m_mutex;
+    std::unique_ptr<std::atomic<bool>> m_stopped;
 };
 
-} // namespace nexilis::af_inet
+} // namespace nexilis::client::af_inet
 
 #endif

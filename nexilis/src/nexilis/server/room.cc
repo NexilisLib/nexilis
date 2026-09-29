@@ -218,6 +218,11 @@ bool Room::broadcastToAll(const nx_data& data)
             if (!client->inetTCPSend(data))
                 all_success = false;
         }
+        else if (client->isInetUDPSet())
+        {
+            if (!client->inetUDPSend(data))
+                all_success = false;
+        }
         else
         {
             all_success = false;

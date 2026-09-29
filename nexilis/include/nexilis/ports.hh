@@ -30,9 +30,12 @@ public:
 
     static uint16_t getInetTCPPort();
 
+    static uint16_t getInetUDPPort();
+
 private:
     static uint16_t m_boostTCPPort;
     static uint16_t m_inetTCPPort;
+    static uint16_t m_inetUDPPort;
 };
 
 } // namespace nexilis

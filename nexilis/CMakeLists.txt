@@ -168,9 +168,6 @@ file(GLOB_RECURSE NEXILIS_SOURCES
     "src/nexilis/*.cc"
 )
 
-# Filter archived protocols
-list(FILTER NEXILIS_SOURCES EXCLUDE REGEX ".*/archived_protocols/.*")
-
 file (GLOB_RECURSE NEXILISC_SOURCES
     CONFIGURE_DEPENDS
     "src/nexilisc/*.cc"

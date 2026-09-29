@@ -30,7 +30,7 @@ def stream_output(stream, output_type):
     :param stream: The stream to read from (stdout or stderr).
     :param output_type: The type of output ("stdout" or "stderr").
     """
-    for line in iter(stream.readline, ''):
+    for line in iter(stream.readline, ""):
         if output_type == "stdout":
             sys.stderr.buffer.write(line.encode())
             sys.stderr.flush()
@@ -65,10 +65,12 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
     ]
 
     if not strict:
-        command.extend([
-            "--suppress=unusedFunction",
-            "--suppress=unusedStructMember",
-        ])
+        command.extend(
+            [
+                "--suppress=unusedFunction",
+                "--suppress=unusedStructMember",
+            ]
+        )
 
     # Add exclude directories.
     if exclude_dirs:
@@ -76,11 +78,13 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
             command.extend(["-i", dir])
 
     # Find all header and source files.
-    header_files = glob.glob(os.path.join(include_dir, "**", "*.h"), recursive=True) + \
-        glob.glob(os.path.join(include_dir, "**", "*.hh"), recursive=True)
+    header_files = glob.glob(
+        os.path.join(include_dir, "**", "*.h"), recursive=True
+    ) + glob.glob(os.path.join(include_dir, "**", "*.hh"), recursive=True)
 
-    source_files = glob.glob(os.path.join(src_dir, "**", "*.cc"), recursive=True) + \
-        glob.glob(os.path.join(src_dir, "**", "*.c"), recursive=True)
+    source_files = glob.glob(
+        os.path.join(src_dir, "**", "*.cc"), recursive=True
+    ) + glob.glob(os.path.join(src_dir, "**", "*.c"), recursive=True)
 
     # Add all source and header files to the command.
     command.extend(source_files + header_files)
@@ -128,20 +132,17 @@ def run_cppcheck(include_dir, src_dir, exclude_dirs=None, strict=False) -> bool:
 def get_nexilis_dirs(nexilis_root: str) -> tuple[str, str, list[str]]:
     include_directory = nexilis_root + "/nexilis/include/nexilis/"
     src_directory = nexilis_root + "/nexilis/src/nexilis/"
-    exlude_directories = [
-        nexilis_root + "/nexilis/include/nexilis/archived_protocols",
-        nexilis_root + "/nexilis/src/nexilis/archived_protocols",
-    ]
+    exlude_directories = []
     return include_directory, src_directory, exlude_directories
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-            "--strict",
-            action="store_true",
-            help="Enable unusedFunction and unusedStructMember"
-            )
+        "--strict",
+        action="store_true",
+        help="Enable unusedFunction and unusedStructMember",
+    )
     args = parser.parse_args()
 
     include_dir, src_dir, exclude_dirs = get_nexilis_dirs(get_nexilis_root())
@@ -150,7 +151,7 @@ if __name__ == "__main__":
         include_dir=include_dir,
         src_dir=src_dir,
         exclude_dirs=exclude_dirs,
-        strict=args.strict
+        strict=args.strict,
     )
 
     if run:

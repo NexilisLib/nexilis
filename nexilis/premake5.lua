@@ -78,12 +78,6 @@ files({
 	"include/nexilisc/**.h",
 })
 
--- Archived protocols
-removefiles({
-	"include/nexilis/archived_protocols/**.hh",
-	"src/nexilis/archived_protocols/**.cc",
-})
-
 links({
 	"nexilis-boost",
 	"crypto",

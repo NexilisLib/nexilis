@@ -569,6 +569,12 @@ public:
         return m_serverData.getInetUDPServerAddress();
     }
 
+    /// Get the af_inet UDP server port number.
+    uint16_t getInetUDPServerPortNumber() const
+    {
+        return m_serverData.getInetUDPServerPort();
+    }
+
     /// af_inet TCP.
     std::string getInetTCPServerAddress() const
     {

@@ -17,22 +17,32 @@
 #ifndef NEXILIS_AF_INET_UDP_SERVER_HH
 #define NEXILIS_AF_INET_UDP_SERVER_HH
 
-#include <nexilis/af_inet/base_udp_server.hh>
-#include <nexilis/authentication.hh>
-#include <nexilis/command.hh>
-#include <nexilis/message_handler.hh>
+#include <nexilis/protocol.hh>
+#include <nexilis/server/server_config.hh>
 #include <nexilis/server/server_protocol.hh>
 
-namespace nexilis::af_inet
+#include <netinet/in.h>
+
+#include <atomic>
+#include <memory>
+#include <mutex>
+#include <thread>
+
+namespace nexilis::server::af_inet
 {
 
-class UDPServer : public BaseUDPServer, public Command, public ServerProtocol
+/// AF_INET UDP server protocol using raw sockets.
+/// Works similarly to the boost UDP server but over a plain UDP socket.
+class UDPServer : public Protocol,
+                  public ServerProtocol
 {
 public:
     /// Constructor.
-    /// \param port The port we are assigning the udp server.
-    /// This has been initialized the value of Port::UDP.
-    UDPServer(const Authentication& authentication, unsigned port = static_cast<unsigned>(Port::UDP));
+    /// \param settings The server settings.
+    /// \param port The UDP port to bind to. When zero, an ephemeral port is
+    ///             chosen and resolved after binding; the actual port is
+    ///             announced through the port file so clients can discover it.
+    UDPServer(const ServerConfig& settings, uint16_t port);
 
     /// Destructor.
     ~UDPServer();
@@ -53,32 +63,35 @@ public:
     void start() override;
 
     /// Protocol::stop() implementation.
-    void stop() override
-    {
-        BaseUDPServer::stop();
-    }
-
-    // Get message from server.
-    // \return Message from the BaseUdpServer.
-    BaseUDPServer::Message getNextMessage()
-    {
-        BaseUDPServer::Message msg;
-        BaseUDPServer::getNextMessage(msg);
-        return msg;
-    }
+    void stop() override;
 
     /// Protocol::getType() implementation.
-    Type getType() override
+    Protocol::Type getType() override
     {
-        return Type::AF_INET_UDP_SERVER;
+        return Protocol::Type::AF_INET_UDP_SERVER;
     }
 
-    void sendDataToClient(const nx_data& data, const sockaddr* clientAddr, socklen_t clientAddrLen);
+    /// Get the port the server is bound to.
+    uint16_t getPort() const
+    {
+        return m_port;
+    }
 
 private:
+    void createSocket();
+    void bindSocket();
+    void receiveFromClients();
+    void sendToClient(const sockaddr_in& clientAddress, const nx_data& message);
+
+private:
+    uint16_t m_port;
+    int m_serverSocket = -1;
+    sockaddr_in m_serverAddr;
     std::thread m_receiveThread;
+    std::unique_ptr<std::mutex> m_mutex;
+    std::unique_ptr<std::atomic<bool>> m_stopped;
 };
 
-} // namespace nexilis::af_inet
+} // namespace nexilis::server::af_inet
 
 #endif

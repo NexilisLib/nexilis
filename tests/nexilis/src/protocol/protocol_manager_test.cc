@@ -24,6 +24,8 @@
 
 #include <nexilis/client/client_api.hh>
 #include <nexilis/client/client_config.hh>
+#include <nexilis/client/protocol/af_inet/udp_client.hh>
+#include <nexilis/server/protocol/af_inet/udp_server.hh>
 #include <nexilis/server/protocol/af_unix/dgram_server.hh>
 #include <nexilis/server/protocol/af_unix/stream_server.hh>
 #include <nexilis/server/protocol/nxboost/tcp_server.hh>
@@ -62,6 +64,22 @@ TEST_F(ProtocolManagerTest, CreateProtocol_UnixDgramServer)
     EXPECT_EQ(unix_dgram_server.getSettings().getMode(), nexilis::server::AuthenticationMode::password_protected);
     EXPECT_EQ(unix_dgram_server.getSettings().getPassphrase(), "salasana");
     EXPECT_EQ(unix_dgram_server.getSettings().getRootPassword(), "root");
+}
+
+TEST_F(ProtocolManagerTest, CreateProtocol_AFInetUDPServer)
+{
+    nexilis::server::ServerConfig settings;
+    settings.setMode(nexilis::server::AuthenticationMode::password_protected);
+    settings.setPassphrase("salasana");
+    settings.setRootPassword("root");
+
+    auto inet_udp_server = manager.createProtocol<nexilis::server::af_inet::UDPServer>(settings, 54301);
+
+    EXPECT_EQ(inet_udp_server.getType(), nexilis::Protocol::Type::AF_INET_UDP_SERVER);
+    EXPECT_EQ(inet_udp_server.getPort(), 54301);
+    EXPECT_EQ(inet_udp_server.getSettings().getMode(), nexilis::server::AuthenticationMode::password_protected);
+    EXPECT_EQ(inet_udp_server.getSettings().getPassphrase(), "salasana");
+    EXPECT_EQ(inet_udp_server.getSettings().getRootPassword(), "root");
 }
 
 TEST_F(ProtocolManagerTest, CreateProtocol_BoostTCPServer)
@@ -103,6 +121,20 @@ TEST_F(ProtocolManagerTest, CreateProtocol_RootUDPClient)
     auto udp_client = manager.createProtocol<nexilis::UDPClient>(client_api);
 
     EXPECT_EQ(udp_client.getType(), nexilis::Protocol::Type::BOOST_UDP_CLIENT);
+}
+
+TEST_F(ProtocolManagerTest, CreateProtocol_AFInetUDPClient)
+{
+    nexilis::client::ClientConfig config;
+    config.setPassword("salasana");
+    config.setInetUDP("127.0.0.1");
+    config.setInetUDPServerPort(54301);
+    config.setMode(nexilis::server::AuthenticationMode::password_protected);
+
+    nexilis::client::ClientAPI client_api(config);
+    auto udp_client = manager.createProtocol<nexilis::client::af_inet::UDPClient>(client_api);
+
+    EXPECT_EQ(udp_client.getType(), nexilis::Protocol::Type::AF_INET_UDP_CLIENT);
 }
 
 TEST_F(ProtocolManagerTest, GetProtocolCount_Empty)

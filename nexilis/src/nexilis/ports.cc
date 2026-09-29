@@ -33,4 +33,11 @@ uint16_t Ports::getInetTCPPort()
     return m_inetTCPPort;
 }
 
+uint16_t Ports::m_inetUDPPort = 54301;
+
+uint16_t Ports::getInetUDPPort()
+{
+    return m_inetUDPPort;
+}
+
 } // namespace nexilis

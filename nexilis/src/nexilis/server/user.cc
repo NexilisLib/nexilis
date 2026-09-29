@@ -35,6 +35,7 @@ User::User(User&& other) noexcept
       m_unixStreamSendToClient(std::move(other.m_unixStreamSendToClient)),
       m_unixDgramSendToClient(std::move(other.m_unixDgramSendToClient)),
       m_inetTCPSendToClient(std::move(other.m_inetTCPSendToClient)),
+      m_inetUDPSendToClient(std::move(other.m_inetUDPSendToClient)),
       m_hasRootAccess(std::move(other.m_hasRootAccess)),
       m_hasCommonAccess(std::move(other.m_hasCommonAccess))
 {
@@ -53,6 +54,7 @@ User& User::operator=(User&& other) noexcept
         m_unixStreamSendToClient = std::move(other.m_unixStreamSendToClient);
         m_unixDgramSendToClient = std::move(other.m_unixDgramSendToClient);
         m_inetTCPSendToClient = std::move(other.m_inetTCPSendToClient);
+        m_inetUDPSendToClient = std::move(other.m_inetUDPSendToClient);
         m_hasRootAccess = std::move(other.m_hasRootAccess);
         m_hasCommonAccess = std::move(other.m_hasCommonAccess);
 
@@ -106,6 +108,16 @@ bool User::inetTCPSend(const nx_data& data)
     if (m_inetTCPSendToClient)
     {
         (m_inetTCPSendToClient)(data);
+        return true;
+    }
+    return false;
+}
+
+bool User::inetUDPSend(const nx_data& data)
+{
+    if (m_inetUDPSendToClient)
+    {
+        (m_inetUDPSendToClient)(data);
         return true;
     }
     return false;

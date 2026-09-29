@@ -86,7 +86,8 @@ namespace Nexilis.Client
                 throw new ArgumentNullException(nameof(room));
             }
 
-            return new RoomInfo(room.GetId(), room.GetName(), room.GetContext(), room.GetMaxSize(), room.GetClientAmount(), room.GetCreatorId());
+            return new RoomInfo(room.GetId(), room.GetName(), room.GetContext(),
+                    room.GetMaxSize(), room.GetClientAmount(), room.GetCreatorId());
         }
 
         public bool Equals(RoomInfo? other)

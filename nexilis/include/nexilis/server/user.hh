@@ -201,6 +201,26 @@ public:
     /// \ingroup UserInetTCP
     bool inetTCPSend(const nx_data& data);
 
+    /// \defgroup UserInetUDP Send data using af_inet UDP sockets.
+
+    /// Is the user af_inet UDP send function set?
+    /// \ingroup UserInetUDP
+    bool isInetUDPSet() const
+    {
+        return m_inetUDPSendToClient != nullptr;
+    }
+
+    /// Set the af_inet UDP send function.
+    /// \ingroup UserInetUDP
+    void setInetUDPSend(const std::function<void(const nx_data&)>& sendFunction)
+    {
+        m_inetUDPSendToClient = sendFunction;
+    }
+
+    /// Send data using af_inet UDP.
+    /// \ingroup UserInetUDP
+    bool inetUDPSend(const nx_data& data);
+
 private:
     // General
     std::string m_ip_address;
@@ -213,6 +233,7 @@ private:
     std::function<void(nx_data)> m_unixStreamSendToClient = nullptr;
     std::function<void(nx_data)> m_unixDgramSendToClient = nullptr;
     std::function<void(nx_data)> m_inetTCPSendToClient = nullptr;
+    std::function<void(nx_data)> m_inetUDPSendToClient = nullptr;
 
 private:
     /// Access area.
