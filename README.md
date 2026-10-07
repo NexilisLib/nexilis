@@ -31,6 +31,7 @@ cmake --build nexilis/build --parallel
 - [Client/server message format](docs/server_message.md)
 - [C# bindings](bindings/README.md)
 - [Examples](examples/) and [test commands](docs/README.md#testing)
+- [Contributing](CONTRIBUTING.md)
 
 ## Security
 
