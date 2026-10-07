@@ -27,6 +27,6 @@ enum class VectorType
     undefined
 };
 
-}
+} // namespace nexilis
 
 #endif

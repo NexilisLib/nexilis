@@ -26,6 +26,6 @@ enum class MovementType
     linear
 };
 
-}
+} // namespace nexilis
 
 #endif

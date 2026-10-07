@@ -29,6 +29,6 @@ enum class AuthenticationMode
     root_access
 };
 
-}
+} // namespace nexilis::server
 
 #endif
