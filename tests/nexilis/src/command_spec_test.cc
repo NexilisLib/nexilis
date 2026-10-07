@@ -89,6 +89,23 @@ TEST_F(CommandSpecTest, SetUsernameFromRawBytes)
     EXPECT_EQ(spec.read(bytes), server::CommandResult::success);
 }
 
+TEST_F(CommandSpecTest, RejectsCommandsWithoutTwoRequiredBytes)
+{
+    EXPECT_EQ(spec.read({}), server::CommandResult::invalid_input);
+    EXPECT_EQ(spec.read({static_cast<uint8_t>(CommandType::setting)}),
+              server::CommandResult::invalid_input);
+}
+
+TEST_F(CommandSpecTest, MissingOptionalCommandLevelsDoNotDispatch)
+{
+    EXPECT_EQ(spec.read({static_cast<uint8_t>(CommandType::setting), 0}),
+              server::CommandResult::not_found);
+    EXPECT_EQ(spec.read({static_cast<uint8_t>(CommandType::setting), 0, 255}),
+              server::CommandResult::not_found);
+    EXPECT_EQ(spec.read({static_cast<uint8_t>(CommandType::setting), 1, 0, 0}),
+              server::CommandResult::unimplemented);
+}
+
 TEST_F(CommandSpecTest, SetUsernameViaPacketApi)
 {
     nexilis::client::ClientConfig config;

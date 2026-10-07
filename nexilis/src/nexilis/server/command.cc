@@ -25,6 +25,9 @@
 #include <nexilis/server/room_storage.hh>
 #include <nexilis/server/server_json.hh>
 
+#include <algorithm>
+#include <array>
+
 namespace nexilis::server
 {
 
@@ -62,22 +65,19 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
     Log::debug("Command: Nexilis command sequence");
     Util::debugUint8Vector(command);
 
-    // The first byte.
-    auto arg = static_cast<CommandType>(command.front());
-
-    // The second byte.
-    auto arg2 = command[1];
-
-    uint8_t arg3 = 255, arg4 = 255;
-
-    if (command.size() > 2)
+    if (command.size() < 2)
     {
-        arg3 = command[2];
+        return CommandResult::invalid_input;
     }
-    if (command.size() > 3)
-    {
-        arg4 = command[3];
-    }
+
+    // Missing optional command levels cannot match a valid action.
+    std::array<uint8_t, 4> commandBytes;
+    commandBytes.fill(255);
+    std::copy_n(command.begin(), std::min(command.size(), commandBytes.size()), commandBytes.begin());
+
+    auto arg = static_cast<CommandType>(commandBytes[0]);
+    auto arg2 = commandBytes[1];
+    auto arg3 = commandBytes[2];
 
     // DefaultArgs from Commands.
     DefaultArgs args(user, protocol, command, messageId);
@@ -124,7 +124,7 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         // Boost TCP
                         case 0:
                         {
-                            switch (arg4)
+                            switch (commandBytes[3])
                             {
                                 // Server address
                                 case 0:

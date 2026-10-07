@@ -30,7 +30,10 @@ The unique identifier for the message (8 bytes), used for correlating responses.
 The command bytes come after the client and message IDs. The command hierarchy varies by operation:
 
 - First byte: main command type (`nexilis/include/nexilis/command_type.hh`)
-- Subsequent bytes: sub-command type(s) depending on the command
+- Second byte: sub-command type; both the first and second bytes are required
+- Third and fourth bytes: additional sub-command types when required by the command
+
+The server rejects a command shorter than two bytes as invalid input. Missing optional command levels do not match an action.
 
 ## Command parameters
 
