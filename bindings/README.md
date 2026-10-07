@@ -1,4 +1,8 @@
-# Nexilis C# bindings
+# Nexilis bindings
+
+The LuaJIT client binding is documented in [`bindings/lua/README.md`](lua/README.md).
+
+## C#
 
 The C# wrapper is in [`bindings/csharp`](csharp/) and targets .NET Standard 2.0. Build it with a .NET SDK:
 

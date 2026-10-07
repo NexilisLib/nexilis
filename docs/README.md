@@ -1,6 +1,6 @@
 # Nexilis documentation
 
-Nexilis is a C++20 client/server library with C and C# interfaces. Start with the [repository README](../README.md) for a local build and a runnable example.
+Nexilis is a C++20 client/server library with C, C#, and LuaJIT interfaces. Start with the [repository README](../README.md) for a local build and a runnable example.
 
 ## Project structure
 
@@ -8,6 +8,7 @@ Nexilis is a C++20 client/server library with C and C# interfaces. Start with th
 | --- | --- |
 | `nexilis/` | Native C++ library and C API |
 | `bindings/csharp/` | C# wrapper for the native library |
+| `bindings/lua/` | LuaJIT client wrapper for the C API |
 | `examples/` | Standalone C++ examples |
 | `tests/` | Native, C API, and C# tests |
 | `scripts/` | Build and quality-check scripts |
@@ -16,7 +17,7 @@ See [dependencies](dependencies.md), the [message protocol](server_message.md), 
 
 ## Testing
 
-The native test suites need GoogleTest and a configured Nexilis build. After `make install`, run `make test-cpp` and `make test-c`. C# tests also require the .NET SDK; run `make test-csharp`. `make test-examples` builds and runs the examples. `make test` runs those suites plus the Premake test, which requires Premake 5.
+The native test suites need GoogleTest and a configured Nexilis build. After `make install`, run `make test-cpp` and `make test-c`. C# tests also require the .NET SDK; run `make test-csharp`. `make test-lua` requires LuaJIT and runs a local TCP/UDP server. `make test-examples` builds and runs the examples. `make test` runs all suites, including Premake, which requires Premake 5.
 
 The CI workflow in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) shows the dependencies used for each check.
 

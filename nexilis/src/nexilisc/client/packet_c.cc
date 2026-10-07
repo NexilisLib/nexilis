@@ -72,6 +72,11 @@ nx_data_c nexilis_packet_room_player3D_dimension(nexilis_ClientAPI* client_api, 
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimension(*client_api->api, convert_vector3f(dimensions)));
 }
 
+nx_data_c nexilis_packet_room_player3D_dimension_direct(nexilis_ClientAPI* client_api, float x, float y, float z)
+{
+    return convert_nx_data(nexilis::client::Packet::Room::Player3D::dimension(*client_api->api, nexilis::Vector3f(x, y, z)));
+}
+
 nx_data_c nexilis_packet_room_player3D_movement(nexilis_ClientAPI* client_api, nexilis_Vector3f* movement, float deltaTime)
 {
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(*client_api->api, convert_vector3f(movement), deltaTime));

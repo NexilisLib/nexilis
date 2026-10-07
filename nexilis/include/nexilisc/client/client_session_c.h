@@ -36,6 +36,9 @@ struct nexilis_ClientSession
 
 nexilis_ClientSession* nexilis_client_session_create(uint64_t id, nexilis_ClientAPI* client_api);
 void nexilis_client_session_destroy(nexilis_ClientSession* session);
+// Release a wrapper returned by nexilis_client_api_get_client_from_room.
+// Its ClientSession belongs to the ClientAPI and must not be deleted here.
+void nexilis_client_session_release_borrowed(nexilis_ClientSession* session);
 
 uint64_t nexilis_client_session_get_id(nexilis_ClientSession* session);
 

@@ -37,6 +37,11 @@ void nexilis_client_session_destroy(nexilis_ClientSession* client)
     }
 }
 
+void nexilis_client_session_release_borrowed(nexilis_ClientSession* session)
+{
+    delete session;
+}
+
 uint64_t nexilis_client_session_get_id(nexilis_ClientSession* session)
 {
     if (session && session->client)

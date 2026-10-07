@@ -37,6 +37,9 @@ CommandResult ServerImpl::room_management_leave(const DefaultArgs& args)
     std::map<std::string, boost::json::value> params;
     auto roomCommand = Command::createRoomCommand(currentRoom->getId(), user, args.getData(), params, args.getMessageId());
     Command::sendRoomCommand(roomCommand, user, args.getProtocol());
+    // The leaver has already been removed from the room, so the broadcast
+    // above cannot update its local room state. Send it the leave event too.
+    Command::sendMessageToClient(roomCommand, user, args.getProtocol());
 
     user.setRoomId(0);
     return CommandResult::success;

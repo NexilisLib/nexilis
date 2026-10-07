@@ -9,12 +9,13 @@ TEST_CPP_DIR   := tests/nexilis
 TEST_C_DIR     := tests/nexilisc
 TEST_CS_DIR    := tests/CSharpBindings.Tests
 PREMAKE_DIR    := tests/premake
+TEST_LUA_DIR   := tests/lua
 EXAMPLES_DIR   := examples
 PRE_COMMIT_DIR := scripts/pre_commit
 
 CSHARP_OUTPUT ?= $(CURDIR)/dist
 
-.PHONY: all install install-csharp test unit-test test-cpp test-c test-csharp test-premake test-examples lint-python format cppcheck best_practises check_editorconfig pre-commit pre-commit-all clean clean-tests help
+.PHONY: all install install-csharp test unit-test test-cpp test-c test-csharp test-premake test-lua test-examples lint-python format cppcheck best_practises check_editorconfig pre-commit pre-commit-all clean clean-tests help
 
 all: install
 
@@ -28,7 +29,7 @@ install-csharp:
 	@echo "Building and installing C# bindings..."
 	python3 scripts/install_csharp.py --input $(CURDIR)/$(LIB_DIR) --output $(CSHARP_OUTPUT)
 
-test: test-cpp test-c test-csharp test-premake test-examples
+test: test-cpp test-c test-csharp test-premake test-lua test-examples
 
 unit-test: test-cpp test-c test-csharp
 
@@ -59,6 +60,12 @@ test-premake:
 	cd $(PREMAKE_DIR) && premake5 gmake && MAKEFLAGS= make config=debug --silent -j$(JOBS)
 	@echo "Running premake test..."
 	$(PREMAKE_DIR)/bin/Debug/premake_test
+
+test-lua:
+	@echo "Building native Lua test dependencies..."
+	MAKEFLAGS= cmake --build $(LIB_BUILD) --parallel $(JOBS)
+	@echo "Running Lua client tests..."
+	bash $(TEST_LUA_DIR)/run.sh
 
 test-examples:
 	@echo "Building and running examples..."
@@ -92,6 +99,7 @@ clean-tests:
 	rm -rf $(TEST_CPP_DIR)/build
 	rm -rf $(TEST_C_DIR)/build
 	rm -rf $(PREMAKE_DIR)/bin $(PREMAKE_DIR)/obj
+	rm -rf $(TEST_LUA_DIR)/build
 	rm -rf $(EXAMPLES_DIR)/*/build
 
 help:
@@ -104,6 +112,7 @@ help:
 	@echo "  test-c           Build and run C tests only"
 	@echo "  test-csharp      Build and run C# tests only"
 	@echo "  test-premake     Build with premake5 and run premake test"
+	@echo "  test-lua         Run Lua client smoke and integration tests"
 	@echo "  test-examples    Build and run all examples via the checker script"
 	@echo "  lint-python      Run flake8 over the Python scripts"
 	@echo "  format           Run clang-format check on C++/C sources"

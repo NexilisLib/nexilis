@@ -19,3 +19,5 @@ sudo apt install cmake g++ libssl-dev
 CI or another build using system Boost also needs `libboost-json-dev`. On Arch Linux, the corresponding packages include `cmake`, `gcc`, `openssl`, and `boost`.
 
 The C# wrapper targets .NET Standard 2.0 and needs a .NET SDK to build. It calls the native `nexilisc` shared library at runtime; deploying only `Nexilis.dll` is insufficient. Native tests require GoogleTest, and the Premake test requires Premake 5.
+
+The Lua client binding requires LuaJIT and the matching native shared libraries. Its current test and timing code targets 64 bit Linux. Run `make test-lua` to exercise it against a local TCP/UDP server.
