@@ -340,10 +340,17 @@ char* nexilis_client_api_drain_game_events(nexilis_ClientAPI* client_api, size_t
     if (!client_api || !client_api->api)
         return nullptr;
     boost::json::object root;
-    boost::json::array damage, respawns, leaderboard, chat;
+    boost::json::array damage, respawns, leaderboard, chat, audio;
     for (const auto& event : client_api->api->consumeDamageEvents())
-        damage.emplace_back(boost::json::object{{"target", std::to_string(event.target_id)},
+        damage.emplace_back(boost::json::object{{"shooter", std::to_string(event.shooter_id)},
+                                                {"target", std::to_string(event.target_id)},
                                                 {"health", event.new_health}});
+    for (const auto& event : client_api->api->consumeAudioEvents())
+        audio.emplace_back(boost::json::object{{"sender", std::to_string(event.client_id)},
+                                               {"sound", event.sound},
+                                               {"x", event.x},
+                                               {"y", event.y},
+                                               {"z", event.z}});
     for (const auto& event : client_api->api->consumeRespawnEvents())
         respawns.emplace_back(boost::json::object{{"target", std::to_string(event.target_id)}});
     for (const auto& event : client_api->api->consumeLeaderboardEvents())
@@ -354,6 +361,7 @@ char* nexilis_client_api_drain_game_events(nexilis_ClientAPI* client_api, size_t
                                                          {"kills", entry.kills},
                                                          {"deaths", entry.deaths}});
     root["damage"] = std::move(damage);
+    root["audio"] = std::move(audio);
     root["respawns"] = std::move(respawns);
     root["leaderboard"] = std::move(leaderboard);
     auto messages = client_api->api->getChatSnapshot(client_api->api->clientRoomId());

@@ -656,6 +656,14 @@ namespace Nexilis.Util
                 SendPacket(packet, PacketTransport.Tcp);
         }
 
+        /// <summary>Relays a positional sound event to players in the room.</summary>
+        public void SendAudioEvent(byte sound, float x, float y, float z)
+        {
+            ThrowIfNotReady();
+            using (var packet = Packet.Player3DAudioEvent(ClientApi!.ClientApiPtr, sound, x, y, z))
+                SendPacket(packet, PacketTransport.Udp);
+        }
+
         public void Broadcast(string message)
         {
             ThrowIfNotReady();

@@ -41,23 +41,28 @@ linkoptions({
 -- same boost version, no matter which system boost is installed.
 local boost_includes = os.matchdirs("third-party/boost/libs/*/include")
 -- Modules that live nested inside another module directory.
-table.insert(boost_includes, "third-party/boost/libs/numeric/conversion/include")
+local boost_sources = os.matchfiles("third-party/boost/libs/json/src/**.cpp")
+if #boost_sources > 0 then
+	table.insert(boost_includes, "third-party/boost/libs/numeric/conversion/include")
+end
 
 -- Boost libraries with compiled sources (mirrors BOOST_LIBS_TO_BUILD
 -- in CMakeLists.txt).
-project("nexilis-boost")
-kind("StaticLib")
-language("C++")
-warnings("Off")
-pic("On")
-targetdir("bin/%{cfg.buildcfg}")
-objdir("obj/nexilis-boost/%{cfg.buildcfg}")
-includedirs(boost_includes)
-files({
-	"third-party/boost/libs/json/src/**.cpp",
-	"third-party/boost/libs/container/src/**.cpp",
-	"third-party/boost/libs/system/src/**.cpp",
-})
+if #boost_sources > 0 then
+	project("nexilis-boost")
+	kind("StaticLib")
+	language("C++")
+	warnings("Off")
+	pic("On")
+	targetdir("bin/%{cfg.buildcfg}")
+	objdir("obj/nexilis-boost/%{cfg.buildcfg}")
+	includedirs(boost_includes)
+	files({
+		"third-party/boost/libs/json/src/**.cpp",
+		"third-party/boost/libs/container/src/**.cpp",
+		"third-party/boost/libs/system/src/**.cpp",
+	})
+end
 
 project("nexilis-premake")
 kind("SharedLib")
@@ -78,11 +83,12 @@ files({
 	"include/nexilisc/**.h",
 })
 
-links({
-	"nexilis-boost",
-	"crypto",
-	"ssl",
-})
+if #boost_sources > 0 then
+	links({ "nexilis-boost" })
+else
+	links({ "boost_json" })
+end
+links({ "crypto", "ssl" })
 
 -- Post-build message
 postbuildcommands({

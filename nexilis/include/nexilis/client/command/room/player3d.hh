@@ -88,6 +88,7 @@ public:
         else if (m_action == "shoot")
         {
             ClientAPI::DamageEvent event;
+            event.shooter_id = m_client_id;
             event.target_id = m_target_id;
             event.damage = m_damage;
             event.new_health = m_new_health;

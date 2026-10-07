@@ -96,6 +96,14 @@ nx_data_c nexilis_packet_room_player3D_shoot(nexilis_ClientAPI* client_api, uint
     return convert_nx_data(nexilis::client::ClientImpl::room_player3d_shoot(*client_api->api, target_id, damage));
 }
 
+nx_data_c nexilis_packet_room_player3D_audio_event(nexilis_ClientAPI* client_api, uint8_t sound, float x, float y, float z)
+{
+    if (!client_api || !client_api->api)
+        return {};
+    return convert_nx_data(nexilis::client::ClientImpl::room_player3d_audio_event(
+            *client_api->api, sound, nexilis::Vector3f(x, y, z)));
+}
+
 nx_data_c nexilis_packet_room_communicate_broadcast(nexilis_ClientAPI* client_api, const char* message)
 {
     if (!client_api || !client_api->api || !message)

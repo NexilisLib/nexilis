@@ -98,6 +98,7 @@ public:
 
     struct DamageEvent
     {
+        uint64_t shooter_id = 0;
         uint64_t target_id = 0;
         float damage = 0.0f;
         float new_health = 0.0f;

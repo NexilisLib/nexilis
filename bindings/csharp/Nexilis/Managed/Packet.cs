@@ -36,6 +36,9 @@ namespace Nexilis
         public static NxData Player3DShoot(IntPtr clientApi, ulong targetId, float damage) =>
             Wrap(PacketNative.nexilis_packet_room_player3D_shoot(clientApi, targetId, damage), "Shoot");
 
+        public static NxData Player3DAudioEvent(IntPtr clientApi, byte sound, float x, float y, float z) =>
+            Wrap(PacketNative.nexilis_packet_room_player3D_audio_event(clientApi, sound, x, y, z), "Audio event");
+
         public static NxData RoomBroadcast(IntPtr clientApi, string message) =>
             Wrap(PacketNative.nexilis_packet_room_communicate_broadcast(clientApi, message), "Broadcast");
 

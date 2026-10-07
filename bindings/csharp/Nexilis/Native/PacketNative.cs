@@ -56,6 +56,8 @@ namespace Nexilis
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_room_player3D_shoot(IntPtr clientApi, ulong targetId, float damage);
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_room_player3D_audio_event(IntPtr clientApi, byte sound, float x, float y, float z);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_room_communicate_broadcast(IntPtr clientApi, string message);
     }
 
