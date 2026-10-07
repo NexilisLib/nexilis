@@ -323,3 +323,10 @@ uint64_t nexilis_communication_get_id(const nexilis_Communication* communication
     }
     return 0;
 }
+
+uint64_t nexilis_communication_get_sender_id(const nexilis_Communication* communication)
+{
+    if (!communication || !communication->communication)
+        return 0;
+    return communication->communication->getSenderId();
+}

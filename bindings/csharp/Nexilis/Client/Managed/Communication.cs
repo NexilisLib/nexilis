@@ -94,6 +94,12 @@ namespace Nexilis.Client
             return RoomNative.nexilis_communication_get_id(_nativePtr);
         }
 
+        public ulong GetSenderId()
+        {
+            ThrowIfDisposed();
+            return RoomNative.nexilis_communication_get_sender_id(_nativePtr);
+        }
+
         /// <summary>
         /// Gets the native pointer to the sender's session wrapper.
         /// </summary>

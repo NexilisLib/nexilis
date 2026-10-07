@@ -51,6 +51,12 @@ namespace Nexilis
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern RawNxData nexilis_packet_room_player3D_movement_direct(IntPtr clientApi,
                 float x, float y, float z, float deltatime);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_room_player3D_set_team(IntPtr clientApi, string team);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_room_player3D_shoot(IntPtr clientApi, ulong targetId, float damage);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern RawNxData nexilis_packet_room_communicate_broadcast(IntPtr clientApi, string message);
     }
 
 }

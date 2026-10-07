@@ -14,6 +14,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this file.  If not, see <https://gnu.org>. */
 
+#include <boost/json.hpp>
+#include <cstdlib>
+#include <cstring>
 #include <nexilisc/client/client_api_c.h>
 #include <nexilisc/client/client_session_c.h>
 #include <nexilisc/room_data_c.h>
@@ -330,4 +333,44 @@ nexilis_ClientSession* nexilis_client_api_get_client_from_room(const nexilis_Cli
     auto client_session = new nexilis_ClientSession;
     client_session->client = client;
     return client_session;
+}
+
+char* nexilis_client_api_drain_game_events(nexilis_ClientAPI* client_api, size_t chat_since)
+{
+    if (!client_api || !client_api->api)
+        return nullptr;
+    boost::json::object root;
+    boost::json::array damage, respawns, leaderboard, chat;
+    for (const auto& event : client_api->api->consumeDamageEvents())
+        damage.emplace_back(boost::json::object{{"target", std::to_string(event.target_id)},
+                                                {"health", event.new_health}});
+    for (const auto& event : client_api->api->consumeRespawnEvents())
+        respawns.emplace_back(boost::json::object{{"target", std::to_string(event.target_id)}});
+    for (const auto& event : client_api->api->consumeLeaderboardEvents())
+        for (const auto& entry : event.entries)
+            leaderboard.emplace_back(boost::json::object{{"id", std::to_string(entry.id)},
+                                                         {"name", entry.username},
+                                                         {"team", entry.team},
+                                                         {"kills", entry.kills},
+                                                         {"deaths", entry.deaths}});
+    root["damage"] = std::move(damage);
+    root["respawns"] = std::move(respawns);
+    root["leaderboard"] = std::move(leaderboard);
+    auto messages = client_api->api->getChatSnapshot(client_api->api->clientRoomId());
+    for (size_t i = chat_since; i < messages.size(); ++i)
+        chat.emplace_back(boost::json::object{{"sender", std::to_string(messages[i].sender_id)},
+                                              {"message", messages[i].message}});
+    root["chat"] = std::move(chat);
+    root["chatTotal"] = messages.size();
+    auto serialized = boost::json::serialize(root);
+    char* result = static_cast<char*>(std::malloc(serialized.size() + 1));
+    if (!result)
+        return nullptr;
+    std::memcpy(result, serialized.c_str(), serialized.size() + 1);
+    return result;
+}
+
+void nexilis_client_api_free_events(char* events)
+{
+    std::free(events);
 }

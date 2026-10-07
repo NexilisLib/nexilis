@@ -68,6 +68,11 @@ size_t nexilis_client_api_client_room_id(const nexilis_ClientAPI* client_api);
 nexilis_Room* nexilis_client_api_get_room(const nexilis_ClientAPI* client_api, uint64_t room_id);
 nexilis_ClientSession* nexilis_client_api_get_client_from_room(const nexilis_ClientAPI* client_api, uint64_t client_id);
 
+// UTF-8 JSON containing pending damage, respawn and leaderboard events.
+// Free the returned buffer with nexilis_client_api_free_events.
+char* nexilis_client_api_drain_game_events(nexilis_ClientAPI* client_api, size_t chat_since);
+void nexilis_client_api_free_events(char* events);
+
 #ifdef __cplusplus
 }
 #endif

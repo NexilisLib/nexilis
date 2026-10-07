@@ -72,7 +72,8 @@ nexilis_Communication* nexilis_communication_create(const char* payload, nexilis
 void nexilis_communication_destroy(nexilis_Communication* communication);
 const char* nexilis_communication_get_payload(const nexilis_Communication* communication);
 const nexilis_ClientSession* nexilis_communication_get_client(const nexilis_Communication* communication);
-uint64_t nexilis_communication_get_id(const nexilis_Communication* communication);
+    uint64_t nexilis_communication_get_id(const nexilis_Communication* communication);
+    uint64_t nexilis_communication_get_sender_id(const nexilis_Communication* communication);
 
 #ifdef __cplusplus
 }

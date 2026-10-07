@@ -15,6 +15,7 @@
    along with this file.  If not, see <https://gnu.org>. */
 
 #include <algorithm>
+#include <cmath>
 
 #include <nexilis/command_type.hh>
 #include <nexilis/logger/log.hh>
@@ -47,6 +48,9 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
     payload = Util::removeAmountOfBytesFromVector(payload, 8);
     auto damage = Util::floatFromFront(payload);
 
+    if (targetId == user.getId() || !std::isfinite(damage) || damage <= 0.0f || damage > 35.0f)
+        return CommandResult::invalid_input;
+
     auto room = RoomStorage::getRoomById(user.getRoomId());
     if (!room)
     {
@@ -62,6 +66,13 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
         Log::warning("Shoot: Target ", targetId, " not in room");
         return CommandResult::failure;
     }
+
+    const auto shooterTeam = room->getPlayerTeam(user.getId());
+    const auto targetTeam = room->getPlayerTeam(targetId);
+    if (shooterTeam.empty() || targetTeam.empty() || shooterTeam == targetTeam)
+        return CommandResult::invalid_input;
+    if (room->getPlayerHealth(user.getId()) <= 0.0f)
+        return CommandResult::invalid_input;
 
     // Only triggers a death when this hit actually brought the target from
     // alive to dead. Shots that land on an already-dead (not yet respawned)

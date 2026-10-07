@@ -24,6 +24,21 @@ namespace Nexilis
         static NxLogger _logger = new NxLogger("Packet");
         public static void InitializeLogger(Action<Logger.LogLevel, string> logCallback) => _logger.Setup(logCallback);
 
+        static NxData Wrap(RawNxData raw, string operation)
+        {
+            if (raw.data == IntPtr.Zero) throw new InvalidOperationException(operation + " failed.");
+            return NxData.Create(raw);
+        }
+
+        public static NxData Player3DSetTeam(IntPtr clientApi, string team) =>
+            Wrap(PacketNative.nexilis_packet_room_player3D_set_team(clientApi, team), "Set team");
+
+        public static NxData Player3DShoot(IntPtr clientApi, ulong targetId, float damage) =>
+            Wrap(PacketNative.nexilis_packet_room_player3D_shoot(clientApi, targetId, damage), "Shoot");
+
+        public static NxData RoomBroadcast(IntPtr clientApi, string message) =>
+            Wrap(PacketNative.nexilis_packet_room_communicate_broadcast(clientApi, message), "Broadcast");
+
         public static NxData GetGeneralClientId(IntPtr clientApi)
         {
             return NativeInterop.ExecuteSafe(() =>

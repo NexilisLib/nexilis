@@ -87,5 +87,7 @@ namespace Nexilis.Client
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong nexilis_communication_get_id(IntPtr communication);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong nexilis_communication_get_sender_id(IntPtr communication);
     }
 }

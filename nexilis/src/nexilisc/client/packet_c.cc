@@ -82,6 +82,27 @@ nx_data_c nexilis_packet_room_player3D_movement_direct(nexilis_ClientAPI* client
     return convert_nx_data(nexilis::client::Packet::Room::Player3D::movement(*client_api->api, nexilis::Vector3f(x, y, z), deltatime));
 }
 
+nx_data_c nexilis_packet_room_player3D_set_team(nexilis_ClientAPI* client_api, const char* team)
+{
+    if (!client_api || !client_api->api || !team)
+        return {};
+    return convert_nx_data(nexilis::client::ClientImpl::room_player3d_set_team(*client_api->api, team));
+}
+
+nx_data_c nexilis_packet_room_player3D_shoot(nexilis_ClientAPI* client_api, uint64_t target_id, float damage)
+{
+    if (!client_api || !client_api->api)
+        return {};
+    return convert_nx_data(nexilis::client::ClientImpl::room_player3d_shoot(*client_api->api, target_id, damage));
+}
+
+nx_data_c nexilis_packet_room_communicate_broadcast(nexilis_ClientAPI* client_api, const char* message)
+{
+    if (!client_api || !client_api->api || !message)
+        return {};
+    return convert_nx_data(nexilis::client::ClientImpl::room_communicate_broadcast(*client_api->api, message));
+}
+
 nx_data_c nexilis_packet_get_general_clientId(nexilis_ClientAPI* client_api)
 {
     return convert_nx_data(nexilis::client::Packet::Get::General::clientId(*client_api->api));

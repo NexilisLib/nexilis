@@ -71,5 +71,10 @@ namespace Nexilis.Client
 
         [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr nexilis_client_api_get_client_from_room(IntPtr client_api, ulong client_id);
+
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr nexilis_client_api_drain_game_events(IntPtr client_api, UIntPtr chatSince);
+        [DllImport(NativeLibrary.Name, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void nexilis_client_api_free_events(IntPtr events);
     }
 }

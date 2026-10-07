@@ -642,6 +642,27 @@ namespace Nexilis.Util
             }
         }
 
+        public void SetTeam(string team)
+        {
+            ThrowIfNotReady();
+            using (var packet = Packet.Player3DSetTeam(ClientApi!.ClientApiPtr, team))
+                SendPacket(packet, PacketTransport.Tcp);
+        }
+
+        public void Shoot(ulong targetId, float damage)
+        {
+            ThrowIfNotReady();
+            using (var packet = Packet.Player3DShoot(ClientApi!.ClientApiPtr, targetId, damage))
+                SendPacket(packet, PacketTransport.Tcp);
+        }
+
+        public void Broadcast(string message)
+        {
+            ThrowIfNotReady();
+            using (var packet = Packet.RoomBroadcast(ClientApi!.ClientApiPtr, message))
+                SendPacket(packet, PacketTransport.Tcp);
+        }
+
         /// <summary>
         /// Sends the player position over UDP.
         /// </summary>

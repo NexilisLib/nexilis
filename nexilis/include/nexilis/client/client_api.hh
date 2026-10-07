@@ -477,7 +477,32 @@ public:
         std::string filepath;
     };
 
-    std::vector<RemoteObject3DSnapshot> getRemoteObjects3DSnapshot(uint64_t room_id);
+    struct ChatSnapshot
+    {
+        uint64_t sender_id = 0;
+        std::string message;
+    };
+
+    std::vector<ChatSnapshot> getChatSnapshot(uint64_t room_id)
+    {
+        std::lock_guard<std::mutex> lock(*m_clientAPIData.getRoomsMutex());
+        std::vector<ChatSnapshot> result;
+        for (const auto& room : m_clientAPIData.getCurrentlyActiveRooms())
+        {
+            if (room.getId() != room_id)
+                continue;
+
+            const auto& messages = room.getMessages();
+            std::transform(messages.begin(), messages.end(), std::back_inserter(result),
+                           [](const Room::Communication& communication)
+                           { return ChatSnapshot{communication.getSenderId(), communication.getPayload()}; });
+            break;
+        }
+        return result;
+    }
+
+    std::vector<RemoteObject3DSnapshot>
+    getRemoteObjects3DSnapshot(uint64_t room_id);
 
     std::vector<RemoteGameItemSnapshot> getRemoteGameItemsSnapshot(uint64_t room_id);
 

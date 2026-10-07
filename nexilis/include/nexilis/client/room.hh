@@ -69,6 +69,11 @@ public:
             return m_client;
         }
 
+        uint64_t getSenderId() const
+        {
+            return m_senderId;
+        }
+
         uint64_t getId() const
         {
             return m_id;
@@ -80,6 +85,7 @@ public:
 
         /// The id of the message.
         const ClientSession* m_client;
+        uint64_t m_senderId;
 
         /// The id of the message.
         uint64_t m_id;

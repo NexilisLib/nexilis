@@ -88,6 +88,11 @@ void Room::leaveRoom(uint64_t userId)
                                      [&userId](uint64_t id)
                                      { return userId == id; }),
                       m_clientIds.end());
+    std::lock_guard<std::mutex> lock(m_stateMutex);
+    m_playerHealth.erase(userId);
+    m_playerKills.erase(userId);
+    m_playerDeaths.erase(userId);
+    m_playerTeams.erase(userId);
 }
 
 void Room::addBroadcast(uint64_t clientId, const std::string& message)

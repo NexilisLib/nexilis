@@ -184,6 +184,16 @@ namespace Nexilis.Client
             return new ClientSession(client_ptr, true);
         }
 
+        /// <summary>Consumes pending shooter events as a UTF-8 JSON object.</summary>
+        public string DrainGameEventsJson(int chatSince = 0)
+        {
+            ThrowIfDisposed();
+            var ptr = ClientAPINative.nexilis_client_api_drain_game_events(_clientApiPtr, new UIntPtr((uint)Math.Max(0, chatSince)));
+            if (ptr == IntPtr.Zero) return "{}";
+            try { return Marshal.PtrToStringAnsi(ptr) ?? "{}"; }
+            finally { ClientAPINative.nexilis_client_api_free_events(ptr); }
+        }
+
         void ThrowIfDisposed()
         {
             if (_disposed)

@@ -176,6 +176,14 @@ file (GLOB_RECURSE NEXILISC_SOURCES
 add_library(nexilis SHARED ${NEXILIS_SOURCES})
 add_library(nexilisc SHARED ${NEXILISC_SOURCES})
 
+# Keep sibling libraries discoverable after a Unity build copies them into
+# build_Data/Plugins, without referring back to this machine's build directory.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties(nexilis nexilisc PROPERTIES
+        BUILD_RPATH_USE_ORIGIN TRUE
+        INSTALL_RPATH "$ORIGIN")
+endif()
+
 target_link_libraries(nexilisc PUBLIC nexilis)
 
 target_include_directories(nexilis PUBLIC
