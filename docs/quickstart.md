@@ -2,9 +2,7 @@
 
 Get a server and two clients exchanging room messages on localhost in a few
 minutes, then wire the library into your own project. The current version is in
-[VERSION.txt](../VERSION.txt); the package is an unstable prerelease, so review
-[the release checklist](README.md#before-a-public-release) before distributing
-it.
+[VERSION.txt](../VERSION.txt).
 
 ## 1. Prerequisites
 

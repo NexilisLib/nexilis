@@ -23,9 +23,3 @@ The CI workflow in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) sho
 
 See [weekly releases](releases.md) for automated patch versioning and Doxygen
 website publishing.
-
-## Before a public release
-
-- The CMake install target exports libraries and package files but omits public headers. Its package config also records absolute Boost include paths from the source checkout when submodules are used. Downstream consumers cannot use the installed package alone or reliably move it to another machine.
-- Enabling room message encryption does not guarantee confidentiality: the server knows the password used to derive the key, and an encryption error currently falls back to sending the plaintext payload. See [security notes](server_message.md#security-notes).
-- The package is marked `unstable` in [VERSION.txt](../VERSION.txt). Confirm supported platforms, compatibility, and release packaging before advertising a stable version.

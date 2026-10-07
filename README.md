@@ -32,11 +32,9 @@ cmake --build nexilis/build --parallel
 - [C# bindings](bindings/README.md)
 - [Examples](examples/) and [test commands](docs/README.md#testing)
 
-## Security and release status
+## Security
 
 Network traffic is plaintext by default. TLS with a pre-shared key is optional for the Boost TCP client/server pair and must be enabled on both sides. The optional encrypted room broadcast uses a key derived from the server authentication password, which the server also knows; it does not provide confidentiality from the server. See [protocol and security notes](docs/server_message.md#security-notes) before deploying outside a trusted environment.
-
-This is an unstable prerelease. Review the release issues listed in the documentation before distributing it as a finished SDK.
 
 ## License
 

@@ -4,6 +4,8 @@ The native library requires CMake 3.25 or newer, a C++20 compiler, OpenSSL 1.1.1
 
 OpenSSL is a required build dependency even when the optional encryption features are disabled. The native libraries link to `OpenSSL::SSL`. Boost.JSON is a compiled dependency; the local build creates it from the submodule.
 
+The CMake install target does not include public headers. Its package config also records absolute Boost include paths from the source checkout when submodules are used, so the installed package alone cannot be used by downstream projects or reliably moved to another machine.
+
 For a local checkout, initialize the submodule:
 
 ```sh
