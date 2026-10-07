@@ -1,6 +1,6 @@
 # Nexilis
 
-Nexilis is a C++20 client and server library for multiplayer applications. It provides TCP and UDP transports, rooms and messaging, a C API, and C# bindings. The current version is `0.0.4-unstable` (see [VERSION.txt](VERSION.txt)).
+Nexilis is a C++20 client and server library for multiplayer applications. It provides TCP and UDP transports, rooms and messaging, a C API, and C# bindings. See [VERSION.txt](VERSION.txt) for the current version and [weekly releases](docs/releases.md) for the release process.
 
 ## Build and try an example
 

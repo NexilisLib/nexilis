@@ -1,0 +1,125 @@
+name: Weekly release
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: checks
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    permissions:
+      contents: write
+      pages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install release dependencies
+        run: |
+          python -m pip install ./scripts
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Check Pages configuration
+        uses: actions/configure-pages@v5
+
+      - name: Prepare release version
+        id: version
+        run: |
+          python scripts/update_version.py --bump-patch
+          version="$(cat VERSION.txt)"
+          tag="v${version}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            # A retry must reuse this run's release, never an unrelated tag.
+            test "$(git rev-parse "$tag^")" = "$GITHUB_SHA"
+            git log -1 --format=%B "$tag" | grep -Fx "Release-Run: $GITHUB_RUN_ID"
+            git restore VERSION.txt nexilis/Doxyfile
+            git checkout --detach "$tag"
+            echo "existing=true" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add VERSION.txt nexilis/Doxyfile
+            git commit -m "Release $tag" -m "Release-Run: $GITHUB_RUN_ID"
+            git tag "$tag"
+            echo "existing=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build release documentation
+        working-directory: nexilis
+        run: |
+          doxygen Doxyfile
+          test -s docs/html/index.html
+
+      - name: Upload documentation
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: nexilis/docs/html
+
+      - name: Push version commit and tag
+        if: steps.version.outputs.existing != 'true'
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        # Atomic, non-forced push rejects a main-branch change during the build.
+        run: git push --atomic origin HEAD:refs/heads/main "refs/tags/$RELEASE_TAG"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            flags=()
+            if [[ "$RELEASE_VERSION" == *-unstable ]]; then
+              flags+=(--prerelease)
+            fi
+            gh release create "$RELEASE_TAG" --verify-tag --generate-notes \
+              --title "Nexilis $RELEASE_VERSION" "${flags[@]}"
+          fi
+
+  documentation:
+    needs: release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Prevent publishing superseded documentation on a retry
+        env:
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+        run: test "$(cat VERSION.txt)" = "$RELEASE_VERSION"
+
+      - name: Publish release documentation
+        id: deployment
+        uses: actions/deploy-pages@v4

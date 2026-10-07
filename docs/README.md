@@ -21,6 +21,9 @@ The native test suites need GoogleTest and a configured Nexilis build. After `ma
 
 The CI workflow in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) shows the dependencies used for each check.
 
+See [weekly releases](releases.md) for automated patch versioning and Doxygen
+website publishing.
+
 ## Before a public release
 
 - The CMake install target exports libraries and package files but omits public headers. Its package config also records absolute Boost include paths from the source checkout when submodules are used. Downstream consumers cannot use the installed package alone or reliably move it to another machine.

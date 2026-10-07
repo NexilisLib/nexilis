@@ -37,6 +37,13 @@ def validate_version(version):
     return version
 
 
+def increment_patch(version):
+    """Increment the patch number while preserving the release status."""
+    validate_version(version)
+    major, minor, patch, status = re.fullmatch(VERSION_PATTERN, version).groups()
+    return f"{major}.{minor}.{int(patch) + 1}-{status}"
+
+
 def update_version_file(version):
     """Update VERSION.txt."""
     version_file = "VERSION.txt"
@@ -65,19 +72,26 @@ def update_doxyfile(version):
 def main():
     parser = argparse.ArgumentParser(description="Update Nexilis version")
     parser.add_argument(
-        "version", help="Version string in format X.Y.Z-TYPE (e.g '0.0.1-unstable)"
+        "version", nargs="?",
+        help="Version string in format X.Y.Z-TYPE (e.g '0.0.1-unstable')",
+    )
+    parser.add_argument(
+        "--bump-patch", action="store_true",
+        help="Increment the patch number in VERSION.txt, preserving stable/unstable",
     )
     args = parser.parse_args()
 
-    if not args.version:
-        parser.print_help()
-        print("\nError: Version argument cannot be empty", file=sys.stderr)
-        sys.exit(1)
+    if bool(args.version) == args.bump_patch:
+        parser.error("provide either a version or --bump-patch")
 
     try:
-        validate_version(args.version)
-        update_version_file(args.version)
-        update_doxyfile(args.version)
+        version = args.version
+        if args.bump_patch:
+            current = (Path(get_nexilis_root()) / "VERSION.txt").read_text().strip()
+            version = increment_patch(current)
+        validate_version(version)
+        update_version_file(version)
+        update_doxyfile(version)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
