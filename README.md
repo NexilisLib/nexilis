@@ -27,7 +27,7 @@ cmake --build nexilis/build --parallel
 
 ## Documentation
 
-- [Documentation index](docs/README.md) and [dependencies](docs/dependencies.md)
+- [Quick start](docs/quickstart.md), [documentation index](docs/README.md), and [dependencies](docs/dependencies.md)
 - [Client/server message format](docs/server_message.md)
 - [C# bindings](bindings/README.md)
 - [Examples](examples/) and [test commands](docs/README.md#testing)

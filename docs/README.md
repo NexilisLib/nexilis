@@ -1,6 +1,6 @@
 # Nexilis documentation
 
-Nexilis is a C++20 client/server library with C, C#, and LuaJIT interfaces. Start with the [repository README](../README.md) for a local build and a runnable example.
+Nexilis is a C++20 client/server library with C, C#, and LuaJIT interfaces. Start with the [quick start](quickstart.md) for a first running example and an API walkthrough, or the [repository README](../README.md) for a local build.
 
 ## Project structure
 
