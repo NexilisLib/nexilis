@@ -81,7 +81,6 @@ int main()
     }
 
     client.stop();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
     server.stop();
     nexilis::server::ClientStorage::clear();
     nexilis::Log::stopLogging();

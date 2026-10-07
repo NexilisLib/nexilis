@@ -62,7 +62,6 @@ protected:
         {
             client->stop();
         }
-        std::this_thread::sleep_for(std::chrono::seconds(1));
         if (server)
         {
             server->stop();

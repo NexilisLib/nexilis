@@ -387,6 +387,23 @@ protected:
         m_target->setBoostTCPSend([](const nx_data&) {});
     }
 
+    /// Put the shooter and the target on opposing teams. The shoot command only
+    /// accepts damage dealt to a member of another team.
+    void setUpOpposingTeams()
+    {
+        auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+        room->setPlayerTeam(SENDER_ID, "Terrorist");
+        room->setPlayerTeam(TARGET_ID, "Counter Terrorist");
+    }
+
+    /// Drop the target to `health` without going through the shoot command.
+    /// A single shot is capped at 35 damage, so a full health target never dies
+    /// in one hit and the kill tests need a weakened target first.
+    void setTargetHealth(float health)
+    {
+        server::RoomStorage::getRoomById(ROOM_ID)->damagePlayer(TARGET_ID, DEFAULT_HEALTH - health);
+    }
+
     server::CommandResult read(const nx_data& bytes, server::User& user)
     {
         return command.read(bytes, user, protocol, MESSAGE_ID);
@@ -441,6 +458,7 @@ TEST_F(GameplaySpecTest, ShootTargetNotInRoomFails)
 TEST_F(GameplaySpecTest, ShootAppliesDamageAndBroadcastsHit)
 {
     setUpRoom();
+    setUpOpposingTeams();
     auto targetMessages = receivedMessages(*m_target);
 
     ASSERT_EQ(read(shootBytes(TARGET_ID, 25.0f), *m_sender), server::CommandResult::success);
@@ -468,6 +486,7 @@ TEST_F(GameplaySpecTest, ShootAppliesDamageAndBroadcastsHit)
 TEST_F(GameplaySpecTest, ShootKillTriggersDeathPathAndRecordsStats)
 {
     setUpRoom();
+    setUpOpposingTeams();
     auto targetMessages = receivedMessages(*m_target);
 
     // The application's death handler is responsible for recording the kill
@@ -480,7 +499,11 @@ TEST_F(GameplaySpecTest, ShootKillTriggersDeathPathAndRecordsStats)
                 deaths.emplace_back(killerId, victimId);
             });
 
-    ASSERT_EQ(read(shootBytes(TARGET_ID, DEFAULT_HEALTH), *m_sender), server::CommandResult::success);
+    // A single shot is capped at 35 damage, so bring the target down to the
+    // health one legal shot can take away first.
+    setTargetHealth(30.0f);
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 30.0f), *m_sender), server::CommandResult::success);
 
     auto* room = server::RoomStorage::getRoomById(ROOM_ID);
     EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), 0.0f);
@@ -499,6 +522,7 @@ TEST_F(GameplaySpecTest, ShootKillTriggersDeathPathAndRecordsStats)
 TEST_F(GameplaySpecTest, ShootOnDeadTargetDoesNotRecordSecondKill)
 {
     setUpRoom();
+    setUpOpposingTeams();
 
     std::vector<std::pair<uint64_t, uint64_t>> deaths;
     server::RoomStorage::getRoomById(ROOM_ID)->setDeathHandler(
@@ -508,15 +532,65 @@ TEST_F(GameplaySpecTest, ShootOnDeadTargetDoesNotRecordSecondKill)
                 deaths.emplace_back(killerId, victimId);
             });
 
-    ASSERT_EQ(read(shootBytes(TARGET_ID, DEFAULT_HEALTH), *m_sender), server::CommandResult::success);
+    setTargetHealth(30.0f);
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 30.0f), *m_sender), server::CommandResult::success);
     // Second shot at the already-dead (not yet respawned) target is a no-op.
-    ASSERT_EQ(read(shootBytes(TARGET_ID, 50.0f), *m_sender), server::CommandResult::success);
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 30.0f), *m_sender), server::CommandResult::success);
 
     auto* room = server::RoomStorage::getRoomById(ROOM_ID);
     EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), 0.0f);
     EXPECT_EQ(room->getPlayerKills(SENDER_ID), 1);
     EXPECT_EQ(room->getPlayerDeaths(TARGET_ID), 1);
     EXPECT_EQ(deaths.size(), 1);
+}
+
+// ---------------------------------------------------------------------------
+// Shoot validation (teams, damage cap)
+// ---------------------------------------------------------------------------
+
+TEST_F(GameplaySpecTest, ShootRequiresOpposingTeams)
+{
+    setUpRoom();
+
+    // Nobody has a team yet, so the shot is rejected.
+    EXPECT_EQ(read(shootBytes(TARGET_ID, 25.0f), *m_sender), server::CommandResult::invalid_input);
+
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    room->setPlayerTeam(SENDER_ID, "Terrorist");
+    room->setPlayerTeam(TARGET_ID, "Terrorist");
+
+    // Teammates can not damage each other either.
+    EXPECT_EQ(read(shootBytes(TARGET_ID, 25.0f), *m_sender), server::CommandResult::invalid_input);
+    EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), DEFAULT_HEALTH);
+
+    room->setPlayerTeam(TARGET_ID, "Counter Terrorist");
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 25.0f), *m_sender), server::CommandResult::success);
+    EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), DEFAULT_HEALTH - 25.0f);
+}
+
+TEST_F(GameplaySpecTest, ShootRejectsDamageAbovePerShotCap)
+{
+    setUpRoom();
+    setUpOpposingTeams();
+
+    EXPECT_EQ(read(shootBytes(TARGET_ID, 35.1f), *m_sender), server::CommandResult::invalid_input);
+
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), DEFAULT_HEALTH);
+}
+
+TEST_F(GameplaySpecTest, ShootRejectsSelfTargetingAndNonPositiveDamage)
+{
+    setUpRoom();
+    setUpOpposingTeams();
+
+    EXPECT_EQ(read(shootBytes(SENDER_ID, 25.0f), *m_sender), server::CommandResult::invalid_input);
+    EXPECT_EQ(read(shootBytes(TARGET_ID, 0.0f), *m_sender), server::CommandResult::invalid_input);
+
+    auto* room = server::RoomStorage::getRoomById(ROOM_ID);
+    EXPECT_FLOAT_EQ(room->getPlayerHealth(TARGET_ID), DEFAULT_HEALTH);
 }
 
 // ---------------------------------------------------------------------------
@@ -668,6 +742,7 @@ TEST_F(GameplaySpecTest, CreateRoomLeaderboardCommandWrapsEntries)
 TEST_F(GameplaySpecTest, RespawnFlowAllowsTargetToBeDamagedAgain)
 {
     setUpRoom();
+    setUpOpposingTeams();
 
     // Application respawn policy: a killed player is revived at full health
     // (the shoot command itself only raises the death event).
@@ -678,7 +753,11 @@ TEST_F(GameplaySpecTest, RespawnFlowAllowsTargetToBeDamagedAgain)
                 room.resetPlayerHealth(victimId);
             });
 
-    ASSERT_EQ(read(shootBytes(TARGET_ID, DEFAULT_HEALTH), *m_sender), server::CommandResult::success);
+    // One shot is capped at 35 damage, so the target has to be weakened first
+    // for a single shot to be lethal.
+    setTargetHealth(30.0f);
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 30.0f), *m_sender), server::CommandResult::success);
 
     auto* room = server::RoomStorage::getRoomById(ROOM_ID);
     // The handler respawned the victim immediately, so health is back to full.
@@ -696,6 +775,7 @@ TEST_F(GameplaySpecTest, RespawnFlowAllowsTargetToBeDamagedAgain)
 TEST_F(GameplaySpecTest, KillBroadcastsLeaderboardDeltaAndRespawnAction)
 {
     setUpRoom();
+    setUpOpposingTeams();
     m_sender->setUsername("shooters");
     m_target->setUsername("victims");
 
@@ -727,7 +807,11 @@ TEST_F(GameplaySpecTest, KillBroadcastsLeaderboardDeltaAndRespawnAction)
                         room.getId(), *m_sender, respawnData, respawnParams, 0));
             });
 
-    ASSERT_EQ(read(shootBytes(TARGET_ID, DEFAULT_HEALTH), *m_sender), server::CommandResult::success);
+    // One shot is capped at 35 damage, so weaken the target to a single legal
+    // shot's worth of health before the killing blow.
+    setTargetHealth(30.0f);
+
+    ASSERT_EQ(read(shootBytes(TARGET_ID, 30.0f), *m_sender), server::CommandResult::success);
 
     // Every room member receives the hit broadcast, the leaderboard delta and
     // the respawn announcement.
