@@ -365,6 +365,17 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         {
                             return ServerImpl::room_player3d_audioEvent(args);
                         }
+
+                        // Game-defined round action: plant, defuse, or cancel.
+                        case 8:
+                        {
+                            auto* room = RoomStorage::getRoomById(user.getRoomId());
+                            if (!room || args.getData().size() != 4)
+                                return CommandResult::invalid_input;
+                            return room->onPlayerAction(user.getId(), args.getData()[3])
+                                           ? CommandResult::success
+                                           : CommandResult::invalid_input;
+                        }
                     }
                     return CommandResult::not_found;
                 }

@@ -39,6 +39,12 @@ The server rejects a command shorter than two bytes as invalid input. Missing op
 
 Parameters passed to `Packet` vary in size by command. Strings are written as raw bytes with **no length prefix or null terminator** and occupy the remaining bytes after fixed-size fields.
 
+### Application match extension
+
+`Packet::Room::Player3D::matchAction(api, action)` sends room/player_3D action byte `8` followed by exactly one byte: `0` cancels, `1` begins planting, and `2` begins defusing. The room's application-installed action handler validates the request; rooms without a handler reject it. The server's combat callback can also deny hits by participants who are outside an active round. These callbacks are optional and do not change normal rooms.
+
+An application can send a server-authored JSON room response with `type: "match"` and `action: "state"`. Nexilis parses it into `ClientAPI::MatchEvent` and exposes `consumeMatchEvents()`. The current game includes `room_id`, `round`, `terrorist_score`, `counter_terrorist_score`, `queue_position`, `phase`, `team`, `notice`, `seconds`, `bomb_planted`, `bomb_x/y/z`, `active`, and `alive`. It sends a full snapshot per player on state changes and about once per second. This extension currently uses the Boost TCP sender used by nx-3D; other transports need an application sender before using this response.
+
 ## Response format
 
 The Boost TCP server sends JSON responses terminated by a newline character (`\n`); its client reads until `\n`. The POSIX `af_inet` TCP transport instead prefixes server responses with a 4-byte length. These transports should not be assumed to have interchangeable response framing.

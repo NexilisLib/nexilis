@@ -138,6 +138,24 @@ public:
         float x = 0.0f, y = 0.0f, z = 0.0f;
     };
 
+    /// Authoritative state of an application-managed bomb round.
+    struct MatchEvent
+    {
+        uint64_t room_id = 0;
+        uint64_t round = 0;
+        uint64_t terrorist_score = 0;
+        uint64_t counter_terrorist_score = 0;
+        uint64_t queue_position = 0;
+        std::string phase;
+        std::string team;
+        std::string notice;
+        float seconds = 0.0f;
+        float bomb_x = 0.0f, bomb_y = 0.0f, bomb_z = 0.0f;
+        bool bomb_planted = false;
+        bool active = false;
+        bool alive = false;
+    };
+
     class ClientAPIData
     {
     public:
@@ -159,6 +177,7 @@ public:
               m_pendingRespawnEvents(std::move(other.m_pendingRespawnEvents)),
               m_pendingLeaderboardEvents(std::move(other.m_pendingLeaderboardEvents)),
               m_pendingAudioEvents(std::move(other.m_pendingAudioEvents)),
+              m_pendingMatchEvents(std::move(other.m_pendingMatchEvents)),
               m_damageMutex(std::move(other.m_damageMutex)),
               m_roomsMutex(std::move(other.m_roomsMutex))
         {
@@ -182,6 +201,7 @@ public:
                 m_pendingRespawnEvents = std::move(other.m_pendingRespawnEvents);
                 m_pendingLeaderboardEvents = std::move(other.m_pendingLeaderboardEvents);
                 m_pendingAudioEvents = std::move(other.m_pendingAudioEvents);
+                m_pendingMatchEvents = std::move(other.m_pendingMatchEvents);
                 m_damageMutex = std::move(other.m_damageMutex);
                 m_roomsMutex = std::move(other.m_roomsMutex);
 
@@ -307,6 +327,18 @@ public:
             return std::move(m_pendingAudioEvents);
         }
 
+        void pushMatchEvent(MatchEvent event)
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            m_pendingMatchEvents.push_back(std::move(event));
+        }
+
+        std::vector<MatchEvent> consumeMatchEvents()
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            return std::move(m_pendingMatchEvents);
+        }
+
     private:
         /// Is the server aware of the client, is "Packet" initialized.
         bool m_isInitialized = false;
@@ -331,6 +363,7 @@ public:
         std::vector<LeaderboardEvent> m_pendingLeaderboardEvents;
         /// Pending positional audio events.
         std::vector<AudioEvent> m_pendingAudioEvents;
+        std::vector<MatchEvent> m_pendingMatchEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
@@ -534,6 +567,11 @@ public:
     std::vector<AudioEvent> consumeAudioEvents()
     {
         return m_clientAPIData.consumeAudioEvents();
+    }
+
+    std::vector<MatchEvent> consumeMatchEvents()
+    {
+        return m_clientAPIData.consumeMatchEvents();
     }
 
     /// Let the program wait until nexilis has created all the rooms.

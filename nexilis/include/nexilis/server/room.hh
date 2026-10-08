@@ -41,6 +41,10 @@ public:
     /// \param killerId The id of the player that caused the death.
     /// \param victimId The id of the player that died.
     using DeathHandler = std::function<void(Room& room, uint64_t killerId, uint64_t victimId)>;
+    using TeamHandler = std::function<void(Room& room, uint64_t playerId)>;
+    using ActionHandler = std::function<bool(Room& room, uint64_t playerId, uint8_t action)>;
+    using CombatHandler = std::function<bool(uint64_t shooterId, uint64_t targetId)>;
+    using TeamSelectionHandler = std::function<bool(uint64_t playerId)>;
 
     /// A broadcast message that has been sent in the room.
     struct Broadcast
@@ -131,6 +135,13 @@ public:
     /// Set the callback invoked when a player's health reaches zero.
     /// If no handler is set, nothing happens on death.
     void setDeathHandler(DeathHandler handler);
+    void setTeamHandler(TeamHandler handler);
+    void setActionHandler(ActionHandler handler);
+    bool onPlayerAction(uint64_t playerId, uint8_t action);
+    void setCombatHandler(CombatHandler handler);
+    bool canDamage(uint64_t shooterId, uint64_t targetId) const;
+    void setTeamSelectionHandler(TeamSelectionHandler handler);
+    bool canSelectTeam(uint64_t playerId) const;
 
     /// Notify the room that a player died. Invokes the registered DeathHandler if set.
     /// \param killerId The id of the player that caused the death.
@@ -163,6 +174,10 @@ private:
     std::unordered_map<uint64_t, std::string> m_playerTeams;
     float m_defaultHealth = 100.0f;
     DeathHandler m_deathHandler;
+    TeamHandler m_teamHandler;
+    ActionHandler m_actionHandler;
+    CombatHandler m_combatHandler;
+    TeamSelectionHandler m_teamSelectionHandler;
 
     /// Guards per-player game state (health, kills, deaths, teams). The server
     /// runs one command thread per client, so these shared maps must be

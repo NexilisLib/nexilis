@@ -39,6 +39,10 @@ Room::Room(Room&& other)
       m_playerTeams(std::move(other.m_playerTeams)),
       m_defaultHealth(other.m_defaultHealth),
       m_deathHandler(std::move(other.m_deathHandler)),
+      m_teamHandler(std::move(other.m_teamHandler)),
+      m_actionHandler(std::move(other.m_actionHandler)),
+      m_combatHandler(std::move(other.m_combatHandler)),
+      m_teamSelectionHandler(std::move(other.m_teamSelectionHandler)),
       m_overlappingAllowed(other.m_overlappingAllowed.load())
 {
 }
@@ -55,6 +59,10 @@ Room& Room::operator=(Room&& other)
         m_playerTeams = std::move(other.m_playerTeams);
         m_defaultHealth = other.m_defaultHealth;
         m_deathHandler = std::move(other.m_deathHandler);
+        m_teamHandler = std::move(other.m_teamHandler);
+        m_actionHandler = std::move(other.m_actionHandler);
+        m_combatHandler = std::move(other.m_combatHandler);
+        m_teamSelectionHandler = std::move(other.m_teamSelectionHandler);
         m_overlappingAllowed.store(other.m_overlappingAllowed.load());
         BaseRoom::operator=(std::move(other));
     }
@@ -168,8 +176,12 @@ uint64_t Room::getPlayerDeaths(uint64_t clientId) const
 
 void Room::setPlayerTeam(uint64_t clientId, const std::string& team)
 {
-    std::lock_guard<std::mutex> lock(m_stateMutex);
-    m_playerTeams[clientId] = team;
+    {
+        std::lock_guard<std::mutex> lock(m_stateMutex);
+        m_playerTeams[clientId] = team;
+    }
+    if (m_teamHandler)
+        m_teamHandler(*this, clientId);
 }
 
 std::string Room::getPlayerTeam(uint64_t clientId) const
@@ -184,6 +196,35 @@ std::string Room::getPlayerTeam(uint64_t clientId) const
 void Room::setDeathHandler(DeathHandler handler)
 {
     m_deathHandler = std::move(handler);
+}
+
+void Room::setTeamHandler(TeamHandler handler)
+{
+    m_teamHandler = std::move(handler);
+}
+void Room::setActionHandler(ActionHandler handler)
+{
+    m_actionHandler = std::move(handler);
+}
+bool Room::onPlayerAction(uint64_t playerId, uint8_t action)
+{
+    return m_actionHandler && m_actionHandler(*this, playerId, action);
+}
+void Room::setCombatHandler(CombatHandler handler)
+{
+    m_combatHandler = std::move(handler);
+}
+bool Room::canDamage(uint64_t shooterId, uint64_t targetId) const
+{
+    return !m_combatHandler || m_combatHandler(shooterId, targetId);
+}
+void Room::setTeamSelectionHandler(TeamSelectionHandler handler)
+{
+    m_teamSelectionHandler = std::move(handler);
+}
+bool Room::canSelectTeam(uint64_t playerId) const
+{
+    return !m_teamSelectionHandler || m_teamSelectionHandler(playerId);
 }
 
 void Room::onPlayerDied(uint64_t killerId, uint64_t victimId)

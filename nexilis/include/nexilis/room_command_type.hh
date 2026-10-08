@@ -74,7 +74,8 @@ public:
         leaderboard = 6,
         /// A positional sound event (e.g. a footstep or a gunshot) so other
         /// clients can spatialize where the sound happened.
-        audio_event = 7
+        audio_event = 7,
+        match_action = 8
     };
 
     enum class ObjectType : uint8_t

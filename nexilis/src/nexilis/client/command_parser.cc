@@ -21,6 +21,7 @@
 #include <nexilis/client/command/room/gameitem.hh>
 #include <nexilis/client/command/room/leaderboard.hh>
 #include <nexilis/client/command/room/management.hh>
+#include <nexilis/client/command/room/match.hh>
 #include <nexilis/client/command/room/object2d.hh>
 #include <nexilis/client/command/room/object3d.hh>
 #include <nexilis/client/command/room/player2d.hh>
@@ -156,6 +157,27 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     // Common fields for all room commands
     uint64_t room_id = getUint64(json, "room_id");
     uint64_t client_id = getUint64(json, "client_id");
+
+    if (type == "match" && action == "state")
+    {
+        ClientAPI::MatchEvent event;
+        event.room_id = room_id;
+        event.round = getUint64(json, "round");
+        event.terrorist_score = getUint64(json, "terrorist_score");
+        event.counter_terrorist_score = getUint64(json, "counter_terrorist_score");
+        event.queue_position = getUint64(json, "queue_position");
+        event.phase = getString(json, "phase");
+        event.team = getString(json, "team");
+        event.notice = getString(json, "notice");
+        event.seconds = getFloat(json, "seconds");
+        event.bomb_x = getFloat(json, "bomb_x");
+        event.bomb_y = getFloat(json, "bomb_y");
+        event.bomb_z = getFloat(json, "bomb_z");
+        event.bomb_planted = json.contains("bomb_planted") && json.at("bomb_planted").as_bool();
+        event.active = json.contains("active") && json.at("active").as_bool();
+        event.alive = json.contains("alive") && json.at("alive").as_bool();
+        return std::make_unique<RoomMatchCommand>(std::move(event));
+    }
 
     if (type == "management")
     {

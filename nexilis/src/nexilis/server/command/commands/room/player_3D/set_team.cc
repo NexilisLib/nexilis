@@ -48,6 +48,9 @@ CommandResult ServerImpl::room_player3d_setTeam(const DefaultArgs& args)
         return CommandResult::failure;
     }
 
+    if (!room->canSelectTeam(user.getId()))
+        return CommandResult::invalid_input;
+
     room->setPlayerTeam(user.getId(), team);
     Log::info("Player ", user.getId(), " [", user.getUsername(), "] joined team ", team);
 

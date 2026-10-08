@@ -214,6 +214,11 @@ public:
             {
                 return Impl::room_player3d_audio_event(std::forward<Args>(args)...);
             }
+            template <typename... Args>
+            static auto matchAction(Args&&... args)
+            {
+                return Impl::room_player3d_match_action(std::forward<Args>(args)...);
+            }
         };
 
         struct Object3D

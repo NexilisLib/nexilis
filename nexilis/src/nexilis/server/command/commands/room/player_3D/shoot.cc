@@ -71,6 +71,8 @@ CommandResult ServerImpl::room_player3d_shoot(const DefaultArgs& args)
     const auto targetTeam = room->getPlayerTeam(targetId);
     if (shooterTeam.empty() || targetTeam.empty() || shooterTeam == targetTeam)
         return CommandResult::invalid_input;
+    if (!room->canDamage(user.getId(), targetId))
+        return CommandResult::invalid_input;
     if (room->getPlayerHealth(user.getId()) <= 0.0f)
         return CommandResult::invalid_input;
 

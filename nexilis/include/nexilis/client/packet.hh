@@ -81,6 +81,8 @@ struct ClientImpl
     static nx_data room_player3d_set_team(ClientAPI& api, const std::string& team);
 
     static nx_data room_player3d_audio_event(ClientAPI& api, uint8_t soundType, Vector3f position);
+    /// Application-defined round action (1 plant, 2 defuse, 0 cancel).
+    static nx_data room_player3d_match_action(ClientAPI& api, uint8_t action);
 
     // Room::Object3D
     static nx_data room_object3d_create(ClientAPI& api, Vector3f position, Vector3f dimensions, const std::string& filePath);

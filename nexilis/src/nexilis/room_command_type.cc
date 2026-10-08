@@ -84,6 +84,8 @@ std::string RoomCommandType::PlayerTypeToString(RoomCommandType::PlayerType play
             return "leaderboard";
         case RoomCommandType::PlayerType::audio_event:
             return "audio_event";
+        case RoomCommandType::PlayerType::match_action:
+            return "match_action";
         default:
             Log::error("Player2DTypeToString no type found!");
             return "";
