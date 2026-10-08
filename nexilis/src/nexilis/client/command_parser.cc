@@ -160,23 +160,40 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
 
     if (type == "match" && action == "state")
     {
-        ClientAPI::MatchEvent event;
-        event.room_id = room_id;
-        event.round = getUint64(json, "round");
-        event.terrorist_score = getUint64(json, "terrorist_score");
-        event.counter_terrorist_score = getUint64(json, "counter_terrorist_score");
-        event.queue_position = getUint64(json, "queue_position");
-        event.phase = getString(json, "phase");
-        event.team = getString(json, "team");
-        event.notice = getString(json, "notice");
-        event.seconds = getFloat(json, "seconds");
-        event.bomb_x = getFloat(json, "bomb_x");
-        event.bomb_y = getFloat(json, "bomb_y");
-        event.bomb_z = getFloat(json, "bomb_z");
-        event.bomb_planted = json.contains("bomb_planted") && json.at("bomb_planted").as_bool();
-        event.active = json.contains("active") && json.at("active").as_bool();
-        event.alive = json.contains("alive") && json.at("alive").as_bool();
-        return std::make_unique<RoomMatchCommand>(std::move(event));
+        const std::string gameMode = getString(json, "game_mode");
+        if (gameMode == "deathmatch")
+        {
+            auto event = std::make_unique<ClientAPI::DeathmatchMatchEvent>();
+            event->room_id = room_id;
+            event->player_id = getUint64(json, "player_id");
+            event->alive = json.contains("alive") && json.at("alive").as_bool();
+            event->respawn_seconds = getFloat(json, "respawn_seconds");
+            return std::make_unique<RoomMatchCommand>(std::move(event));
+        }
+        if (gameMode.empty() || gameMode == "bomb")
+        {
+            auto event = std::make_unique<ClientAPI::BombMatchEvent>();
+            event->room_id = room_id;
+            event->round = getUint64(json, "round");
+            event->terrorist_score = getUint64(json, "terrorist_score");
+            event->counter_terrorist_score = getUint64(json, "counter_terrorist_score");
+            event->queue_position = getUint64(json, "queue_position");
+            event->phase = getString(json, "phase");
+            event->team = getString(json, "team");
+            event->notice = getString(json, "notice");
+            event->seconds = getFloat(json, "seconds");
+            event->bomb_x = getFloat(json, "bomb_x");
+            event->bomb_y = getFloat(json, "bomb_y");
+            event->bomb_z = getFloat(json, "bomb_z");
+            event->bomb_planted = json.contains("bomb_planted") && json.at("bomb_planted").as_bool();
+            event->active = json.contains("active") && json.at("active").as_bool();
+            event->alive = json.contains("alive") && json.at("alive").as_bool();
+            if (json.contains("alive_players") && json.at("alive_players").is_array())
+                for (const auto& id : json.at("alive_players").as_array())
+                    event->alive_players.push_back(Util::toUint64(id));
+            return std::make_unique<RoomMatchCommand>(std::move(event));
+        }
+        return makeError(ReadResult::parsing_failed, "unknown match game mode");
     }
 
     if (type == "management")

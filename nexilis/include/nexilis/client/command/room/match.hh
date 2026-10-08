@@ -9,7 +9,7 @@ namespace nexilis::client
 class RoomMatchCommand : public BaseAPICommand
 {
 public:
-    explicit RoomMatchCommand(ClientAPI::MatchEvent event) : m_event(std::move(event))
+    explicit RoomMatchCommand(std::unique_ptr<ClientAPI::MatchEvent> event) : m_event(std::move(event))
     {
     }
 
@@ -20,7 +20,7 @@ public:
     }
 
 private:
-    ClientAPI::MatchEvent m_event;
+    std::unique_ptr<ClientAPI::MatchEvent> m_event;
 };
 } // namespace nexilis::client
 

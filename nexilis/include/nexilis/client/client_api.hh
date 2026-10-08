@@ -138,10 +138,26 @@ public:
         float x = 0.0f, y = 0.0f, z = 0.0f;
     };
 
-    /// Authoritative state of an application-managed bomb round.
+    /// Base for application-managed match notifications.
     struct MatchEvent
     {
+        enum class Kind
+        {
+            bomb,
+            deathmatch
+        };
+        virtual ~MatchEvent() = default;
+        virtual Kind kind() const = 0;
         uint64_t room_id = 0;
+    };
+
+    /// Authoritative state of an application-managed bomb round.
+    struct BombMatchEvent : MatchEvent
+    {
+        Kind kind() const override
+        {
+            return Kind::bomb;
+        }
         uint64_t round = 0;
         uint64_t terrorist_score = 0;
         uint64_t counter_terrorist_score = 0;
@@ -154,6 +170,20 @@ public:
         bool bomb_planted = false;
         bool active = false;
         bool alive = false;
+        /// Player IDs currently alive in this bomb round (authoritative roster).
+        std::vector<uint64_t> alive_players;
+    };
+
+    /// A deathmatch player entering or leaving the respawn wait.
+    struct DeathmatchMatchEvent : MatchEvent
+    {
+        Kind kind() const override
+        {
+            return Kind::deathmatch;
+        }
+        uint64_t player_id = 0;
+        bool alive = false;
+        float respawn_seconds = 0.0f;
     };
 
     class ClientAPIData
@@ -327,13 +357,13 @@ public:
             return std::move(m_pendingAudioEvents);
         }
 
-        void pushMatchEvent(MatchEvent event)
+        void pushMatchEvent(std::unique_ptr<MatchEvent> event)
         {
             std::lock_guard<std::mutex> lock(*m_damageMutex);
             m_pendingMatchEvents.push_back(std::move(event));
         }
 
-        std::vector<MatchEvent> consumeMatchEvents()
+        std::vector<std::unique_ptr<MatchEvent>> consumeMatchEvents()
         {
             std::lock_guard<std::mutex> lock(*m_damageMutex);
             return std::move(m_pendingMatchEvents);
@@ -363,7 +393,7 @@ public:
         std::vector<LeaderboardEvent> m_pendingLeaderboardEvents;
         /// Pending positional audio events.
         std::vector<AudioEvent> m_pendingAudioEvents;
-        std::vector<MatchEvent> m_pendingMatchEvents;
+        std::vector<std::unique_ptr<MatchEvent>> m_pendingMatchEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
@@ -569,7 +599,7 @@ public:
         return m_clientAPIData.consumeAudioEvents();
     }
 
-    std::vector<MatchEvent> consumeMatchEvents()
+    std::vector<std::unique_ptr<MatchEvent>> consumeMatchEvents()
     {
         return m_clientAPIData.consumeMatchEvents();
     }
