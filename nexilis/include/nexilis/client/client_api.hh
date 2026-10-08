@@ -138,6 +138,14 @@ public:
         float x = 0.0f, y = 0.0f, z = 0.0f;
     };
 
+    /// Player 2D shoot event.
+    struct Player2DShootEvent
+    {
+        uint64_t shooter_id = 0;
+        float direction_x = 0.0f;
+        float direction_y = 0.0f;
+    };
+
     /// Base for application-managed match notifications.
     struct MatchEvent
     {
@@ -208,6 +216,7 @@ public:
               m_pendingLeaderboardEvents(std::move(other.m_pendingLeaderboardEvents)),
               m_pendingAudioEvents(std::move(other.m_pendingAudioEvents)),
               m_pendingMatchEvents(std::move(other.m_pendingMatchEvents)),
+              m_pendingPlayer2DShootEvents(std::move(other.m_pendingPlayer2DShootEvents)),
               m_damageMutex(std::move(other.m_damageMutex)),
               m_roomsMutex(std::move(other.m_roomsMutex))
         {
@@ -232,6 +241,7 @@ public:
                 m_pendingLeaderboardEvents = std::move(other.m_pendingLeaderboardEvents);
                 m_pendingAudioEvents = std::move(other.m_pendingAudioEvents);
                 m_pendingMatchEvents = std::move(other.m_pendingMatchEvents);
+                m_pendingPlayer2DShootEvents = std::move(other.m_pendingPlayer2DShootEvents);
                 m_damageMutex = std::move(other.m_damageMutex);
                 m_roomsMutex = std::move(other.m_roomsMutex);
 
@@ -369,6 +379,18 @@ public:
             return std::move(m_pendingMatchEvents);
         }
 
+        void pushPlayer2DShootEvent(Player2DShootEvent event)
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            m_pendingPlayer2DShootEvents.push_back(std::move(event));
+        }
+
+        std::vector<Player2DShootEvent> consumePlayer2DShootEvents()
+        {
+            std::lock_guard<std::mutex> lock(*m_damageMutex);
+            return std::move(m_pendingPlayer2DShootEvents);
+        }
+
     private:
         /// Is the server aware of the client, is "Packet" initialized.
         bool m_isInitialized = false;
@@ -394,6 +416,8 @@ public:
         /// Pending positional audio events.
         std::vector<AudioEvent> m_pendingAudioEvents;
         std::vector<std::unique_ptr<MatchEvent>> m_pendingMatchEvents;
+        /// Pending Player 2D shoot events.
+        std::vector<Player2DShootEvent> m_pendingPlayer2DShootEvents;
         std::unique_ptr<std::mutex> m_damageMutex;
 
         // Mutex for room operations.
@@ -599,6 +623,12 @@ public:
         return m_clientAPIData.consumeAudioEvents();
     }
 
+    /// Consume all pending Player 2D shoot events (thread-safe).
+    std::vector<Player2DShootEvent> consumePlayer2DShootEvents()
+    {
+        return m_clientAPIData.consumePlayer2DShootEvents();
+    }
+
     std::vector<std::unique_ptr<MatchEvent>> consumeMatchEvents()
     {
         return m_clientAPIData.consumeMatchEvents();
@@ -732,6 +762,17 @@ private:
 
     /// Read the callback part of the message.
     void readCallback(boost::json::value callback);
+
+public:
+    /// Called when a Player2D shoot command is received.
+    void onPlayer2DShoot(uint64_t shooter_id, Vector2f direction)
+    {
+        Player2DShootEvent event;
+        event.shooter_id = shooter_id;
+        event.direction_x = direction.x;
+        event.direction_y = direction.y;
+        m_clientAPIData.pushPlayer2DShootEvent(std::move(event));
+    }
 
 private:
     /// The initialization data for the ClientAPI.

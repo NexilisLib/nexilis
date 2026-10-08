@@ -156,6 +156,12 @@ public:
             {
                 return Impl::room_player2d_movement(std::forward<Args>(args)...);
             }
+
+            template <typename... Args>
+            static auto shoot(Args&&... args)
+            {
+                return Impl::room_player2d_shoot(std::forward<Args>(args)...);
+            }
         };
 
         struct Object2D

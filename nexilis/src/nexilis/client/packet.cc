@@ -283,6 +283,16 @@ nx_data ClientImpl::room_player2d_movement(ClientAPI& api, Vector2f movement, fl
     return id;
 }
 
+nx_data ClientImpl::room_player2d_shoot(ClientAPI& api, Vector2f direction)
+{
+    auto id = _Packet::clientIdentification(api);
+    id.emplace_back(static_cast<uint8_t>(CommandType::room));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::Root::player_2D));
+    id.emplace_back(static_cast<uint8_t>(RoomCommandType::PlayerType::shoot));
+    emplaceAll(id, direction);
+    return id;
+}
+
 // Room::Object2D
 nx_data ClientImpl::room_object2d_create(ClientAPI& api, Vector2f position, Vector2f dimensions, const std::string& filePath)
 {

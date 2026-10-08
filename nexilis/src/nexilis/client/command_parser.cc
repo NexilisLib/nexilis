@@ -207,6 +207,12 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
     }
     else if (type == "player_2D")
     {
+        if (action == "shoot")
+        {
+            return std::make_unique<RoomPlayer2DShootCommand>(
+                    client_id,
+                    getFloat(json, "x"), getFloat(json, "y"));
+        }
         return std::make_unique<RoomPlayer2DCommand>(action, client_id,
                                                      getFloat(json, "x"), getFloat(json, "y"));
     }
@@ -269,7 +275,7 @@ std::unique_ptr<BaseAPICommand> CommandParser::parseRoomCommand(const boost::jso
                                                           getString(json, "message"));
     }
 
-    return makeError(ReadResult::parsing_failed, "cannot find room command type");
+    return makeError<>(ReadResult::parsing_failed, "cannot find room command type");
 }
 
 std::unique_ptr<BaseAPICommand> CommandParser::parseErrorCommand(std::string_view type)

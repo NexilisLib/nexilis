@@ -104,6 +104,43 @@ private:
     float m_y;
 };
 
+class RoomPlayer2DShootCommand : public BaseAPICommand
+{
+public:
+    RoomPlayer2DShootCommand(uint64_t client_id, float x, float y)
+        : m_client_id(client_id), m_x(x), m_y(y)
+    {
+    }
+
+    ReadResult execute(ClientAPI& api, ClientAPI::ClientAPIData& data) override
+    {
+        auto& mtx = data.getRoomsMutex();
+        std::lock_guard<std::mutex> lock(*mtx);
+
+        auto& rooms = data.getCurrentlyActiveRooms();
+
+        for (auto&& room = rooms.begin(); room != rooms.end(); room++)
+        {
+            for (auto& client : room->getClients())
+            {
+                if (client.getId() == m_client_id)
+                {
+                    // Notify the client API about the shoot event
+                    // The game client will handle creating the visual projectile
+                    api.onPlayer2DShoot(m_client_id, {m_x, m_y});
+                    return ReadResult::success;
+                }
+            }
+        }
+        return ReadResult::command_execution;
+    }
+
+private:
+    uint64_t m_client_id;
+    float m_x;
+    float m_y;
+};
+
 } // namespace nexilis::client
 
 #endif

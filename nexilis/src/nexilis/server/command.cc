@@ -290,6 +290,12 @@ CommandResult Command::read(const nx_data& command, User& user, Protocol& protoc
                         {
                             return ServerImpl::room_player2d_movement(args);
                         }
+
+                        // Shoot 2D
+                        case 3:
+                        {
+                            return ServerImpl::room_player2d_shoot(args);
+                        }
                     }
                     return CommandResult::not_found;
                 }

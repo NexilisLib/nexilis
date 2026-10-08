@@ -58,6 +58,8 @@ struct ClientImpl
 
     static nx_data room_player2d_movement(ClientAPI& api, Vector2f movement, float deltatime);
 
+    static nx_data room_player2d_shoot(ClientAPI& api, Vector2f direction);
+
     // Room::Object2D
     static nx_data room_object2d_create(ClientAPI& api, Vector2f position, Vector2f dimensions, const std::string& filePath);
 

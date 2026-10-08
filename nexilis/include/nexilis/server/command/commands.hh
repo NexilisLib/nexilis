@@ -103,6 +103,7 @@ struct ServerImpl
     static CommandResult room_player2d_position(const DefaultArgs& args);
     static CommandResult room_player2d_dimension(const DefaultArgs& args);
     static CommandResult room_player2d_movement(const DefaultArgs& args);
+    static CommandResult room_player2d_shoot(const DefaultArgs& args);
 
     // Room::Object2D
     static CommandResult room_object2d_create(const DefaultArgs& args);
